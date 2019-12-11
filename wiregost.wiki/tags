@@ -1,0 +1,38 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/45968eff/
+Auxiliary	Ideas.md	/^#### Auxiliary$/;"	t
+CLI Interface	Requirements.md	/^### CLI Interface$/;"	S
+Codebase	Home.md	/^### Codebase$/;"	S
+Codebase	_Sidebar.md	/^### Codebase$/;"	S
+Commands	Log-Commands.md	/^#### Commands$/;"	t
+Commands	Server-Commands.md	/^#### Commands$/;"	t
+Commands	Workspace-Commands.md	/^#### Commands$/;"	t
+Configuration	To-Do.md	/^### Configuration$/;"	S
+Data Model	Requirements.md	/^### Data Model$/;"	S
+Database	Commands.md	/^## Database$/;"	s
+Documentation	Requirements.md	/^### Documentation$/;"	S
+Entities	Commands.md	/^## Entities$/;"	s
+Environment	Home.md	/^### Environment$/;"	S
+Environment	_Sidebar.md	/^### Environment$/;"	S
+Framework Control & Data Exposure	Requirements.md	/^### Framework Control & Data Exposure$/;"	S
+Goals & Ideas	Home.md	/^### Goals & Ideas$/;"	S
+Goals & Ideas	_Sidebar.md	/^### Goals & Ideas$/;"	S
+History	To-Do.md	/^### History $/;"	S
+Listeners	Commands.md	/^## Listeners $/;"	s
+Modules	Commands.md	/^## Modules$/;"	s
+Modules	Ideas.md	/^## Modules$/;"	s
+Modules	Requirements.md	/^### Modules$/;"	S
+Parameters	Log-Commands.md	/^#### Parameters$/;"	t
+Parameters	Server-Commands.md	/^#### Parameters$/;"	t
+Parameters	Workspace-Commands.md	/^#### Parameters$/;"	t
+Payloads	Ideas.md	/^#### Payloads$/;"	t
+Payloads	Requirements.md	/^### Payloads$/;"	S
+Usage	Home.md	/^### Usage $/;"	S
+Usage	_Sidebar.md	/^### Usage $/;"	S
+Variables	Commands.md	/^## Variables$/;"	s
+Workspace	Requirements.md	/^### Workspace$/;"	S
