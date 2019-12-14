@@ -8,6 +8,7 @@ package main
 //	2. Creating base client configuration file.
 //  3. Creating all subdirectories and files specific to the client and its user.
 //	4. Creating local authentication elements for the client.
+//  5. Creating default server paramaters, for first connection.
 
 import (
 	"bufio"
@@ -15,6 +16,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 	"syscall"
@@ -26,7 +28,7 @@ import (
 	"github.com/evilsocket/islazy/tui"
 )
 
-var welcomeWireGost = `                                                                                                                 ,,.,=++=======+,                                  
+var welcomeToGhost = `                                                                                                                 ,,.,=++=======+,                                  
                                                                                                          ..~====================+..                            
                                                                                                        ,+===========================..                         
                                                                                                       :===============================                         
@@ -81,11 +83,15 @@ func main() {
 	// Setting up personal directories and files
 	PersonalDirFilesSetup()
 	// Setting aup client-side local authentication
-	SetClientAuth()
+	SetUserCreds()
+	// Setting up default server
+	SetUpDefaultServer()
 
 	// Report and quit
 	fmt.Println()
-	fmt.Println(tui.Bold("Personal directories, files and authentication information have been setup. You can now use the WireGost client shell, Ghost."))
+	fmt.Println(tui.Bold("Personal directories, files and authentication information have been setup."))
+	fmt.Println(tui.Bold("You can now use the WireGost client shell, Ghost."))
+	fmt.Println()
 
 }
 
@@ -93,12 +99,12 @@ func main() {
 func PersonalDirFilesSetup() {
 
 	fmt.Println(tui.Yellow(tui.Bold("------------------------------------------------------------------------------------------------------------------------------------------------")))
-	fmt.Printf(welcomeWireGost)
+	fmt.Printf(welcomeToGhost)
 	fmt.Println(tui.Yellow(tui.Bold("------------------------------------------------------------------------------------------------------------------------------------------------")))
 	fmt.Println()
 	fmt.Println(tui.Yellow(tui.Bold("         *********** WireGost Client Setup *********** ")))
 	fmt.Println()
-	fmt.Println("WireGost is creating personal files and subdirectories in ~/.wiregost. They will contain : ")
+	fmt.Println("WireGost is creating personal files and subdirectories in ~/.wiregost/client. They will contain : ")
 	fmt.Println()
 
 	// Instantiate a new Config object
@@ -106,9 +112,10 @@ func PersonalDirFilesSetup() {
 
 	// Directories
 	fmt.Println(tui.Blue(" - Directories -"))
+	fmt.Println()
 	userdir, _ := fs.Expand(conf.UserDir)
 	if fs.Exists(userdir) == false {
-		os.Mkdir(userdir, 0755)
+		os.MkdirAll(userdir, 0755)
 		fmt.Println(tui.Blue("  *") + " User directory" + tui.Dim(tui.Green(" (Created)")))
 	} else {
 		fmt.Println(tui.Blue("  *") + " User directory" + tui.Dim(tui.Green(" (Existing)")))
@@ -161,6 +168,14 @@ func PersonalDirFilesSetup() {
 	} else {
 		fmt.Println(tui.Blue("  *") + " Exports" + tui.Dim(tui.Green(" (Existing)")))
 	}
+
+	serverCertDir, _ := fs.Expand(conf.ServerCertsDir)
+	if fs.Exists(serverCertDir) == false {
+		os.MkdirAll(serverCertDir, 0755)
+		fmt.Println(tui.Blue("  *") + " Servers certificates" + tui.Dim(tui.Green(" (Created)")))
+	} else {
+		fmt.Println(tui.Blue("  *") + " Servers certificates" + tui.Dim(tui.Green(" (Existing)")))
+	}
 	fmt.Println()
 
 	// Files
@@ -184,13 +199,14 @@ func PersonalDirFilesSetup() {
 	}
 	histfile, _ := os.Create(historyfile)
 	defer histfile.Close()
+
 }
 
 // Setup client-side local authentication
-func SetClientAuth() (err error) {
+func SetUserCreds() (err error) {
 
-	// Instantiate a new Auth object
-	auth := session.NewAuth()
+	// Instantiate a new User object
+	user := session.NewUser()
 
 	fmt.Println(tui.Dim("------------------------------------------------------------------------------------------------------------------------------------------------"))
 	fmt.Println()
@@ -229,14 +245,14 @@ func SetClientAuth() (err error) {
 				fmt.Println(tui.Red("Passwords mismatch. Retry"))
 				fmt.Println()
 			} else {
-				auth.UserName = username
-				auth.PasswordHash = sha256.Sum256(pass)
-				auth.PasswordHashString = base64.URLEncoding.EncodeToString(auth.PasswordHash[:])
+				user.Name = username
+				user.PasswordHash = sha256.Sum256(pass)
+				user.PasswordHashString = base64.URLEncoding.EncodeToString(user.PasswordHash[:])
 				// Save to config file
-				authFile, _ := fs.Expand(auth.UserAuthFile)
-				file, _ := os.Create(authFile)
+				credsFile, _ := fs.Expand(user.CredsFile)
+				file, _ := os.Create(credsFile)
 				defer file.Close()
-				defaults, _ := json.MarshalIndent(auth, "", "	")
+				defaults, _ := json.MarshalIndent(user, "", "	")
 				_, err := file.Write([]byte(defaults))
 				if err != nil {
 					fmt.Println(err.Error())
@@ -245,15 +261,75 @@ func SetClientAuth() (err error) {
 				// Report status
 				fmt.Println()
 				fmt.Println(tui.Blue("Files:"))
-				fmt.Printf(tui.Bold("User auth parameters saved to ~/.wiregost/.auth file\n"))
-				fmt.Printf(tui.Yellow("User name: ")+"%s\n", username)
-				fmt.Printf(tui.Yellow("User password hash: ")+"%s\n", auth.PasswordHashString)
-				fmt.Println(tui.Dim("------------------------------------------------------------------"))
+				fmt.Printf(tui.Bold("User auth parameters saved to ~/.wiregost/client/.auth file\n"))
+				fmt.Printf(tui.Yellow("User name: ")+"%s\n", user.Name)
+				fmt.Printf(tui.Yellow("User password hash: ")+"%s\n", user.PasswordHashString)
+				fmt.Println()
 
 				break
 			}
 		}
 	}
+
+	return nil
+}
+
+func SetUpDefaultServer() error {
+
+	fmt.Println(tui.Dim("------------------------------------------------------------------------------------------------------------------------------------------------"))
+	fmt.Println()
+	fmt.Println(tui.Bold(tui.Blue(" - Server Configuration -")))
+	fmt.Println()
+	fmt.Println(" Creating server.conf file in ~/.wiregost/client/")
+	fmt.Println()
+
+	// Server Configuration File
+	serverFile, _ := fs.Expand("~/.wiregost/client/server.conf")
+	if fs.Exists(serverFile) {
+		fmt.Println(tui.Blue("  *") + " Configuration file" + tui.Dim(tui.Red(" (Overwritten)")))
+	} else {
+		fmt.Println(tui.Blue("  *") + " Configuration file" + tui.Dim(tui.Green(" (Created)")))
+	}
+	servConf, _ := os.Create(serverFile)
+	defer servConf.Close()
+
+	// Populate a list of servers with one default server
+	var serverList []session.Server
+	serverList = []session.Server{
+		session.Server{
+			IPAddress:   "localhost",
+			Port:        7777,
+			Certificate: "",
+			UserToken:   "",
+			FQDN:        "",
+			IsDefault:   true,
+		}}
+
+	// Status
+	fmt.Println()
+	fmt.Println("Creating default server parameters (IP, Port), and writing to ~/.wiregost/client/server.conf.")
+	// Marshal to JSON
+	var jsonData []byte
+	jsonData, err := json.MarshalIndent(serverList, "", "    ")
+	if err != nil {
+		fmt.Println("Error: Failed to write JSON data to server configuration file")
+		fmt.Println(err)
+	} else {
+		_ = ioutil.WriteFile(serverFile, jsonData, 0755)
+		fmt.Println(tui.Green("Server configuration file written."))
+	}
+
+	fmt.Println()
+	fmt.Println(tui.Bold("IMPORTANT: The default server is not yet ready to connect with TLS support !"))
+	fmt.Println()
+	fmt.Println(tui.Blue("  1. ") + "Copy the Certificate with extension '.crt' from ~/.wiregost/server/certificates/ to ~/.wiregost/client/certificates/ ")
+	fmt.Println(tui.Blue("  2. ") + "Open the ~/.wiregost/client/server.conf file and fill up:")
+	fmt.Println(tui.Blue("          * ") + "Fill the Certificate field with ~/.wiregost/client/certificates/your_cert.crt ")
+	fmt.Println(tui.Blue("          * ") + "The FQDN field with the " + tui.Yellow("Common Name ") + "or " + tui.Yellow("server FQDN"))
+	fmt.Println("            that you filled when running the server setup file. This name can be empty,")
+	fmt.Println("            as long as they are identical", " in the Certificate and the server.conf file).")
+	fmt.Println()
+	fmt.Println(tui.Dim("------------------------------------------------------------------------------------------------------------------------------------------------"))
 
 	return nil
 }
