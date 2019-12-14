@@ -1,0 +1,104 @@
+// Proto file for AuthenticationManager methods
+
+syntax = "proto3";
+
+package core;
+
+service UserManager {
+    // Notify connection
+    rpc ConnectUser(ConnectRequest) returns (ConnectResponse) {}
+    rpc DisconnectUser(DisconnectRequest) returns (DisconnectResponse) {}
+    
+    // First-time user registration
+    rpc RegisterUser(RegisterRequest) returns (RegisterResponse) {}
+
+    // User management commands
+    rpc ListUsers(ListUsersRequest) returns (stream ListUsersResponse) {}
+
+    // ADMIN User management commands
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {}
+    rpc GiveAdminRights(AdminRightsRequest) returns (AdminRightsResponse) {}
+}
+
+//-------------------------------
+// ConnectUser
+message ConnectRequest {
+    // No arguments needed
+}
+
+message ConnectResponse {
+    bool connected = 1;
+}
+
+//-------------------------------
+// DisconnectUser
+message DisconnectRequest {
+    // No arguments needed
+}
+
+message DisconnectResponse {
+    bool disconnected = 1;
+}
+
+//-------------------------------
+// RegisterUser
+message RegisterRequest {
+    string name = 1;
+    string hash = 2;
+}
+
+message RegisterResponse {
+    bool registered = 1;
+}
+
+//-------------------------------
+// ListUsers
+message ListUsersRequest {
+    // No arguments needed
+}
+
+// Each user listed 
+message User {
+    string name = 1;
+    bool connected = 2;
+    bool admin = 3;
+}
+
+message ListUsersResponse {
+    repeated User users = 1;
+}
+
+//-------------------------------
+// CreateUser
+message CreateUserRequest {
+    string name = 1;
+    bool admin = 2;
+    // ADD CREDENTIALS NEEDED HERE
+}
+
+message CreateUserResponse {
+    bool created = 1;
+}
+
+
+//-------------------------------
+// DeleteUser
+message DeleteUserRequest {
+    string name = 1;
+}
+
+message DeleteUserResponse {
+    bool deleted = 1;
+}
+
+//-------------------------------
+// GiveAdminRights
+message AdminRightsRequest {
+    string name = 1;
+}
+
+message AdminRightsResponse {
+    bool given = 1;
+}
+
