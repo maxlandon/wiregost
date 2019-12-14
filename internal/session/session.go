@@ -22,7 +22,7 @@ import (
 )
 
 var userHomeDir, err = os.UserHomeDir()
-var HistoryFile = userHomeDir + "/.wiregost/.history"
+var HistoryFile = userHomeDir + "/.wiregost/client/.history"
 
 type UnknownCommandCallback func(cmd string) bool
 
@@ -33,7 +33,8 @@ type Session struct {
 	Input           *readline.Instance
 	CommandHandlers []CommandHandler
 	Config          *Config
-	Auth            *Auth
+	User            *User
+	ServerManager   *ServerManager
 	CurrentDir      string
 	UnkCmdCallback  UnknownCommandCallback
 }
@@ -42,9 +43,10 @@ type Session struct {
 func New() (*Session, error) {
 
 	s := &Session{
-		Prompt: NewPrompt(),
-		Config: NewConfig(),
-		Auth:   NewAuth(),
+		Prompt:        NewPrompt(),
+		Config:        NewConfig(),
+		User:          NewUser(),
+		ServerManager: NewServerManager(),
 
 		CommandHandlers: make([]CommandHandler, 0),
 		UnkCmdCallback:  nil,
@@ -55,8 +57,35 @@ func New() (*Session, error) {
 	s.registerConfigHandlers()
 	s.registerHelpHandlers()
 	s.registerHistoryHandlers()
+	s.registerServerHandlers()
 
 	return s, nil
+}
+
+// Starts a Session based on a Session object
+func (s *Session) Start() (err error) {
+
+	if err := s.setupReadline(); err != nil {
+		return err
+	}
+
+	// Loading all configuration elements
+	s.Config.LoadConfig()
+
+	// Load User Creds and authenticate
+	s.User.LoadCreds()
+	s.User.Authenticate()
+
+	// Load ServerManager elements and connect to default server.
+	s.ServerManager.GetServerList()
+	s.ServerManager.GetDefaultServer()
+	s.ServerManager.RegisterUserToServer(s.User)
+	// s.ServerManager.ConnectToServer(s.User, s.ServerManager.CurrentServer)
+
+	s.StartedAt = time.Now()
+	s.Active = true
+
+	return err
 }
 
 // Not sure this will be useful, taken from Bettercap
@@ -72,28 +101,6 @@ func (s *Session) Unlock() {
 // Close the Session
 func (s *Session) Close() {
 
-}
-
-// Starts a Session based on a Session object
-func (s *Session) Start() (err error) {
-
-	if err := s.setupReadline(); err != nil {
-		return err
-	}
-
-	// Loading all configuration elements
-	s.Config.LoadConfig()
-
-	// Load Auth elements
-	s.Auth.LoadAuth(s)
-
-	// Authenticate
-	s.Auth.DoClientAuth(s)
-
-	s.StartedAt = time.Now()
-	s.Active = true
-
-	return err
 }
 
 // Refreshes the console each time it is needed.

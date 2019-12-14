@@ -39,15 +39,15 @@ func NewConfig() *Config {
 	config := &Config{
 		// Default settings are loaded, will be overwritten if
 		// config file is found during LoadConfig()
-		UserConfigFile: "~/.wiregost/wiregost.config",
+		UserConfigFile: "~/.wiregost/client/ghost.conf",
 		HistoryFile:    HistoryFile,
-		UserDir:        "~/.wiregost/",
-		LogDir:         "~/.wiregost/logs/",
-		ModulesDir:     "~/.wiregost/modules/",
-		PayloadsDir:    "~/.wiregost/payloads/",
-		ResourceDir:    "~/.wiregost/resource/",
-		WorkspaceDir:   "~/.wiregost/workspaces/",
-		ExportDir:      "~/.wiregost/export/",
+		UserDir:        "~/.wiregost/client/",
+		LogDir:         "~/.wiregost/client/logs/",
+		ModulesDir:     "~/.wiregost/client/modules/",
+		PayloadsDir:    "~/.wiregost/client/payloads/",
+		ResourceDir:    "~/.wiregost/client/resource/",
+		WorkspaceDir:   "~/.wiregost/client/workspaces/",
+		ExportDir:      "~/.wiregost/client/export/",
 		ConsolePrompt:  "",
 	}
 
