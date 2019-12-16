@@ -24,10 +24,14 @@ func NewSpectre() *Spectre {
 	// Make DBManager available to all services needing it.
 	spectre.RegisterDatabaseToServices()
 
+	// Load authenticated users & Config RPC
+	spectre.ClientRPC.Users, _ = spectre.UserManager.GetUsers()
+	spectre.ClientRPC.LoadConfig()
+
 	// Register all services to the ClientRPC.
 	spectre.RegisterServicesToRPC()
 
-	// Start RPC
+	//  Start RPC
 	spectre.ClientRPC.Start()
 
 	return spectre
