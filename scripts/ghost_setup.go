@@ -169,7 +169,7 @@ func PersonalDirFilesSetup() {
 		fmt.Println(tui.Blue("  *") + " Exports" + tui.Dim(tui.Green(" (Existing)")))
 	}
 
-	serverCertDir, _ := fs.Expand(conf.ServerCertsDir)
+	serverCertDir, _ := fs.Expand("~/.wiregost/client/certificates")
 	if fs.Exists(serverCertDir) == false {
 		os.MkdirAll(serverCertDir, 0755)
 		fmt.Println(tui.Blue("  *") + " Servers certificates" + tui.Dim(tui.Green(" (Created)")))

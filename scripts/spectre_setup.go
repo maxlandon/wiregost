@@ -11,13 +11,16 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
 
+	"github.com/maxlandon/wiregost/internal/server/core"
 	"github.com/maxlandon/wiregost/internal/server/db"
 
 	"github.com/evilsocket/islazy/fs"
@@ -137,11 +140,65 @@ func DatabaseSetup() {
 	fmt.Println(tui.Bold(tui.Blue(" - Database -")))
 	fmt.Println()
 
+	// Input Dabase name, user and password
+	reader := bufio.NewReader(os.Stdin)
+	dbUser := ""
+	dbName := ""
+	dbPass := ""
+
+	fmt.Printf(tui.Bold("Enter database user name: "))
+	input, _ := reader.ReadString('\n')
+	dbUser = strings.TrimRight(input, "\n")
+	if dbUser != "" {
+		fmt.Printf("Db user name: %s \n", dbUser)
+		fmt.Println()
+	}
+	if dbUser == "" {
+		fmt.Println(tui.Bold("Db User cannot be empty, please provide one:"))
+		input, _ = reader.ReadString('\n')
+		dbUser = strings.TrimRight(input, "\n")
+		fmt.Printf("Db user name: %s \n", dbUser)
+		fmt.Println()
+	}
+
+	fmt.Printf(tui.Bold("Enter database name: "))
+	input, _ = reader.ReadString('\n')
+	dbName = strings.TrimRight(input, "\n")
+	if dbName != "" {
+		fmt.Printf("Db name: %s \n", dbName)
+		fmt.Println()
+	}
+	if dbName == "" {
+		fmt.Println(tui.Bold("Db Name cannot be empty, please provide one:"))
+		input, _ = reader.ReadString('\n')
+		dbName = strings.TrimRight(input, "\n")
+		fmt.Printf("Db name: %s \n", dbName)
+		fmt.Println()
+	}
+
+	fmt.Printf(tui.Bold("Enter database password: "))
+	input, _ = reader.ReadString('\n')
+	dbPass = strings.TrimRight(input, "\n")
+	if dbPass != "" {
+		fmt.Printf("Db password: %s \n", dbPass)
+		fmt.Println()
+	}
+	if dbPass == "" {
+		fmt.Println(tui.Bold("Password cannot be empty, please provide one:"))
+		input, _ = reader.ReadString('\n')
+		dbPass = strings.TrimRight(input, "\n")
+		fmt.Printf("Db password: %s \n", dbPass)
+		fmt.Println()
+	}
+
+	userPhrase := fmt.Sprintf("CREATE USER %s WiTH PASSWORD '%s';", dbUser, dbPass)
+	dbPhrase := fmt.Sprintf("CREATE DATABASE %s WITH OWNER %s;", dbName, dbUser)
+
 	cmd := exec.Command("psql", "-U", "postgres",
 		"-c",
-		"CREATE USER wiregost WITH PASSWORD 'wiregost';",
+		userPhrase,
 		"-c",
-		"CREATE DATABASE wiregost_db WITH OWNER wiregost;")
+		dbPhrase)
 
 	// Error handling
 	var stderr bytes.Buffer
@@ -152,11 +209,42 @@ func DatabaseSetup() {
 		return
 	}
 
+	// Create database configuration file and populate
 	fmt.Println("WireGost default database created :")
-	fmt.Printf("User: %s \n", tui.Yellow("wiregost"))
-	fmt.Printf("Password: %s \n", tui.Yellow("wiregost"))
-	fmt.Printf("Database: %s \n", tui.Yellow("wiregost_db"))
+	fmt.Printf("User: %s \n", tui.Yellow(dbUser))
+	fmt.Printf("Password: %s \n", tui.Yellow(dbPass))
+	fmt.Printf("Database: %s \n", tui.Yellow(dbName))
 	fmt.Println()
+
+	dbFile, _ := fs.Expand("~/.wiregost/server/database.conf")
+	if fs.Exists(dbFile) {
+		fmt.Println(tui.Blue("  *") + " Server Configuration file" + tui.Dim(tui.Red(" (Overwritten)")))
+	} else {
+		fmt.Println(tui.Blue("  *") + " Server Configuration file" + tui.Dim(tui.Green(" (Created)")))
+	}
+	dbConf, _ := os.Create(dbFile)
+	defer dbConf.Close()
+
+	type DbCreds struct {
+		User     string
+		Database string
+		Password string
+	}
+	opts := DbCreds{
+		User:     dbUser,
+		Database: dbName,
+		Password: dbPass,
+	}
+
+	var jsonData []byte
+	jsonData, err = json.MarshalIndent(opts, "", "    ")
+	if err != nil {
+		fmt.Println("Error: Failed to write JSON data to database configuration file")
+		fmt.Println(err)
+	} else {
+		_ = ioutil.WriteFile(dbFile, jsonData, 0755)
+		fmt.Println("Populated dabatase configuration file with credentials")
+	}
 }
 
 // This function will need to be renamed "CreateDefaultTables",
@@ -376,6 +464,46 @@ func CreateCertificates() error {
 		os.Exit(1)
 	} else {
 		fmt.Println(tui.Green("Signed Private Key with self-signed Certificate 'spectre.csr'"))
+		fmt.Println()
+	}
+
+	// Create Server configuration file, here only because we need the CertName entered previously,
+	// For populating default server configuration.
+	fmt.Println(tui.Dim(tui.Yellow("------------------------------------------------------------------------------------------------------------------------------------------------")))
+	fmt.Println()
+	fmt.Println(tui.Bold(tui.Blue(" - Server Configuration File -")))
+	fmt.Println()
+	serverFile, _ := fs.Expand("~/.wiregost/server/server.conf")
+	if fs.Exists(serverFile) {
+		fmt.Println(tui.Blue("  *") + " Server Configuration file" + tui.Dim(tui.Red(" (Overwritten)")))
+	} else {
+		fmt.Println(tui.Blue("  *") + " Server Configuration file" + tui.Dim(tui.Green(" (Created)")))
+	}
+	servConf, _ := os.Create(serverFile)
+	defer servConf.Close()
+
+	serv := core.ClientRPC{
+		Protocol:  "tcp",
+		IpAddress: "localhost",
+		Port:      7777,
+		CertPath:  "~/.wiregost/server/certificates/" + certName + ".crt",
+		KeyPath:   "~/.wiregost/server/certificates/" + certName + ".key",
+	}
+
+	var jsonData []byte
+	jsonData, err = json.MarshalIndent(serv, "", "    ")
+	if err != nil {
+		fmt.Println("Error: Failed to write JSON data to server configuration file")
+		fmt.Println(err)
+	} else {
+		_ = ioutil.WriteFile(serverFile, jsonData, 0755)
+		fmt.Println(tui.Bold("Default server configuration:"))
+		fmt.Println("Protocol: tcp")
+		fmt.Println("IP address: localhost")
+		fmt.Println("Port: 7777")
+		fmt.Println()
+		fmt.Println("Certificate & key path: ~/.wiregost/server/certificates/")
+		fmt.Println()
 	}
 
 	fmt.Println()
@@ -383,6 +511,7 @@ func CreateCertificates() error {
 	fmt.Println(tui.Bold("After finishing the server AND the client setup (and before first connection)"))
 	fmt.Println(tui.Bold("please copy the Certificate into the client's personal directory (~/.wiregost/client/server_certs)."))
 	fmt.Println()
+	fmt.Println(tui.Bold("You will also need the ") + tui.Bold(tui.Yellow("Common Name/ FQDN")) + " that you used above when creating your certificates.")
 
 	return nil
 }
