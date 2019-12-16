@@ -36,7 +36,6 @@ func NewSpectre() *Spectre {
 func (s *Spectre) RegisterDatabaseToServices() error {
 	// UserManager
 	s.UserManager.database = s.DBManager
-	s.UserManager.GetUsers()
 
 	return nil
 }
