@@ -8,10 +8,13 @@ package core
 //		- If admin, handle user creation and deletion
 
 import (
+	"fmt"
 	"log"
+
 	// Here for testing
 	"os/exec"
 
+	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/internal/server/db"
 
 	"golang.org/x/net/context"
@@ -19,6 +22,9 @@ import (
 
 type UserManager struct {
 	ConnectedUsers []db.User
+
+	// DB Access
+	database *DBManager
 }
 
 func NewUserManager() *UserManager {
@@ -30,10 +36,9 @@ func NewUserManager() *UserManager {
 // -------------------------------------------------------------
 // DATABASE FUNCTIONS
 
-func GetUsers() ([]db.User, error) {
-	database := db.NewDBManager()
+func (um *UserManager) GetUsers() ([]db.User, error) {
 	var users []db.User
-	err := database.Database.Model(&users).Select()
+	err := um.database.DB.Model(&users).Select()
 	return users, err
 }
 
@@ -48,10 +53,24 @@ func (um *UserManager) RegisterUser(ctx context.Context, in *RegisterRequest) (*
 
 	log.Printf("Received registration request from user %s", in.Name)
 
-	users, _ := GetUsers()
+	users, _ := um.GetUsers()
 	for _, v := range users {
+		// If user is in db
 		if v.Name == in.Name {
-			return &RegisterResponse{Registered: true}, nil
+			// If user needs to be registered (no password given yet)
+			if v.PasswordHashString == "" {
+				v.PasswordHashString = in.Hash
+				_, err := um.database.DB.Model(&v).Set(
+					"password_hash_string = ?password_hash_string").Where("name = ?name").Update()
+				if err != nil {
+					fmt.Println(tui.Red("Error: Failed to save PasswordHash to Database."))
+					fmt.Println(err)
+					return &RegisterResponse{Registered: false, Error: "Failed to save PasswordHash to Database"}, err
+				}
+				return &RegisterResponse{Registered: true}, err
+			} else {
+				return &RegisterResponse{Registered: true, Error: "User already registered. No further action is needed."}, nil
+			}
 		}
 	}
 	return &RegisterResponse{Registered: false}, nil

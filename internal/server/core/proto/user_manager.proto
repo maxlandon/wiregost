@@ -50,6 +50,7 @@ message RegisterRequest {
 
 message RegisterResponse {
     bool registered = 1;
+    string error = 2;
 }
 
 //-------------------------------

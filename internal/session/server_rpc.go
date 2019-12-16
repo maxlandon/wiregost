@@ -44,6 +44,8 @@ type Server struct {
 type ServerManager struct {
 	SavedServers  []Server
 	CurrentServer Server
+	creds         credentials.TransportCredentials
+	auth          Authentication
 }
 
 var serverFile = "~/.wiregost/client/server.conf"
@@ -56,8 +58,28 @@ type Authentication struct {
 //----------------------------------------------------------
 // LOCAL FUNCTIONS
 
-func NewServerManager() *ServerManager {
+func NewServerManager(user *User) *ServerManager {
 	sv := &ServerManager{}
+
+	// Load saved servers
+	sv.GetServerList()
+	sv.GetDefaultServer()
+
+	// Set up credentials
+	sv.creds, err = credentials.NewClientTLSFromFile(sv.CurrentServer.Certificate, sv.CurrentServer.FQDN)
+	if err != nil {
+		fmt.Println(tui.Red("Could not load TLS certificates."))
+		fmt.Println("here")
+	}
+
+	// Setup auth
+	sv.auth = Authentication{
+		Login:    user.Name,
+		Password: user.PasswordHashString,
+	}
+
+	// Connect to default server (CHANGE THIS WHEN CONNECT FUNCTION IS DONE)
+	sv.RegisterUserToServer(user)
 
 	return sv
 }
@@ -137,6 +159,40 @@ func (a *Authentication) RequireTransportSecurity() bool {
 //----------------------------------------------------------
 // RPC SERVICES
 func (sv *ServerManager) RegisterUserToServer(user *User) {
+	var conn *grpc.ClientConn
+
+	// Initiate connection with the server
+	conn, err = grpc.Dial(sv.CurrentServer.IPAddress+":"+strconv.Itoa(sv.CurrentServer.Port),
+		grpc.WithTransportCredentials(sv.creds))
+	if err != nil {
+		log.Fatalf("Did not connect: %s", err)
+	}
+	defer conn.Close()
+
+	client := core.NewUserManagerClient(conn)
+
+	request := &core.RegisterRequest{Name: user.Name, Hash: user.PasswordHashString}
+	response, err := client.RegisterUser(context.Background(), request)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if response.Registered == true && response.Error == "" {
+		log.Printf(tui.Green("Client is now registered. PasswordHash is saved to database."))
+		log.Printf("You can now connect to the DB, the next time you use the Ghost client.")
+	}
+	if response.Registered == true && response.Error != "" {
+		log.Printf(response.Error)
+		if response.Registered == false && response.Error != "" {
+			log.Printf(response.Error)
+		}
+		if response.Registered == false && response.Error == "" {
+			log.Println(tui.Red("Error: user is either not registered, or the server has mishandled the request/database"))
+		}
+	}
+}
+
+func (sv *ServerManager) ExampleFuncWithFullSecurity(user *User) {
 	var conn *grpc.ClientConn
 
 	// Create TLS Credentials
