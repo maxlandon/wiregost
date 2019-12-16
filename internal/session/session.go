@@ -43,14 +43,18 @@ type Session struct {
 func New() (*Session, error) {
 
 	s := &Session{
-		Prompt:        NewPrompt(),
-		Config:        NewConfig(),
-		User:          NewUser(),
-		ServerManager: NewServerManager(),
+		Prompt: NewPrompt(),
+		Config: NewConfig(),
+		User:   NewUser(),
 
 		CommandHandlers: make([]CommandHandler, 0),
 		UnkCmdCallback:  nil,
 	}
+	// Load User credentials
+	s.User.LoadCreds()
+
+	// Start Server Manager
+	s.ServerManager = NewServerManager(s.User)
 
 	// Register all command handlers
 	s.registerCoreHandlers()
@@ -70,17 +74,10 @@ func (s *Session) Start() (err error) {
 	}
 
 	// Loading all configuration elements
-	s.Config.LoadConfig()
+	// s.Config.LoadConfig()
 
 	// Load User Creds and authenticate
-	s.User.LoadCreds()
 	s.User.Authenticate()
-
-	// Load ServerManager elements and connect to default server.
-	s.ServerManager.GetServerList()
-	s.ServerManager.GetDefaultServer()
-	s.ServerManager.RegisterUserToServer(s.User)
-	// s.ServerManager.ConnectToServer(s.User, s.ServerManager.CurrentServer)
 
 	s.StartedAt = time.Now()
 	s.Active = true
