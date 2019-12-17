@@ -73,7 +73,7 @@ func (s *Session) Start() (err error) {
 		return err
 	}
 
-	// Loading all configuration elements
+	// Loading all configuration elements MIGHT BE IMPORTANT IN THE FUTURE, FOR OTHER SERVICES/FUNCTIONS !!!!!!!!
 	// s.Config.LoadConfig()
 
 	// Load User Creds and authenticate

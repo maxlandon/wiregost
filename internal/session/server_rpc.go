@@ -46,6 +46,7 @@ type ServerManager struct {
 	CurrentServer Server
 	creds         credentials.TransportCredentials
 	auth          Authentication
+	connected     bool
 }
 
 var serverFile = "~/.wiregost/client/server.conf"
@@ -59,7 +60,7 @@ type Authentication struct {
 // LOCAL FUNCTIONS
 
 func NewServerManager(user *User) *ServerManager {
-	sv := &ServerManager{}
+	sv := &ServerManager{connected: false}
 
 	// Load saved servers
 	sv.GetServerList()
@@ -69,7 +70,6 @@ func NewServerManager(user *User) *ServerManager {
 	sv.creds, err = credentials.NewClientTLSFromFile(sv.CurrentServer.Certificate, sv.CurrentServer.FQDN)
 	if err != nil {
 		fmt.Println(tui.Red("Could not load TLS certificates."))
-		fmt.Println("here")
 	}
 
 	// Setup auth
@@ -79,7 +79,7 @@ func NewServerManager(user *User) *ServerManager {
 	}
 
 	// Connect to default server (CHANGE THIS WHEN CONNECT FUNCTION IS DONE)
-	sv.RegisterUserToServer(user)
+	sv.ConnectToServer(user, sv.CurrentServer)
 
 	return sv
 }
@@ -158,78 +158,90 @@ func (a *Authentication) RequireTransportSecurity() bool {
 
 //----------------------------------------------------------
 // RPC SERVICES
-func (sv *ServerManager) RegisterUserToServer(user *User) {
-	var conn *grpc.ClientConn
 
+func (sv *ServerManager) DialRPC() (*grpc.ClientConn, error) {
 	// Initiate connection with the server
-	conn, err = grpc.Dial(sv.CurrentServer.IPAddress+":"+strconv.Itoa(sv.CurrentServer.Port),
-		grpc.WithTransportCredentials(sv.creds))
+	conn, err := grpc.Dial(sv.CurrentServer.IPAddress+":"+strconv.Itoa(sv.CurrentServer.Port),
+		grpc.WithTransportCredentials(sv.creds),
+		grpc.WithPerRPCCredentials(&sv.auth))
 	if err != nil {
 		log.Fatalf("Did not connect: %s", err)
 	}
-	defer conn.Close()
-
-	client := core.NewUserManagerClient(conn)
-
-	request := &core.RegisterRequest{Name: user.Name, Hash: user.PasswordHashString}
-	response, err := client.RegisterUser(context.Background(), request)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	if response.Registered == true && response.Error == "" {
-		log.Printf(tui.Green("Client is now registered. PasswordHash is saved to database."))
-		log.Printf("You can now connect to the DB, the next time you use the Ghost client.")
-	}
-	if response.Registered == true && response.Error != "" {
-		log.Printf(response.Error)
-		if response.Registered == false && response.Error != "" {
-			log.Printf(response.Error)
-		}
-		if response.Registered == false && response.Error == "" {
-			log.Println(tui.Red("Error: user is either not registered, or the server has mishandled the request/database"))
-		}
-	}
-}
-
-func (sv *ServerManager) ExampleFuncWithFullSecurity(user *User) {
-	var conn *grpc.ClientConn
-
-	// Create TLS Credentials
-	creds, err := credentials.NewClientTLSFromFile(sv.CurrentServer.Certificate, sv.CurrentServer.FQDN)
-	if err != nil {
-		fmt.Println(tui.Red("Could not load TLS certificates."))
-	}
-
-	// Set login/pass
-	auth := Authentication{
-		Login:    user.Name,
-		Password: user.PasswordHashString,
-	}
-
-	// Initiate connection with the server
-	conn, err = grpc.Dial(sv.CurrentServer.IPAddress+":"+strconv.Itoa(sv.CurrentServer.Port),
-		grpc.WithTransportCredentials(creds),
-		grpc.WithPerRPCCredentials(&auth))
-	if err != nil {
-		log.Fatalf("Did not connect: %s", err)
-	}
-	defer conn.Close()
-
-	client := core.NewUserManagerClient(conn)
-
-	request := &core.RegisterRequest{Name: user.Name, Hash: user.PasswordHashString}
-	response, err := client.RegisterUser(context.Background(), request)
-	if err != nil {
-		log.Println(tui.Red("Error: user is either not registered, or the server has mishandled the request/database"))
-		return
-	}
-	if response.Registered == true {
-		log.Printf(tui.Green("Client is now registered !"))
-	}
+	return conn, err
 }
 
 func (sv *ServerManager) ConnectToServer(user *User, server Server) error {
 
+	// If already connected to a server, disconnect
+	if sv.connected == true {
+		sv.DisconnectFromServer()
+	}
+	// Change CurrentServer
+	sv.CurrentServer = server
+
+	conn, err := sv.DialRPC()
+	defer conn.Close()
+
+	client := core.NewUserManagerClient(conn)
+
+	request := &core.ConnectRequest{}
+	response, err := client.ConnectUser(context.Background(), request)
+	if err != nil {
+		log.Println(tui.Red("Error: could not get response from server."))
+		log.Println(tui.Red(err.Error()))
+		return nil
+	}
+
+	if response.Clearance == "clear" && response.Admin == true {
+		sv.connected = true
+		log.Printf("Connected as " + tui.Bold(tui.Yellow(user.Name)+" (Administrator rights)"))
+		log.Printf("Server at " + sv.CurrentServer.IPAddress + ":" + strconv.Itoa(sv.CurrentServer.Port) + " (FQDN: " +
+			sv.CurrentServer.FQDN + ", default: " + strconv.FormatBool(sv.CurrentServer.IsDefault) + ")")
+	}
+	if response.Clearance == "clear" && response.Admin == false {
+		sv.connected = true
+		log.Printf("Connected as ", tui.Bold(tui.Yellow(user.Name)))
+		log.Printf("Server at "+sv.CurrentServer.IPAddress, ":"+strconv.Itoa(sv.CurrentServer.Port)+
+			"(FQDN: "+sv.CurrentServer.FQDN+", default: "+strconv.FormatBool(sv.CurrentServer.IsDefault)+")")
+	}
+	if response.Clearance == "reg" && response.Admin == false {
+		sv.connected = true
+		log.Printf(tui.Green("First connection of user ")+tui.Bold(tui.Yellow(user.Name)),
+			" : User and password are now registered in the server database.")
+		fmt.Println()
+		log.Printf("Connected as ", tui.Bold(tui.Yellow(user.Name)))
+		log.Printf("Server at "+sv.CurrentServer.IPAddress, ":"+strconv.Itoa(sv.CurrentServer.Port)+
+			"(FQDN: "+sv.CurrentServer.FQDN+", default: "+strconv.FormatBool(sv.CurrentServer.IsDefault)+")")
+	}
+	if response.Clearance == "reg" && response.Admin == true {
+		sv.connected = true
+		log.Printf(tui.Green("First connection of user ")+tui.Bold(tui.Yellow(user.Name)),
+			" : User and password are now registered in the server database.")
+		fmt.Println()
+		log.Printf("Connected as " + tui.Bold(tui.Yellow(user.Name)+" (Administrator rights)"))
+		log.Printf("Server at "+sv.CurrentServer.IPAddress, ":"+strconv.Itoa(sv.CurrentServer.Port)+
+			"(FQDN: "+sv.CurrentServer.FQDN+", default: "+strconv.FormatBool(sv.CurrentServer.IsDefault)+")")
+	}
+	if response.Clearance == "none" {
+		log.Printf(tui.Red("No user ") + tui.Bold(tui.Yellow(user.Name)) + " in database. Connection aborted")
+	}
+
+	return nil
+}
+
+func (sv *ServerManager) DisconnectFromServer() error {
+
+	conn, err := sv.DialRPC()
+	defer conn.Close()
+
+	client := core.NewUserManagerClient(conn)
+
+	request := &core.DisconnectRequest{}
+	_, err = client.DisconnectUser(context.Background(), request)
+	if err != nil {
+		log.Println(tui.Red("Error: could not get response from server."))
+		log.Println(tui.Red(err.Error()))
+		return nil
+	}
 	return nil
 }

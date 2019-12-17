@@ -9,9 +9,6 @@ service UserManager {
     rpc ConnectUser(ConnectRequest) returns (ConnectResponse) {}
     rpc DisconnectUser(DisconnectRequest) returns (DisconnectResponse) {}
     
-    // First-time user registration
-    rpc RegisterUser(RegisterRequest) returns (RegisterResponse) {}
-
     // User management commands
     rpc ListUsers(ListUsersRequest) returns (stream ListUsersResponse) {}
 
@@ -28,7 +25,8 @@ message ConnectRequest {
 }
 
 message ConnectResponse {
-    bool connected = 1;
+    string clearance = 1;
+    bool admin = 2;
 }
 
 //-------------------------------
@@ -41,17 +39,6 @@ message DisconnectResponse {
     bool disconnected = 1;
 }
 
-//-------------------------------
-// RegisterUser
-message RegisterRequest {
-    string name = 1;
-    string hash = 2;
-}
-
-message RegisterResponse {
-    bool registered = 1;
-    string error = 2;
-}
 
 //-------------------------------
 // ListUsers
@@ -67,19 +54,22 @@ message User {
 }
 
 message ListUsersResponse {
-    repeated User users = 1;
+    string clearance = 1;
+    repeated User users = 2;
 }
 
 //-------------------------------
 // CreateUser
 message CreateUserRequest {
-    string name = 1;
-    bool admin = 2;
+    string clearance = 1;
+    string name = 2;
+    bool admin = 3;
     // ADD CREDENTIALS NEEDED HERE
 }
 
 message CreateUserResponse {
-    bool created = 1;
+    string clearance = 1;
+    bool created = 3;
 }
 
 
@@ -90,7 +80,8 @@ message DeleteUserRequest {
 }
 
 message DeleteUserResponse {
-    bool deleted = 1;
+    string clearance = 1;
+    bool deleted = 2;
 }
 
 //-------------------------------
@@ -100,6 +91,7 @@ message AdminRightsRequest {
 }
 
 message AdminRightsResponse {
-    bool given = 1;
+    string clearance = 1;
+    bool given = 2;
 }
 

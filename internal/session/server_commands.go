@@ -6,16 +6,17 @@ import "github.com/chzyer/readline"
 
 // Register User
 func (s *Session) registerUserHandler(args []string, sess *Session) error {
-	s.ServerManager.RegisterUserToServer(s.User)
+	s.ServerManager.ConnectToServer(s.User, s.ServerManager.CurrentServer)
+	// s.ServerManager.RegisterUserToServer(s.User)
 	return nil
 }
 
 // Register all handlers defined above
 func (s *Session) registerServerHandlers() {
 	//Register User
-	s.addHandler(NewCommandHandler("server.register",
-		"server.register",
-		"Register user to server, during first-time connection",
+	s.addHandler(NewCommandHandler("server.connect",
+		"server.connect",
+		"Connect to the specified server",
 		s.registerUserHandler),
-		readline.PcItem("server.register"))
+		readline.PcItem("server.connect"))
 }

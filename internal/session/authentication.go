@@ -55,7 +55,6 @@ func (user *User) LoadCreds() (err error) {
 // Local Authentication
 func (user *User) Authenticate() error {
 	fmt.Println()
-	fmt.Printf(tui.Bold(tui.Yellow("Connection: "))+"%s\n", user.Name)
 	attempts := 0
 
 	fmt.Printf(tui.Bold("Password: \n"))
@@ -66,7 +65,6 @@ func (user *User) Authenticate() error {
 		// Success, authenticate
 		if bytes.Equal(hash[:], user.PasswordHash[:]) {
 			fmt.Println(tui.Green("Authentication success"))
-			fmt.Println()
 			return nil
 		}
 		// Failure, 3 chances and then exit

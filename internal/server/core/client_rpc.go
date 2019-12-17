@@ -134,6 +134,7 @@ func (serv *ClientRPC) AuthenticateClient(ctx context.Context, s *ClientRPC) (cl
 				return clearance, admin, nil
 			}
 			if clientLogin == u.Name && u.PasswordHashString == "" {
+				fmt.Println("PasswordHash is empty")
 				clearance = "reg"
 				return clearance, admin, nil
 			}
