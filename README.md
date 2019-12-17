@@ -115,11 +115,8 @@ process. Other than this, everything should be straightforward.
 * [**Environment**](https://github.com/maxlandon/wiregost/wiki/Personal-Environment)
 
 
-### Installation & Setup
-* [**Client**](https://github.com/maxlandon/wiregost/wiki/Client-Installation-&-Setup)
-* [**Server**](https://github.com/maxlandon/wiregost/wiki/Server-Installation-&-Setup)
-
 ### Usage
+* [**Installation**](https://github.com/maxlandon/wiregost/wiki/Installation)
 * [**Base Usage**](https://github.com/maxlandon/wiregost/wiki/Base-Usage)
 * [**Commands**](https://github.com/maxlandon/wiregost/wiki/Commands)
     * [Core](https://github.com/maxlandon/wiregost/wiki/Core-Commands)
