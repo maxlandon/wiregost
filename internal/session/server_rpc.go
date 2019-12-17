@@ -200,12 +200,12 @@ func (sv *ServerManager) ConnectToServer(user *User, server Server) error {
 	}
 	if response.Clearance == "reg" && response.Admin == false {
 		sv.connected = true
-		log.Printf(tui.Green("First connection of user ")+tui.Bold(tui.Yellow(user.Name)),
+		log.Printf(tui.Green("First connection of user ") + tui.Bold(tui.Yellow(user.Name)) +
 			" : User and password are now registered in the server database.")
 		fmt.Println()
 		log.Printf("Connected as %s", tui.Bold(tui.Yellow(user.Name)))
-		log.Printf("Server at "+sv.CurrentServer.IPAddress, ":"+strconv.Itoa(sv.CurrentServer.Port)+
-			"(FQDN: "+sv.CurrentServer.FQDN+", default: "+strconv.FormatBool(sv.CurrentServer.IsDefault)+")")
+		log.Printf("Server at " + sv.CurrentServer.IPAddress + ":" + strconv.Itoa(sv.CurrentServer.Port) +
+			"(FQDN: " + sv.CurrentServer.FQDN + ", default: " + strconv.FormatBool(sv.CurrentServer.IsDefault) + ")")
 	}
 	if response.Clearance == "reg" && response.Admin == true {
 		sv.connected = true
