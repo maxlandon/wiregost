@@ -46,30 +46,27 @@ func NewClientRPC() *ClientRPC {
 }
 
 func (serv *ClientRPC) Start() error {
-
 	// Prepare listener
 	lis, err := net.Listen(serv.Protocol, fmt.Sprintf("%s:%d", "localhost", serv.Port))
 	if err != nil {
 		log.Fatalf("%s Failed to listen on port %d: %v", tui.RED, serv.Port, err)
 	}
-
 	// Start the server
 	if err := serv.server.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %s", err)
 	}
-
 	return nil
 }
 
 func (serv *ClientRPC) LoadConfig() error {
-
 	// Load configuration
 	fmt.Println(tui.Dim("Personal directory found."))
 	path, _ := fs.Expand(serverFile)
 	conf := ClientRPC{}
 	// If config file doesn't exist, exit the client
 	if !fs.Exists(path) {
-		fmt.Println(tui.Red("Configuration file not found: check for issues, or run the server configuration script again"))
+		fmt.Println(tui.Red("Configuration file not found: check for issues, " +
+			"or run the server configuration script again"))
 		os.Exit(1)
 		// If config file is found, parse it.
 	} else {
@@ -104,7 +101,6 @@ func (serv *ClientRPC) LoadConfig() error {
 }
 
 func (serv *ClientRPC) WriteConfig() error {
-
 	var jsonData []byte
 	jsonData, err := json.MarshalIndent(serv, "", "    ")
 	if err != nil {
@@ -114,7 +110,6 @@ func (serv *ClientRPC) WriteConfig() error {
 		_ = ioutil.WriteFile(serverFile, jsonData, 0755)
 		fmt.Println(tui.Green("Server configuration file written."))
 	}
-
 	return nil
 }
 
@@ -142,18 +137,16 @@ func (serv *ClientRPC) AuthenticateClient(ctx context.Context, s *ClientRPC) (cl
 	}
 	clearance = "none"
 	admin = false
-
 	return clearance, admin, nil
 }
 
 func (serv *ClientRPC) UnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler) (interface{}, error) {
-
+	// Check credentials
 	clearance, admin, err := serv.AuthenticateClient(ctx, serv)
 	if err != nil {
 		return nil, err
 	}
-
 	// Save metadata to context for further processing
 	ctx = context.WithValue(ctx, clearanceCtx, clearance)
 	ctx = context.WithValue(ctx, adminCtx, admin)

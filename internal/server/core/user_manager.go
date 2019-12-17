@@ -66,7 +66,8 @@ func (um *UserManager) ConnectUser(ctx context.Context, in *ConnectRequest) (*Co
 			}
 			if connected == false {
 				var user db.User
-				err := um.database.DB.Model(&user).Where("name = ?", clientLogin).Where("password_hash_string = ?", clientPassword).Select()
+				err := um.database.DB.Model(&user).Where("name = ?", clientLogin).
+					Where("password_hash_string = ?", clientPassword).Select()
 				um.ConnectedUsers = append(um.ConnectedUsers, user)
 				if err != nil {
 					fmt.Println(err)

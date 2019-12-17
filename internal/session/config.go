@@ -50,18 +50,17 @@ func NewConfig() *Config {
 		ExportDir:      "~/.wiregost/client/export/",
 		ConsolePrompt:  "",
 	}
-
 	return config
 }
 
 // Parses and load all user-specific configuration files
 func (conf *Config) LoadConfig() (err error) {
-
 	// Check for personal directory. If no directory is found, exit the client.
 	userDir, _ := fs.Expand(conf.UserDir)
 	if fs.Exists(userDir) == false {
 		fmt.Println(tui.Red(" ERROR: Personnal client directory does not exist."))
-		fmt.Println(tui.Red("        Please run the ghost_setup.go script (in the scripts directory), for initializing and configuring the client first"))
+		fmt.Println(tui.Red("        Please run the ghost_setup.go script (in the scripts directory)," +
+			" for initializing and configuring the client first"))
 		os.Exit(1)
 	} else {
 		// Else load configuration
@@ -69,16 +68,15 @@ func (conf *Config) LoadConfig() (err error) {
 		path, _ := fs.Expand(conf.UserConfigFile)
 		// If config file doesn't exist, exit the client
 		if !fs.Exists(path) {
-			fmt.Println(tui.Red("Configuration file not found: check for issues, or run the configuration script again"))
+			fmt.Println(tui.Red("Configuration file not found: check for issues," +
+				" or run the configuration script again"))
 			os.Exit(1)
 			// If config file is found, parse it.
 		} else {
 			configBlob, _ := ioutil.ReadFile(path)
 			json.Unmarshal(configBlob, &conf)
-			fmt.Println(tui.Dim("Configuration file loaded."))
 		}
 	}
-
 	return err
 }
 
@@ -101,6 +99,5 @@ func (conf *Config) ExportConfig() Config {
 
 		ConsolePrompt: conf.ConsolePrompt,
 	}
-
 	return config
 }

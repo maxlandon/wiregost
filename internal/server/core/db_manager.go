@@ -28,7 +28,8 @@ func NewDBManager() *DBManager {
 	dbFile := "~/.wiregost/server/database.conf"
 	path, _ := fs.Expand(dbFile)
 	if !fs.Exists(path) {
-		fmt.Println(tui.Red("Database file not found: check for issues, or run the configuration script again"))
+		fmt.Println(tui.Red("Database file not found: check for issues," +
+			" or run the configuration script again"))
 		os.Exit(1)
 	} else {
 		// Load Creds

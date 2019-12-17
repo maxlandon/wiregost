@@ -103,6 +103,5 @@ func (p Prompt) Render(s *Session) (first string, multi string) {
 	if !strings.HasPrefix(prompt, tui.RESET) {
 		prompt += tui.RESET
 	}
-
 	return prompt, multiline
 }

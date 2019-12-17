@@ -134,5 +134,6 @@ func (s *Session) Run(line string) error {
 	}
 
 	// If command is not valid
-	return fmt.Errorf("unknown or invalid syntax \"%s%s%s\", type %shelp%s for the help menu.", tui.BOLD, line, tui.RESET, tui.BOLD, tui.RESET)
+	return fmt.Errorf("unknown or invalid syntax \"%s%s%s\", type %shelp%s for the help menu.",
+		tui.BOLD, line, tui.RESET, tui.BOLD, tui.RESET)
 }

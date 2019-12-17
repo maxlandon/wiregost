@@ -21,6 +21,8 @@ import (
 
 // Exit Session
 func (s *Session) exitHandler(args []string, sess *Session) error {
+	// Disconnect user from server
+	s.ServerManager.DisconnectFromServer()
 	// Should also empty the Module Stack, and potentially save it if possible.
 	s.Active = false
 	s.Input.Close()
@@ -51,7 +53,6 @@ func (s *Session) resourceLoadHandler(args []string, sess *Session) error {
 	for scanner.Scan() {
 		s.Run(scanner.Text())
 	}
-
 	if err := scanner.Err(); err != nil {
 		fmt.Errorf("%sError parsing resource command: %s%s\n", tui.RED, scanner.Text, tui.RESET)
 		log.Fatal(err)
@@ -75,7 +76,8 @@ func (s *Session) resourceMakeHandler(args []string, sess *Session) error {
 	// Check if resource already exists
 	file, _ := fs.Expand(s.Config.ResourceDir + name)
 	if fs.Exists(file) {
-		fmt.Printf("%sError: resource file already exists. Cannot overwrite it.%s\n", tui.RED, tui.RESET)
+		fmt.Printf("%sError: resource file already exists. Cannot overwrite it.%s\n",
+			tui.RED, tui.RESET)
 		return nil
 	}
 
@@ -105,7 +107,8 @@ func (s *Session) resourceMakeHandler(args []string, sess *Session) error {
 		}
 		hlength -= 1
 	}
-	fmt.Printf("%sResource file created and filed with last %s commands.%s\n", tui.GREEN, strconv.Itoa(nb), tui.RESET)
+	fmt.Printf("%sResource file created and filed with last %s commands.%s\n",
+		tui.GREEN, strconv.Itoa(nb), tui.RESET)
 
 	return nil
 }

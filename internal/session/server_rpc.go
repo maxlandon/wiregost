@@ -71,13 +71,11 @@ func NewServerManager(user *User) *ServerManager {
 	if err != nil {
 		fmt.Println(tui.Red("Could not load TLS certificates."))
 	}
-
 	// Setup auth
 	sv.auth = Authentication{
 		Login:    user.Name,
 		Password: user.PasswordHashString,
 	}
-
 	// Connect to default server (CHANGE THIS WHEN CONNECT FUNCTION IS DONE)
 	sv.ConnectToServer(user, sv.CurrentServer)
 
@@ -88,12 +86,12 @@ func (sv *ServerManager) GetServerList() error {
 	serverList := []Server{}
 	path, _ := fs.Expand(serverFile)
 	if !fs.Exists(path) {
-		fmt.Println(tui.Red("Configuration file not found: check for issues, or run the configuration script again"))
+		fmt.Println(tui.Red("Configuration file not found: check for issues," +
+			" or run the configuration script again"))
 		os.Exit(1)
 	} else {
 		configBlob, _ := ioutil.ReadFile(path)
 		json.Unmarshal(configBlob, &serverList)
-		fmt.Println(tui.Dim("Configuration file loaded."))
 	}
 
 	// Format certificate path for each server, add server to ServerManager
@@ -106,7 +104,6 @@ func (sv *ServerManager) GetServerList() error {
 				FQDN:        i.FQDN,
 				IsDefault:   i.IsDefault})
 	}
-
 	return nil
 }
 
@@ -137,7 +134,6 @@ func (sv *ServerManager) GetDefaultServer() error {
 			break
 		}
 	}
-
 	return nil
 }
 
@@ -171,7 +167,6 @@ func (sv *ServerManager) DialRPC() (*grpc.ClientConn, error) {
 }
 
 func (sv *ServerManager) ConnectToServer(user *User, server Server) error {
-
 	// If already connected to a server, disconnect
 	if sv.connected == true {
 		sv.DisconnectFromServer()
@@ -181,7 +176,6 @@ func (sv *ServerManager) ConnectToServer(user *User, server Server) error {
 
 	conn, err := sv.DialRPC()
 	defer conn.Close()
-
 	client := core.NewUserManagerClient(conn)
 
 	request := &core.ConnectRequest{}
@@ -200,7 +194,7 @@ func (sv *ServerManager) ConnectToServer(user *User, server Server) error {
 	}
 	if response.Clearance == "clear" && response.Admin == false {
 		sv.connected = true
-		log.Printf("Connected as ", tui.Bold(tui.Yellow(user.Name)))
+		log.Printf("Connected as %s", tui.Bold(tui.Yellow(user.Name)))
 		log.Printf("Server at "+sv.CurrentServer.IPAddress, ":"+strconv.Itoa(sv.CurrentServer.Port)+
 			"(FQDN: "+sv.CurrentServer.FQDN+", default: "+strconv.FormatBool(sv.CurrentServer.IsDefault)+")")
 	}
@@ -209,7 +203,7 @@ func (sv *ServerManager) ConnectToServer(user *User, server Server) error {
 		log.Printf(tui.Green("First connection of user ")+tui.Bold(tui.Yellow(user.Name)),
 			" : User and password are now registered in the server database.")
 		fmt.Println()
-		log.Printf("Connected as ", tui.Bold(tui.Yellow(user.Name)))
+		log.Printf("Connected as %s", tui.Bold(tui.Yellow(user.Name)))
 		log.Printf("Server at "+sv.CurrentServer.IPAddress, ":"+strconv.Itoa(sv.CurrentServer.Port)+
 			"(FQDN: "+sv.CurrentServer.FQDN+", default: "+strconv.FormatBool(sv.CurrentServer.IsDefault)+")")
 	}
@@ -233,7 +227,6 @@ func (sv *ServerManager) DisconnectFromServer() error {
 
 	conn, err := sv.DialRPC()
 	defer conn.Close()
-
 	client := core.NewUserManagerClient(conn)
 
 	request := &core.DisconnectRequest{}

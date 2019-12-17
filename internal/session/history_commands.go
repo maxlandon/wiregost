@@ -16,7 +16,6 @@ import (
 
 // Show last x nb of commands in history
 func (s *Session) historyShowHandler(nb int) error {
-
 	// Determine history length for subsequent selection
 	hist, _ := os.Open(s.Config.HistoryFile)
 	hlength := 0
@@ -44,7 +43,6 @@ func (s *Session) historyShowHandler(nb int) error {
 		fmt.Printf("%sError parsing history file. %s\n", tui.RED, tui.RESET)
 		log.Fatal(err)
 	}
-
 	return nil
 }
 
@@ -57,9 +55,7 @@ func (s *Session) historyHandler(args []string, sess *Session) error {
 		filter = str.Trim(args[1])
 		nb, _ = strconv.Atoi(filter)
 	}
-
 	s.historyShowHandler(nb)
-
 	return nil
 }
 

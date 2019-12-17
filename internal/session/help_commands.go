@@ -26,17 +26,14 @@ func (s *Session) generalHelp() {
 		}
 	}
 	pad := "%" + strconv.Itoa(maxLen) + "s"
-
 	for _, c := range commandCategories {
 		fmt.Printf("  "+tui.Yellow(pad)+" : %s\n", c.Name, c.Description)
 	}
-
 	fmt.Println()
 }
 
 func (s *Session) coreHelp() {
 	fmt.Println(tui.Bold(tui.Blue("\n  Core Commands\n")))
-
 	var params string
 	maxLen := 0
 	for _, c := range coreCommands {
@@ -47,19 +44,16 @@ func (s *Session) coreHelp() {
 		}
 	}
 	pad := "%" + strconv.Itoa(maxLen) + "s"
-
 	for _, c := range coreCommands {
 		params = strings.Join(c.Params, " ")
 		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
-
 	fmt.Println()
 }
 
 func (s *Session) serverHelp() {
-	fmt.Println(tui.Bold(tui.Blue("\n  Server Commands\n")))
-
 	// Commands
+	fmt.Println(tui.Bold(tui.Blue("\n  Server Commands\n")))
 	var params string
 	maxLen := 0
 	for _, c := range serverCommands {
@@ -75,7 +69,6 @@ func (s *Session) serverHelp() {
 		params = strings.Join(c.Params, " ")
 		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
-
 	fmt.Println(tui.Bold(tui.Blue("\n  Parameters \n")))
 
 	// Parameters
@@ -92,14 +85,12 @@ func (s *Session) serverHelp() {
 		dflt := tui.Dim("(default: ") + tui.Dim(c.Default) + tui.Dim(")")
 		fmt.Printf("  "+tui.Yellow(pad)+" : %s %s\n", c.Name, c.Description, dflt)
 	}
-
 	fmt.Println()
 }
 
 func (s *Session) logHelp() {
-	fmt.Println(tui.Bold(tui.Blue("\n  Log Commands\n")))
-
 	// Commands
+	fmt.Println(tui.Bold(tui.Blue("\n  Log Commands\n")))
 	var params string
 	maxLen := 0
 	for _, c := range logCommands {
@@ -116,9 +107,8 @@ func (s *Session) logHelp() {
 		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
 
-	fmt.Println(tui.Bold(tui.Blue("\n  Parameters \n")))
-
 	// Parameters
+	fmt.Println(tui.Bold(tui.Blue("\n  Parameters \n")))
 	maxLen = 0
 	for _, c := range logParams {
 		len := len(c.Name)
@@ -132,14 +122,12 @@ func (s *Session) logHelp() {
 		dflt := tui.Dim("(default: ") + tui.Dim(c.Default) + tui.Dim(")")
 		fmt.Printf("  "+tui.Yellow(pad)+" : %s %s\n", c.Name, c.Description, dflt)
 	}
-
 	fmt.Println()
 }
 
 func (s *Session) chatHelp() {
-	fmt.Println(tui.Bold(tui.Blue("\n  Chat Commands\n")))
-
 	// Commands
+	fmt.Println(tui.Bold(tui.Blue("\n  Chat Commands\n")))
 	var params string
 	maxLen := 0
 	for _, c := range chatCommands {
@@ -155,14 +143,12 @@ func (s *Session) chatHelp() {
 		params = strings.Join(c.Params, " ")
 		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
-
 	fmt.Println()
 }
 
 func (s *Session) workspaceHelp() {
-	fmt.Println(tui.Bold(tui.Blue("\n  Workspace Commands\n")))
-
 	// Commands
+	fmt.Println(tui.Bold(tui.Blue("\n  Workspace Commands\n")))
 	var params string
 	maxLen := 0
 	for _, c := range workspaceCommands {
@@ -179,9 +165,8 @@ func (s *Session) workspaceHelp() {
 		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
 
-	fmt.Println(tui.Bold(tui.Blue("\n  Parameters \n")))
-
 	// Parameters
+	fmt.Println(tui.Bold(tui.Blue("\n  Parameters \n")))
 	maxLen = 0
 	for _, c := range workspaceParams {
 		len := len(c.Name)
@@ -195,14 +180,12 @@ func (s *Session) workspaceHelp() {
 		dflt := tui.Dim("(default: ") + tui.Dim(c.Default) + tui.Dim(")")
 		fmt.Printf("  "+tui.Yellow(pad)+" : %s %s\n", c.Name, c.Description, dflt)
 	}
-
 	fmt.Println()
 }
 
 func (s *Session) stackHelp() {
-	fmt.Println(tui.Bold(tui.Blue("\n  Module Stack Commands\n")))
-
 	// Commands
+	fmt.Println(tui.Bold(tui.Blue("\n  Module Stack Commands\n")))
 	var params string
 	maxLen := 0
 	for _, c := range stackCommands {
@@ -218,7 +201,6 @@ func (s *Session) stackHelp() {
 		params = strings.Join(c.Params, " ")
 		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
-
 	fmt.Println()
 }
 

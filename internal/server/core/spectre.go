@@ -1,7 +1,6 @@
 package core
 
 // The core package is the backbone of the WireGost server, Spectre.
-
 // It will interface with various components such as authentication services,
 // listeners, databases, etc.
 

@@ -27,12 +27,10 @@ type User struct {
 
 func NewUser() *User {
 	user := &User{CredsFile: "~/.wiregost/client/.auth"}
-
 	return user
 }
 
 func (user *User) LoadCreds() (err error) {
-
 	// Check for personal directory, exit if not present.
 	credsFile, _ := fs.Expand(user.CredsFile)
 	if fs.Exists(credsFile) == false {
@@ -42,29 +40,23 @@ func (user *User) LoadCreds() (err error) {
 		os.Exit(1)
 	} else {
 		// Load authentication parameters
-		fmt.Println(tui.Dim("Authentication parameters found."))
 		credsFile, _ := fs.Expand(user.CredsFile)
 		configBlob, _ := ioutil.ReadFile(credsFile)
 		json.Unmarshal(configBlob, &user)
-		fmt.Println(tui.Dim("Authentication file loaded."))
 	}
-
 	return err
 }
 
 // Local Authentication
 func (user *User) Authenticate() error {
-	fmt.Println()
 	attempts := 0
-
 	fmt.Printf(tui.Bold("Password: \n"))
 	pass, _ := terminal.ReadPassword(int(syscall.Stdin))
 	hash := sha256.Sum256(pass)
-
 	for {
 		// Success, authenticate
 		if bytes.Equal(hash[:], user.PasswordHash[:]) {
-			fmt.Println(tui.Green("Authentication success"))
+			fmt.Println(tui.Green("Authenticated"))
 			return nil
 		}
 		// Failure, 3 chances and then exit
@@ -81,6 +73,5 @@ func (user *User) Authenticate() error {
 			}
 		}
 	}
-
 	return nil
 }

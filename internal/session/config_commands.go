@@ -35,14 +35,12 @@ func (s *Session) configHandler(args []string, sess *Session) error {
 	maxLen := 0
 	for i := 0; i < num; i++ {
 		field := directories[i]
-
 		len := len(field)
 		if len > maxLen {
 			maxLen = len
 		}
 	}
 	pad := "%" + strconv.Itoa(maxLen) + "s"
-
 	for i := 0; i < num; i++ {
 		value := values.Field(i)
 		fmt.Printf("  "+tui.Yellow(pad)+" : %s \n", directories[i], value)
@@ -63,7 +61,6 @@ func (s *Session) configHandler(args []string, sess *Session) error {
 	maxLen = 0
 	for i := 0; i < 3; i++ {
 		field := files[i]
-
 		len := len(field)
 		if len > maxLen {
 			maxLen = len
@@ -76,37 +73,6 @@ func (s *Session) configHandler(args []string, sess *Session) error {
 		fmt.Printf("  "+tui.Yellow(pad)+" : %s \n", files[i-7], value)
 	}
 	fmt.Println()
-
-	// User info
-	fmt.Println(tui.Blue("Server Access"))
-	server := []string{
-		"User Name",
-		"User password hash",
-		"User API token",
-		"User API certificate path",
-	}
-
-	values = reflect.ValueOf(config)
-	num = len(server) + 10
-
-	maxLen = 0
-	for i := 0; i < 4; i++ {
-		field := server[i]
-
-		len := len(field)
-		if len > maxLen {
-			maxLen = len
-		}
-	}
-	pad = "%" + strconv.Itoa(maxLen) + "s"
-
-	for i := 10; i < num; i++ {
-		value := values.Field(i)
-		fmt.Printf("  "+tui.Yellow(pad)+" : %s \n", server[i-10], value)
-	}
-
-	fmt.Println()
-
 	return err
 }
 
