@@ -47,7 +47,7 @@ func NewClientRPC() *ClientRPC {
 
 func (serv *ClientRPC) Start() error {
 	// Prepare listener
-	lis, err := net.Listen(serv.Protocol, fmt.Sprintf("%s:%d", "localhost", serv.Port))
+	lis, err := net.Listen(serv.Protocol, fmt.Sprintf("%s:%d", serv.IpAddress, serv.Port))
 	if err != nil {
 		log.Fatalf("%s Failed to listen on port %d: %v", tui.RED, serv.Port, err)
 	}
