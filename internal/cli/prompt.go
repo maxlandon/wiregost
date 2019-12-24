@@ -1,18 +1,26 @@
 package cli
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"strings"
 
+	"github.com/chzyer/readline"
 	"github.com/evilsocket/islazy/tui"
 )
 
 const (
 	PromptVariable  = "$"
 	DefaultPrompt   = "{bdg}{y}{localip} {fb}|{fw} {workspace} {reset} > {b}{pwd} {reset}"
+	ModulePrompt    = "{bdg}{y}{localip} {fb}|{fw} {workspace} {reset} > {b}{pwd} {reset}post({r}{bold}{mod}{reset})"
 	MultilinePrompt = "{g}> {reset}"
 )
+
+// Current shell state variables
+var CurrentWorkspace = "default"
+var CurrentModule string
+var serverIp string
 
 // Prompt real-time Environment variables
 var (
@@ -28,7 +36,7 @@ var (
 		},
 		// Current Workspace
 		"{workspace}": func() string {
-			return "Fixed_Workspace"
+			return CurrentWorkspace
 		},
 		// Local IP address
 		"{localip}": func() string {
@@ -41,6 +49,10 @@ var (
 				}
 			}
 			return ip
+		},
+		// CurrentModule
+		"{mod}": func() string {
+			return CurrentModule
 		},
 	}
 )
@@ -75,12 +87,15 @@ func NewPrompt() Prompt {
 }
 
 func (p Prompt) Render() (first string, multi string) {
-	// found, prompt := s.Env.Get(PromptVariable)		// Used if Custom prompt is saved in Env Config
-	// if !found {
-	//     prompt = DefaultPrompt
-	// }
-	//
-	prompt := DefaultPrompt
+
+	var prompt string
+
+	// Set prompt depending on context
+	if CurrentModule != "" {
+		prompt = ModulePrompt
+	} else {
+		prompt = DefaultPrompt
+	}
 	multiline := MultilinePrompt
 
 	for tok, effect := range effects {
@@ -98,4 +113,15 @@ func (p Prompt) Render() (first string, multi string) {
 		prompt += tui.RESET
 	}
 	return prompt, multiline
+}
+
+// Refresh prompt
+func Refresh(prompt Prompt, input *readline.Instance) {
+	p, _ := prompt.Render()
+	_, m := prompt.Render()
+	// p, _ := s.parseEnvTokens(s.Prompt.Render(s))
+	fmt.Println()
+	fmt.Println(p)
+	input.SetPrompt(m)
+	input.Refresh()
 }

@@ -351,7 +351,7 @@ var stackCommands = []CommandDescription{
 //-------------------------------------------------------------------------------------------------------------------------
 // Agent commands
 
-//-------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------
 // Database commands
 // var dbCommands = []CommandDescription{
 //     {Name: "db.source.connect", Params: {"source"}, Description: "Connect to data service. (Completion based on saved sources.)"},
