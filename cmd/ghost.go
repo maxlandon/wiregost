@@ -7,5 +7,7 @@ import (
 func main() {
 	// In Merlin,
 	// go cli.Shell()       Ending right away. Why ?
-	cli.Shell()
+	cli.NewSession()
+	// session := cli.NewSession()
+	// session.Shell()
 }
