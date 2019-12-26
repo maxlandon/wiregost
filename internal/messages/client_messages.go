@@ -6,6 +6,7 @@ type ClientRequest struct {
 	UserName           string
 	UserPassword       string
 	Context            string
+	CurrentModule      string
 	CurrentWorkspace   string
 	CurrentWorkspaceId int
 	Command            []string

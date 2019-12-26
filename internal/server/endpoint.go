@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/maxlandon/wiregost/internal/db"
 	"github.com/maxlandon/wiregost/internal/dispatch"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/user"
@@ -12,7 +11,6 @@ import (
 )
 
 type Endpoint struct { // PROPOSED CHANGES
-	Users    []db.User
 	clients  []*Client
 	connect  chan net.Conn
 	requests chan messages.ClientRequest
@@ -65,6 +63,9 @@ func (e *Endpoint) Join(conn net.Conn) {
 	client := CreateClient(conn)
 	e.clients = append(e.clients, client)
 	fmt.Println(e.clients)
+	for _, client := range e.clients {
+		fmt.Println(client.status)
+	}
 	go func() {
 		for {
 			e.requests <- <-client.requests
@@ -79,6 +80,12 @@ func (e *Endpoint) Remove(i int) {
 
 func (e *Endpoint) ForwardResponses() {
 	for {
+		// Remove disconnected clients
+		for i, client := range e.clients {
+			if client.status == 0 {
+				e.Remove(i)
+			}
+		}
 		select {
 		case res := <-dispatch.Responses:
 			fmt.Println("Handled response from dispatch")

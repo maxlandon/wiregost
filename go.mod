@@ -3,6 +3,7 @@ module github.com/maxlandon/wiregost
 go 1.13
 
 require (
+	github.com/InVisionApp/tabular v0.3.0
 	github.com/Ne0nd0g/merlin v0.8.0
 	github.com/chzyer/logex v1.1.10 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
@@ -10,6 +11,8 @@ require (
 	github.com/evilsocket/islazy v1.10.6
 	github.com/fatih/color v1.7.0
 	github.com/go-pg/pg v8.0.6+incompatible
+	github.com/go-playground/errors v3.3.0+incompatible // indirect
+	github.com/go-playground/log v6.3.0+incompatible
 	github.com/golang/protobuf v1.3.2
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.4
@@ -22,5 +25,6 @@ require (
 	google.golang.org/genproto v0.0.0-20191206224255-0243a4be9c8f // indirect
 	google.golang.org/grpc v1.25.1
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/square/go-jose.v2 v2.3.1
 	mellium.im/sasl v0.2.1 // indirect
 )

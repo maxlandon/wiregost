@@ -1,5 +1,7 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/InVisionApp/tabular v0.3.0 h1:4DGJoBZRTcgd/O+YgfG7/9bXAQy01tSJxrxWEuHVgnM=
+github.com/InVisionApp/tabular v0.3.0/go.mod h1:/G6t7qe0ZULisB+FjMsB0Qu0mtJ2CZldq92nXWjfHGI=
 github.com/Ne0nd0g/merlin v0.8.0 h1:ECfgMkFGR1THBd+x1iz0yXKmQxwTySHim/AFjaN/hKs=
 github.com/Ne0nd0g/merlin v0.8.0/go.mod h1:k3VddEJGWjJ3wJXXmmLsYpSZxDnIaek/tVbx3j/YdI8=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
@@ -36,6 +38,10 @@ github.com/go-logfmt/logfmt v0.3.0/go.mod h1:Qt1PoO58o5twSAckw1HlFXLmHsOX5/0LbT9
 github.com/go-logfmt/logfmt v0.4.0/go.mod h1:3RMwSq7FuexP4Kalkev3ejPJsZTpXXBr9+V4qmtdjCk=
 github.com/go-pg/pg v8.0.6+incompatible h1:Hi7yUJ2zwmHFq1Mar5XqhCe3NJ7j9r+BaiNmd+vqf+A=
 github.com/go-pg/pg v8.0.6+incompatible/go.mod h1:a2oXow+aFOrvwcKs3eIA0lNFmMilrxK2sOkB5NWe0vA=
+github.com/go-playground/errors v3.3.0+incompatible h1:w7qP6bdFXNmI86aV8VEfhXrGxoQWYHc/OX4Muw4FgW0=
+github.com/go-playground/errors v3.3.0+incompatible/go.mod h1:n+RcthKmtLxDczVHKkhqiUSOGtTjvRl+HB4Gga0vWSI=
+github.com/go-playground/log v6.3.0+incompatible h1:CVT3y82/iLS65WJ4xfF8+SI6dxRdMiXpX+9surI/R2U=
+github.com/go-playground/log v6.3.0+incompatible/go.mod h1:3M1OvdKL8KYwOjJa3XM42iqzpvde2LHla8Ys0oz7Ma0=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
 github.com/gojp/goreportcard v0.0.0-20190808093409-9f711d57eb7d/go.mod h1:/DA2Xpp+OaR3EHafQSnT9SKOfbG2NPQR/qp6Qr8AgIw=

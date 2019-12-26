@@ -8,8 +8,8 @@ import (
 	"net"
 
 	"github.com/maxlandon/wiregost/internal/db"
+	"github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
-	"github.com/maxlandon/wiregost/internal/workspace"
 )
 
 type Client struct {
@@ -20,13 +20,16 @@ type Client struct {
 	disconnect chan bool
 	status     int
 	// User-specific
-	User             *db.User
-	id               int
-	CurrentWorkspace *workspace.Workspace // Will influence things like logging policy. CHANGE TO POINTER TO WORKSPACE
-	Context          string               // Will influence how commands are dispatched.
+	User               *db.User
+	id                 int
+	CurrentWorkspaceId int    // Will influence things like logging policy. CHANGE TO POINTER TO WORKSPACE
+	Context            string // Will influence how commands are dispatched.
 	// Message-specific
 	requests  chan messages.ClientRequest
 	responses chan messages.Message // Commands will always be sent as a list of strings
+
+	// Client logger
+	Logger *logging.ClientLogger
 }
 
 func CreateClient(conn net.Conn) *Client {
@@ -45,7 +48,11 @@ func CreateClient(conn net.Conn) *Client {
 		id: rand.Int(),
 		// User: Add user
 		Context: "main", // Default context is always main when a shell is spawned
+		// Initilialize Logger
+		Logger: new(logging.ClientLogger),
 	}
+	// Setup logger
+	client.Logger.ClientId = client.id
 
 	go client.Write()
 	go client.Read()
@@ -84,7 +91,17 @@ func (client *Client) Read() {
 			client.conn.Close()
 			break
 		}
+		// Fill message with client information
 		message.ClientId = client.id
+
+		if message.CurrentWorkspaceId != 0 {
+			// Fill client with message information
+			client.CurrentWorkspaceId = message.CurrentWorkspaceId
+			// Fill client Logger with message information
+			client.Logger.CurrentWorkspaceId = message.CurrentWorkspaceId
+		}
+
+		// Forward message
 		client.requests <- message
 	}
 }
