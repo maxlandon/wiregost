@@ -2,12 +2,11 @@
 #                      <center>WireGost - Golang Exploitation Framework</center> 
 ______
 
-![Demo](./pics/wiregost-welcome.png)
+![Demo](./pics/welcomeToWireGost.png)
 
 The Go language is a very interesting -if not totally marvellous- programming language.
-The reasons supporting such a statement are countless, ranging from syntax all the way down to
-its underlying philosophy, and passing through the deeply interesting conversations and approaches
-to programming that one will find on the Web. 
+The reasons supporting such a statement are numerous: syntax, philosophy, concurrency, platform support, toolchain, not to mention 
+very interesting conversations and approaches to programming that one will find on the Web. 
 
 But overall, Go seems to be perfectly suited for security-focused applications. More on this in the **Rationale**.
 
@@ -36,10 +35,10 @@ These grounds seem to be even more solid when considering another widely-known t
   the problem entirely but 1) some strong typing won't be a luxury, 2) being much simpler, it will relieve the user from abstraction-caused 
   headakes.
 
-The name: I recently looked a [video](https://www.youtube.com/watch?v=T8aXx3K_lKY) where the notorious 
+**The name:** I recently looked a [video](https://www.youtube.com/watch?v=T8aXx3K_lKY) where the notorious 
 [Kevin Mitnick](https://en.wikipedia.org/wiki/Kevin_Mitnick) is interviewed by an attractive journalist about the usual security 
 and pricacy issues. Boring questions, boring answers (so boring that everyone comments on this instead of saying obsenities on 
-the model... very surprising), but he remembered me the name of his book: _"Ghost in the Wires"_. Just on point. Thank you Mr. Mitnick.
+the girl... very surprising), but he remembered me the name of his book: _"Ghost in the Wires"_. Just on point. Thank you Mr. Mitnick.
 
 ______
 
@@ -88,7 +87,7 @@ And since computer security is the cute child of a chessboard, a magic labyrinth
 #### All the others
 
 Computer security is as large a subject as computers alone. It goes the same for the number of tools related to it.
-I would gladly pay for another 30 lives so I can discover them all, but I don't have God's SWIFT account ID, and again, I'm
+I would gladly pay for another 30 lives so I can discover them all, but I don't have God's SWIFT account number, and again, I'm
 poor as hell. If, in the context of this project, some of them are worth so much that it would be criminal not to include 
 them in this list, I will add them.
 
