@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"strings"
+
 	"github.com/chzyer/readline"
 )
 
@@ -59,7 +61,8 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		// Module Stack
 		readline.PcItem("stack",
 			readline.PcItem("show"), // Add getStackList here
-			readline.PcItem("pop"),  // Same
+			readline.PcItem("pop",
+				readline.PcItemDynamic(s.ListStackModules())), // Same
 		),
 
 		// Workspace
@@ -82,7 +85,8 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 
 		// Module
 		readline.PcItem("use",
-			readline.PcItem("module"), // add getModuleList here
+			readline.PcItem("module",
+				readline.PcItemDynamic(s.ListModules())), // add getModuleList here
 		),
 		readline.PcItem("info"),
 		readline.PcItem("reload"),
@@ -95,7 +99,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 			readline.PcItem("agent",
 				readline.PcItem("all"), // add getAgentsList here
 			),
-			// Add getOptionList PRECISELY HERE.
+			readline.PcItemDynamic(s.GetModuleOptions()),
 		),
 	)
 
@@ -151,7 +155,8 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		// Module Stack
 		readline.PcItem("stack",
 			readline.PcItem("show"), // Add getStackList here
-			readline.PcItem("pop"),  // Same
+			readline.PcItem("pop",
+				readline.PcItemDynamic(s.ListStackModules())), // Same
 		),
 
 		// Workspace
@@ -202,6 +207,51 @@ func (s *Session) ListWorkspaces() func(string) (names []string) {
 		// Handle change of state here
 		for _, ws := range workspace.WorkspaceInfos {
 			list = append(list, ws[0])
+		}
+		return list
+	}
+}
+
+func (s *Session) ListModules() func(string) (names []string) {
+	return func(string) []string {
+		s.Send([]string{"module", "list"})
+		resp := <-moduleReqs
+		list := resp.ModuleList
+		// This is useless, but we should devise way to recursively update paths
+		// so that we do not display all modules at once during completion.
+		var testList []string
+		for _, mod := range list {
+			m := strings.TrimRight(mod, "/")
+			testList = append(testList, m)
+		}
+		return testList
+	}
+}
+
+func (s *Session) ListStackModules() func(string) (names []string) {
+	return func(string) []string {
+		s.Send([]string{"stack", "list"})
+		resp := <-moduleReqs
+		list := resp.ModuleList
+		// This is useless, but we should devise way to recursively update paths
+		// so that we do not display all modules at once during completion.
+		var testList []string
+		for _, mod := range list {
+			m := strings.TrimRight(mod, "/")
+			testList = append(testList, m)
+		}
+		return testList
+	}
+}
+
+func (s *Session) GetModuleOptions() func(string) (options []string) {
+	return func(string) []string {
+		s.Send([]string{"show", "options"})
+		mod := <-moduleReqs
+		opts := mod.Modules[0]
+		list := make([]string, 0)
+		for _, opt := range opts.Options {
+			list = append(list, opt.Name)
 		}
 		return list
 	}

@@ -2,11 +2,36 @@ package cli
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
+
+	"github.com/evilsocket/islazy/tui"
+	"github.com/olekukonko/tablewriter"
 )
 
 // MODULE HANDLERS
 //---------------------------------------------------------------------------
+
+// Function used for description paragraphs
+func wrap(text string, lineWidth int) (wrapped string) {
+	words := strings.Fields(text)
+	if len(words) == 0 {
+		return
+	}
+	wrapped = words[0]
+	spaceLeft := lineWidth - len(wrapped)
+	for _, word := range words[1:] {
+		if len(word)+1 > spaceLeft {
+			wrapped += "\n" + word
+			spaceLeft = lineWidth - len(word)
+		} else {
+			wrapped += " " + word
+			spaceLeft -= 1 + len(word)
+		}
+	}
+	return
+}
 
 func (s *Session) UseModule(cmd []string) {
 	s.Send(cmd)
@@ -16,13 +41,79 @@ func (s *Session) UseModule(cmd []string) {
 	// Add code to change current module in the prompt
 }
 
-func (s *Session) GetModuleOptions() {
-	testOptions := strings.Fields("show options")
-	s.Send(testOptions)
-
+func (s *Session) ShowOptions() {
+	s.Send(strings.Fields("show options"))
 	mod := <-moduleReqs
-	fmt.Println(mod.Options)
-	// Make a ShowOptions() func (s *Session)tion here
+	m := mod.Modules[0]
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetCenterSeparator(tui.Dim("|"))
+	table.SetRowSeparator(tui.Dim("-"))
+	table.SetColumnSeparator(tui.Dim("|"))
+	table.SetColMinWidth(3, 50)
+	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
+	table.SetAutoWrapText(true)
+	table.SetColWidth(80)
+	table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+	)
+	table.SetBorder(false)
+	// TODO add option for agent alias here
+	table.Append([]string{"Agent", m.Agent.String(), "true", "Agent on which to run module " + m.Name})
+	for _, v := range m.Options {
+		table.Append([]string{v.Name, v.Value, strconv.FormatBool(v.Required), v.Description})
+	}
+	fmt.Println()
+	table.Render()
+}
+
+func (s *Session) ShowInfo() {
+	s.Send(strings.Fields("show options"))
+	mod := <-moduleReqs
+	m := mod.Modules[0]
+
+	// Info
+	fmt.Printf("%sModule:%s\r\n\t%s\r\n", tui.YELLOW, tui.RESET, m.Name)
+	fmt.Printf("%sPlatform:%s\r\n\t%s\\%s\\%s\r\n", tui.YELLOW, tui.RESET, m.Platform, m.Arch, m.Lang)
+	fmt.Printf("%sModule Authors:%s\n", tui.YELLOW, tui.RESET)
+	for a := range m.Author {
+		fmt.Printf("\t%s\n", m.Author[a])
+	}
+	fmt.Printf("%sCredits:%s\n", tui.YELLOW, tui.RESET)
+	for c := range m.Credits {
+		fmt.Printf("\t%s\n", m.Credits[c])
+	}
+	fmt.Printf("%sDescription:%s\r\n", tui.YELLOW, tui.RESET)
+	fmt.Println(wrap(m.Description, 140))
+	fmt.Println()
+	// Table
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetCenterSeparator(tui.Dim("|"))
+	table.SetRowSeparator(tui.Dim("-"))
+	table.SetColumnSeparator(tui.Dim("|"))
+	table.SetColMinWidth(3, 50)
+	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
+	table.SetAutoWrapText(true)
+	table.SetColWidth(80)
+	table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+	)
+	table.SetBorder(false)
+	// TODO add option for agent alias here
+	table.Append([]string{"Agent", m.Agent.String(), "true", "Agent on which to run module " + m.Name})
+	for _, v := range m.Options {
+		table.Append([]string{v.Name, v.Value, strconv.FormatBool(v.Required), v.Description})
+	}
+	fmt.Println()
+	table.Render()
+	fmt.Println()
+	fmt.Printf("%sNotes:%s\n", tui.YELLOW, tui.RESET)
+	fmt.Println(wrap(m.Notes, 140))
+	fmt.Println()
 }
 
 func (s *Session) GetModuleList(cmd []string) {
@@ -34,9 +125,7 @@ func (s *Session) GetModuleList(cmd []string) {
 }
 
 func (s *Session) SetModuleOption(cmd []string) {
-	// Send(cmd)
-	mod := <-moduleReqs
-	fmt.Println(mod)
+	s.Send(cmd)
 	// Add some verification that option is correctly set here.
 }
 
@@ -203,18 +292,56 @@ func (s *Session) WorkspaceNew(cmd []string) {
 // STACK HANDLERS
 //---------------------------------------------------------------------------
 
-func (s *Session) StackShow(cmd []string) {
-	// Send(cmd)
-	stack := <-stackReqs
-	fmt.Println(stack)
-	// handle change of state here
+func (s *Session) StackShow() {
+	s.Send(strings.Fields("stack show"))
+	stack := <-moduleReqs
+
+	// Print stack
+	fmt.Println(tui.Dim("The stack stores a list of previously loaded modules and their state (options, agents) "))
+	fmt.Println(tui.Dim("Source local scripts are in /data/src/."))
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetCenterSeparator(tui.Dim("|"))
+	table.SetRowSeparator(tui.Dim("-"))
+	table.SetColumnSeparator(tui.Dim("|"))
+	table.SetColMinWidth(1, 50)
+	table.SetHeader([]string{"Name", "Source Local", "Language"})
+	table.SetAutoWrapText(true)
+	table.SetReflowDuringAutoWrap(true)
+	table.SetColWidth(80)
+	table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+	)
+	table.SetBorder(false)
+	// TODO add option for agent alias here
+	for i := len(stack.Modules) - 1; i >= 0; i-- {
+		if strings.ToLower(strings.TrimSuffix(strings.Join(stack.Modules[i].Path, "/"), ".json")) == strings.ToLower(s.moduleContext) {
+			table.Rich([]string{stack.Modules[i].Name, strings.TrimPrefix(strings.Join(stack.Modules[i].SourceLocal, "/"), "data/src"), stack.Modules[i].Lang},
+				[]tablewriter.Colors{tablewriter.Colors{tablewriter.Bold, tablewriter.FgGreenColor},
+					tablewriter.Colors{tablewriter.Bold, tablewriter.FgGreenColor},
+					tablewriter.Colors{tablewriter.Bold, tablewriter.FgGreenColor},
+				})
+		} else {
+			table.Append([]string{stack.Modules[i].Name, strings.TrimPrefix(strings.Join(stack.Modules[i].SourceLocal, "/"), "data/src"), stack.Modules[i].Lang})
+		}
+	}
+	fmt.Println()
+	table.Render()
 }
 
 func (s *Session) StackPop(cmd []string) {
-	// Send(cmd)
-	stack := <-stackReqs
-	fmt.Println(stack)
-	// handle change of state here
+	s.Send(cmd)
+	switch len(cmd) {
+	case 2:
+		s.moduleContext = ""
+		CurrentModule = ""
+	case 3:
+		if strings.ToLower(cmd[2]) == strings.ToLower(s.moduleContext) {
+			s.moduleContext = ""
+			CurrentModule = ""
+		}
+	}
 }
 
 // SERVER HANDLERS

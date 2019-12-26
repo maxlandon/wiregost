@@ -99,18 +99,7 @@ func (session *Session) Shell() {
 					shellHandler(cmd[1:])
 				case "exit":
 					exit()
-					// Test for remote
-				case "connect":
-					Connect()
-				case "testmodule":
-					test := strings.Fields("use   module   windows/x64/powershell/credentials/LaZagneForensic")
-					session.UseModule(test)
-				case "testoptions":
-					session.GetModuleOptions()
-				case "testworkspace":
-					test := strings.Fields("workspace list")
-					session.WorkspaceList(test)
-					// Workspace
+				// Workspace
 				case "workspace":
 					switch cmd[1] {
 					case "switch":
@@ -118,8 +107,37 @@ func (session *Session) Shell() {
 					case "new":
 						session.WorkspaceNew(cmd)
 					}
-				}
+				// Module
+				case "use":
+					session.UseModule(cmd)
+				case "show":
+					switch cmd[1] {
+					case "options":
+						session.ShowOptions()
+					case "info":
+						session.ShowInfo()
+					}
+				case "info":
+					session.ShowInfo()
+				case "set":
+					session.SetModuleOption(cmd)
+				// Stack
+				case "stack":
+					switch len(cmd) {
+					case 1:
+						session.StackShow()
+					case 2:
+						switch cmd[1] {
+						case "show":
+							session.StackShow()
+						case "pop":
+							session.StackPop(cmd)
+						}
+					case 3:
+						session.StackPop(cmd)
+					}
 
+				}
 			}
 		}
 
