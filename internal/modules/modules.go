@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -16,9 +14,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	uuid "github.com/satori/go.uuid"
-
 	// Merlin
-	"github.com/Ne0nd0g/merlin/pkg/core"
 )
 
 // Module is a structure containing the base information or template for modules
@@ -132,37 +128,6 @@ func (m *Module) GetOptionsList() func(string) []string {
 	}
 }
 
-// GetModuleList generates and returns a list of all modules in Merlin's "module" directory folder. Used with tab completion
-func GetModuleList() func(string) []string {
-	return func(line string) []string {
-		ModuleDir := path.Join(filepath.ToSlash(core.CurrentDir), "data", "modules")
-		o := make([]string, 0)
-
-		err := filepath.Walk(ModuleDir, func(path string, f os.FileInfo, err error) error {
-			if err != nil {
-				fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", ModuleDir, err)
-				return err
-			}
-			if strings.HasSuffix(f.Name(), ".json") {
-				d := strings.SplitAfter(filepath.ToSlash(path), ModuleDir)
-				if len(d) > 0 {
-					m := d[1]
-					m = strings.TrimLeft(m, "/")
-					m = strings.TrimSuffix(m, ".json")
-					if !strings.Contains(m, "templates") {
-						o = append(o, m)
-					}
-				}
-			}
-			return nil
-		})
-		if err != nil {
-			fmt.Printf("error walking the path %q: %v\n", ModuleDir, err)
-		}
-		return o
-	}
-}
-
 // SetOption is used to change the passed in module option's value. Used when a user is configuring a module
 func (m *Module) SetOption(option string, value string) (string, error) {
 	// Verify this option exists
@@ -186,24 +151,6 @@ func (m *Module) SetAgent(agentUUID string) (string, error) {
 	}
 	m.Agent = i
 	return fmt.Sprintf("agent set to %s", m.Agent.String()), nil
-}
-
-// ShowInfo function displays all of the information about a module to include items such as authors and options
-func (m *Module) ShowInfo() {
-	color.Yellow("Module:\r\n\t%s\r\n", m.Name)
-	color.Yellow("Platform:\r\n\t%s\\%s\\%s\r\n", m.Platform, m.Arch, m.Lang)
-	color.Yellow("Module Authors:")
-	for a := range m.Author {
-		color.Yellow("\t%s", m.Author[a])
-	}
-	color.Yellow("Credits:")
-	for c := range m.Credits {
-		color.Yellow("\t%s", m.Credits[c])
-	}
-	color.Yellow("Description:\r\n\t%s", m.Description)
-	m.ShowOptions()
-	fmt.Println()
-	color.Yellow("Notes: %s", m.Notes)
 }
 
 // Create is module function used to instantiate a module object using the provided file path to a module's json file

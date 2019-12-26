@@ -25,13 +25,14 @@ func DispatchRequest(req messages.ClientRequest) {
 		fmt.Println("Launching handleLog")
 	// Stack
 	case "stack":
-		fmt.Println("Launching handleStack")
+		fmt.Println("Launching handleModule for stack")
+		handleModule(req)
 	// Workspace
 	case "workspace":
 		fmt.Println("Launching handleWorkspace")
 		handleWorkspace(req)
 	// Module
-	case "use", "run", "show", "reload":
+	case "use", "run", "show", "reload", "module":
 		fmt.Println("launching handleModule")
 		handleModule(req)
 	// Agent
@@ -43,6 +44,7 @@ func DispatchRequest(req messages.ClientRequest) {
 		switch req.Context {
 		case "main":
 			fmt.Println("Launching handleModule")
+			handleModule(req)
 		case "agent":
 			fmt.Println("Launching handleAgent")
 		}
