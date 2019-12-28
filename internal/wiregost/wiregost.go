@@ -1,7 +1,8 @@
-package core
+package wiregost
 
 import (
 	"github.com/maxlandon/wiregost/internal/db"
+	"github.com/maxlandon/wiregost/internal/endpoint"
 	"github.com/maxlandon/wiregost/internal/modules"
 	"github.com/maxlandon/wiregost/internal/server"
 	"github.com/maxlandon/wiregost/internal/user"
@@ -10,7 +11,7 @@ import (
 
 type Wiregost struct {
 	// Connections
-	Endpoint *server.Endpoint
+	Endpoint *endpoint.Endpoint
 
 	// DB Access
 	DbManager db.DBManager
@@ -23,16 +24,21 @@ type Wiregost struct {
 
 	// ModuleStackManager
 	ModuleStackManager *modules.ModuleStackManager
+
 	// Logger
+
+	// Server
+	ServerManager *server.ServerManager
 }
 
 func NewWiregost() *Wiregost {
 	wiregost := &Wiregost{
-		Endpoint: server.NewEndpoint(),
+		Endpoint: endpoint.NewEndpoint(),
 		// DB
 		UserManager:        user.NewUserManager(),
 		WorkspaceManager:   workspace.NewWorkspaceManager(),
 		ModuleStackManager: modules.NewModuleStackManager(),
+		ServerManager:      server.NewServerManager(),
 	}
 
 	return wiregost
