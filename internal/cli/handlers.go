@@ -283,25 +283,27 @@ func (s *Session) WorkspaceList(cmd []string) {
 	s.Send(cmd)
 	workspace := <-workspaceReqs
 	fmt.Println(workspace)
-	// Handle change of state here
 }
 
 func (s *Session) WorkspaceSwitch(cmd []string) {
 	s.currentWorkspace = cmd[2]
 	CurrentWorkspace = cmd[2]
-	// fmt.Println(CurrentWorkspace)
 	s.Send(cmd)
 	workspace := <-workspaceReqs
 	s.CurrentWorkspaceId = workspace.WorkspaceId
-	// fmt.Println(workspace)
-	// Handle change of state here
 }
 
 func (s *Session) WorkspaceDelete(cmd []string) {
-	// Send(cmd)
-	workspace := <-workspaceReqs
-	fmt.Println(workspace)
-	// Handle change of state here
+	if cmd[2] == s.currentWorkspace {
+		fmt.Println()
+		fmt.Printf("%s[!]%s Cannot delete current workspace", tui.RED, tui.RESET)
+		fmt.Println()
+	} else {
+		s.Send(cmd)
+		workspace := <-workspaceReqs
+		fmt.Println()
+		fmt.Println(workspace.Result)
+	}
 }
 
 func (s *Session) WorkspaceNew(cmd []string) {

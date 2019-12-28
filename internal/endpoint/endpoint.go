@@ -38,7 +38,6 @@ func (e *Endpoint) Listen() {
 		case msg := <-e.requests:
 			fmt.Println("Received request")
 			user.AuthReqs <- msg
-			fmt.Println(msg.UserId)
 			auth := <-user.AuthResp
 			switch auth.UserId {
 			case 0:

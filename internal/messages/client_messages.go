@@ -51,6 +51,7 @@ type WorkspaceResponse struct {
 	// WorkspaceList []Workspace // Return all workspaces with all their informations here.
 	WorkspaceId    int // Return the current/chosen workspace here
 	WorkspaceInfos [][]string
+	Result         string
 }
 
 type StackResponse struct {

@@ -116,6 +116,8 @@ func (session *Session) Shell() {
 						session.WorkspaceSwitch(cmd)
 					case "new":
 						session.WorkspaceNew(cmd)
+					case "delete":
+						session.WorkspaceDelete(cmd)
 					}
 				// Module
 				case "use":
