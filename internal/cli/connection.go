@@ -23,6 +23,7 @@ var moduleReqs = make(chan modules.ModuleResponse)
 var agentReqs = make(chan messages.AgentResponse)
 var logReqs = make(chan messages.LogResponse)
 var workspaceReqs = make(chan messages.WorkspaceResponse)
+var endpointReqs = make(chan messages.EndpointResponse)
 var serverReqs = make(chan messages.ServerResponse)
 var stackReqs = make(chan messages.StackResponse)
 
@@ -104,6 +105,12 @@ func Connect() error {
 					fmt.Println("Failed to decode log response")
 				}
 				serverReqs <- server
+			case "endpoint":
+				var endpoint messages.EndpointResponse
+				if err := json.Unmarshal(msg, &endpoint); err != nil {
+					fmt.Println("Failed to decode log response")
+				}
+				endpointReqs <- endpoint
 			}
 		}
 	}()

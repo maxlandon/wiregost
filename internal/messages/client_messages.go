@@ -1,15 +1,21 @@
 package messages
 
 type ClientRequest struct {
-	ClientId           int
-	UserId             int
-	UserName           string
-	UserPassword       string
+	// Client-specific
+	ClientId int
+	// User-specific
+	UserId       int
+	UserName     string
+	UserPassword string
+	// Context-specific
 	Context            string
 	CurrentModule      string
 	CurrentWorkspace   string
 	CurrentWorkspaceId int
-	Command            []string
+	// Command-specific
+	Command []string
+	// Server-specific
+	ServerParams map[string]string
 }
 
 type ClientConnRequest struct {
@@ -53,7 +59,12 @@ type StackResponse struct {
 	// CurrentModule modules.Module // Maybe we will not need this line for changing shell state.
 }
 
-type ServerResponse struct {
+type EndpointResponse struct {
 	User      string
 	Connected bool // Used upon connection, to notify shell it is correctly connected.
+}
+
+// TO MODIFY
+type ServerResponse struct {
+	Status string // Used upon connection, to notify shell it is correctly connected.
 }

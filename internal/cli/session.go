@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"strings"
@@ -12,14 +13,18 @@ import (
 var ()
 
 type Session struct {
-	shell              *readline.Instance
-	prompt             Prompt
-	user               *User
+	// Shell
+	shell  *readline.Instance
+	prompt Prompt
+	// Auth
+	user *User
+	// Context
 	shellMenuContext   string
 	moduleContext      string
-	workspaceContext   string
 	currentWorkspace   string
 	CurrentWorkspaceId int
+	// Environmment variables
+	Env map[string]string
 }
 
 func NewSession() *Session {
@@ -45,6 +50,9 @@ func NewSession() *Session {
 
 	// Set Context
 	session.shellMenuContext = "main"
+
+	// Set Env
+	session.Env = make(map[string]string)
 
 	// Connect to default server
 	Connect()
@@ -99,6 +107,56 @@ func (session *Session) Shell() {
 					shellHandler(cmd[1:])
 				case "exit":
 					exit()
+				case "set":
+					session.SetOption(cmd)
+				// Workspace
+				case "workspace":
+					switch cmd[1] {
+					case "switch":
+						session.WorkspaceSwitch(cmd)
+					case "new":
+						session.WorkspaceNew(cmd)
+					}
+				// Module
+				case "use":
+					session.UseModule(cmd)
+				// Stack
+				case "stack":
+					switch len(cmd) {
+					case 1:
+						session.StackShow()
+					case 2:
+						switch cmd[1] {
+						case "show":
+							session.StackShow()
+						case "pop":
+							session.StackPop(cmd)
+						}
+					case 3:
+						session.StackPop(cmd)
+					}
+					// Server
+				case "server":
+					switch cmd[1] {
+					case "reload":
+						session.ServerReload()
+
+					}
+				}
+			case "module":
+				switch cmd[0] {
+				// Core Commands
+				case "help":
+					helpHandler(cmd)
+				case "cd":
+					changeDirHandler(cmd)
+				case "mode":
+					mode := setModeHandler(cmd, prompt.IsVimMode())
+					prompt.SetVimMode(mode)
+				case "!":
+					shellHandler(cmd[1:])
+				case "exit":
+					exit()
 				// Workspace
 				case "workspace":
 					switch cmd[1] {
@@ -121,8 +179,11 @@ func (session *Session) Shell() {
 					session.ShowInfo()
 				case "set":
 					session.SetModuleOption(cmd)
+				case "back":
+					session.BackModule()
 				// Stack
 				case "stack":
+					fmt.Println("Launched stack")
 					switch len(cmd) {
 					case 1:
 						session.StackShow()
@@ -136,7 +197,7 @@ func (session *Session) Shell() {
 					case 3:
 						session.StackPop(cmd)
 					}
-
+					// Server
 				}
 			}
 		}

@@ -67,6 +67,8 @@ func serverHelp() {
 		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
 	fmt.Println(tui.Bold(tui.Blue("\n  Parameters \n")))
+	fmt.Println(tui.Dim("Before instantiating or starting a server, make sure all paramaters have the correct/wished settings."))
+	fmt.Println()
 
 	// Parameters
 	maxLen = 0
@@ -79,6 +81,43 @@ func serverHelp() {
 	pad = "%" + strconv.Itoa(maxLen) + "s"
 
 	for _, c := range serverParams {
+		dflt := tui.Dim("(default: ") + tui.Dim(c.Default) + tui.Dim(")")
+		fmt.Printf("  "+tui.Yellow(pad)+" : %s %s\n", c.Name, c.Description, dflt)
+	}
+	fmt.Println()
+}
+
+func endpointHelp() {
+	// Commands
+	fmt.Println(tui.Bold(tui.Blue("\n  Endpoint Commands\n")))
+	var params string
+	maxLen := 0
+	for _, c := range endpointCommands {
+		params = strings.Join(c.Params, " ")
+		len := len(c.Name + tui.Green(params))
+		if len > maxLen {
+			maxLen = len
+		}
+	}
+	pad := "%" + strconv.Itoa(maxLen) + "s"
+
+	for _, c := range endpointCommands {
+		params = strings.Join(c.Params, " ")
+		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
+	}
+	fmt.Println(tui.Bold(tui.Blue("\n  Parameters \n")))
+
+	// Parameters
+	maxLen = 0
+	for _, c := range endpointParams {
+		len := len(c.Name)
+		if len > maxLen {
+			maxLen = len
+		}
+	}
+	pad = "%" + strconv.Itoa(maxLen) + "s"
+
+	for _, c := range endpointParams {
 		dflt := tui.Dim("(default: ") + tui.Dim(c.Default) + tui.Dim(")")
 		fmt.Printf("  "+tui.Yellow(pad)+" : %s %s\n", c.Name, c.Description, dflt)
 	}
@@ -201,6 +240,50 @@ func stackHelp() {
 	fmt.Println()
 }
 
+func moduleHelp() {
+	// Commands
+	fmt.Println(tui.Bold(tui.Blue("\n  Module Commands\n")))
+	var params string
+	maxLen := 0
+	for _, c := range moduleCommands {
+		params = strings.Join(c.Params, " ")
+		len := len(c.Name + tui.Green(params))
+		if len > maxLen {
+			maxLen = len
+		}
+	}
+	pad := "%" + strconv.Itoa(maxLen) + "s"
+
+	for _, c := range moduleCommands {
+		params = strings.Join(c.Params, " ")
+		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
+	}
+	fmt.Println()
+}
+
+func agentHelp() {
+	// Commands
+	fmt.Println(tui.Bold(tui.Blue("\n  Agent Commands\n")))
+	fmt.Println(tui.Dim("These commands are only available when interacting with an agent. ('agent interact <agent_uuid>')"))
+	fmt.Println()
+	var params string
+	maxLen := 0
+	for _, c := range agentCommands {
+		params = strings.Join(c.Params, " ")
+		len := len(c.Name + tui.Green(params))
+		if len > maxLen {
+			maxLen = len
+		}
+	}
+	pad := "%" + strconv.Itoa(maxLen) + "s"
+
+	for _, c := range agentCommands {
+		params = strings.Join(c.Params, " ")
+		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
+	}
+	fmt.Println()
+}
+
 func helpHandler(args []string) error {
 	filter := ""
 	if len(args) == 2 {
@@ -222,6 +305,12 @@ func helpHandler(args []string) error {
 		workspaceHelp()
 	case "stack":
 		stackHelp()
+	case "endpoint":
+		endpointHelp()
+	case "module":
+		moduleHelp()
+	case "agent":
+		agentHelp()
 	}
 
 	return nil
@@ -243,19 +332,22 @@ type ParamDescription struct {
 // List of all handler sets and their description
 var commandCategories = []CommandDescription{
 	{Name: "core", Description: "WireGost core commands, (resource loading and making, input & navigation mode, etc...)"},
-	{Name: "server", Description: "Commands and parameters for managing WireGost Server (connection, add, generate tokens, etc)"},
+	{Name: "endpoint", Description: "Commands and parameters for managing WireGost clients' Endpoint (connection, add, generate tokens, etc)"},
+	{Name: "server", Description: "Commands and parameters for managing Agent Servers (state, certificates, tokens, etc.)"},
 	{Name: "log", Description: "Commands for managing the various sets of logs used by WireGost"},
-	{Name: "chat", Description: "Commands for using WireGost's messaging system"},
+	// {Name: "chat", Description: "Commands for using WireGost's messaging system"},
 	{Name: "workspace", Description: "Manage WireGost workspaces"},
 	{Name: "stack", Description: "Manage the module stack (all modules currently loaded in this session)"},
-	{Name: "global", Description: "Manage all global variables in WireGost"},
-	{Name: "db", Description: "Manage WireGost data services"},
-	{Name: "listeners", Description: "Manage listeners instantiated in this session"},
-	{Name: "exploit", Description: "Manage the currently active module, if the module is an exploit"},
-	{Name: "payload", Description: "Manage the currently active module, if the module is a payload"},
-	{Name: "hosts", Description: "Commands displaying hosts"},
-	{Name: "services", Description: "Commands displaying services"},
-	{Name: "creds", Description: "Commands displaying credentials"},
+	// {Name: "global", Description: "Manage all global variables in WireGost"},
+	// {Name: "db", Description: "Manage WireGost data services"},
+	// {Name: "listeners", Description: "Manage listeners instantiated in this session"},
+	// {Name: "exploit", Description: "Manage the currently active module, if the module is an exploit"},
+	{Name: "module", Description: "Manage the currently loaded module."},
+	{Name: "agent", Description: "Manage the currently active agent."},
+	// {Name: "payload", Description: "Manage the currently active module, if the module is a payload"},
+	// {Name: "hosts", Description: "Commands displaying hosts"},
+	// {Name: "services", Description: "Commands displaying services"},
+	// {Name: "creds", Description: "Commands displaying credentials"},
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -275,24 +367,22 @@ var coreCommands = []CommandDescription{
 //-------------------------------------------------------------------------------------------------------------------------
 // Server commands
 var serverCommands = []CommandDescription{
-	{Name: "server.show", Description: "Show Server information (registered servers, client access token, etc...)"},
-	{Name: "server.generate_token", Description: "Ask the server to generate a new client-side access token."},
-	{Name: "server.connect", Params: []string{"name"}, Description: "Connect to one of the saved WireGost servers."},
-	{Name: "server.add", Description: "Add server based on the current value of parameters"},
+	{Name: "server.start", Description: "Start a server, in the current workspace, listening for agents. (Default parameters below are used)"},
+	{Name: "server.stop", Description: "Stop the server."},
+	{Name: "server.reload", Description: "Restart the server with parameters below. (Parameters will be saved for subsequent starts)"},
+	{Name: "server.generate_certificate", Params: []string{"name"}, Description: "Generate a certificate and key pair to use with the server in this workspace."},
+	{Name: "server.generate_jwt", Description: "(Optional) Generate a new JSON Web Token that agents dedicated to this workspace/server will use for authenticating."},
+	{Name: "server.list", Description: "List all servers and their state (running, agents, etc.), regardless of the current workspace."},
 }
 
 var serverParams = []ParamDescription{
-	{Name: "server.address", Description: "IP or resolved address of the server"},
+	{Name: "server.address", Description: "IP address on which the server will listen"},
 	{Name: "server.port", Description: "Listening port of the server"},
-	{Name: "server.name", Description: "Name under which this server will be saved or displayed"},
-	{Name: "server.certificate", Description: "Path to certificate needed for connection (not required)"},
-	{Name: "server.default", Description: "Make this server the default server to connect to when client is started"},
-}
-
-var serverAdminCommands = []CommandDescription{
-	{Name: "server.admin.show", Description: "Show registered users (and if they are active)"},
-	{Name: "server.admin.add_user", Params: []string{"name"}, Description: "Register a new user (password will be sent first connection)"},
-	{Name: "server.admin.delete_user", Params: []string{"name"}, Description: "Delete one or more registered users"},
+	{Name: "server.protocol", Description: "The protocol (i.e. HTTP/2 or HTTP/3) the server will use (type 'h2' or 'h3')"},
+	{Name: "server.certificate", Description: "Path to x.509 certificate needed for connection (default is the certificate in this workspace's directory)"},
+	{Name: "server.key", Description: "Path to x.509 private key used for decrypting communications with agents"},
+	{Name: "server.psk", Description: "The pre-shared key password used prior to Password Authenticated Key Exchange (PAKE)"},
+	{Name: "server.jwt", Description: "JSON Web Token used for authenticating agents"},
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -312,6 +402,31 @@ var logParams = []ParamDescription{
 	{"log.payload.path", "Path to payload logs", "~/.wiregost/logs/payload.log"},
 	{"log.listeners.path", "Path to listeners logs", "~/.wiregost/logs/listeners.log"},
 	{"log.db.path", "Path to Data Service logs", "~/.wiregost/logs/db.log"},
+}
+
+//-------------------------------------------------------------------------------------------------------------------------
+// Server commands
+// These commands are used for connecting clients to a given Wiregost instance, and for admin tasks
+
+var endpointCommands = []CommandDescription{
+	{Name: "endpoint.show", Description: "Show Server information (registered endpoints, client access token, etc...)"},
+	{Name: "endpoint.generate_token", Description: "Ask the endpoint to generate a new client-side access token."},
+	{Name: "endpoint.connect", Params: []string{"name"}, Description: "Connect to one of the saved WireGost endpoints."},
+	{Name: "endpoint.add", Description: "Add endpoint based on the current value of parameters"},
+}
+
+var endpointParams = []ParamDescription{
+	{Name: "endpoint.address", Description: "IP or resolved address of the endpoint"},
+	{Name: "endpoint.port", Description: "Listening port of the endpoint"},
+	{Name: "endpoint.name", Description: "Name under which this endpoint will be saved or displayed"},
+	{Name: "endpoint.certificate", Description: "Path to certificate needed for connection (not required)"},
+	{Name: "endpoint.default", Description: "Make this endpoint the default endpoint to connect to when client is started"},
+}
+
+var endpointAdminCommands = []CommandDescription{
+	{Name: "endpoint.admin.show", Description: "Show registered users (and if they are active)"},
+	{Name: "endpoint.admin.add_user", Params: []string{"name"}, Description: "Register a new user (password will be sent first connection)"},
+	{Name: "endpoint.admin.delete_user", Params: []string{"name"}, Description: "Delete one or more registered users"},
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -337,8 +452,6 @@ var workspaceParams = []ParamDescription{
 	{Name: "workspace.boundary", Description: "Network address/range in which activity is allowed for this workspace."},
 	{Name: "workspace.owner", Description: "Owner ID for this workspace"},
 	{Name: "workspace.limit", Description: "false"},
-	{Name: "workspace.created_at", Description: "Created at"},
-	{Name: "workspace.uptated_at", Description: "Updated at "},
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -349,7 +462,36 @@ var stackCommands = []CommandDescription{
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
+// Module commands
+var moduleCommands = []CommandDescription{
+	{Name: "back", Description: "Exit from current module. (Doesn't unload it from stack)"},
+	{Name: "show", Params: []string{"info | options"}, Description: "Show information about a module or its options."},
+	{Name: "info", Description: "Show information about a module"},
+	{Name: "reload", Description: "Reloads the module to a fresh clean state"},
+	{Name: "set", Params: []string{"<option name>", "<option value>"}, Description: "Set the value for one of the module's options. (Auto-completed options)"},
+	{Name: "run", Description: "Run or execute the module"},
+}
+
+//-------------------------------------------------------------------------------------------------------------------------
 // Agent commands
+var agentCommands = []CommandDescription{
+	{Name: "info", Description: "Display all information about the agent"},
+	{Name: "back | main", Description: "Return to the main menu"},
+	{Name: "status", Description: "Print the current status of the agent."},
+	{Name: "cd", Params: []string{"../.. | c:\\\\Users"}, Description: "Change directories in the agent's target system."},
+	{Name: "ls", Params: []string{"/etc | c:\\\\Users"}, Description: "List directory contents"},
+	{Name: "pwd", Description: "Print the current working directory in the target."},
+	{Name: "cmd", Params: []string{"ping -c 3 8.8.8.8"}, Description: "Execute a command on the agent."},
+	// We have renamed the shell as "cmd" because it is less ambiguous. Think of changing the corresponding handler if needed.
+	// {"shell", "Execute a command on the agent", "shell ping -c 3 8.8.8.8"},
+	{Name: "set", Params: []string{"<option name>", "<option value>"}, Description: "Set the value for one of the agent's options. (Auto-completed options)"},
+	// Maybe useful to check if we want to autocomplete available options for agent
+	//{"set", "Set the value for one of the agent's options", "killdate, maxretry, padding, skew, sleep"},
+	{Name: "download", Params: []string{"remote_file"}, Description: "Download a file from the agent's target."},
+	{Name: "upload", Params: []string{"local_file", "remote_file"}, Description: "Upload a file to the agent's target."},
+	{Name: "execute-shellcode", Params: []string{"self, remote <pid> | RtlCreateUserThread <pid>"}, Description: "Execute shellcode on the target."},
+	{Name: "kill", Description: "Instruct the agent to die or quit."},
+}
 
 //------------------------------------------------------------------------------------------------------------------------
 // Database commands

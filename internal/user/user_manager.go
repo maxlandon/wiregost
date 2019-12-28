@@ -56,17 +56,15 @@ func (um *UserManager) Authenticate() {
 			}
 		}
 		if registered == true && connected == true {
-			fmt.Println("UserManager: Sent back UserConnected response")
 			AuthResp <- msg
 		}
 		if registered == true && connected == false {
 			um.ConnectedUsers = append(um.ConnectedUsers, user)
 			AuthResp <- msg
-			fmt.Println("UserManager: Sent back UserAdded response")
 
 		}
 		if registered == false {
-			fmt.Print("Unkwown")
+			fmt.Print("Unkwown user")
 			msg.UserId = 0
 			AuthReqs <- msg
 		}

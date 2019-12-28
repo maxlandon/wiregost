@@ -9,7 +9,14 @@ import (
 	"github.com/maxlandon/wiregost/internal/messages"
 )
 
+// Used to request the ModuleStack Manager to create a Stack for each new workspace
+// Or to load a saved stack for existing ones.
 var Requests = make(chan map[string]int)
+
+// Used for communicating a workspace ID and its server.conf path.
+var ServerRequests = make(chan map[int]string)
+
+// Responses are sent back to clients.
 var Responses = make(chan messages.Message)
 
 type Workspace struct {

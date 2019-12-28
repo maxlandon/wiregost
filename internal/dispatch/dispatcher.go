@@ -15,11 +15,11 @@ var (
 func DispatchRequest(req messages.ClientRequest) {
 	// 1. Check commands: most of them can be run in either context
 	// 2. For context-sensitive commands, check context
-	fmt.Println(req)
 	switch req.Command[0] {
 	// Server
 	case "server":
 		fmt.Println("launching handleServer")
+		handleServer(req)
 	// Log
 	case "log":
 		fmt.Println("Launching handleLog")
@@ -42,7 +42,7 @@ func DispatchRequest(req messages.ClientRequest) {
 	// For both commands we need to check context
 	case "info", "set":
 		switch req.Context {
-		case "main":
+		case "module":
 			fmt.Println("Launching handleModule")
 			handleModule(req)
 		case "agent":

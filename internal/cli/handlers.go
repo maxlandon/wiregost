@@ -1,12 +1,15 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/evilsocket/islazy/tui"
+	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -36,7 +39,11 @@ func wrap(text string, lineWidth int) (wrapped string) {
 func (s *Session) UseModule(cmd []string) {
 	s.Send(cmd)
 	mod := <-moduleReqs
+	// Switch shell context
+	s.shell.Config.AutoComplete = s.getCompleter("module")
+	s.shellMenuContext = "module"
 	s.moduleContext = mod.ModuleName
+	// Switch prompt context
 	CurrentModule = mod.ModuleName
 	// Add code to change current module in the prompt
 }
@@ -126,7 +133,15 @@ func (s *Session) GetModuleList(cmd []string) {
 
 func (s *Session) SetModuleOption(cmd []string) {
 	s.Send(cmd)
-	// Add some verification that option is correctly set here.
+	opt := <-moduleReqs
+	if opt.Status != "" {
+		fmt.Println()
+		fmt.Println(opt.Status)
+	}
+	if opt.Error != "" {
+		fmt.Println()
+		fmt.Println(opt.Error)
+	}
 }
 
 func (s *Session) SetAgent(cmd []string) {
@@ -141,6 +156,13 @@ func (s *Session) RunModule(cmd []string) {
 	mod := <-moduleReqs
 	fmt.Println(mod)
 	// Add some verification that agent is correctly set here.
+}
+
+func (s *Session) BackModule() {
+	s.shell.Config.AutoComplete = s.getCompleter("main")
+	s.shellMenuContext = "main"
+	s.moduleContext = ""
+	CurrentModule = ""
 }
 
 // AGENT HANDLERS
@@ -342,13 +364,50 @@ func (s *Session) StackPop(cmd []string) {
 			CurrentModule = ""
 		}
 	}
+	// Temporary: return to main menu completion.
+	// This will change when the code will handle fallback on next module in stack.
+	s.shell.Config.AutoComplete = s.getCompleter("main")
+
+}
+
+// ENDPOINT HANDLERS
+//---------------------------------------------------------------------------
+
+func (s *Session) EndpointConnect() { // This command will be used to send connection demands to a server.
+	// Send(cmd)
+	endpoint := <-endpointReqs
+	fmt.Println(endpoint)
 }
 
 // SERVER HANDLERS
 //---------------------------------------------------------------------------
+func (s *Session) ServerReload() {
+	// Fill up required parameters
+	params := make(map[string]string)
+	for k, v := range s.Env {
+		if strings.HasPrefix(k, "server") {
+			params[k] = v
+		}
+	}
 
-func (s *Session) ServerConnect() { // This command will be used to send connection demands to a server.
-	// Send(cmd)
-	server := <-serverReqs
-	fmt.Println(server)
+	msg := messages.ClientRequest{
+		UserName:           s.user.Name,
+		UserPassword:       s.user.PasswordHashString,
+		CurrentWorkspace:   s.currentWorkspace,
+		CurrentWorkspaceId: s.CurrentWorkspaceId,
+		Context:            s.shellMenuContext,
+		CurrentModule:      s.moduleContext,
+		Command:            []string{"server", "reload"},
+		ServerParams:       params,
+	}
+	enc := json.NewEncoder(writer)
+	err := enc.Encode(msg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	writer.Flush()
+
+	status := <-serverReqs
+	fmt.Println()
+	fmt.Println(status.Status)
 }

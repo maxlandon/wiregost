@@ -19,6 +19,8 @@ type ModuleResponse struct {
 	ModuleName string
 	Modules    []*Module
 	ModuleList []string
+	Status     string
+	Error      string
 }
 
 type ModuleStack struct {
@@ -116,8 +118,30 @@ func (ms *ModuleStackManager) handleClientRequests() {
 						fmt.Println(strings.ToLower(stackModName))
 						fmt.Println(strings.ToLower(request.CurrentModule))
 						if strings.ToLower(stackModName) == strings.ToLower(request.CurrentModule) {
-							opt, _ := mod.SetOption(request.Command[1], request.Command[2])
-							fmt.Println(opt)
+							opt, err := mod.SetOption(request.Command[1], request.Command[2])
+							if err != nil {
+								response := ModuleResponse{
+									User:  "para",
+									Error: err.Error(),
+								}
+								msg := messages.Message{
+									ClientId: request.ClientId,
+									Type:     "module",
+									Content:  response,
+								}
+								dispatch.Responses <- msg
+							} else {
+								response := ModuleResponse{
+									User:   "para",
+									Status: opt,
+								}
+								msg := messages.Message{
+									ClientId: request.ClientId,
+									Type:     "module",
+									Content:  response,
+								}
+								dispatch.Responses <- msg
+							}
 						}
 					}
 				}

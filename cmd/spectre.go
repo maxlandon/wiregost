@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/maxlandon/wiregost/internal/core"
+	"github.com/maxlandon/wiregost/internal/wiregost"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	wiregost := core.NewWiregost()
+	wg := wiregost.NewWiregost()
 	// server := server.NewEndpoint()
 
 	for {
@@ -33,6 +33,6 @@ func main() {
 			log.Println(err)
 		}
 		// server.Connect(conn)
-		wiregost.Endpoint.Connect(conn)
+		wg.Endpoint.Connect(conn)
 	}
 }

@@ -8,6 +8,9 @@ import (
 
 func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 
+	// ------------------------------------------------------------
+	// COMMANDS
+
 	// Main menu.
 	var main = readline.NewPrefixCompleter(
 		// Core
@@ -15,15 +18,16 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 			readline.PcItem("core"),
 			readline.PcItem("log"),
 			readline.PcItem("server"),
+			readline.PcItem("endpoint"),
 			readline.PcItem("workspace"),
 			readline.PcItem("stack"),
-			readline.PcItem("hosts"),
-			readline.PcItem("services"),
-			readline.PcItem("creds"),
+			// readline.PcItem("hosts"),
+			// readline.PcItem("services"),
+			// readline.PcItem("creds"),
 			readline.PcItem("agent"),
 			readline.PcItem("module"),
-			readline.PcItem("exploit"),
-			readline.PcItem("payload"),
+			// readline.PcItem("exploit"),
+			// readline.PcItem("payload"),
 		),
 		readline.PcItem("mode",
 			readline.PcItem("vim"),
@@ -86,11 +90,97 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		// Module
 		readline.PcItem("use",
 			readline.PcItem("module",
-				readline.PcItemDynamic(s.ListModules())), // add getModuleList here
+				readline.PcItemDynamic(s.ListModules())),
+		),
+		readline.PcItem("set",
+			readline.PcItemDynamic(s.ListParams()),
+		),
+	)
+
+	var module = readline.NewPrefixCompleter(
+		// Core
+		readline.PcItem("help",
+			readline.PcItem("core"),
+			readline.PcItem("log"),
+			readline.PcItem("server"),
+			readline.PcItem("endpoint"),
+			readline.PcItem("workspace"),
+			readline.PcItem("stack"),
+			// readline.PcItem("hosts"),
+			// readline.PcItem("services"),
+			// readline.PcItem("creds"),
+			readline.PcItem("agent"),
+			readline.PcItem("module"),
+			// readline.PcItem("exploit"),
+			// readline.PcItem("payload"),
+		),
+		readline.PcItem("mode",
+			readline.PcItem("vim"),
+			readline.PcItem("emacs"),
+		),
+		readline.PcItem("history",
+			readline.PcItem("show"),
+		),
+		readline.PcItem("resource",
+			readline.PcItem("make"),
+			readline.PcItem("load"),
+		),
+		readline.PcItem("cd"),
+		readline.PcItem("!"),
+		readline.PcItem("exit"),
+
+		// Server
+		readline.PcItem("server",
+			readline.PcItem("connect"), // Add getServerList here
+			readline.PcItem("list"),
+		),
+
+		// Log
+		readline.PcItem("log",
+			readline.PcItem("level",
+				readline.PcItem("debug"),
+			),
+			readline.PcItem("show",
+				readline.PcItem("all"),
+				readline.PcItem("exploit"),
+				readline.PcItem("agent"),
+			),
+		),
+
+		// Module Stack
+		readline.PcItem("stack",
+			readline.PcItem("show"), // Add getStackList here
+			readline.PcItem("pop",
+				readline.PcItemDynamic(s.ListStackModules())), // Same
+		),
+
+		// Workspace
+		readline.PcItem("workspace",
+			readline.PcItem("list"),
+			readline.PcItem("switch",
+				readline.PcItemDynamic(s.ListWorkspaces())),
+			readline.PcItem("new"),
+			readline.PcItem("delete",
+				readline.PcItemDynamic(s.ListWorkspaces())),
+		),
+
+		// Agent
+		readline.PcItem("agent",
+			readline.PcItem("list"),     // Add getAgentsList here
+			readline.PcItem("interact"), // same
+			readline.PcItem("remove"),   // same
+		),
+		readline.PcItem("interact"), // Same
+
+		// Module
+		readline.PcItem("use",
+			readline.PcItem("module",
+				readline.PcItemDynamic(s.ListModules())),
 		),
 		readline.PcItem("info"),
 		readline.PcItem("reload"),
 		readline.PcItem("run"),
+		readline.PcItem("back"),
 		readline.PcItem("show",
 			readline.PcItem("options"),
 			readline.PcItem("info"),
@@ -109,6 +199,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 			readline.PcItem("core"),
 			readline.PcItem("log"),
 			readline.PcItem("server"),
+			readline.PcItem("endpoint"),
 			readline.PcItem("workspace"),
 			readline.PcItem("stack"),
 			readline.PcItem("hosts"),
@@ -188,9 +279,14 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		readline.PcItem("upload"),
 	)
 
+	// ------------------------------------------------------------
+	// PARAMETERS
+
 	switch completer {
 	case "main":
 		return main
+	case "module":
+		return module
 	case "agent":
 		return agent
 	}
@@ -199,6 +295,34 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 }
 
 // DYNAMIC COMPLETER FUNCTIONS
+func (s *Session) ListParams() func(string) (names []string) {
+	return func(string) []string {
+		sessionParams := []string{
+			// Server
+			"server.address",
+			"server.port",
+			"server.protocol",
+			"server.certificate",
+			"server.key",
+			"server.psk",
+			"server.jwt",
+			// Endpoint
+			"endpoint.address",
+			"endpoint.port",
+			"endpoint.name",
+			"endpoint.certificate",
+			"endpoint.default",
+			// Workspace
+			"workspace.name",
+			"workspace.description",
+			"workspace.boundary",
+			"workspace.owner",
+			"workspace.limit",
+		}
+		return sessionParams
+	}
+}
+
 func (s *Session) ListWorkspaces() func(string) (names []string) {
 	return func(string) []string {
 		s.Send([]string{"workspace", "list"})

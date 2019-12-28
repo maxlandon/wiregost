@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/str"
@@ -77,6 +78,37 @@ func changeDirHandler(args []string) string {
 	os.Chdir(dir)
 
 	return dir
+}
+
+// Set option handler.
+// Depending on context, either the shell environment will be modified,
+// or the command will be forwarded to the server (for setting a module's option for instance)
+func (s *Session) SetOption(cmd []string) {
+	// Keep values locally for workspace
+	if strings.HasPrefix(cmd[1], "workspace") {
+		s.Env[cmd[1]] = strings.Join(cmd[2:], " ")
+		fmt.Println()
+		fmt.Printf("[-] %s%s%s set to %s%s%s", tui.YELLOW, cmd[1], tui.RESET, tui.YELLOW, s.Env[cmd[1]], tui.RESET)
+		fmt.Println()
+	}
+	// Keep values locally for endpoint
+	if strings.HasPrefix(cmd[1], "endpoint") {
+		s.Env[cmd[1]] = strings.Join(cmd[2:], " ")
+		fmt.Println()
+		fmt.Printf("[-] %s%s%s set to %s%s%s", tui.YELLOW, cmd[1], tui.RESET, tui.YELLOW, s.Env[cmd[1]], tui.RESET)
+		fmt.Println()
+	}
+	// Keep values locally for server. BUT
+	// Loaded automatically from server when switching workspace.
+	// Can be modified here and sent back when respawning a server.
+	// ULTIMATELY WE SHOULD ADD CONTROLS AND/OR WARNINGS SO THAT SERVER IS NOT RELOADED WITH DIFFERENT PARAMETERS
+	// THAT WOULD MAKE IT UNUSABLE BY ALREADY REGISTERED/TO-BE-REGISTERED AGENTS.
+	if strings.HasPrefix(cmd[1], "server") {
+		s.Env[cmd[1]] = strings.Join(cmd[2:], " ")
+		fmt.Println()
+		fmt.Printf("[-] %s%s%s set to %s%s%s", tui.YELLOW, cmd[1], tui.RESET, tui.YELLOW, s.Env[cmd[1]], tui.RESET)
+		fmt.Println()
+	}
 }
 
 // Exit

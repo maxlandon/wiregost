@@ -6,13 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
-	"strconv"
 	"strings"
 
 	// 3rd Party
+	"github.com/evilsocket/islazy/tui"
 	"github.com/fatih/color"
-	"github.com/olekukonko/tablewriter"
 	uuid "github.com/satori/go.uuid"
 	// Merlin
 )
@@ -101,43 +99,16 @@ func (m *Module) Run() ([]string, error) {
 	return command, nil
 }
 
-// ShowOptions function is used to display only a module's configurable options
-func (m *Module) ShowOptions() {
-	color.Cyan(fmt.Sprintf("\r\nAgent: %s\r\n", m.Agent.String()))
-	color.Yellow("\r\nModule options(" + m.Name + ")\r\n\r\n")
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	// TODO update the tablewriter to the newest version and use the SetColMinWidth for the Description column
-	table.SetBorder(false)
-	// TODO add option for agent alias here
-	table.Append([]string{"Agent", m.Agent.String(), "true", "Agent on which to run module " + m.Name})
-	for _, v := range m.Options {
-		table.Append([]string{v.Name, v.Value, strconv.FormatBool(v.Required), v.Description})
-	}
-	table.Render()
-}
-
-// GetOptionsList generates and returns a list of the module's configurable options. Used with tab completion
-func (m *Module) GetOptionsList() func(string) []string {
-	return func(line string) []string {
-		o := make([]string, 0)
-		for _, v := range m.Options {
-			o = append(o, v.Name)
-		}
-		return o
-	}
-}
-
 // SetOption is used to change the passed in module option's value. Used when a user is configuring a module
 func (m *Module) SetOption(option string, value string) (string, error) {
 	// Verify this option exists
 	for k, v := range m.Options {
 		if option == v.Name {
 			m.Options[k].Value = value
-			return fmt.Sprintf("%s set to %s", v.Name, m.Options[k].Value), nil
+			return fmt.Sprintf("[-] %s set to %s", v.Name, m.Options[k].Value), nil
 		}
 	}
-	return "", fmt.Errorf("invalid module option: %s", option)
+	return "", fmt.Errorf("%s[!]%s invalid module option: %s", tui.RED, tui.RESET, option)
 }
 
 // SetAgent is used to set the agent associated with the module.
