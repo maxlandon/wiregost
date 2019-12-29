@@ -12,8 +12,9 @@ import (
 
 const (
 	PromptVariable  = "$"
-	DefaultPrompt   = "{bdg}{y}{localip} {fb}|{fw} {workspace} {reset} > {b}{pwd} {reset}"
-	ModulePrompt    = "{bdg}{y}{localip} {fb}|{fw} {workspace} {reset} > {b}{pwd} {reset}post({r}{bold}{mod}{reset})"
+	DefaultPrompt   = "{bdg}{y}{localip} {fb}|{fw} {workspace} {reset} > {dim} in {b}{pwd} {reset}"
+	ModulePrompt    = "{bdg}{y}{localip} {fb}|{fw} {workspace} {reset} > {reset}post({r}{bold}{mod}{reset}) {dim}in {b}{pwd} "
+	CompilerPrompt  = "{bdg}{y}{localip} {fb}|{fw} {workspace} {reset} > [{bold}{y}Compiler{reset}] {dim}in {b}{pwd} {reset} "
 	MultilinePrompt = "{g}> {reset}"
 )
 
@@ -21,6 +22,7 @@ const (
 var CurrentWorkspace = "default"
 var CurrentModule string
 var serverIp string
+var CompilerContext = false
 
 // Prompt real-time Environment variables
 var (
@@ -96,6 +98,10 @@ func (p Prompt) Render() (first string, multi string) {
 	} else {
 		prompt = DefaultPrompt
 	}
+	if CompilerContext == true {
+		prompt = CompilerPrompt
+	}
+
 	multiline := MultilinePrompt
 
 	for tok, effect := range effects {

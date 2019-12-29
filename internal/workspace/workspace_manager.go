@@ -16,13 +16,27 @@ import (
 
 // Used to request the ModuleStack Manager to create a Stack for each new workspace
 // Or to load a saved stack for existing ones.
-var Requests = make(chan map[string]int)
+var Requests = make(chan map[string]int, 20)
 
 // Used for communicating a workspace ID and its server.conf path.
-var ServerRequests = make(chan map[int]string)
+var ServerRequests = make(chan ServerRequest, 20)
+
+var CompilerRequests = make(chan CompilerRequest, 20)
 
 // Responses are sent back to clients.
 var Responses = make(chan messages.Message)
+
+type ServerRequest struct {
+	WorkspaceId   int
+	Action        string
+	WorkspacePath string
+}
+
+type CompilerRequest struct {
+	WorkspaceId   int
+	Action        string
+	WorkspacePath string
+}
 
 type Workspace struct {
 	Name           string
@@ -73,11 +87,17 @@ func (w *WorkspaceManager) HandleRequests() {
 			}
 			Responses <- msg
 		case "new":
-			id := w.Create(req.Command[2], req.UserId)
-			m := make(map[string]int)
-			m["create"] = id
-			fmt.Println(m["create"])
-			Requests <- m
+			id, path := w.Create(req.Command[2], req.UserId)
+			ser := ServerRequest{
+				WorkspaceId:   id,
+				WorkspacePath: path,
+				Action:        "create",
+			}
+			ServerRequests <- ser
+			// Create new stack
+			stackReq := make(map[string]int)
+			stackReq["create"] = id
+			Requests <- stackReq
 			// w.Responses <- msg
 		case "switch":
 			for _, ws := range w.Workspaces {
@@ -112,7 +132,7 @@ func (w *WorkspaceManager) HandleRequests() {
 	}
 }
 
-func (w *WorkspaceManager) Create(name string, ownerId int) (Id int) {
+func (w *WorkspaceManager) Create(name string, ownerId int) (Id int, path string) {
 	// Create server object
 	workspace := Workspace{
 		Name:           name,
@@ -153,9 +173,19 @@ func (w *WorkspaceManager) Create(name string, ownerId int) (Id int) {
 		_ = ioutil.WriteFile(file, jsonData, 0755)
 		fmt.Println("Populated workspace.conf for " + workspace.Name)
 	}
+	// Create corresponding compiler
+	compReq := CompilerRequest{
+		WorkspaceId:   workspace.Id,
+		WorkspacePath: workspaceDir,
+		Action:        "create",
+	}
+	CompilerRequests <- compReq
+
+	// Save directory config
+	workspace.SaveConf()
 
 	// Return results
-	return workspace.Id
+	return workspace.Id, workspaceDir
 }
 
 func (w *WorkspaceManager) GetWorkspaceList(ownerId int) []Workspace {
@@ -191,7 +221,6 @@ func (ws *Workspace) SaveConf() {
 		_ = ioutil.WriteFile(file, jsonData, 0755)
 		fmt.Println("Saved workspace.conf for " + ws.Name)
 	}
-
 }
 
 func (w *WorkspaceManager) Delete(name string, ownerId int) (result string) {
@@ -220,10 +249,27 @@ func (w *WorkspaceManager) LoadWorkspaces() {
 
 	for _, d := range dirs {
 		ws := Workspace{}
-		path, _ := fs.Expand("~/.wiregost/workspaces/" + d.Name() + "/" + "workspace.conf")
-		configBlob, _ := ioutil.ReadFile(path)
+		confPath, _ := fs.Expand("~/.wiregost/workspaces/" + d.Name() + "/" + "workspace.conf")
+		configBlob, _ := ioutil.ReadFile(confPath)
 		json.Unmarshal(configBlob, &ws)
 		w.Workspaces = append(w.Workspaces, ws)
 		fmt.Println(tui.Dim("Loaded workspace " + d.Name()))
+		path, _ := fs.Expand("~/.wiregost/workspaces/" + d.Name())
+		servReq := ServerRequest{
+			WorkspaceId:   ws.Id,
+			WorkspacePath: path,
+			Action:        "spawn",
+		}
+		ServerRequests <- servReq
+		compReq := CompilerRequest{
+			WorkspaceId:   ws.Id,
+			WorkspacePath: path,
+			Action:        "spawn",
+		}
+		CompilerRequests <- compReq
+		// Create new stack
+		stackReq := make(map[string]int)
+		stackReq["create"] = ws.Id
+		Requests <- stackReq
 	}
 }

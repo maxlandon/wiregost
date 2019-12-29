@@ -284,6 +284,29 @@ func agentHelp() {
 	fmt.Println()
 }
 
+func compilerHelp() {
+	// Commands
+	fmt.Println(tui.Bold(tui.Blue("\n  Compiler Commands\n")))
+	fmt.Println(tui.Dim("These commands are only available when interacting with the compiler (command 'compiler')"))
+	fmt.Println()
+	var params string
+	maxLen := 0
+	for _, c := range compilerCommands {
+		params = strings.Join(c.Params, " ")
+		len := len(c.Name + tui.Green(params))
+		if len > maxLen {
+			maxLen = len
+		}
+	}
+	pad := "%" + strconv.Itoa(maxLen) + "s"
+
+	for _, c := range compilerCommands {
+		params = strings.Join(c.Params, " ")
+		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
+	}
+	fmt.Println()
+}
+
 func helpHandler(args []string) error {
 	filter := ""
 	if len(args) == 2 {
@@ -311,6 +334,8 @@ func helpHandler(args []string) error {
 		moduleHelp()
 	case "agent":
 		agentHelp()
+	case "compiler":
+		compilerHelp()
 	}
 
 	return nil
@@ -344,6 +369,7 @@ var commandCategories = []CommandDescription{
 	// {Name: "exploit", Description: "Manage the currently active module, if the module is an exploit"},
 	{Name: "module", Description: "Manage the currently loaded module."},
 	{Name: "agent", Description: "Manage the currently active agent."},
+	{Name: "compiler", Description: "Use the compiler menu to prepare and compile agents."},
 	// {Name: "payload", Description: "Manage the currently active module, if the module is a payload"},
 	// {Name: "hosts", Description: "Commands displaying hosts"},
 	// {Name: "services", Description: "Commands displaying services"},
@@ -491,6 +517,18 @@ var agentCommands = []CommandDescription{
 	{Name: "upload", Params: []string{"local_file", "remote_file"}, Description: "Upload a file to the agent's target."},
 	{Name: "execute-shellcode", Params: []string{"self, remote <pid> | RtlCreateUserThread <pid>"}, Description: "Execute shellcode on the target."},
 	{Name: "kill", Description: "Instruct the agent to die or quit."},
+}
+
+//-------------------------------------------------------------------------------------------------------------------------
+// Compiler commands
+var compilerCommands = []CommandDescription{
+	{Name: "back", Description: "Exit from compiler menu."},
+	{Name: "help", Description: "Show this help"},
+	{Name: "list servers", Description: "Shows all currently instantiated servers, their informations and state."},
+	{Name: "list parameters", Description: "Shows all parameters availables for agent compilation"},
+	{Name: "use", Params: []string{"<server>"}, Description: "Use a server and its configuration as default parameters. (Will automatically parse settings and fill options.)"},
+	{Name: "set", Params: []string{"<option name>", "<option value>"}, Description: "Set the value for one of the compiler's options. (Auto-completed options)"},
+	{Name: "compile", Description: "Compile the agent with the given parameters."},
 }
 
 //------------------------------------------------------------------------------------------------------------------------

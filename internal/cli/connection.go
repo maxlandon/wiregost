@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/maxlandon/wiregost/internal/compiler"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/modules"
 )
@@ -26,6 +27,7 @@ var workspaceReqs = make(chan messages.WorkspaceResponse)
 var endpointReqs = make(chan messages.EndpointResponse)
 var serverReqs = make(chan messages.ServerResponse)
 var stackReqs = make(chan messages.StackResponse)
+var compilerReqs = make(chan compiler.CompilerResponse)
 
 func (s *Session) Send(cmd []string) error {
 	msg := messages.ClientRequest{
@@ -111,6 +113,12 @@ func Connect() error {
 					fmt.Println("Failed to decode log response")
 				}
 				endpointReqs <- endpoint
+			case "compiler":
+				var compiler compiler.CompilerResponse
+				if err := json.Unmarshal(msg, &compiler); err != nil {
+					fmt.Println("Failed to decode log response")
+				}
+				compilerReqs <- compiler
 			}
 		}
 	}()

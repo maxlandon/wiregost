@@ -26,6 +26,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 			// readline.PcItem("creds"),
 			readline.PcItem("agent"),
 			readline.PcItem("module"),
+			readline.PcItem("compiler"),
 			// readline.PcItem("exploit"),
 			// readline.PcItem("payload"),
 		),
@@ -43,6 +44,9 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		readline.PcItem("cd"),
 		readline.PcItem("!"),
 		readline.PcItem("exit"),
+
+		// Compiler
+		readline.PcItem("compiler"),
 
 		// Server
 		readline.PcItem("server",
@@ -128,6 +132,9 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		readline.PcItem("cd"),
 		readline.PcItem("!"),
 		readline.PcItem("exit"),
+
+		// Compiler
+		readline.PcItem("compiler"),
 
 		// Server
 		readline.PcItem("server",
@@ -225,6 +232,9 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		readline.PcItem("!"),
 		readline.PcItem("exit"),
 
+		// Compiler // ADD SPECIAL HANDLING CODE FOR MANAGING SHELL STATE HERE
+		// readline.PcItem("compiler"),
+
 		// Server
 		readline.PcItem("server",
 			readline.PcItem("connect"), // Add getServerList here
@@ -279,6 +289,17 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		readline.PcItem("upload"),
 	)
 
+	var compiler = readline.NewPrefixCompleter(
+		readline.PcItem("compile"),
+		readline.PcItem("back"),
+		readline.PcItem("help"),
+		readline.PcItem("list",
+			readline.PcItem("servers"),
+			readline.PcItem("parameters")),
+		readline.PcItem("set", readline.PcItemDynamic(s.GetCompilerOptions())),
+		readline.PcItem("use"), // Add server completion function here
+	)
+
 	// ------------------------------------------------------------
 	// PARAMETERS
 
@@ -289,6 +310,8 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		return module
 	case "agent":
 		return agent
+	case "compiler":
+		return compiler
 	}
 
 	return main
@@ -375,6 +398,19 @@ func (s *Session) GetModuleOptions() func(string) (options []string) {
 		opts := mod.Modules[0]
 		list := make([]string, 0)
 		for _, opt := range opts.Options {
+			list = append(list, opt.Name)
+		}
+		return list
+	}
+}
+
+func (s *Session) GetCompilerOptions() func(string) (options []string) {
+	return func(string) []string {
+		s.Send([]string{"list", "parameters"})
+		comp := <-compilerReqs
+		opts := comp.Options
+		list := make([]string, 0)
+		for _, opt := range opts {
 			list = append(list, opt.Name)
 		}
 		return list

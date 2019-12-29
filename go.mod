@@ -22,6 +22,7 @@ require (
 	github.com/onsi/ginkgo v1.10.3 // indirect
 	github.com/onsi/gomega v1.7.1 // indirect
 	github.com/satori/go.uuid v1.2.0
+	github.com/tjarratt/babble v0.0.0-20191209142150-eecdf8c2339d
 	go.dedis.ch/kyber v0.0.0-20190125094535-ffb719103651
 	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553

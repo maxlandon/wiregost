@@ -413,3 +413,67 @@ func (s *Session) ServerReload() {
 	fmt.Println()
 	fmt.Println(status.Status)
 }
+
+// COMPILER HANDLERS
+//---------------------------------------------------------------------------
+func (s *Session) UseCompiler() {
+	// Switch shell context
+	s.shell.Config.AutoComplete = s.getCompleter("compiler")
+	s.shellMenuContext = "compiler"
+	// Switch prompt
+	CompilerContext = true
+}
+
+func (s *Session) QuitCompiler() {
+	// Switch prompt
+	CompilerContext = false
+	// Switch shell context
+	if CurrentModule != "" {
+		s.shell.Config.AutoComplete = s.getCompleter("module")
+		s.shellMenuContext = "module"
+		s.moduleContext = CurrentModule
+		// Switch prompt context
+	} else {
+		s.shell.Config.AutoComplete = s.getCompleter("main")
+		s.shellMenuContext = "main"
+	}
+}
+
+func (s *Session) ShowCompilerOptions() {
+	s.Send(strings.Fields("list parameters"))
+	comp := <-compilerReqs
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetCenterSeparator(tui.Dim("|"))
+	table.SetRowSeparator(tui.Dim("-"))
+	table.SetColumnSeparator(tui.Dim("|"))
+	table.SetColMinWidth(3, 50)
+	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
+	table.SetAutoWrapText(true)
+	table.SetColWidth(80)
+	table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
+	)
+	table.SetBorder(false)
+	// TODO add option for agent alias here
+	for _, v := range comp.Options {
+		table.Append([]string{v.Name, v.Value, strconv.FormatBool(v.Required), v.Description})
+	}
+	fmt.Println()
+	table.Render()
+}
+
+func (s *Session) SetCompilerOption(cmd []string) {
+	s.Send(cmd)
+	opt := <-compilerReqs
+	if opt.Status != "" {
+		fmt.Println()
+		fmt.Println(opt.Status)
+	}
+	if opt.Error != "" {
+		fmt.Println()
+		fmt.Println(opt.Error)
+	}
+}

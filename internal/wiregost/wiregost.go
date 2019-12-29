@@ -1,6 +1,7 @@
 package wiregost
 
 import (
+	"github.com/maxlandon/wiregost/internal/compiler"
 	"github.com/maxlandon/wiregost/internal/db"
 	"github.com/maxlandon/wiregost/internal/endpoint"
 	"github.com/maxlandon/wiregost/internal/modules"
@@ -29,6 +30,9 @@ type Wiregost struct {
 
 	// Server
 	ServerManager *server.ServerManager
+
+	// Compiler
+	CompilerManager *compiler.Manager
 }
 
 func NewWiregost() *Wiregost {
@@ -39,6 +43,7 @@ func NewWiregost() *Wiregost {
 		WorkspaceManager:   workspace.NewWorkspaceManager(),
 		ModuleStackManager: modules.NewModuleStackManager(),
 		ServerManager:      server.NewServerManager(),
+		CompilerManager:    compiler.NewManager(),
 	}
 
 	return wiregost

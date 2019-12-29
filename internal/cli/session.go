@@ -137,7 +137,10 @@ func (session *Session) Shell() {
 					case 3:
 						session.StackPop(cmd)
 					}
-					// Server
+				// Compiler
+				case "compiler":
+					session.UseCompiler()
+				// Server
 				case "server":
 					switch cmd[1] {
 					case "reload":
@@ -199,7 +202,24 @@ func (session *Session) Shell() {
 					case 3:
 						session.StackPop(cmd)
 					}
+				// Compiler
+				case "compiler":
+					session.UseCompiler()
 					// Server
+				}
+			case "compiler":
+				switch cmd[0] {
+				case "help":
+					compilerHelp()
+				case "back":
+					session.QuitCompiler()
+				case "list":
+					switch cmd[1] {
+					case "parameters":
+						session.ShowCompilerOptions()
+					}
+				case "set":
+					session.SetCompilerOption(cmd)
 				}
 			}
 		}
