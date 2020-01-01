@@ -30,6 +30,46 @@ func NewEndpoint() *Endpoint {
 	return e
 }
 
+func (e *Endpoint) AuthenticateConnection(msg messages.ClientRequest, id int) {
+	switch id {
+	case 0:
+		fmt.Println("rejected")
+		status := "rejected"
+		connected := messages.EndpointResponse{
+			Connected: false,
+			Status:    status,
+		}
+		res := messages.Message{
+			ClientId: msg.ClientId,
+			Type:     "connection",
+			Content:  connected,
+		}
+		for _, client := range e.clients {
+			if client.id == res.ClientId {
+				client.responses <- res
+				client.disconnect <- true
+			}
+		}
+	default:
+		status := "authenticated"
+		connected := messages.EndpointResponse{
+			Connected: true,
+			Status:    status,
+		}
+		res := messages.Message{
+			ClientId: msg.ClientId,
+			Type:     "connection",
+			Content:  connected,
+		}
+		for _, client := range e.clients {
+			if client.id == res.ClientId {
+				client.responses <- res
+			}
+		}
+
+	}
+}
+
 // Listen listens for connections and messages to broadcast
 func (e *Endpoint) Listen() {
 	for {
@@ -37,15 +77,33 @@ func (e *Endpoint) Listen() {
 		case conn := <-e.connect:
 			e.Join(conn)
 		case msg := <-e.requests:
-			fmt.Println("Received request")
 			user.AuthReqs <- msg
 			auth := <-user.AuthResp
-			switch auth.UserId {
-			case 0:
-				fmt.Println("Here should be sent a ConnRefused message to the client")
-			default:
-				fmt.Println("dispatching")
-				dispatch.DispatchRequest(auth)
+			// If client is opening connection, send him confirmation
+			if auth.Command[0] == "connect" {
+				e.AuthenticateConnection(msg, auth.UserId)
+			} else {
+				// Else, authenticate anyway but forward requests to dispatcher
+				switch auth.UserId {
+				case 0:
+					connected := messages.EndpointResponse{
+						Connected: false,
+						Status:    "rejected",
+					}
+					res := messages.Message{
+						ClientId: msg.ClientId,
+						Type:     "connection",
+						Content:  connected,
+					}
+					for _, client := range e.clients {
+						if client.id == res.ClientId {
+							client.responses <- res
+							client.disconnect <- true
+						}
+					}
+				default:
+					dispatch.DispatchRequest(auth)
+				}
 			}
 		}
 	}
@@ -60,10 +118,6 @@ func (e *Endpoint) Connect(conn net.Conn) {
 func (e *Endpoint) Join(conn net.Conn) {
 	client := CreateClient(conn)
 	e.clients = append(e.clients, client)
-	fmt.Println(e.clients)
-	for _, client := range e.clients {
-		fmt.Println(client.status)
-	}
 	go func() {
 		for {
 			e.requests <- <-client.requests
@@ -113,7 +167,6 @@ func (e *Endpoint) ForwardResponses() {
 						Content:  event,
 					}
 					client.responses <- msg
-					fmt.Println("JSON fucked up")
 				}
 			}
 		}

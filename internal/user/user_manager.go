@@ -1,8 +1,6 @@
 package user
 
 import (
-	"fmt"
-
 	"github.com/maxlandon/wiregost/internal/db"
 	"github.com/maxlandon/wiregost/internal/messages"
 )
@@ -64,9 +62,8 @@ func (um *UserManager) Authenticate() {
 
 		}
 		if registered == false {
-			fmt.Print("Unkwown user")
 			msg.UserId = 0
-			AuthReqs <- msg
+			AuthResp <- msg
 		}
 	}
 }
