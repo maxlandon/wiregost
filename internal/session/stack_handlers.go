@@ -11,7 +11,7 @@ import (
 
 func (s *Session) StackShow() {
 	s.Send(strings.Fields("stack show"))
-	stack := <-moduleReqs
+	stack := <-s.moduleReqs
 
 	// Print stack
 	fmt.Println(tui.Dim("The stack stores a list of previously loaded modules and their state (options, agents) "))

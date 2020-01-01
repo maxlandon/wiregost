@@ -373,7 +373,7 @@ func (s *Session) ListParams() func(string) (names []string) {
 func (s *Session) ListWorkspaces() func(string) (names []string) {
 	return func(string) []string {
 		s.Send([]string{"workspace", "list"})
-		workspace := <-workspaceReqs
+		workspace := <-s.workspaceReqs
 		var list []string
 		// Handle change of state here
 		for _, ws := range workspace.WorkspaceInfos {
@@ -386,7 +386,7 @@ func (s *Session) ListWorkspaces() func(string) (names []string) {
 func (s *Session) ListModules() func(string) (names []string) {
 	return func(string) []string {
 		s.Send([]string{"module", "list"})
-		resp := <-moduleReqs
+		resp := <-s.moduleReqs
 		list := resp.ModuleList
 		// This is useless, but we should devise way to recursively update paths
 		// so that we do not display all modules at once during completion.
@@ -402,7 +402,7 @@ func (s *Session) ListModules() func(string) (names []string) {
 func (s *Session) ListStackModules() func(string) (names []string) {
 	return func(string) []string {
 		s.Send([]string{"stack", "list"})
-		resp := <-moduleReqs
+		resp := <-s.moduleReqs
 		list := resp.ModuleList
 		// This is useless, but we should devise way to recursively update paths
 		// so that we do not display all modules at once during completion.
@@ -418,7 +418,7 @@ func (s *Session) ListStackModules() func(string) (names []string) {
 func (s *Session) GetModuleOptions() func(string) (options []string) {
 	return func(string) []string {
 		s.Send([]string{"show", "options"})
-		mod := <-moduleReqs
+		mod := <-s.moduleReqs
 		opts := mod.Modules[0]
 		list := make([]string, 0)
 		for _, opt := range opts.Options {
@@ -431,7 +431,7 @@ func (s *Session) GetModuleOptions() func(string) (options []string) {
 func (s *Session) GetCompilerOptions() func(string) (options []string) {
 	return func(string) []string {
 		s.Send([]string{"list", "parameters"})
-		comp := <-compilerReqs
+		comp := <-s.compilerReqs
 		opts := comp.Options
 		list := make([]string, 0)
 		for _, opt := range opts {

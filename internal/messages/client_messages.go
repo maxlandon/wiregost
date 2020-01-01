@@ -65,6 +65,7 @@ type StackResponse struct {
 type EndpointResponse struct {
 	User      string
 	Connected bool // Used upon connection, to notify shell it is correctly connected.
+	Status    string
 }
 
 // TO MODIFY

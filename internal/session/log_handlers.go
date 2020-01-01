@@ -4,14 +4,14 @@ import "fmt"
 
 func (s *Session) LogLevel(cmd []string) {
 	// Send(cmd)
-	log := <-logReqs
+	log := <-s.logReqs
 	fmt.Println(log)
 	// Handle change of state here
 }
 
 func (s *Session) LogShow(cmd []string) {
 	// Send(cmd)
-	log := <-logReqs
+	log := <-s.logReqs
 	fmt.Println(log)
 	// Handle printing the logs here
 }
@@ -20,7 +20,7 @@ func (s *Session) LogShow(cmd []string) {
 func (s *Session) LogListen() {
 	go func() {
 		for {
-			msg := <-logReqs
+			msg := <-s.logReqs
 			fmt.Println(msg)
 		}
 	}()

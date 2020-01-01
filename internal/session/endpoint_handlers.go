@@ -190,3 +190,57 @@ func (s *Session) WriteEndpointList() error {
 
 	return nil
 }
+
+// ----------------------------------------------------------------------
+// ENDPOINT LOADING
+
+type Endpoint struct {
+	IPAddress   string
+	Port        int
+	Certificate string
+	Key         string
+	FQDN        string
+	IsDefault   bool
+}
+
+func (s *Session) LoadEndpointList() error {
+	serverList := []Endpoint{}
+
+	userDir, _ := fs.Expand("~/.wiregost/client/")
+	if !fs.Exists(userDir) {
+		os.MkdirAll(userDir, 0755)
+		fmt.Println(tui.Dim("User directory was not found: creating ~/.wiregost/client/"))
+	}
+	path, _ := fs.Expand("~/.wiregost/client/server.conf")
+	if !fs.Exists(path) {
+		fmt.Println(tui.Red("Endpoint Configuration file not found: check for issues," +
+			" or run the configuration script again"))
+		os.Exit(1)
+	} else {
+		configBlob, _ := ioutil.ReadFile(path)
+		json.Unmarshal(configBlob, &serverList)
+	}
+
+	// Format certificate path for each server, add server to EndpointManager
+	for _, i := range serverList {
+		i.Certificate, _ = fs.Expand(i.Certificate)
+		s.SavedEndpoints = append(s.SavedEndpoints,
+			Endpoint{IPAddress: i.IPAddress,
+				Port:        i.Port,
+				Certificate: i.Certificate,
+				Key:         i.Key,
+				FQDN:        i.FQDN,
+				IsDefault:   i.IsDefault})
+	}
+	return nil
+}
+
+func (s *Session) GetDefaultEndpoint() error {
+	for _, i := range s.SavedEndpoints {
+		if i.IsDefault == true {
+			s.CurrentEndpoint = i
+			break
+		}
+	}
+	return nil
+}

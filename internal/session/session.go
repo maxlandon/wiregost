@@ -6,9 +6,13 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	// 3rd party
 	"github.com/chzyer/readline"
+	"github.com/maxlandon/wiregost/internal/compiler"
+	"github.com/maxlandon/wiregost/internal/messages"
+	"github.com/maxlandon/wiregost/internal/modules"
 )
 
 type Session struct {
@@ -32,12 +36,32 @@ type Session struct {
 	connection *tls.Conn
 	reader     *bufio.Reader
 	writer     *bufio.Writer
+	// Response Channels
+	moduleReqs    chan modules.ModuleResponse
+	agentReqs     chan messages.AgentResponse
+	logReqs       chan messages.LogResponse
+	workspaceReqs chan messages.WorkspaceResponse
+	endpointReqs  chan messages.EndpointResponse
+	serverReqs    chan messages.ServerResponse
+	stackReqs     chan messages.StackResponse
+	compilerReqs  chan compiler.CompilerResponse
+	logEventReqs  chan map[string]string
 }
 
 func NewSession() *Session {
 	session := &Session{
 		menuContext: "main",
 		Env:         make(map[string]string),
+		// Response channels
+		moduleReqs:    make(chan modules.ModuleResponse),
+		agentReqs:     make(chan messages.AgentResponse),
+		logReqs:       make(chan messages.LogResponse),
+		workspaceReqs: make(chan messages.WorkspaceResponse),
+		endpointReqs:  make(chan messages.EndpointResponse),
+		serverReqs:    make(chan messages.ServerResponse),
+		stackReqs:     make(chan messages.StackResponse),
+		compilerReqs:  make(chan compiler.CompilerResponse),
+		logEventReqs:  make(chan map[string]string, 1),
 	}
 
 	home, _ := os.UserHomeDir()
@@ -66,7 +90,8 @@ func NewSession() *Session {
 	// Connect to default server
 	session.Connect()
 
-	// Launch console
+	// Launch console but give time to connect
+	time.Sleep(time.Millisecond * 50)
 	session.Start()
 
 	return session

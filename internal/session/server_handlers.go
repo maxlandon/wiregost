@@ -11,7 +11,7 @@ import (
 
 func (s *Session) ServerStart(cmd []string) {
 	s.Send(cmd)
-	// status := <-serverReqs
+	// status := <-s.serverReqs
 	fmt.Println()
 	// fmt.Println(status.Status)
 }
@@ -42,7 +42,7 @@ func (s *Session) ServerReload(cmd []string) {
 	}
 	s.writer.Flush()
 
-	status := <-serverReqs
+	status := <-s.serverReqs
 	fmt.Println()
 	fmt.Println(status.Status)
 }
@@ -76,14 +76,14 @@ func (s *Session) ServerStop(cmd []string) {
 	}
 	s.writer.Flush()
 
-	status := <-serverReqs
+	status := <-s.serverReqs
 	fmt.Println()
 	fmt.Println(status.Status)
 }
 
 func (s *Session) GenerateCertificate(cmd []string) {
 	s.Send(cmd)
-	server := <-serverReqs
+	server := <-s.serverReqs
 	fmt.Println()
 	fmt.Println(server.Status)
 }

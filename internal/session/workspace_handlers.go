@@ -12,14 +12,14 @@ import (
 
 func (s *Session) WorkspaceList(cmd []string) {
 	s.Send(cmd)
-	workspace := <-workspaceReqs
+	workspace := <-s.workspaceReqs
 	fmt.Println(workspace)
 }
 
 func (s *Session) WorkspaceSwitch(cmd []string) {
 	s.currentWorkspace = cmd[2]
 	s.Send(cmd)
-	workspace := <-workspaceReqs
+	workspace := <-s.workspaceReqs
 	s.CurrentWorkspaceId = workspace.WorkspaceId
 }
 
@@ -30,7 +30,7 @@ func (s *Session) WorkspaceDelete(cmd []string) {
 		fmt.Println()
 	} else {
 		s.Send(cmd)
-		workspace := <-workspaceReqs
+		workspace := <-s.workspaceReqs
 		fmt.Println()
 		fmt.Println(workspace.Result)
 	}
@@ -60,7 +60,7 @@ func (s *Session) WorkspaceNew(cmd []string) {
 		log.Fatal(err)
 	}
 	s.writer.Flush()
-	workspace := <-workspaceReqs
+	workspace := <-s.workspaceReqs
 	fmt.Println()
 	fmt.Println(workspace.Result)
 }

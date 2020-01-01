@@ -12,7 +12,7 @@ import (
 
 func (s *Session) UseModule(cmd []string) {
 	s.Send(cmd)
-	mod := <-moduleReqs
+	mod := <-s.moduleReqs
 	// Switch shell context
 	s.Shell.Config.AutoComplete = s.getCompleter("module")
 	s.menuContext = "module"
@@ -22,7 +22,7 @@ func (s *Session) UseModule(cmd []string) {
 
 func (s *Session) ShowOptions(cmd []string) {
 	s.Send(cmd)
-	mod := <-moduleReqs
+	mod := <-s.moduleReqs
 	m := mod.Modules[0]
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -51,7 +51,7 @@ func (s *Session) ShowOptions(cmd []string) {
 
 func (s *Session) ShowInfo() {
 	s.Send(strings.Fields("show options"))
-	mod := <-moduleReqs
+	mod := <-s.moduleReqs
 	m := mod.Modules[0]
 
 	// Info
@@ -99,7 +99,7 @@ func (s *Session) ShowInfo() {
 
 func (s *Session) GetModuleList(cmd []string) {
 	// Send(cmd)
-	mod := <-moduleReqs
+	mod := <-s.moduleReqs
 
 	list := mod.Modules
 	fmt.Println(list)
@@ -107,7 +107,7 @@ func (s *Session) GetModuleList(cmd []string) {
 
 func (s *Session) SetModuleOption(cmd []string) {
 	s.Send(cmd)
-	opt := <-moduleReqs
+	opt := <-s.moduleReqs
 	if opt.Status != "" {
 		fmt.Println()
 		fmt.Println(opt.Status)
@@ -120,14 +120,14 @@ func (s *Session) SetModuleOption(cmd []string) {
 
 func (s *Session) SetAgent(cmd []string) {
 	// Send(cmd)
-	mod := <-moduleReqs
+	mod := <-s.moduleReqs
 	fmt.Println(mod)
 	// Add some verification that agent is correctly set here.
 }
 
 func (s *Session) RunModule(cmd []string) {
 	// Send(cmd)
-	mod := <-moduleReqs
+	mod := <-s.moduleReqs
 	fmt.Println(mod)
 	// Add some verification that agent is correctly set here.
 }

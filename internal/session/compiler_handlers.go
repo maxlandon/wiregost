@@ -31,7 +31,7 @@ func (s *Session) QuitCompiler() {
 
 func (s *Session) ShowCompilerOptions(cmd []string) {
 	s.Send(cmd)
-	comp := <-compilerReqs
+	comp := <-s.compilerReqs
 
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetCenterSeparator(tui.Dim("|"))
@@ -58,7 +58,7 @@ func (s *Session) ShowCompilerOptions(cmd []string) {
 
 func (s *Session) SetCompilerOption(cmd []string) {
 	s.Send(cmd)
-	opt := <-compilerReqs
+	opt := <-s.compilerReqs
 	if opt.Status != "" {
 		fmt.Println()
 		fmt.Println(opt.Status)

@@ -5,9 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"os"
 	"strconv"
 
 	"github.com/evilsocket/islazy/fs"
@@ -17,73 +15,21 @@ import (
 	"github.com/maxlandon/wiregost/internal/modules"
 )
 
-// Responses channels
-var moduleReqs = make(chan modules.ModuleResponse)
-var agentReqs = make(chan messages.AgentResponse)
-var logReqs = make(chan messages.LogResponse)
-var workspaceReqs = make(chan messages.WorkspaceResponse)
-var endpointReqs = make(chan messages.EndpointResponse)
-var serverReqs = make(chan messages.ServerResponse)
-var stackReqs = make(chan messages.StackResponse)
-var compilerReqs = make(chan compiler.CompilerResponse)
-var logEventReqs = make(chan map[string]string, 1)
-
-// ----------------------------------------------------------------------
-// ENDPOINT LOADING
-
-type Endpoint struct {
-	IPAddress   string
-	Port        int
-	Certificate string
-	Key         string
-	FQDN        string
-	IsDefault   bool
-}
-
-func (s *Session) LoadEndpointList() error {
-	serverList := []Endpoint{}
-
-	userDir, _ := fs.Expand("~/.wiregost/client/")
-	if !fs.Exists(userDir) {
-		os.MkdirAll(userDir, 0755)
-		fmt.Println(tui.Dim("User directory was not found: creating ~/.wiregost/client/"))
-	}
-	path, _ := fs.Expand("~/.wiregost/client/server.conf")
-	if !fs.Exists(path) {
-		fmt.Println(tui.Red("Endpoint Configuration file not found: check for issues," +
-			" or run the configuration script again"))
-		os.Exit(1)
-	} else {
-		configBlob, _ := ioutil.ReadFile(path)
-		json.Unmarshal(configBlob, &serverList)
-	}
-
-	// Format certificate path for each server, add server to EndpointManager
-	for _, i := range serverList {
-		i.Certificate, _ = fs.Expand(i.Certificate)
-		s.SavedEndpoints = append(s.SavedEndpoints,
-			Endpoint{IPAddress: i.IPAddress,
-				Port:        i.Port,
-				Certificate: i.Certificate,
-				Key:         i.Key,
-				FQDN:        i.FQDN,
-				IsDefault:   i.IsDefault})
-	}
-	return nil
-}
-
-func (s *Session) GetDefaultEndpoint() error {
-	for _, i := range s.SavedEndpoints {
-		if i.IsDefault == true {
-			s.CurrentEndpoint = i
-			break
-		}
-	}
-	return nil
-}
-
 // ----------------------------------------------------------------------
 // ENDPOINT CONNECTION
+
+func (s *Session) ConnectionStatus(conn messages.EndpointResponse) {
+	switch conn.Status {
+	case "authenticated":
+		fmt.Printf("Connected as " + tui.Bold(tui.Yellow(s.user.Name)+" (Administrator rights)."))
+		fmt.Println(" Server at " + s.CurrentEndpoint.IPAddress + ":" + strconv.Itoa(s.CurrentEndpoint.Port) +
+			" (FQDN: " + s.CurrentEndpoint.FQDN + ", default: " + strconv.FormatBool(s.CurrentEndpoint.IsDefault) + ")")
+		fmt.Println()
+	case "rejected":
+		fmt.Printf("%s[!]%s Connection closed: user authentication failed.\n", tui.RED, tui.RESET)
+		fmt.Println()
+	}
+}
 
 func (s *Session) Send(cmd []string) error {
 	msg := messages.ClientRequest{
@@ -125,6 +71,9 @@ func (s *Session) Connect() error {
 	s.reader = bufio.NewReader(s.connection)
 	s.writer = bufio.NewWriter(s.connection)
 
+	// Send authenticated connection request
+	s.Send([]string{"connect"})
+
 	// Listen for incoming data
 	go func() {
 		for {
@@ -138,54 +87,60 @@ func (s *Session) Connect() error {
 				break
 			}
 			switch env.Type {
+			case "connection":
+				var conn messages.EndpointResponse
+				if err := json.Unmarshal(msg, &conn); err != nil {
+					fmt.Println("Failed to decode Module message: " + err.Error())
+				}
+				s.ConnectionStatus(conn)
 			case "module":
 				var mod modules.ModuleResponse
 				if err := json.Unmarshal(msg, &mod); err != nil {
 					fmt.Println("Failed to decode Module message: " + err.Error())
 				}
-				moduleReqs <- mod
+				s.moduleReqs <- mod
 			case "agent":
 				var agent messages.AgentResponse
 				if err := json.Unmarshal(msg, &agent); err != nil {
 					fmt.Println("Failed to decode agent reponse:")
 				}
-				agentReqs <- agent
+				s.agentReqs <- agent
 			case "log":
 				var log messages.LogResponse
 				if err := json.Unmarshal(msg, &log); err != nil {
 					fmt.Println("Failed to decode log response")
 				}
-				logReqs <- log
+				s.logReqs <- log
 			case "stack":
 				var stack messages.StackResponse
 				if err := json.Unmarshal(msg, &stack); err != nil {
 					fmt.Println("Failed to decode log response")
 				}
-				stackReqs <- stack
+				s.stackReqs <- stack
 			case "workspace":
 				var workspace messages.WorkspaceResponse
 				if err := json.Unmarshal(msg, &workspace); err != nil {
 					fmt.Println("Failed to decode log response")
 				}
-				workspaceReqs <- workspace
+				s.workspaceReqs <- workspace
 			case "server":
 				var server messages.ServerResponse
 				if err := json.Unmarshal(msg, &server); err != nil {
 					fmt.Println("Failed to decode log response")
 				}
-				serverReqs <- server
+				s.serverReqs <- server
 			case "endpoint":
 				var endpoint messages.EndpointResponse
 				if err := json.Unmarshal(msg, &endpoint); err != nil {
 					fmt.Println("Failed to decode log response")
 				}
-				endpointReqs <- endpoint
+				s.endpointReqs <- endpoint
 			case "compiler":
 				var compiler compiler.CompilerResponse
 				if err := json.Unmarshal(msg, &compiler); err != nil {
 					fmt.Println("Failed to decode log response")
 				}
-				compilerReqs <- compiler
+				s.compilerReqs <- compiler
 			case "logEvent":
 				var event map[string]string
 				if err := json.Unmarshal(msg, &event); err != nil {
