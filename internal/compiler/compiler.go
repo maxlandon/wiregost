@@ -175,7 +175,6 @@ func (m *Manager) LoadCompilers(path string, id int) {
 	confPath, _ := fs.Expand(path + "/" + "compiler.conf")
 	configBlob, _ := ioutil.ReadFile(confPath)
 	json.Unmarshal(configBlob, &comp)
-	fmt.Println(comp)
 	// Add to list
 	m.Compilers[id] = comp
 }

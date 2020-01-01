@@ -19,7 +19,7 @@ func main() {
 	}
 	cfg := &tls.Config{Certificates: []tls.Certificate{cert}}
 
-	listener, err := tls.Listen("tcp", ":5000", cfg)
+	listener, err := tls.Listen("tcp", "localhost:7777", cfg)
 	if err != nil {
 		fmt.Println(err)
 	}

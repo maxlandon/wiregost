@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/wiregost/internal/cli"
+	"github.com/maxlandon/wiregost/internal/session"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 		"--------------------------------------------------------------------------------"))
 
 	// Launch session
-	cli.NewSession()
+	session.NewSession()
 }
 
 var welcomeToGhost = `                                                                                                            ,,.,=++============+,               

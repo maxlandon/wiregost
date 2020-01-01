@@ -8,7 +8,6 @@ import (
 	"net"
 
 	"github.com/maxlandon/wiregost/internal/db"
-	"github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
 )
 
@@ -27,9 +26,6 @@ type Client struct {
 	// Message-specific
 	requests  chan messages.ClientRequest
 	responses chan messages.Message // Commands will always be sent as a list of strings
-
-	// Client logger
-	Logger *logging.ClientLogger
 }
 
 func CreateClient(conn net.Conn) *Client {
@@ -48,11 +44,7 @@ func CreateClient(conn net.Conn) *Client {
 		id: rand.Int(),
 		// User: Add user
 		Context: "main", // Default context is always main when a shell is spawned
-		// Initilialize Logger
-		Logger: new(logging.ClientLogger),
 	}
-	// Setup logger
-	client.Logger.ClientId = client.id
 
 	go client.Write()
 	go client.Read()
@@ -97,8 +89,6 @@ func (client *Client) Read() {
 		if message.CurrentWorkspaceId != 0 {
 			// Fill client with message information
 			client.CurrentWorkspaceId = message.CurrentWorkspaceId
-			// Fill client Logger with message information
-			client.Logger.CurrentWorkspaceId = message.CurrentWorkspaceId
 		}
 
 		// Forward message

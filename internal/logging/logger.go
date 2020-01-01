@@ -1,84 +1,86 @@
 package logging
 
 import (
-	"time"
+	"io"
+	"log"
+	"os"
 
-	"github.com/go-playground/log"
-)
-
-// All framework components need to have their own Message() function:
-// This function routes all their logs to the HandleLogs() function here,
-// via a channel.
-// func Message(lvl log.Level, msg string) {
-//      fields := specific to the component/workspace/client/module
-//      log := log.Entry{ Message: msg, Component: module, LogLevel: lvl}
-//      logging.LogReqs <- log
-//}
-
-// Example: Message(logging.debug, "Received connection request")
-
-// Log Levels
-var (
-	debug  = log.DebugLevel
-	info   = log.InfoLevel
-	notice = log.NoticeLevel
-	warn   = log.WarnLevel
-	alert  = log.AlertLevel
-	err    = log.ErrorLevel
-	pan    = log.PanicLevel
+	"github.com/evilsocket/islazy/fs"
+	"github.com/sirupsen/logrus"
 )
 
 // Channels. All channels convey log entries, with all information needed
-var moduleLogs = make(chan log.Entry)
-var workspaceLogs = make(chan log.Entry)
-var endpointLogs = make(chan log.Entry)
-var LogReqs = make(chan log.Entry)
+// var moduleLogs = make(chan log.Entry)
+// var workspaceLogs = make(chan log.Entry)
+var ForwardLogs = make(chan *logrus.Entry, 100)
 
-// SET TIME FORMAT
-// cLog.SetTimestampFormat("01-02 15:04:05")
-
-// LogManager is a handler taking care of :
-//    - dispatching logs to their respective client loggers     -> HandleLogs()
-//    - saving all framework logs to their respective files.    -> SaveLogs()
-// It's always available at debug level, so that everything is logged.
-type LogManager struct {
+type LogEvent struct {
+	Time        string
+	Level       string
+	Message     string
+	Workspace   string
+	WorkspaceId int
 }
 
-// Each client has its own dedicated ClientLogger instance, because it can then
-// modulate its log level independently of others.
-type ClientLogger struct {
-	ClientId           int
-	CurrentWorkspaceId int
-
-	// ClientLogger forwards logs to their appropriate destinations, and keeps track of
-	// which clients/workspaces ask for which log levels.
+// Each workspace has its own dedicated WorkspaceLogger instance, because it can then
+// modulate its log level independently of others, and save logs in the appropriate directory.
+// This logger is embedded to other components (Server, ModuleStack, Workspace) and allows them
+// to log their information.
+type WorkspaceLogger struct {
+	*logrus.Logger
+	WorkspaceId   int
+	WorkspaceName string
 }
 
-// All logs in WireGost are centralized and processed by this function.
-// They are then dispatched to their respective client loggers.
-func (lm *LogManager) HandleLogs() {
-	// Loop indefinitely to receive logs
-	for {
-		req := <-LogReqs
-		entry := log.Entry{
-			Timestamp: time.Now(),
-			Message:   req.Message,
-			Fields:    req.Fields,
-			Level:     req.Level,
-		}
-		// Send request to client loggers and file logger.
-		log.HandleEntry(entry)
+func NewWorkspaceLogger(name string, id int) *WorkspaceLogger {
+	logger := &WorkspaceLogger{
+		logrus.New(),
+		id,
+		name,
 	}
+	// Setup formatting
+	logger.SetFormatter(&logrus.TextFormatter{
+		TimestampFormat: "01-02 15:04:05",
+		DisableColors:   true,
+		FullTimestamp:   true,
+	})
+	// Setup level
+	logger.SetLevel(logrus.DebugLevel)
+	// Add hook to forward each log to clients
+	hook := new(ForwardToClients)
+	logger.AddHook(hook)
+	// Setup log file
+	logfile, _ := fs.Expand("~/.wiregost/workspaces/" + name + "/" + name + ".log")
+	// if fs.Exists("~/.wiregost/workspaces/"+name+"/"+name+".log") == false {
+	if !fs.Exists(logfile) {
+		os.Create(logfile)
+		// os.Create("~/.wiregost/workspaces/" + name + "/" + name + ".log")
+	}
+	file, err := os.OpenFile(logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	// file, err := os.OpenFile("~/.wiregost/workspaces/"+name+"/"+name+".log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logOutput := io.MultiWriter(os.Stdout, file)
+	logger.SetOutput(logOutput)
+
+	return logger
 }
 
-// All logs from all components will be handled by this function.
-// The function filters the ones pertaining to the general framework,
-// and saves them to a log file.
-func (lm *LogManager) Log(e log.Entry) {
-
+// Hooks
+type Hook interface {
+	Levels() []logrus.Level
+	Fire(*logrus.Entry) error
+}
+type ForwardToClients struct {
 }
 
-// Log() method needs to be implemented for satisfying the Logger interface
-func (cl *ClientLogger) Log(e log.Entry) {
-	// Once the entry has been received by all client loggers satisfying the debug level
+// Forward log items to a general log dispatcher, at the Endpoint level.
+func (h *ForwardToClients) Fire(entry *logrus.Entry) error {
+	ForwardLogs <- entry
+	return nil
+}
+
+func (h *ForwardToClients) Levels() []logrus.Level {
+	return logrus.AllLevels
 }

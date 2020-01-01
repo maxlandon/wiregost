@@ -16,6 +16,8 @@ type ClientRequest struct {
 	Command []string
 	// Server-specific
 	ServerParams map[string]string
+	// Workspace-specific
+	WorkspaceParams map[string]string
 }
 
 type ClientConnRequest struct {

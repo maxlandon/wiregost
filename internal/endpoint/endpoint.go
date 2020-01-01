@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/maxlandon/wiregost/internal/dispatch"
+	testlog "github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/user"
 	"github.com/maxlandon/wiregost/internal/workspace"
@@ -96,6 +97,23 @@ func (e *Endpoint) ForwardResponses() {
 			for _, client := range e.clients {
 				if client.id == res.ClientId {
 					client.responses <- res
+				}
+			}
+		// Prepare message when its a log event
+		case res := <-testlog.ForwardLogs:
+			fmt.Println("handled event from logger")
+			for _, client := range e.clients {
+				if client.CurrentWorkspaceId == res.Data["workspaceId"] {
+					event := make(map[string]string)
+					event["level"] = res.Level.String()
+					event["message"] = res.Message
+					msg := messages.Message{
+						ClientId: client.id,
+						Type:     "logEvent",
+						Content:  event,
+					}
+					client.responses <- msg
+					fmt.Println("JSON fucked up")
 				}
 			}
 		}
