@@ -6,11 +6,13 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/internal/dispatch"
+	testlog "github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
 )
 
@@ -30,12 +32,14 @@ type ServerRequest struct {
 	WorkspaceId   int
 	Action        string
 	WorkspacePath string
+	Logger        *testlog.WorkspaceLogger
 }
 
 type CompilerRequest struct {
 	WorkspaceId   int
 	Action        string
 	WorkspacePath string
+	Logger        *testlog.WorkspaceLogger
 }
 
 type Workspace struct {
@@ -51,6 +55,7 @@ type Workspace struct {
 
 type WorkspaceManager struct {
 	Workspaces []Workspace
+	Loggers    map[int]*testlog.WorkspaceLogger
 	// Channels
 	Requests  chan messages.ClientRequest
 	Responses chan messages.Message
@@ -60,6 +65,7 @@ func NewWorkspaceManager() *WorkspaceManager {
 	ws := &WorkspaceManager{
 		Requests:  make(chan messages.ClientRequest),
 		Responses: make(chan messages.Message),
+		Loggers:   make(map[int]*testlog.WorkspaceLogger),
 	}
 	// Load all workspaces
 	ws.LoadWorkspaces()
@@ -87,7 +93,7 @@ func (w *WorkspaceManager) HandleRequests() {
 			}
 			Responses <- msg
 		case "new":
-			id, path := w.Create(req.Command[2], req.UserId)
+			id, path := w.Create(req)
 			ser := ServerRequest{
 				WorkspaceId:   id,
 				WorkspacePath: path,
@@ -132,17 +138,41 @@ func (w *WorkspaceManager) HandleRequests() {
 	}
 }
 
-func (w *WorkspaceManager) Create(name string, ownerId int) (Id int, path string) {
+func (w *WorkspaceManager) Create(req messages.ClientRequest) (Id int, path string) {
 	// Create server object
 	workspace := Workspace{
-		Name:           name,
+		Name:           req.Command[2],
 		Id:             rand.Int(),
-		OwnerID:        ownerId,
+		OwnerID:        req.UserId,
 		LimitToNetwork: false,
 		CreatedAt:      time.Now(),
 	}
+	// Add optional parameters
+	params := req.WorkspaceParams
+	if v, ok := params["workspace.description"]; ok {
+		workspace.Description = v
+	}
+	if v, ok := params["workspace.boundary"]; ok {
+		workspace.Boundary = v
+	}
+	if v, ok := params["workspace.limit"]; ok {
+		workspace.LimitToNetwork, _ = strconv.ParseBool(v)
+	}
+
 	// Add it to workspace list
 	w.Workspaces = append(w.Workspaces, workspace)
+
+	// Respond to client
+	result := fmt.Sprintf("%s[*]%s Workspace '%s' created, with associated module stack, logger, and agent server.", tui.GREEN, tui.RESET, workspace.Name)
+	res := messages.WorkspaceResponse{
+		Result: result,
+	}
+	msg := messages.Message{
+		ClientId: req.ClientId,
+		Type:     "workspace",
+		Content:  res,
+	}
+	Responses <- msg
 
 	// Create workspace subdirectory
 	workspaceDir, _ := fs.Expand("~/.wiregost/workspaces")
@@ -173,11 +203,15 @@ func (w *WorkspaceManager) Create(name string, ownerId int) (Id int, path string
 		_ = ioutil.WriteFile(file, jsonData, 0755)
 		fmt.Println("Populated workspace.conf for " + workspace.Name)
 	}
+	// Create its associated logger instance
+	w.Loggers[workspace.Id] = testlog.NewWorkspaceLogger(workspace.Name, workspace.Id)
+
 	// Create corresponding compiler
 	compReq := CompilerRequest{
 		WorkspaceId:   workspace.Id,
 		WorkspacePath: workspaceDir,
 		Action:        "create",
+		Logger:        w.Loggers[workspace.Id],
 	}
 	CompilerRequests <- compReq
 
@@ -224,7 +258,7 @@ func (ws *Workspace) SaveConf() {
 }
 
 func (w *WorkspaceManager) Delete(name string, ownerId int) (result string) {
-	res := ""
+	var res string
 	for _, ws := range w.Workspaces {
 		if ws.OwnerID == ownerId && name == ws.Name {
 			path, _ := fs.Expand("~/.wiregost/workspaces/" + name)
@@ -239,6 +273,7 @@ func (w *WorkspaceManager) Delete(name string, ownerId int) (result string) {
 			newList = append(newList, w)
 		}
 	}
+	w.Workspaces = newList
 
 	return res
 }
@@ -255,16 +290,22 @@ func (w *WorkspaceManager) LoadWorkspaces() {
 		w.Workspaces = append(w.Workspaces, ws)
 		fmt.Println(tui.Dim("Loaded workspace " + d.Name()))
 		path, _ := fs.Expand("~/.wiregost/workspaces/" + d.Name())
+		// Load associated loggers
+		w.Loggers[ws.Id] = testlog.NewWorkspaceLogger(ws.Name, ws.Id)
+		// Load associated servers
 		servReq := ServerRequest{
 			WorkspaceId:   ws.Id,
 			WorkspacePath: path,
 			Action:        "spawn",
+			Logger:        w.Loggers[ws.Id],
 		}
 		ServerRequests <- servReq
+		// Load associated compilers
 		compReq := CompilerRequest{
 			WorkspaceId:   ws.Id,
 			WorkspacePath: path,
 			Action:        "spawn",
+			Logger:        w.Loggers[ws.Id],
 		}
 		CompilerRequests <- compReq
 		// Create new stack

@@ -19,10 +19,12 @@ import (
 
 	// 3rd Party
 	"github.com/cretz/gopaque/gopaque"
+	"github.com/evilsocket/islazy/tui"
 	"github.com/fatih/color"
 	"github.com/lucas-clemente/quic-go"
 	"github.com/lucas-clemente/quic-go/h2quic"
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 	"go.dedis.ch/kyber"
 	"gopkg.in/square/go-jose.v2"
 	"gopkg.in/square/go-jose.v2/jwt"
@@ -33,6 +35,7 @@ import (
 	"github.com/Ne0nd0g/merlin/pkg/util"     // TO CHANGE WITH OUR OWN WHEN READY
 	"github.com/maxlandon/wiregost/internal/agents"
 	"github.com/maxlandon/wiregost/internal/core"
+	testlog "github.com/maxlandon/wiregost/internal/logging"
 )
 
 // Server is a structure for creating and instantiating new server objects
@@ -50,21 +53,28 @@ type Server struct {
 	opaqueKey   kyber.Scalar   // OPAQUE server's keys
 
 	// Added
-	Running bool
+	Workspace   string
+	WorkspaceId int
+	Running     bool
+	log         *testlog.WorkspaceLogger
 }
 
 // New instantiates a new server object and returns it
-func New(iface string, port int, protocol string, key string, certificate string, psk string) (Server, error) {
+func New(iface string, port int, protocol string, key string, certificate string, psk string, workspace string, workspaceId int) (Server, error) {
 	s := Server{
-		ID:        uuid.NewV4(),
-		Protocol:  protocol,
-		Interface: iface,
-		Port:      port,
-		Mux:       http.NewServeMux(),
-		jwtKey:    []byte(core.RandStringBytesMaskImprSrc(32)), // Used to sign and encrypt JWT
-		psk:       psk,
+		ID:          uuid.NewV4(),
+		Protocol:    protocol,
+		Interface:   iface,
+		Port:        port,
+		Mux:         http.NewServeMux(),
+		jwtKey:      []byte(core.RandStringBytesMaskImprSrc(32)), // Used to sign and encrypt JWT
+		psk:         psk,
+		Workspace:   workspace,
+		WorkspaceId: workspaceId,
+		Running:     false,
 	}
 	// OPAQUE Server Public/Private keys; Can be used with every agent
+	// log := s.log.WithFields(logrus.Fields{"workspace": s.Workspace, "workspaceId": s.WorkspaceId})
 	s.opaqueKey = gopaque.CryptoDefault.NewKey(nil)
 
 	var cer tls.Certificate
@@ -74,6 +84,7 @@ func New(iface string, port int, protocol string, key string, certificate string
 	if os.IsNotExist(errCrt) {
 		// generate a new ephemeral certificate
 		m := fmt.Sprintf("No certificate found at %s", certificate)
+		s.log.Warnf("No certificate found at %s", certificate)
 		logging.Server(m)
 		message("note", m)
 		t := "Creating in-memory x.509 certificate used for this session only."
@@ -199,8 +210,14 @@ func New(iface string, port int, protocol string, key string, certificate string
 }
 
 // Run function starts the server on the preconfigured port for the preconfigured service
-func (s *Server) Run() error {
-	logging.Server(fmt.Sprintf("Starting %s Listener at %s:%d", s.Protocol, s.Interface, s.Port))
+func (s *Server) Run() (status string, err error) {
+	// Test context logger
+	log := s.log.WithFields(logrus.Fields{"workspace": s.Workspace, "workspaceId": s.WorkspaceId})
+	log.Infof(fmt.Sprintf("Starting %s Listener at %s:%d", s.Protocol, s.Interface, s.Port))
+	for {
+		time.Sleep(time.Second * 3)
+		log.Infof(fmt.Sprintf("Starting %s Listener at %s:%d", s.Protocol, s.Interface, s.Port))
+	}
 
 	time.Sleep(45 * time.Millisecond) // Sleep to allow the shell to start up
 	if s.psk == "merlin" {
@@ -210,6 +227,8 @@ func (s *Server) Run() error {
 		message("note", "Consider changing the PSK by using the -psk command line flag.")
 	}
 	message("note", fmt.Sprintf("Starting %s listener on %s:%d", s.Protocol, s.Interface, s.Port))
+	m := fmt.Sprintf("%s[*]%s Starting %s listener on %s:%d %s(pre-shared key: %s%s)",
+		tui.GREEN, tui.RESET, s.Protocol, s.Interface, s.Port, tui.DIM, s.psk, tui.RESET)
 
 	if s.Protocol == "h2" {
 		server := s.Server.(*http.Server)
@@ -224,7 +243,7 @@ func (s *Server) Run() error {
 			}
 		}()
 		go logging.Server(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
-		return nil
+		return m, nil
 	} else if s.Protocol == "hq" {
 		server := s.Server.(*h2quic.Server)
 
@@ -238,9 +257,9 @@ func (s *Server) Run() error {
 			}
 		}()
 		go logging.Server(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
-		return nil
+		return m, nil
 	}
-	return fmt.Errorf("%s is an invalid server protocol", s.Protocol)
+	return fmt.Errorf("%s is an invalid server protocol", s.Protocol).Error(), nil
 }
 
 // agentHandler function is responsible for all Merlin agent traffic
