@@ -1,9 +1,5 @@
 package session
 
-// This file contains all objects and functions related to LOCAL client-side authentication,
-// Because user credentials are also used for remote authentication with the server,
-// The data structs in this file will be reused in other parts of the code.
-
 import (
 	"bytes"
 	"crypto/sha256"
