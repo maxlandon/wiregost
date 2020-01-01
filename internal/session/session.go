@@ -1,139 +1,297 @@
 package session
 
-// The session package contains the code for the WireGost client shell, ghost.
-// The structure is similar to the one of Bettercap, the wireless toolkit written
-// in Go.
-
-// This file contains the Session object, which is central to the shell.
-// It interfaces with all other components needed by the shell, such as prompts,
-// command handlers, client configuration, etc.
-
-// The most basic functions needed by the shell are also here, such as New(),
-// Refresh(), ReadLine() and Run().
-
 import (
-	"fmt"
+	"bufio"
+	"crypto/tls"
+	"io"
 	"os"
-	"time"
+	"strings"
 
+	// 3rd party
 	"github.com/chzyer/readline"
-	"github.com/evilsocket/islazy/str"
-	"github.com/evilsocket/islazy/tui"
 )
 
-var userHomeDir, err = os.UserHomeDir()
-var HistoryFile = userHomeDir + "/.wiregost/client/.history"
-
-type UnknownCommandCallback func(cmd string) bool
-
 type Session struct {
-	StartedAt       time.Time
-	Active          bool
-	Prompt          Prompt
-	Input           *readline.Instance
-	CommandHandlers []CommandHandler
-	Config          *Config
-	User            *User
-	ServerManager   *ServerManager
-	CurrentDir      string
-	UnkCmdCallback  UnknownCommandCallback
+	// Shell
+	Shell  *readline.Instance
+	prompt Prompt
+	// Auth
+	user *User
+	// Context
+	menuContext        string
+	currentModule      string
+	currentWorkspace   string
+	CurrentWorkspaceId int
+	// Environmment variables
+	Env map[string]string
+	// Server connection parameters
+	SavedEndpoints  []Endpoint
+	CurrentEndpoint Endpoint
+	connected       bool
+	// Connection
+	connection *tls.Conn
+	reader     *bufio.Reader
+	writer     *bufio.Writer
 }
 
-// Instantiates a new Session object
-func New() (*Session, error) {
-
-	s := &Session{
-		Prompt: NewPrompt(),
-		Config: NewConfig(),
-		User:   NewUser(),
-
-		CommandHandlers: make([]CommandHandler, 0),
-		UnkCmdCallback:  nil,
-	}
-	// Load User credentials
-	s.User.LoadCreds()
-
-	// Start Server Manager
-	s.ServerManager = NewServerManager(s.User)
-
-	// Register all command handlers
-	s.registerCoreHandlers()
-	s.registerConfigHandlers()
-	s.registerHelpHandlers()
-	s.registerHistoryHandlers()
-	s.registerServerHandlers()
-
-	return s, nil
-}
-
-// Starts a Session based on a Session object
-func (s *Session) Start() (err error) {
-
-	if err := s.setupReadline(); err != nil {
-		return err
+func NewSession() *Session {
+	session := &Session{
+		menuContext: "main",
+		Env:         make(map[string]string),
 	}
 
-	// Loading all configuration elements MIGHT BE IMPORTANT IN THE FUTURE, FOR OTHER SERVICES/FUNCTIONS !!!!!!!!
-	// s.Config.LoadConfig()
+	home, _ := os.UserHomeDir()
+	// Set shell and completers
+	shellCompleter := session.getCompleter("main")
+	session.Shell, _ = readline.NewEx(&readline.Config{
+		HistoryFile:       home + "/.wiregost/client/.history",
+		AutoComplete:      shellCompleter,
+		InterruptPrompt:   "^C",
+		EOFPrompt:         "exit",
+		HistorySearchFold: true,
+		// FilterInputRune: To be used later if needed
+	})
+	// Set Prompt
+	session.prompt = NewPrompt(session)
 
-	// Load User Creds and authenticate
-	s.User.Authenticate()
+	// Set Auth
+	session.user = NewUser()
+	session.user.LoadCreds()
 
-	s.StartedAt = time.Now()
-	s.Active = true
+	// Load saved servers
+	session.LoadEndpointList()
+	session.GetDefaultEndpoint()
+	session.connected = false
 
-	return err
+	// Connect to default server
+	session.Connect()
+
+	// Launch console
+	session.Start()
+
+	return session
 }
 
-// Not sure this will be useful, taken from Bettercap
-func (s *Session) Lock() {
+func (s *Session) Start() {
 
+	// Eventually close the session
+	defer s.Shell.Close()
+
+	// Authenticate
+	s.user.Authenticate()
+	RefreshPrompt(s.prompt, s.Shell)
+
+	// Read commands
+	for {
+		line, err := s.Shell.Readline()
+		if err == readline.ErrInterrupt {
+			if len(line) == 0 {
+				break
+			} else {
+				continue
+			}
+		} else if err == io.EOF {
+			break
+		}
+
+		line = strings.TrimSpace(line)
+		cmd := strings.Fields(line)
+
+		if len(cmd) > 0 {
+			switch s.menuContext {
+			case "main":
+				s.mainMenuCommand(cmd)
+			case "module":
+				s.moduleMenuCommand(cmd)
+			case "compiler":
+				s.compilerMenuCommand(cmd)
+			}
+		}
+
+		// Refresh shell & prompt after each command, at least.
+		s.Refresh()
+	}
 }
 
-// Not sure this will be useful, taken from Bettercap
-func (s *Session) Unlock() {
-
-}
-
-// Close the Session
-func (s *Session) Close() {
-
-}
-
-// Refreshes the console each time it is needed.
 func (s *Session) Refresh() {
-	p, _ := s.Prompt.Render(s)
-	_, m := s.Prompt.Render(s)
-	// p, _ := s.parseEnvTokens(s.Prompt.Render(s))
-	fmt.Println()
-	fmt.Println(p)
-	s.Input.SetPrompt(m)
-	s.Input.Refresh()
+	RefreshPrompt(s.prompt, s.Shell)
+	s.Shell.Refresh()
 }
 
-func (s *Session) ReadLine() (string, error) {
-	s.Refresh()
-	return s.Input.Readline()
-}
-
-// Not sure this will be used here. Original parses and make primitive command dispatch.
-func (s *Session) Run(line string) error {
-	line = str.TrimRight(line)
-	// line = reCmdSpaceCleaner.ReplaceAllString(line, "$1 $2")
-
-	// is it a core command?
-	for _, h := range s.CommandHandlers {
-		if parsed, args := h.Parse(line); parsed {
-			return h.Exec(args, s)
+func (s *Session) mainMenuCommand(cmd []string) {
+	switch cmd[0] {
+	// Core Commands
+	case "help":
+		helpHandler(cmd)
+	case "cd":
+		changeDirHandler(cmd)
+	case "mode":
+		mode := setModeHandler(cmd, s.Shell.IsVimMode())
+		s.Shell.SetVimMode(mode)
+	case "!":
+		shellHandler(cmd[1:])
+	case "exit":
+		exit()
+	case "set":
+		s.SetOption(cmd)
+	case "get":
+		s.GetOption(cmd)
+	// Endpoint
+	case "endpoint":
+		switch cmd[1] {
+		case "list":
+			s.ListEndpoints()
+		case "add":
+			s.AddEndpoint()
+		case "connect":
+			s.EndpointConnect(cmd)
+		case "delete":
+			s.DeleteEndpoint(cmd)
+		}
+	// Workspace
+	case "workspace":
+		switch cmd[1] {
+		case "switch":
+			s.WorkspaceSwitch(cmd)
+		case "new":
+			s.WorkspaceNew(cmd)
+		case "delete":
+			s.WorkspaceDelete(cmd)
+		}
+	// Module
+	case "use":
+		s.UseModule(cmd)
+	// Stack
+	case "stack":
+		switch len(cmd) {
+		case 1:
+			s.StackShow()
+		case 2:
+			switch cmd[1] {
+			case "show":
+				s.StackShow()
+			case "pop":
+				s.StackPop(cmd)
+			}
+		case 3:
+			s.StackPop(cmd)
+		}
+	// Compiler
+	case "compiler":
+		s.UseCompiler()
+	// Server
+	case "server":
+		switch cmd[1] {
+		case "reload":
+			s.ServerReload(cmd)
+		case "start":
+			s.ServerStart(cmd)
+		case "stop":
+			s.ServerStop(cmd)
+		case "generate_certificate":
+			s.GenerateCertificate(cmd)
 		}
 	}
+}
 
-	// is it a proxy module custom command?
-	if s.UnkCmdCallback != nil && s.UnkCmdCallback(line) {
-		return nil
+func (s *Session) moduleMenuCommand(cmd []string) {
+	switch cmd[0] {
+	// Core Commands
+	case "help":
+		helpHandler(cmd)
+	case "cd":
+		changeDirHandler(cmd)
+	case "mode":
+		mode := setModeHandler(cmd, s.Shell.IsVimMode())
+		s.Shell.SetVimMode(mode)
+	case "!":
+		shellHandler(cmd[1:])
+	case "get":
+		s.GetOption(cmd)
+	case "exit":
+		exit()
+	// Endpoint
+	case "endpoint":
+		switch cmd[1] {
+		case "list":
+			s.ListEndpoints()
+		case "add":
+			s.AddEndpoint()
+		case "connect":
+			s.EndpointConnect(cmd)
+		case "delete":
+			s.DeleteEndpoint(cmd)
+		}
+	// Workspace
+	case "workspace":
+		switch cmd[1] {
+		case "switch":
+			s.WorkspaceSwitch(cmd)
+		case "new":
+			s.WorkspaceNew(cmd)
+		}
+	// Module
+	case "use":
+		s.UseModule(cmd)
+	case "show":
+		switch cmd[1] {
+		case "options":
+			s.ShowOptions(cmd)
+		case "info":
+			s.ShowInfo()
+		}
+	case "info":
+		s.ShowInfo()
+	case "set":
+		s.SetModuleOption(cmd)
+	case "back":
+		s.BackModule()
+	// Stack
+	case "stack":
+		switch len(cmd) {
+		case 1:
+			s.StackShow()
+		case 2:
+			switch cmd[1] {
+			case "show":
+				s.StackShow()
+			case "pop":
+				s.StackPop(cmd)
+			}
+		case 3:
+			s.StackPop(cmd)
+		}
+	// Server
+	case "server":
+		switch cmd[1] {
+		case "reload":
+			s.ServerReload(cmd)
+		case "start":
+			s.ServerStart(cmd)
+		case "stop":
+			s.ServerStop(cmd)
+		case "generate_certificate":
+			s.GenerateCertificate(cmd)
+		}
+	// Compiler
+	case "compiler":
+		s.UseCompiler()
+		// Server
 	}
+}
 
-	// If command is not valid
-	return fmt.Errorf("unknown or invalid syntax \"%s%s%s\", type %shelp%s for the help menu.",
-		tui.BOLD, line, tui.RESET, tui.BOLD, tui.RESET)
+func (s *Session) compilerMenuCommand(cmd []string) {
+	switch cmd[0] {
+	case "help":
+		compilerHelp()
+	case "back":
+		s.QuitCompiler()
+	case "list":
+		switch cmd[1] {
+		case "parameters":
+			s.ShowCompilerOptions(cmd)
+		}
+	case "set":
+		s.SetCompilerOption(cmd)
+	}
 }
