@@ -4,16 +4,37 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/internal/messages"
+	"github.com/olekukonko/tablewriter"
 )
 
 func (s *Session) WorkspaceList(cmd []string) {
 	s.Send(cmd)
 	workspace := <-s.workspaceReqs
-	fmt.Println(workspace)
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetCenterSeparator(tui.Dim("|"))
+	table.SetRowSeparator(tui.Dim("-"))
+	table.SetColumnSeparator(tui.Dim("|"))
+	table.SetColMinWidth(1, 50)
+	table.SetHeader([]string{"Name", "Description", "Boundary"})
+	table.SetAutoWrapText(true)
+	table.SetColWidth(80)
+	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+	)
+
+	table.SetBorder(false)
+	for _, w := range workspace.WorkspaceInfos {
+		table.Append([]string{w[0], w[1], w[2]})
+	}
+	fmt.Println()
+	table.Render()
 }
 
 func (s *Session) WorkspaceSwitch(cmd []string) {

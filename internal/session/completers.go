@@ -23,14 +23,9 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 			readline.PcItem("endpoint"),
 			readline.PcItem("workspace"),
 			readline.PcItem("stack"),
-			// readline.PcItem("hosts"),
-			// readline.PcItem("services"),
-			// readline.PcItem("creds"),
 			readline.PcItem("agent"),
 			readline.PcItem("module"),
 			readline.PcItem("compiler"),
-			// readline.PcItem("exploit"),
-			// readline.PcItem("payload"),
 		),
 		readline.PcItem("mode",
 			readline.PcItem("vim"),
@@ -82,10 +77,10 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		// Module Stack
 		readline.PcItem("stack",
 			readline.PcItem("use",
-				readline.PcItemDynamic(s.ListStackModules())), // Same
+				readline.PcItemDynamic(s.ListStackModules())),
 			readline.PcItem("show"),
 			readline.PcItem("pop",
-				readline.PcItemDynamic(s.ListStackModules())), // Same
+				readline.PcItemDynamic(s.ListStackModules())),
 		),
 
 		// Workspace
@@ -125,13 +120,8 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 			readline.PcItem("endpoint"),
 			readline.PcItem("workspace"),
 			readline.PcItem("stack"),
-			// readline.PcItem("hosts"),
-			// readline.PcItem("services"),
-			// readline.PcItem("creds"),
 			readline.PcItem("agent"),
 			readline.PcItem("module"),
-			// readline.PcItem("exploit"),
-			// readline.PcItem("payload"),
 		),
 		readline.PcItem("mode",
 			readline.PcItem("vim"),
@@ -284,16 +274,16 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 
 		// Module Stack
 		readline.PcItem("stack",
-			readline.PcItem("show"), // Add getStackList here
+			readline.PcItem("show"),
 			readline.PcItem("pop",
-				readline.PcItemDynamic(s.ListStackModules())), // Same
+				readline.PcItemDynamic(s.ListStackModules())),
 		),
 
 		// Workspace
 		readline.PcItem("workspace",
 			readline.PcItem("list"),
 			readline.PcItem("new"),
-			readline.PcItem("delete"), // Same
+			readline.PcItem("delete", readline.PcItemDynamic(s.ListWorkspaces())),
 		),
 
 		// Agent
