@@ -199,7 +199,12 @@ func (s *Session) mainMenuCommand(cmd []string) {
 				s.StackPop(cmd)
 			}
 		case 3:
-			s.StackPop(cmd)
+			switch cmd[1] {
+			case "use":
+				s.StackUse(cmd)
+			case "pop":
+				s.StackPop(cmd)
+			}
 		}
 	// Compiler
 	case "compiler":
@@ -284,7 +289,12 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 				s.StackPop(cmd)
 			}
 		case 3:
-			s.StackPop(cmd)
+			switch cmd[1] {
+			case "use":
+				s.StackUse(cmd)
+			case "pop":
+				s.StackPop(cmd)
+			}
 		}
 	// Server
 	case "server":

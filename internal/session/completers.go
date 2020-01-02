@@ -81,7 +81,9 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 
 		// Module Stack
 		readline.PcItem("stack",
-			readline.PcItem("show"), // Add getStackList here
+			readline.PcItem("use",
+				readline.PcItemDynamic(s.ListStackModules())), // Same
+			readline.PcItem("show"),
 			readline.PcItem("pop",
 				readline.PcItemDynamic(s.ListStackModules())), // Same
 		),
@@ -180,9 +182,11 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 
 		// Module Stack
 		readline.PcItem("stack",
-			readline.PcItem("show"), // Add getStackList here
+			readline.PcItem("use",
+				readline.PcItemDynamic(s.ListStackModules())),
+			readline.PcItem("show"),
 			readline.PcItem("pop",
-				readline.PcItemDynamic(s.ListStackModules())), // Same
+				readline.PcItemDynamic(s.ListStackModules())),
 		),
 
 		// Workspace

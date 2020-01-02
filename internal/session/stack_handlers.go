@@ -14,9 +14,6 @@ func (s *Session) StackShow() {
 	stack := <-s.moduleReqs
 
 	// Print stack
-	fmt.Println(tui.Dim("The stack stores a list of previously loaded modules and their state (options, agents) "))
-	fmt.Println(tui.Dim("Source local scripts are in /data/src/."))
-
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetCenterSeparator(tui.Dim("|"))
 	table.SetRowSeparator(tui.Dim("-"))
@@ -57,9 +54,21 @@ func (s *Session) StackPop(cmd []string) {
 		if strings.ToLower(cmd[2]) == strings.ToLower(s.currentModule) {
 			s.currentModule = ""
 		}
+		if cmd[2] == "all" {
+			s.currentModule = ""
+		}
 	}
 	// Temporary: return to main menu completion.
 	// This will change when the code will handle fallback on next module in stack.
 	s.Shell.Config.AutoComplete = s.getCompleter("main")
 
+}
+
+func (s *Session) StackUse(cmd []string) {
+	s.Send([]string{"use", "module", cmd[2]})
+	mod := <-s.moduleReqs
+	// Switch shell context
+	s.Shell.Config.AutoComplete = s.getCompleter("module")
+	s.menuContext = "module"
+	s.currentModule = mod.ModuleName
 }

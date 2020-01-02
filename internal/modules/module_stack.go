@@ -190,10 +190,18 @@ func (ms *ModuleStackManager) handleClientRequests() {
 						}
 					}
 				case 3:
-					for _, s := range ms.Stacks {
-						if s.WorkspaceId == request.CurrentWorkspaceId {
-							fmt.Println("Detected module name, popping designated module")
-							s.PopModule(request.Command[2])
+					if request.Command[2] == "all" {
+						for _, s := range ms.Stacks {
+							if s.WorkspaceId == request.CurrentWorkspaceId {
+								ms.Stacks[request.CurrentWorkspaceId] = &ModuleStack{Id: rand.Int(), WorkspaceId: request.CurrentWorkspaceId}
+							}
+						}
+					} else {
+						for _, s := range ms.Stacks {
+							if s.WorkspaceId == request.CurrentWorkspaceId {
+								fmt.Println("Detected module name, popping designated module")
+								s.PopModule(request.Command[2])
+							}
 						}
 					}
 				}
