@@ -182,6 +182,8 @@ func (s *Session) mainMenuCommand(cmd []string) {
 			s.WorkspaceNew(cmd)
 		case "delete":
 			s.WorkspaceDelete(cmd)
+		case "list":
+			s.WorkspaceList(cmd)
 		}
 	// Module
 	case "use":
@@ -259,6 +261,8 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 			s.WorkspaceSwitch(cmd)
 		case "new":
 			s.WorkspaceNew(cmd)
+		case "list":
+			s.WorkspaceList(cmd)
 		}
 	// Module
 	case "use":
