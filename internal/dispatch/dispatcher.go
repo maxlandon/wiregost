@@ -7,9 +7,15 @@ import (
 )
 
 var (
-	// Channels
-	requests  = make(chan messages.ClientRequest)
-	Responses = make(chan messages.Message)
+	// Endpoint
+	requests      = make(chan messages.ClientRequest, 20)
+	Responses     = make(chan messages.Message, 20)
+	Notifications = make(chan messages.Notification, 20)
+	// Managers (buffered, so non-blocking)
+	ForwardWorkspace     = make(chan messages.ClientRequest, 20)
+	ForwardModuleStack   = make(chan messages.ClientRequest, 20)
+	ForwardServerManager = make(chan messages.ClientRequest, 20)
+	ForwardCompiler      = make(chan messages.ClientRequest, 20)
 )
 
 func DispatchRequest(req messages.ClientRequest) {
@@ -20,26 +26,26 @@ func DispatchRequest(req messages.ClientRequest) {
 	// Server
 	case "server":
 		fmt.Println("launching handleServer")
-		handleServer(req)
+		ForwardServerManager <- req
 	// Log
 	case "log":
 		fmt.Println("Launching handleLog")
 	// Stack
 	case "stack":
 		fmt.Println("Launching handleModule for stack")
-		handleModule(req)
+		ForwardModuleStack <- req
 	// Workspace
 	case "workspace":
 		fmt.Println("Launching handleWorkspace")
-		handleWorkspace(req)
+		ForwardWorkspace <- req
 	// Module
 	case "run", "show", "reload", "module":
 		fmt.Println("launching handleModule")
-		handleModule(req)
+		ForwardModuleStack <- req
 	// Compiler:
 	case "list", "compile", "compiler":
 		fmt.Println("Dispatched request to handleCompiler")
-		handleCompiler(req)
+		ForwardCompiler <- req
 	// Agent
 	case "agent", "interact", "cmd", "back", "download",
 		"execute-shellcode", "kill", "main", "shell", "upload":
@@ -49,14 +55,14 @@ func DispatchRequest(req messages.ClientRequest) {
 		switch req.Context {
 		case "main":
 			fmt.Println("Launching handleModule")
-			handleModule(req)
+			ForwardModuleStack <- req
 		case "module":
 			fmt.Println("Launching handleModule")
-			handleModule(req)
+			ForwardModuleStack <- req
 		case "agent":
 			fmt.Println("Launching handleAgent")
 		case "compiler":
-			handleCompiler(req)
+			ForwardCompiler <- req
 		}
 	}
 }
