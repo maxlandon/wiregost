@@ -46,6 +46,7 @@ func (s *Session) WorkspaceSwitch(cmd []string) {
 	fmt.Printf(workspace.Result)
 	fmt.Println(server.Status)
 	s.CurrentWorkspaceId = workspace.WorkspaceId
+	s.currentModule = ""
 }
 
 func (s *Session) WorkspaceDelete(cmd []string) {

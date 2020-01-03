@@ -23,6 +23,18 @@ func (s *Session) handleNotifications(notif messages.Notification) {
 			// Refresh shell
 			s.Refresh()
 		}
+	case "module":
+		switch notif.Action {
+		case "pop":
+			if s.currentModule == notif.PoppedModule {
+				s.currentModule = notif.FallbackModule
+				if s.currentModule == "" {
+					s.Shell.Config.AutoComplete = s.getCompleter("main")
+				}
+				// Refresh shell
+				s.Refresh()
+			}
+		}
 	}
 
 }

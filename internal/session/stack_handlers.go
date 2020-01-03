@@ -47,20 +47,14 @@ func (s *Session) StackShow() {
 
 func (s *Session) StackPop(cmd []string) {
 	s.Send(cmd)
-	switch len(cmd) {
-	case 2:
+	// Wait for new current module fallback
+	fallback := <-s.moduleReqs
+	if fallback.ModuleName != "" {
+		s.currentModule = fallback.ModuleName
+	} else {
 		s.currentModule = ""
-	case 3:
-		if strings.ToLower(cmd[2]) == strings.ToLower(s.currentModule) {
-			s.currentModule = ""
-		}
-		if cmd[2] == "all" {
-			s.currentModule = ""
-		}
+		s.Shell.Config.AutoComplete = s.getCompleter("main")
 	}
-	// Temporary: return to main menu completion.
-	// This will change when the code will handle fallback on next module in stack.
-	s.Shell.Config.AutoComplete = s.getCompleter("main")
 
 }
 

@@ -35,11 +35,16 @@ type Message struct {
 }
 
 type Notification struct {
-	Type                string
-	Action              string
+	Type         string
+	Action       string
+	NotConcerned int
+	// Workspace
 	WorkspaceId         int
 	FallbackWorkspaceId int
 	Workspace           string
+	// Module
+	PoppedModule   string
+	FallbackModule string
 }
 
 // type ModuleResponse struct {
@@ -60,8 +65,7 @@ type LogResponse struct {
 }
 
 type WorkspaceResponse struct {
-	User string
-	// WorkspaceList []Workspace // Return all workspaces with all their informations here.
+	User           string
 	WorkspaceId    int // Return the current/chosen workspace here
 	WorkspaceInfos [][]string
 	Result         string

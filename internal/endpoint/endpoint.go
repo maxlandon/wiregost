@@ -186,6 +186,18 @@ func (e *Endpoint) ForwardResponses() {
 					}
 				}
 			}
+			if res.Type == "module" && res.Action == "pop" {
+				for _, client := range e.clients {
+					if client.CurrentWorkspaceId == res.WorkspaceId && client.id != res.NotConcerned {
+						msg := messages.Message{
+							ClientId: client.id,
+							Type:     "notification",
+							Content:  res,
+						}
+						client.responses <- msg
+					}
+				}
+			}
 		// Prepare message when its a log event
 		case res := <-testlog.ForwardLogs:
 			fmt.Println("handled event from logger")
