@@ -18,14 +18,17 @@ type Client struct {
 	reader     *bufio.Reader
 	disconnect chan bool
 	status     int
+	id         int
 	// User-specific
 	User               *db.User
-	id                 int
-	CurrentWorkspaceId int    // Will influence things like logging policy. CHANGE TO POINTER TO WORKSPACE
+	CurrentWorkspaceId int
+	CurrentWorkspace   string
 	Context            string // Will influence how commands are dispatched.
 	// Message-specific
 	requests  chan messages.ClientRequest
 	responses chan messages.Message // Commands will always be sent as a list of strings
+	// TEMPORARY !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	UserID int
 }
 
 func CreateClient(conn net.Conn) *Client {
@@ -86,9 +89,13 @@ func (client *Client) Read() {
 		// Fill message with client information
 		message.ClientId = client.id
 
+		// Fill client information with message
+		client.Context = message.Context
+
 		if message.CurrentWorkspaceId != 0 {
 			// Fill client with message information
 			client.CurrentWorkspaceId = message.CurrentWorkspaceId
+			client.CurrentWorkspace = message.CurrentWorkspace
 		}
 
 		// Forward message

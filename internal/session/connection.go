@@ -148,6 +148,12 @@ func (s *Session) Connect() error {
 				}
 				// Print event to console
 				Log(event)
+			case "notification":
+				var notif messages.Notification
+				if err := json.Unmarshal(msg, &notif); err != nil {
+					fmt.Println("Failed to decode log response")
+				}
+				s.handleNotifications(notif)
 			}
 		}
 	}()

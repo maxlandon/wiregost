@@ -8,7 +8,6 @@ import (
 	testlog "github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/user"
-	"github.com/maxlandon/wiregost/internal/workspace"
 )
 
 type Endpoint struct { // PROPOSED CHANGES
@@ -63,7 +62,10 @@ func (e *Endpoint) AuthenticateConnection(msg messages.ClientRequest, id int) {
 		}
 		for _, client := range e.clients {
 			if client.id == res.ClientId {
+				// Send response back...
 				client.responses <- res
+				// And fill client information from message TEMPORARY WE NEED TO REWRITE THIS
+				client.UserID = id
 			}
 		}
 
@@ -82,6 +84,30 @@ func (e *Endpoint) Listen() {
 			// If client is opening connection, send him confirmation
 			if auth.Command[0] == "connect" {
 				e.AuthenticateConnection(msg, auth.UserId)
+				// Send current workspace of last shell to new shell
+				if len(e.clients) > 1 {
+					for i := 1; i < len(e.clients); i++ {
+						if e.clients[i].UserID == auth.UserId {
+							res := messages.Notification{
+								Type:        "workspace",
+								Action:      "switch",
+								WorkspaceId: e.clients[i].CurrentWorkspaceId,
+								Workspace:   e.clients[i].CurrentWorkspace,
+							}
+							msg := messages.Message{
+								ClientId: auth.ClientId,
+								Type:     "notification",
+								Content:  res,
+							}
+							for _, client := range e.clients {
+								if client.id == auth.ClientId {
+									client.responses <- msg
+								}
+							}
+
+						}
+					}
+				}
 			} else {
 				// Else, authenticate anyway but forward requests to dispatcher
 				switch auth.UserId {
@@ -142,15 +168,22 @@ func (e *Endpoint) ForwardResponses() {
 		case res := <-dispatch.Responses:
 			fmt.Println("Handled response from dispatch")
 			for _, client := range e.clients {
+				fmt.Println(client.id)
 				if client.id == res.ClientId {
 					client.responses <- res
 				}
 			}
-		case res := <-workspace.Responses:
-			fmt.Println("handled response from workspace")
-			for _, client := range e.clients {
-				if client.id == res.ClientId {
-					client.responses <- res
+		case res := <-dispatch.Notifications:
+			if res.Type == "workspace" && res.Action == "delete" {
+				for _, client := range e.clients {
+					if client.CurrentWorkspaceId == res.WorkspaceId {
+						msg := messages.Message{
+							ClientId: client.id,
+							Type:     "notification",
+							Content:  res,
+						}
+						client.responses <- msg
+					}
 				}
 			}
 		// Prepare message when its a log event

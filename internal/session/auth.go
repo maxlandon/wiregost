@@ -53,6 +53,7 @@ func (user *User) Authenticate() {
 		// Success, authenticate
 		if bytes.Equal(hash[:], user.PasswordHash[:]) {
 			fmt.Println(tui.Green("Authenticated"))
+			break
 		}
 		// Failure, 3 chances and then exit
 		if !bytes.Equal(hash[:], user.PasswordHash[:]) {
