@@ -165,6 +165,8 @@ func (m *Manager) handleWorkspaceRequests() {
 			m.Create(request.WorkspacePath, request.WorkspaceId)
 		case "spawn":
 			m.LoadCompilers(request.WorkspacePath, request.WorkspaceId)
+		case "delete":
+			delete(m.Compilers, request.WorkspaceId)
 		}
 	}
 }

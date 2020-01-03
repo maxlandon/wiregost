@@ -11,9 +11,9 @@ import (
 
 func (s *Session) ServerStart(cmd []string) {
 	s.Send(cmd)
-	// status := <-s.serverReqs
+	status := <-s.serverReqs
 	fmt.Println()
-	// fmt.Println(status.Status)
+	fmt.Println(status.Status)
 }
 
 func (s *Session) ServerReload(cmd []string) {

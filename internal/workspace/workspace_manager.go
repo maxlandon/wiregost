@@ -21,26 +21,9 @@ import (
 var Requests = make(chan map[string]int, 20)
 
 // Used for communicating a workspace ID and its server.conf path.
-var ServerRequests = make(chan ServerRequest, 20)
+var ServerRequests = make(chan messages.ServerRequest, 20)
 
-var CompilerRequests = make(chan CompilerRequest, 20)
-
-// Responses are sent back to clients.
-var Responses = make(chan messages.Message)
-
-type ServerRequest struct {
-	WorkspaceId   int
-	Action        string
-	WorkspacePath string
-	Logger        *testlog.WorkspaceLogger
-}
-
-type CompilerRequest struct {
-	WorkspaceId   int
-	Action        string
-	WorkspacePath string
-	Logger        *testlog.WorkspaceLogger
-}
+var CompilerRequests = make(chan messages.CompilerRequest, 20)
 
 type Workspace struct {
 	Name           string
@@ -74,57 +57,14 @@ func NewWorkspaceManager() *WorkspaceManager {
 	return ws
 }
 
-func (w *WorkspaceManager) HandleRequests() {
+func (wm *WorkspaceManager) HandleRequests() {
 	for {
-		// req := <-Requests
 		req := <-dispatch.ForwardWorkspace
 		switch req.Command[1] {
-		case "list":
-			workspaces := w.GetWorkspaceList(req.UserId)
-			res := messages.WorkspaceResponse{}
-			for _, ws := range workspaces {
-				infos := ws.GetInfos()
-				res.WorkspaceInfos = append(res.WorkspaceInfos, infos)
-			}
-			msg := messages.Message{
-				ClientId: req.ClientId,
-				Type:     "workspace",
-				Content:  res,
-			}
-			Responses <- msg
+		// Create new workspace
 		case "new":
-			id, path := w.Create(req)
-			ser := ServerRequest{
-				WorkspaceId:   id,
-				WorkspacePath: path,
-				Action:        "create",
-			}
-			ServerRequests <- ser
-			// Create new stack
-			stackReq := make(map[string]int)
-			stackReq["create"] = id
-			Requests <- stackReq
-			// w.Responses <- msg
-		case "switch":
-			for _, ws := range w.Workspaces {
-				if ws.Name == req.Command[2] {
-					res := messages.WorkspaceResponse{
-						WorkspaceId: ws.Id,
-					}
-					msg := messages.Message{
-						ClientId: req.ClientId,
-						Type:     "workspace",
-						Content:  res,
-					}
-					Responses <- msg
-				}
-				// Save infos for current workspace
-				if ws.Id == req.CurrentWorkspaceId {
-					ws.SaveConf()
-				}
-			}
-		case "delete":
-			result := w.Delete(req.Command[2], req.UserId)
+			result := wm.Create(req.Command[2], req.UserId, req.WorkspaceParams)
+			// Respond to client
 			res := messages.WorkspaceResponse{
 				Result: result,
 			}
@@ -133,22 +73,45 @@ func (w *WorkspaceManager) HandleRequests() {
 				Type:     "workspace",
 				Content:  res,
 			}
-			Responses <- msg
+			dispatch.Responses <- msg
+		// List workspaces
+		case "list":
+			res := messages.WorkspaceResponse{
+				WorkspaceInfos: wm.GetInfos(),
+			}
+			msg := messages.Message{
+				ClientId: req.ClientId,
+				Type:     "workspace",
+				Content:  res,
+			}
+			dispatch.Responses <- msg
+		case "switch":
+			wm.SwitchWorkspace(req)
+		case "delete":
+			result := wm.Delete(req.Command[2], req.UserId)
+			res := messages.WorkspaceResponse{
+				Result: result,
+			}
+			msg := messages.Message{
+				ClientId: req.ClientId,
+				Type:     "workspace",
+				Content:  res,
+			}
+			dispatch.Responses <- msg
 		}
 	}
 }
 
-func (w *WorkspaceManager) Create(req messages.ClientRequest) (Id int, path string) {
+func (w *WorkspaceManager) Create(name string, ownerId int, params map[string]string) (result string) {
 	// Create server object
 	workspace := Workspace{
-		Name:           req.Command[2],
+		Name:           name,
 		Id:             rand.Int(),
-		OwnerID:        req.UserId,
+		OwnerID:        ownerId,
 		LimitToNetwork: false,
 		CreatedAt:      time.Now(),
 	}
 	// Add optional parameters
-	params := req.WorkspaceParams
 	if v, ok := params["workspace.description"]; ok {
 		workspace.Description = v
 	}
@@ -161,18 +124,6 @@ func (w *WorkspaceManager) Create(req messages.ClientRequest) (Id int, path stri
 
 	// Add it to workspace list
 	w.Workspaces = append(w.Workspaces, workspace)
-
-	// Respond to client
-	result := fmt.Sprintf("%s[*]%s Workspace '%s' created, with associated module stack, logger, and agent server.", tui.GREEN, tui.RESET, workspace.Name)
-	res := messages.WorkspaceResponse{
-		Result: result,
-	}
-	msg := messages.Message{
-		ClientId: req.ClientId,
-		Type:     "workspace",
-		Content:  res,
-	}
-	Responses <- msg
 
 	// Create workspace subdirectory
 	workspaceDir, _ := fs.Expand("~/.wiregost/workspaces")
@@ -203,11 +154,22 @@ func (w *WorkspaceManager) Create(req messages.ClientRequest) (Id int, path stri
 		_ = ioutil.WriteFile(file, jsonData, 0755)
 		fmt.Println("Populated workspace.conf for " + workspace.Name)
 	}
+
 	// Create its associated logger instance
 	w.Loggers[workspace.Id] = testlog.NewWorkspaceLogger(workspace.Name, workspace.Id)
-
+	// Create associated server
+	ser := messages.ServerRequest{
+		WorkspaceId:   workspace.Id,
+		WorkspacePath: workspaceDir,
+		Action:        "create",
+	}
+	ServerRequests <- ser
+	// Create new stack
+	stackReq := make(map[string]int)
+	stackReq["create"] = workspace.Id
+	Requests <- stackReq
 	// Create corresponding compiler
-	compReq := CompilerRequest{
+	compReq := messages.CompilerRequest{
 		WorkspaceId:   workspace.Id,
 		WorkspacePath: workspaceDir,
 		Action:        "create",
@@ -215,11 +177,12 @@ func (w *WorkspaceManager) Create(req messages.ClientRequest) (Id int, path stri
 	}
 	CompilerRequests <- compReq
 
-	// Save directory config
+	// Save directory config and return results
 	workspace.SaveConf()
 
-	// Return results
-	return workspace.Id, workspaceDir
+	result = fmt.Sprintf("%s[*]%s Workspace '%s' created, with associated module stack, logger, and agent server.",
+		tui.GREEN, tui.RESET, name)
+	return result
 }
 
 func (w *WorkspaceManager) GetWorkspaceList(ownerId int) []Workspace {
@@ -232,12 +195,16 @@ func (w *WorkspaceManager) GetWorkspaceList(ownerId int) []Workspace {
 	return list
 }
 
-func (ws *Workspace) GetInfos() []string {
-	var info []string
-	info = append(info, ws.Name)
-	info = append(info, ws.Description)
-	info = append(info, ws.Boundary)
-	return info
+func (wm *WorkspaceManager) GetInfos() [][]string {
+	list := [][]string{}
+	for _, w := range wm.Workspaces {
+		var info []string
+		info = append(info, w.Name)
+		info = append(info, w.Description)
+		info = append(info, w.Boundary)
+		list = append(list, info)
+	}
+	return list
 }
 
 func (ws *Workspace) SaveConf() {
@@ -263,7 +230,38 @@ func (w *WorkspaceManager) Delete(name string, ownerId int) (result string) {
 		if ws.OwnerID == ownerId && name == ws.Name {
 			path, _ := fs.Expand("~/.wiregost/workspaces/" + name)
 			os.RemoveAll(path)
-			res = fmt.Sprintf("%s[-]%s Deleted workspace %s and its directory content.", tui.GREEN, tui.RESET, ws.Name)
+			res = fmt.Sprintf("%s[-]%s Deleted workspace %s and its directory content.",
+				tui.GREEN, tui.RESET, ws.Name)
+			// Delete tied HTTP/2 server
+			servReq := messages.ServerRequest{
+				WorkspaceId:   ws.Id,
+				WorkspacePath: path,
+				Action:        "delete",
+				Logger:        w.Loggers[ws.Id],
+			}
+			ServerRequests <- servReq
+			// Delete tied compiler
+			compReq := messages.CompilerRequest{
+				WorkspaceId:   ws.Id,
+				WorkspacePath: path,
+				Action:        "delete",
+				Logger:        w.Loggers[ws.Id],
+			}
+			CompilerRequests <- compReq
+			// Push notification to clients, fallback on default workspace
+			defaultWorkspaceId := 0
+			for _, w := range w.Workspaces {
+				if w.Name == "default" {
+					defaultWorkspaceId = w.Id
+				}
+			}
+			res := messages.Notification{
+				Type:                "workspace",
+				Action:              "delete",
+				WorkspaceId:         ws.Id,
+				FallbackWorkspaceId: defaultWorkspaceId,
+			}
+			dispatch.Notifications <- res
 		}
 	}
 	// Update workspace list
@@ -278,34 +276,73 @@ func (w *WorkspaceManager) Delete(name string, ownerId int) (result string) {
 	return res
 }
 
-func (w *WorkspaceManager) LoadWorkspaces() {
+func (wm *WorkspaceManager) SwitchWorkspace(request messages.ClientRequest) {
+	for _, ws := range wm.Workspaces {
+		if ws.Name == request.Command[2] {
+			result := fmt.Sprintf("%s[*]%s => %s \n", tui.GREEN, tui.RESET, ws.Name)
+			res := messages.WorkspaceResponse{
+				WorkspaceId: ws.Id,
+				Result:      result,
+			}
+			msg := messages.Message{
+				ClientId: request.ClientId,
+				Type:     "workspace",
+				Content:  res,
+			}
+			dispatch.Responses <- msg
+			// Ask server manager to communicate status about associated server
+			ser := messages.ServerRequest{
+				ClientId:    request.ClientId,
+				WorkspaceId: ws.Id,
+				Action:      "status",
+			}
+			ServerRequests <- ser
+			// Ask StackManager to save stack for workspace
+			stackReq := make(map[string]int)
+			stackReq["save"] = request.CurrentWorkspaceId
+			Requests <- stackReq
+		}
+		// Save infos for current workspace
+		if ws.Id == request.CurrentWorkspaceId {
+			ws.SaveConf()
+		}
+	}
+
+}
+
+func (wm *WorkspaceManager) LoadWorkspaces() {
 	dir, _ := fs.Expand("~/.wiregost/workspaces/")
 	dirs, _ := ioutil.ReadDir(dir)
+	// If no workspaces are found, create a default one
+	if dirs == nil {
+		params := map[string]string{"Description": "Default Wiregost workspace."}
+		wm.Create("default", 1, params)
+	}
 
 	for _, d := range dirs {
 		ws := Workspace{}
 		confPath, _ := fs.Expand("~/.wiregost/workspaces/" + d.Name() + "/" + "workspace.conf")
 		configBlob, _ := ioutil.ReadFile(confPath)
 		json.Unmarshal(configBlob, &ws)
-		w.Workspaces = append(w.Workspaces, ws)
+		wm.Workspaces = append(wm.Workspaces, ws)
 		fmt.Println(tui.Dim("Loaded workspace " + d.Name()))
 		path, _ := fs.Expand("~/.wiregost/workspaces/" + d.Name())
 		// Load associated loggers
-		w.Loggers[ws.Id] = testlog.NewWorkspaceLogger(ws.Name, ws.Id)
+		wm.Loggers[ws.Id] = testlog.NewWorkspaceLogger(ws.Name, ws.Id)
 		// Load associated servers
-		servReq := ServerRequest{
+		servReq := messages.ServerRequest{
 			WorkspaceId:   ws.Id,
 			WorkspacePath: path,
 			Action:        "spawn",
-			Logger:        w.Loggers[ws.Id],
+			Logger:        wm.Loggers[ws.Id],
 		}
 		ServerRequests <- servReq
 		// Load associated compilers
-		compReq := CompilerRequest{
+		compReq := messages.CompilerRequest{
 			WorkspaceId:   ws.Id,
 			WorkspacePath: path,
 			Action:        "spawn",
-			Logger:        w.Loggers[ws.Id],
+			Logger:        wm.Loggers[ws.Id],
 		}
 		CompilerRequests <- compReq
 		// Create new stack

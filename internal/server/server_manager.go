@@ -35,7 +35,7 @@ type ServerResponse struct {
 
 type ServerManager struct {
 	// Servers
-	Servers map[int]Server
+	Servers map[int]*Server
 }
 
 // Each time the Manager has to spawn a Server, it should load its required parameters.
@@ -43,7 +43,7 @@ type ServerManager struct {
 
 func NewServerManager() *ServerManager {
 	manager := &ServerManager{
-		Servers: make(map[int]Server),
+		Servers: make(map[int]*Server),
 	}
 	// Handle requests
 	go manager.handleClientRequests()
@@ -60,6 +60,29 @@ func (sm *ServerManager) handleWorkspaceRequests() {
 			sm.CreateConf(request.WorkspacePath)
 		case "spawn":
 			sm.SpawnServer(request)
+		case "delete":
+			delete(sm.Servers, request.WorkspaceId)
+		case "status":
+			serv := sm.Servers[request.WorkspaceId]
+			var status string
+			fmt.Println(sm.Servers[request.WorkspaceId].Running)
+			switch sm.Servers[request.WorkspaceId].Running {
+			case true:
+				status = fmt.Sprintf("%s[*]%s HTTP/2 Server listening on %s:%s",
+					tui.GREEN, tui.RESET, serv.Interface, strconv.Itoa(serv.Port))
+			case false:
+				status = fmt.Sprintf("%s[*]%s HTTP/2 Server ready to listen on %s:%s",
+					tui.GREEN, tui.RESET, serv.Interface, strconv.Itoa(serv.Port))
+			}
+			res := ServerResponse{
+				Status: status,
+			}
+			msg := messages.Message{
+				ClientId: request.ClientId,
+				Type:     "server",
+				Content:  res,
+			}
+			dispatch.Responses <- msg
 		}
 		// Here spawn a server based on parameters of the file loaded from path
 	}
@@ -73,22 +96,18 @@ func (sm *ServerManager) handleClientRequests() {
 		fmt.Println(sm.Servers)
 		switch request.Command[1] {
 		case "start":
-			for k, v := range sm.Servers {
-				if k == request.CurrentWorkspaceId {
-					status, _ := v.Run()
-					v.Running = true
-					res := ServerResponse{
-						User:   request.UserName,
-						Status: status,
-					}
-					msg := messages.Message{
-						ClientId: request.ClientId,
-						Type:     "server",
-						Content:  res,
-					}
-					dispatch.Responses <- msg
-				}
+			status, _ := sm.Servers[request.CurrentWorkspaceId].Run()
+			res := ServerResponse{
+				User:   request.UserName,
+				Status: status,
 			}
+			msg := messages.Message{
+				ClientId: request.ClientId,
+				Type:     "server",
+				Content:  res,
+			}
+			fmt.Println(sm.Servers[request.CurrentWorkspaceId].Running)
+			dispatch.Responses <- msg
 		case "stop":
 			delete(sm.Servers, request.CurrentWorkspaceId)
 			// path, _ := fs.Expand("~/.wiregost/workspaces/" + request.CurrentWorkspace)
@@ -229,7 +248,7 @@ func (sm *ServerManager) CreateConf(path string) {
 }
 
 // This function instantiates a new Server object when starting Wiregost and all saved workspaces
-func (sm *ServerManager) SpawnServer(request workspace.ServerRequest) {
+func (sm *ServerManager) SpawnServer(request messages.ServerRequest) {
 	// 1. Load configuration from file
 	template := Server{}
 	configBlob, _ := ioutil.ReadFile(request.WorkspacePath + "/" + "server.conf")
@@ -243,7 +262,7 @@ func (sm *ServerManager) SpawnServer(request workspace.ServerRequest) {
 	server.log = request.Logger
 	server.Workspace = request.Logger.WorkspaceName
 	server.WorkspaceId = request.WorkspaceId
-	sm.Servers[request.WorkspaceId] = server
+	sm.Servers[request.WorkspaceId] = &server
 	fmt.Println(sm.Servers)
 }
 
@@ -262,7 +281,7 @@ func (sm *ServerManager) ReloadServer(request messages.ClientRequest) {
 		status = fmt.Sprintf("%s[-]%s HTTP2 Server (%s) ready to listen on %s:%s, with provided parameters.",
 			tui.GREEN, tui.RESET, server.ID, server.Interface, strconv.Itoa(server.Port))
 		// Here spawn a server based on parameters of the client request
-		sm.Servers[request.CurrentWorkspaceId] = server
+		sm.Servers[request.CurrentWorkspaceId] = &server
 
 		path, _ := fs.Expand("~/.wiregost/workspaces/" + request.CurrentWorkspace)
 		var jsonData []byte

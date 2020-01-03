@@ -214,10 +214,10 @@ func (s *Server) Run() (status string, err error) {
 	// Test context logger
 	log := s.log.WithFields(logrus.Fields{"workspace": s.Workspace, "workspaceId": s.WorkspaceId})
 	log.Infof(fmt.Sprintf("Starting %s Listener at %s:%d", s.Protocol, s.Interface, s.Port))
-	for {
-		time.Sleep(time.Second * 3)
-		log.Infof(fmt.Sprintf("Starting %s Listener at %s:%d", s.Protocol, s.Interface, s.Port))
-	}
+	// for {
+	//         time.Sleep(time.Second * 3)
+	//         log.Infof(fmt.Sprintf("Starting %s Listener at %s:%d", s.Protocol, s.Interface, s.Port))
+	// }
 
 	time.Sleep(45 * time.Millisecond) // Sleep to allow the shell to start up
 	if s.psk == "merlin" {
@@ -243,6 +243,7 @@ func (s *Server) Run() (status string, err error) {
 			}
 		}()
 		go logging.Server(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
+		s.Running = true
 		return m, nil
 	} else if s.Protocol == "hq" {
 		server := s.Server.(*h2quic.Server)
@@ -257,6 +258,8 @@ func (s *Server) Run() (status string, err error) {
 			}
 		}()
 		go logging.Server(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
+		// Server is now running
+		s.Running = true
 		return m, nil
 	}
 	return fmt.Errorf("%s is an invalid server protocol", s.Protocol).Error(), nil

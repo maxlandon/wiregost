@@ -1,5 +1,7 @@
 package messages
 
+import testlog "github.com/maxlandon/wiregost/internal/logging"
+
 type ClientRequest struct {
 	// Client-specific
 	ClientId int
@@ -26,9 +28,18 @@ type ClientConnRequest struct {
 }
 
 type Message struct {
-	ClientId int
-	Type     string
-	Content  interface{}
+	ClientId         int
+	Type             string
+	NotificationType string
+	Content          interface{}
+}
+
+type Notification struct {
+	Type                string
+	Action              string
+	WorkspaceId         int
+	FallbackWorkspaceId int
+	Workspace           string
 }
 
 // type ModuleResponse struct {
@@ -71,4 +82,19 @@ type EndpointResponse struct {
 // TO MODIFY
 type ServerResponse struct {
 	Status string // Used upon connection, to notify shell it is correctly connected.
+}
+
+type ServerRequest struct {
+	ClientId      int
+	WorkspaceId   int
+	Action        string
+	WorkspacePath string
+	Logger        *testlog.WorkspaceLogger
+}
+
+type CompilerRequest struct {
+	WorkspaceId   int
+	Action        string
+	WorkspacePath string
+	Logger        *testlog.WorkspaceLogger
 }

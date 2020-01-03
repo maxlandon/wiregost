@@ -41,6 +41,10 @@ func (s *Session) WorkspaceSwitch(cmd []string) {
 	s.currentWorkspace = cmd[2]
 	s.Send(cmd)
 	workspace := <-s.workspaceReqs
+	server := <-s.serverReqs
+	fmt.Println()
+	fmt.Printf(workspace.Result)
+	fmt.Println(server.Status)
 	s.CurrentWorkspaceId = workspace.WorkspaceId
 }
 
