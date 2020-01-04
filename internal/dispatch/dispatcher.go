@@ -16,6 +16,7 @@ var (
 	ForwardModuleStack   = make(chan messages.ClientRequest, 20)
 	ForwardServerManager = make(chan messages.ClientRequest, 20)
 	ForwardCompiler      = make(chan messages.ClientRequest, 20)
+	ForwardLogger        = make(chan messages.ClientRequest, 20)
 )
 
 func DispatchRequest(req messages.ClientRequest) {
@@ -29,6 +30,7 @@ func DispatchRequest(req messages.ClientRequest) {
 		ForwardServerManager <- req
 	// Log
 	case "log":
+		ForwardLogger <- req
 		fmt.Println("Launching handleLog")
 	// Stack
 	case "stack":

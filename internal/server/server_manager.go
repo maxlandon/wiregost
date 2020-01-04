@@ -248,7 +248,7 @@ func (sm *ServerManager) CreateConf(path string) {
 }
 
 // This function instantiates a new Server object when starting Wiregost and all saved workspaces
-func (sm *ServerManager) SpawnServer(request messages.ServerRequest) {
+func (sm *ServerManager) SpawnServer(request workspace.ServerRequest) {
 	// 1. Load configuration from file
 	template := Server{}
 	configBlob, _ := ioutil.ReadFile(request.WorkspacePath + "/" + "server.conf")

@@ -142,7 +142,7 @@ func (s *Session) Connect() error {
 				}
 				s.compilerReqs <- compiler
 			case "logEvent":
-				var event map[string]string
+				var event messages.LogEvent
 				if err := json.Unmarshal(msg, &event); err != nil {
 					fmt.Println("Failed to decode log response")
 				}

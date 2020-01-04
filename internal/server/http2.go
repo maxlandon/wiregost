@@ -212,12 +212,12 @@ func New(iface string, port int, protocol string, key string, certificate string
 // Run function starts the server on the preconfigured port for the preconfigured service
 func (s *Server) Run() (status string, err error) {
 	// Test context logger
-	log := s.log.WithFields(logrus.Fields{"workspace": s.Workspace, "workspaceId": s.WorkspaceId})
+	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceId})
 	log.Infof(fmt.Sprintf("Starting %s Listener at %s:%d", s.Protocol, s.Interface, s.Port))
-	// for {
-	//         time.Sleep(time.Second * 3)
-	//         log.Infof(fmt.Sprintf("Starting %s Listener at %s:%d", s.Protocol, s.Interface, s.Port))
-	// }
+	for {
+		time.Sleep(time.Second * 3)
+		log.Debugf(fmt.Sprintf("Starting %s Listener at %s:%d", s.Protocol, s.Interface, s.Port))
+	}
 
 	time.Sleep(45 * time.Millisecond) // Sleep to allow the shell to start up
 	if s.psk == "merlin" {

@@ -3,6 +3,7 @@ package endpoint
 import (
 	"fmt"
 	"net"
+	"strings"
 
 	"github.com/maxlandon/wiregost/internal/dispatch"
 	testlog "github.com/maxlandon/wiregost/internal/logging"
@@ -108,6 +109,13 @@ func (e *Endpoint) Listen() {
 						}
 					}
 				}
+			}
+			if strings.Join(auth.Command[:2], " ") == "log level" {
+				for _, client := range e.clients {
+					if client.id == auth.ClientId {
+						client.Logger.SetLevel(auth)
+					}
+				}
 			} else {
 				// Else, authenticate anyway but forward requests to dispatcher
 				switch auth.UserId {
@@ -203,15 +211,7 @@ func (e *Endpoint) ForwardResponses() {
 			fmt.Println("handled event from logger")
 			for _, client := range e.clients {
 				if client.CurrentWorkspaceId == res.Data["workspaceId"] {
-					event := make(map[string]string)
-					event["level"] = res.Level.String()
-					event["message"] = res.Message
-					msg := messages.Message{
-						ClientId: client.id,
-						Type:     "logEvent",
-						Content:  event,
-					}
-					client.responses <- msg
+					client.Logger.Forward(res)
 				}
 			}
 		}

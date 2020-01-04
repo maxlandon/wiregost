@@ -8,6 +8,7 @@ import (
 	"net"
 
 	"github.com/maxlandon/wiregost/internal/db"
+	"github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
 )
 
@@ -29,6 +30,8 @@ type Client struct {
 	responses chan messages.Message // Commands will always be sent as a list of strings
 	// TEMPORARY !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	UserID int
+	// Logger
+	Logger *logging.ClientLogger
 }
 
 func CreateClient(conn net.Conn) *Client {
@@ -48,6 +51,8 @@ func CreateClient(conn net.Conn) *Client {
 		// User: Add user
 		Context: "main", // Default context is always main when a shell is spawned
 	}
+	// Setup logger
+	client.Logger = logging.NewClientLogger(client.id, &client.CurrentWorkspaceId, client.responses)
 
 	go client.Write()
 	go client.Read()

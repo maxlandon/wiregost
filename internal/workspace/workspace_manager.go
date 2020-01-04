@@ -21,9 +21,24 @@ import (
 var ModuleRequests = make(chan messages.StackRequest, 20)
 
 // Used for communicating a workspace ID and its server.conf path.
-var ServerRequests = make(chan messages.ServerRequest, 20)
+var ServerRequests = make(chan ServerRequest, 20)
 
-var CompilerRequests = make(chan messages.CompilerRequest, 20)
+var CompilerRequests = make(chan CompilerRequest, 20)
+
+type ServerRequest struct {
+	ClientId      int
+	WorkspaceId   int
+	Action        string
+	WorkspacePath string
+	Logger        *testlog.WorkspaceLogger
+}
+
+type CompilerRequest struct {
+	WorkspaceId   int
+	Action        string
+	WorkspacePath string
+	Logger        *testlog.WorkspaceLogger
+}
 
 type Workspace struct {
 	Name           string
@@ -54,7 +69,15 @@ func NewWorkspaceManager() *WorkspaceManager {
 	ws.LoadWorkspaces()
 
 	go ws.HandleRequests()
+	go ws.handleLogRequests()
 	return ws
+}
+
+func (wm *WorkspaceManager) handleLogRequests() {
+	for {
+		req := <-dispatch.ForwardLogger
+		wm.Loggers[req.CurrentWorkspaceId].GetLogs(req)
+	}
 }
 
 func (wm *WorkspaceManager) HandleRequests() {
@@ -158,7 +181,7 @@ func (w *WorkspaceManager) Create(name string, ownerId int, params map[string]st
 	// Create its associated logger instance
 	w.Loggers[workspace.Id] = testlog.NewWorkspaceLogger(workspace.Name, workspace.Id)
 	// Create associated server
-	ser := messages.ServerRequest{
+	ser := ServerRequest{
 		WorkspaceId:   workspace.Id,
 		WorkspacePath: workspaceDir,
 		Action:        "create",
@@ -172,7 +195,7 @@ func (w *WorkspaceManager) Create(name string, ownerId int, params map[string]st
 	}
 	ModuleRequests <- stackReq
 	// Create corresponding compiler
-	compReq := messages.CompilerRequest{
+	compReq := CompilerRequest{
 		WorkspaceId:   workspace.Id,
 		WorkspacePath: workspaceDir,
 		Action:        "create",
@@ -236,7 +259,7 @@ func (w *WorkspaceManager) Delete(name string, ownerId int) (result string) {
 			res = fmt.Sprintf("%s[-]%s Deleted workspace %s and its directory content.",
 				tui.GREEN, tui.RESET, ws.Name)
 			// Delete tied HTTP/2 server
-			servReq := messages.ServerRequest{
+			servReq := ServerRequest{
 				WorkspaceId:   ws.Id,
 				WorkspacePath: path,
 				Action:        "delete",
@@ -244,7 +267,7 @@ func (w *WorkspaceManager) Delete(name string, ownerId int) (result string) {
 			}
 			ServerRequests <- servReq
 			// Delete tied compiler
-			compReq := messages.CompilerRequest{
+			compReq := CompilerRequest{
 				WorkspaceId:   ws.Id,
 				WorkspacePath: path,
 				Action:        "delete",
@@ -294,7 +317,7 @@ func (wm *WorkspaceManager) SwitchWorkspace(request messages.ClientRequest) {
 			}
 			dispatch.Responses <- msg
 			// Ask server manager to communicate status about associated server
-			ser := messages.ServerRequest{
+			ser := ServerRequest{
 				ClientId:    request.ClientId,
 				WorkspaceId: ws.Id,
 				Action:      "status",
@@ -337,7 +360,7 @@ func (wm *WorkspaceManager) LoadWorkspaces() {
 		// Load associated loggers
 		wm.Loggers[ws.Id] = testlog.NewWorkspaceLogger(ws.Name, ws.Id)
 		// Load associated servers
-		servReq := messages.ServerRequest{
+		servReq := ServerRequest{
 			WorkspaceId:   ws.Id,
 			WorkspacePath: path,
 			Action:        "spawn",
@@ -345,7 +368,7 @@ func (wm *WorkspaceManager) LoadWorkspaces() {
 		}
 		ServerRequests <- servReq
 		// Load associated compilers
-		compReq := messages.CompilerRequest{
+		compReq := CompilerRequest{
 			WorkspaceId:   ws.Id,
 			WorkspacePath: path,
 			Action:        "spawn",

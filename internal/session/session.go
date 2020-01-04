@@ -185,6 +185,13 @@ func (s *Session) mainMenuCommand(cmd []string) {
 		case "list":
 			s.WorkspaceList(cmd)
 		}
+	case "log":
+		switch cmd[1] {
+		case "level":
+			s.SetLogLevel(cmd)
+		case "show":
+			s.LogShow(cmd)
+		}
 	// Module
 	case "use":
 		s.UseModule(cmd)
@@ -263,6 +270,13 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 			s.WorkspaceNew(cmd)
 		case "list":
 			s.WorkspaceList(cmd)
+		}
+	case "log":
+		switch cmd[1] {
+		case "level":
+			s.SetLogLevel(cmd)
+		case "show":
+			s.LogShow(cmd)
 		}
 	// Module
 	case "use":
