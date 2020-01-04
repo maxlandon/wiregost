@@ -359,14 +359,6 @@ func (wm *WorkspaceManager) LoadWorkspaces() {
 		path, _ := fs.Expand("~/.wiregost/workspaces/" + d.Name())
 		// Load associated loggers
 		wm.Loggers[ws.Id] = testlog.NewWorkspaceLogger(ws.Name, ws.Id)
-		// Load associated servers
-		servReq := ServerRequest{
-			WorkspaceId:   ws.Id,
-			WorkspacePath: path,
-			Action:        "spawn",
-			Logger:        wm.Loggers[ws.Id],
-		}
-		ServerRequests <- servReq
 		// Load associated compilers
 		compReq := CompilerRequest{
 			WorkspaceId:   ws.Id,
@@ -381,6 +373,14 @@ func (wm *WorkspaceManager) LoadWorkspaces() {
 			WorkspaceId: ws.Id,
 			Workspace:   ws.Name,
 		}
+		// Load associated servers
+		servReq := ServerRequest{
+			WorkspaceId:   ws.Id,
+			WorkspacePath: path,
+			Action:        "spawn",
+			Logger:        wm.Loggers[ws.Id],
+		}
+		ServerRequests <- servReq
 		fmt.Println("Sending stack request for workspace " + strconv.Itoa(ws.Id))
 		ModuleRequests <- stackReq
 	}

@@ -20,7 +20,6 @@ import (
 	// 3rd Party
 	"github.com/cretz/gopaque/gopaque"
 	"github.com/evilsocket/islazy/tui"
-	"github.com/fatih/color"
 	"github.com/lucas-clemente/quic-go"
 	"github.com/lucas-clemente/quic-go/h2quic"
 	uuid "github.com/satori/go.uuid"
@@ -60,7 +59,7 @@ type Server struct {
 }
 
 // New instantiates a new server object and returns it
-func New(iface string, port int, protocol string, key string, certificate string, psk string, workspace string, workspaceId int) (Server, error) {
+func New(iface string, port int, protocol string, key string, certificate string, psk string, workspace string, workspaceId int, logger *testlog.WorkspaceLogger) (Server, error) {
 	s := Server{
 		ID:          uuid.NewV4(),
 		Protocol:    protocol,
@@ -72,9 +71,12 @@ func New(iface string, port int, protocol string, key string, certificate string
 		Workspace:   workspace,
 		WorkspaceId: workspaceId,
 		Running:     false,
+		log:         logger,
 	}
+	// Set context logger
+	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceId})
+
 	// OPAQUE Server Public/Private keys; Can be used with every agent
-	// log := s.log.WithFields(logrus.Fields{"workspace": s.Workspace, "workspaceId": s.WorkspaceId})
 	s.opaqueKey = gopaque.CryptoDefault.NewKey(nil)
 
 	var cer tls.Certificate
@@ -83,27 +85,20 @@ func New(iface string, port int, protocol string, key string, certificate string
 	_, errCrt := os.Stat(certificate)
 	if os.IsNotExist(errCrt) {
 		// generate a new ephemeral certificate
-		m := fmt.Sprintf("No certificate found at %s", certificate)
-		s.log.Warnf("No certificate found at %s", certificate)
-		logging.Server(m)
-		message("note", m)
+		log.Warnf("No certificate found at %s", certificate)
 		t := "Creating in-memory x.509 certificate used for this session only."
-		logging.Server(t)
-		message("note", t)
-		message("info", "Additional details: https://github.com/Ne0nd0g/merlin/wiki/TLS-Certificates")
+		log.Infof(t)
 		cerp, err := util.GenerateTLSCert(nil, nil, nil, nil, nil, nil, true) //ec certs not supported (yet) :(
 		if err != nil {
 			m := fmt.Sprintf("There was an error generating the SSL/TLS certificate:\r\n%s", err.Error())
-			logging.Server(m)
-			message("warn", m)
+			log.Warnf(m)
 			return s, err
 		}
 		cer = *cerp
 	} else {
 		if errCrt != nil {
 			m := fmt.Sprintf("There was an error importing the SSL/TLS x509 certificate:\r\n%s", errCrt.Error())
-			logging.Server(m)
-			message("warn", m)
+			log.Warnf(m)
 			return s, errCrt
 		}
 		s.Certificate = certificate
@@ -111,8 +106,7 @@ func New(iface string, port int, protocol string, key string, certificate string
 		_, errKey := os.Stat(key)
 		if errKey != nil {
 			m := fmt.Sprintf("There was an error importing the SSL/TLS x509 key:\r\n%s", errKey.Error())
-			logging.Server(m)
-			message("warn", m)
+			log.Warnf(m)
 			return s, errKey
 		}
 		s.Key = key
@@ -120,17 +114,15 @@ func New(iface string, port int, protocol string, key string, certificate string
 		cer, err = tls.LoadX509KeyPair(certificate, key)
 		if err != nil {
 			m := fmt.Sprintf("There was an error importing the SSL/TLS x509 key pair\r\n%s", err.Error())
-			logging.Server(m)
-			message("warn", m)
-			message("warn", "Ensure a keypair is located in the data/x509 directory")
+			log.Warnf(m)
+			log.Warnf("Ensure a keypair is located in the data/x509 directory")
 			return s, err
 		}
 	}
 
 	if len(cer.Certificate) < 1 || cer.PrivateKey == nil {
 		m := "Unable to import certificate for use in Merlin: empty certificate structure."
-		logging.Server(m)
-		message("warn", m)
+		log.Warnf(m)
 		return s, errors.New("empty certificate structure")
 	}
 
@@ -139,8 +131,7 @@ func New(iface string, port int, protocol string, key string, certificate string
 	if errX509 != nil {
 		m := fmt.Sprintf("There was an error parsing the tls.Certificate structure into a x509.Certificate"+
 			" structure:\r\n%s", errX509.Error())
-		logging.Server(m)
-		message("warn", m)
+		log.Warnf(m)
 		return s, errX509
 	}
 	// Create fingerprint
@@ -152,17 +143,17 @@ func New(iface string, port int, protocol string, key string, certificate string
 
 	// Check to see if the Public Key SHA1 finger print matches the certificate distributed with Merlin for testing
 	if merlinCRT == sha256Fingerprint {
-		message("warn", "Insecure publicly distributed Merlin x.509 testing certificate in use")
-		message("info", "Additional details: https://github.com/Ne0nd0g/merlin/wiki/TLS-Certificates")
+		log.Warnf("Insecure publicly distributed Merlin x.509 testing certificate in use")
+		log.Infof("Additional details: https://github.com/Ne0nd0g/merlin/wiki/TLS-Certificates")
 	}
 
 	// Log certificate information
-	logging.Server(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a %s signature of %s",
+	log.Infof(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a %s signature of %s",
 		x.SignatureAlgorithm.String(), hex.EncodeToString(x.Signature)))
-	logging.Server(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a public key of %v", x.PublicKey))
-	logging.Server(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a serial number of %d", x.SerialNumber))
-	logging.Server(fmt.Sprintf("Starting Merlin Server using an X.509 certifcate with a subject of %s", x.Subject.String()))
-	logging.Server(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a SHA256 hash, "+
+	log.Infof(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a public key of %v", x.PublicKey))
+	log.Infof(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a serial number of %d", x.SerialNumber))
+	log.Infof(fmt.Sprintf("Starting Merlin Server using an X.509 certifcate with a subject of %s", x.Subject.String()))
+	log.Infof(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a SHA256 hash, "+
 		"calculated by Merlin, of %s", sha256Fingerprint))
 
 	// Configure TLS
@@ -213,20 +204,15 @@ func New(iface string, port int, protocol string, key string, certificate string
 func (s *Server) Run() (status string, err error) {
 	// Test context logger
 	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceId})
-	log.Infof(fmt.Sprintf("Starting %s Listener at %s:%d", s.Protocol, s.Interface, s.Port))
-	for {
-		time.Sleep(time.Second * 3)
-		log.Debugf(fmt.Sprintf("Starting %s Listener at %s:%d", s.Protocol, s.Interface, s.Port))
-	}
 
-	time.Sleep(45 * time.Millisecond) // Sleep to allow the shell to start up
+	// Sleep to allow the shell to start up
+	time.Sleep(45 * time.Millisecond)
 	if s.psk == "merlin" {
 		fmt.Println()
-		message("warn", "Listener was started using \"merlin\" as the Pre-Shared Key (PSK) allowing anyone"+
+		log.Warnf("Listener was started using \"merlin\" as the Pre-Shared Key (PSK) allowing anyone" +
 			" decrypt message traffic.")
-		message("note", "Consider changing the PSK by using the -psk command line flag.")
+		log.Infof("Consider changing the PSK by using the -psk command line flag.")
 	}
-	message("note", fmt.Sprintf("Starting %s listener on %s:%d", s.Protocol, s.Interface, s.Port))
 	m := fmt.Sprintf("%s[*]%s Starting %s listener on %s:%d %s(pre-shared key: %s%s)",
 		tui.GREEN, tui.RESET, s.Protocol, s.Interface, s.Port, tui.DIM, s.psk, tui.RESET)
 
@@ -237,8 +223,7 @@ func (s *Server) Run() (status string, err error) {
 			err := server.Close()
 			if err != nil {
 				m := fmt.Sprintf("There was an error starting the %s server:\r\n%s", s.Protocol, err.Error())
-				logging.Server(m)
-				message("warn", m)
+				log.Warnf(m)
 				return
 			}
 		}()
@@ -252,8 +237,7 @@ func (s *Server) Run() (status string, err error) {
 			err := server.Close()
 			if err != nil {
 				m := fmt.Sprintf("There was an error starting the hq server:\r\n%s", err.Error())
-				logging.Server(m)
-				message("warn", m)
+				log.Warnf(m)
 				return
 			}
 		}()
@@ -267,45 +251,32 @@ func (s *Server) Run() (status string, err error) {
 
 // agentHandler function is responsible for all Merlin agent traffic
 func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
-	if core.Verbose {
-		message("note", fmt.Sprintf("Received %s %s connection from %s", r.Proto, r.Method, r.RemoteAddr))
-		logging.Server(fmt.Sprintf("Received HTTP %s connection from %s", r.Method, r.RemoteAddr))
-	}
+	// Test context logger
+	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceId})
 
-	if core.Debug {
-		message("debug", fmt.Sprintf("HTTP Connection Details:"))
-		message("debug", fmt.Sprintf("Host: %s", r.Host))
-		message("debug", fmt.Sprintf("URI: %s", r.RequestURI))
-		message("debug", fmt.Sprintf("Method: %s", r.Method))
-		message("debug", fmt.Sprintf("Protocol: %s", r.Proto))
-		message("debug", fmt.Sprintf("Headers: %s", r.Header))
-		message("debug", fmt.Sprintf("TLS Negotiated Protocol: %s", r.TLS.NegotiatedProtocol))
-		message("debug", fmt.Sprintf("TLS Cipher Suite: %d", r.TLS.CipherSuite))
-		message("debug", fmt.Sprintf("TLS Server Name: %s", r.TLS.ServerName))
-		message("debug", fmt.Sprintf("Content Length: %d", r.ContentLength))
+	log.Infof(fmt.Sprintf("Received %s %s connection from %s", r.Proto, r.Method, r.RemoteAddr))
 
-		logging.Server(fmt.Sprintf("[DEBUG]HTTP Connection Details:"))
-		logging.Server(fmt.Sprintf("[DEBUG]Host: %s", r.Host))
-		logging.Server(fmt.Sprintf("[DEBUG]URI: %s", r.RequestURI))
-		logging.Server(fmt.Sprintf("[DEBUG]Method: %s", r.Method))
-		logging.Server(fmt.Sprintf("[DEBUG]Protocol: %s", r.Proto))
-		logging.Server(fmt.Sprintf("[DEBUG]Headers: %s", r.Header))
-		logging.Server(fmt.Sprintf("[DEBUG]TLS Negotiated Protocol: %s", r.TLS.NegotiatedProtocol))
-		logging.Server(fmt.Sprintf("[DEBUG]TLS Cipher Suite: %d", r.TLS.CipherSuite))
-		logging.Server(fmt.Sprintf("[DEBUG]TLS Server Name: %s", r.TLS.ServerName))
-		logging.Server(fmt.Sprintf("[DEBUG]Content Length: %d", r.ContentLength))
-	}
+	log.Debugf(fmt.Sprintf("HTTP Connection Details:"))
+	log.Debugf(fmt.Sprintf("Host: %s", r.Host))
+	log.Debugf(fmt.Sprintf("URI: %s", r.RequestURI))
+	log.Debugf(fmt.Sprintf("Method: %s", r.Method))
+	log.Debugf(fmt.Sprintf("Protocol: %s", r.Proto))
+	log.Debugf(fmt.Sprintf("Headers: %s", r.Header))
+	log.Debugf(fmt.Sprintf("TLS Negotiated Protocol: %s", r.TLS.NegotiatedProtocol))
+	log.Debugf(fmt.Sprintf("TLS Cipher Suite: %d", r.TLS.CipherSuite))
+	log.Debugf(fmt.Sprintf("TLS Server Name: %s", r.TLS.ServerName))
+	log.Debugf(fmt.Sprintf("Content Length: %d", r.ContentLength))
 
 	// Check for Merlin PRISM activity
 	if r.UserAgent() == "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36 " {
-		message("warn", fmt.Sprintf("Someone from %s is attempting to fingerprint this Merlin server", r.RemoteAddr))
+		log.Warnf(fmt.Sprintf("Someone from %s is attempting to fingerprint this Merlin server", r.RemoteAddr))
 		//w.WriteHeader(404)
 	}
 	// Make sure the message has a JWT
 	token := r.Header.Get("Authorization")
 	if token == "" {
 		if core.Verbose {
-			message("warn", "incoming request did not contain an Authorization header")
+			log.Warnf("incoming request did not contain an Authorization header")
 		}
 		w.WriteHeader(404)
 		return
@@ -320,7 +291,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 		//Read the request message until EOF
 		requestBytes, errRequestBytes := ioutil.ReadAll(r.Body)
 		if errRequestBytes != nil {
-			message("warn", fmt.Sprintf("There was an error reading a POST message sent by an "+
+			log.Warnf(fmt.Sprintf("There was an error reading a POST message sent by an "+
 				"agent:\r\n%s", errRequestBytes))
 			return
 		}
@@ -329,7 +300,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 		var jweString string
 		errDecode := gob.NewDecoder(bytes.NewReader(requestBytes)).Decode(&jweString)
 		if errDecode != nil {
-			message("warn", fmt.Sprintf("there was an error decoding JWE payload message sent by an agent:\r\n%s", errDecode.Error()))
+			log.Warnf(fmt.Sprintf("there was an error decoding JWE payload message sent by an agent:\r\n%s", errDecode.Error()))
 			return
 		}
 
@@ -341,38 +312,34 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 		//w.Header().Set("Content-Type", "application/octet-stream")
 
 		// Validate JWT using HTTP interface JWT key; Given to authenticated agents by server
-		agentID, errValidate = validateJWT(strings.Split(token, " ")[1], s.jwtKey)
+		agentID, errValidate = validateJWT(strings.Split(token, " ")[1], s.jwtKey, s)
 		// If agentID was returned, then message contained a JWT encrypted with the HTTP interface key
 		if (errValidate != nil) && (agentID == uuid.Nil) {
 			if core.Verbose {
-				message("warn", errValidate.Error())
-				message("note", "trying again with interface PSK")
+				log.Warnf(errValidate.Error())
+				log.Infof("trying again with interface PSK")
 			}
 			// Validate JWT using interface PSK; Used by unauthenticated agents
 			hashedKey := sha256.Sum256([]byte(s.psk))
 			key = hashedKey[:]
-			agentID, errValidate = validateJWT(strings.Split(token, " ")[1], key)
+			agentID, errValidate = validateJWT(strings.Split(token, " ")[1], key, s)
 			if errValidate != nil {
 				if core.Verbose {
-					message("warn", errValidate.Error())
+					log.Warnf(errValidate.Error())
 				}
 				w.WriteHeader(404)
 				return
 			}
 			if core.Debug {
-				message("info", "Unauthenticated JWT")
+				log.Infof("Unauthenticated JWT")
 			}
 
 			// Decrypt the HTTP payload, a JWE, using interface PSK
-			k, errDecryptPSK := decryptJWE(jweString, key)
+			k, errDecryptPSK := decryptJWE(jweString, key, s)
 			// Successfully decrypted JWE with interface PSK
 			if errDecryptPSK == nil {
-				if core.Debug {
-					message("debug", fmt.Sprintf("[DEBUG]POST DATA: %v", k))
-				}
-				if core.Verbose {
-					message("note", fmt.Sprintf("Received %s message, decrypted JWE with interface PSK", k.Type))
-				}
+				log.Debugf(fmt.Sprintf("[DEBUG]POST DATA: %v", k))
+				log.Infof(fmt.Sprintf("Received %s message, decrypted JWE with interface PSK", k.Type))
 
 				messagePayloadBytes := new(bytes.Buffer)
 
@@ -381,19 +348,17 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 				case "AuthInit":
 					serverAuthInit, err := agents.OPAQUEAuthenticateInit(k)
 					if err != nil {
-						logging.Server(err.Error())
-						message("warn", err.Error())
+						log.Warnf(err.Error())
 						w.WriteHeader(404)
 						return
 					}
-					logging.Server(fmt.Sprintf("Received new agent OPAQUE authentication from %s", agentID))
+					log.Infof(fmt.Sprintf("Received new agent OPAQUE authentication from %s", agentID))
 
 					// Encode return message into a gob
 					errAuthInit := gob.NewEncoder(messagePayloadBytes).Encode(serverAuthInit)
 					if errAuthInit != nil {
 						m := fmt.Sprintf("there was an error encoding the return message into a gob:\r\n%s", errAuthInit.Error())
-						logging.Server(m)
-						message("warn", m)
+						log.Warnf(m)
 						w.WriteHeader(404)
 						return
 					}
@@ -401,50 +366,46 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 					serverRegInit, err := agents.OPAQUERegistrationInit(k, s.opaqueKey)
 					if err != nil {
 						logging.Server(err.Error())
-						message("warn", err.Error())
+						log.Warnf(err.Error())
 						w.WriteHeader(404)
 						return
 					}
-					logging.Server(fmt.Sprintf("Received new agent OPAQUE user registration initialization from %s", agentID))
+					log.Infof(fmt.Sprintf("Received new agent OPAQUE user registration initialization from %s", agentID))
 
 					// Encode return message into a gob
 					errRegInit := gob.NewEncoder(messagePayloadBytes).Encode(serverRegInit)
 					if errRegInit != nil {
 						m := fmt.Sprintf("there was an error encoding the return message into a gob:\r\n%s", errRegInit.Error())
-						logging.Server(m)
-						message("warn", m)
+						log.Warnf(m)
 						w.WriteHeader(404)
 						return
 					}
 				case "RegComplete":
 					serverRegComplete, err := agents.OPAQUERegistrationComplete(k)
 					if err != nil {
-						logging.Server(err.Error())
-						message("warn", err.Error())
+						log.Warnf(err.Error())
 						w.WriteHeader(404)
 						return
 					}
-					logging.Server(fmt.Sprintf("Received new agent OPAQUE user registration complete from %s", agentID))
+					log.Infof(fmt.Sprintf("Received new agent OPAQUE user registration complete from %s", agentID))
 
 					// Encode return message into a gob
 					errRegInit := gob.NewEncoder(messagePayloadBytes).Encode(serverRegComplete)
 					if errRegInit != nil {
 						m := fmt.Sprintf("there was an error encoding the return message into a gob:\r\n%s", errRegInit.Error())
-						logging.Server(m)
-						message("warn", m)
+						log.Warnf(m)
 						w.WriteHeader(404)
 						return
 					}
 				default:
-					message("warn", "invalid message type")
+					log.Warnf("invalid message type")
 					w.WriteHeader(404)
 					return
 				}
 				// Get JWE
 				jwe, errJWE := core.GetJWESymetric(messagePayloadBytes.Bytes(), key)
 				if errJWE != nil {
-					logging.Server(errJWE.Error())
-					message("warn", errJWE.Error())
+					log.Warnf(errJWE.Error())
 					w.WriteHeader(404)
 					return
 				}
@@ -456,71 +417,58 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 				errJWEBuffer := gob.NewEncoder(w).Encode(jwe)
 				if errJWEBuffer != nil {
 					m := fmt.Errorf("there was an error writing the %s response message to the HTTP stream:\r\n%s", k.Type, errJWEBuffer.Error())
-					logging.Server(m.Error())
-					message("warn", m.Error())
+					log.Warnf(m.Error())
 					w.WriteHeader(404)
 					return
 				}
 
 				return
 			}
-			if core.Verbose {
-				message("note", "Unauthenticated JWT w/ Authenticated JWE agent session key")
-			}
+			log.Infof("Unauthenticated JWT w/ Authenticated JWE agent session key")
 			// Decrypt the HTTP payload, a JWE, using agent session key
-			j, errDecrypt := decryptJWE(jweString, agents.GetEncryptionKey(agentID))
+			j, errDecrypt := decryptJWE(jweString, agents.GetEncryptionKey(agentID), s)
 			if errDecrypt != nil {
-				message("warn", errDecrypt.Error())
+				log.Warnf(errDecrypt.Error())
 				w.WriteHeader(404)
 				return
 			}
 
-			if core.Debug {
-				message("debug", fmt.Sprintf("[DEBUG]POST DATA: %v", j))
-			}
-			if core.Verbose {
-				message("info", fmt.Sprintf("Received %s message from %s at %s", j.Type, j.ID, time.Now().UTC().Format(time.RFC3339)))
-			}
+			log.Debugf(fmt.Sprintf("[DEBUG]POST DATA: %v", j))
+			log.Infof(fmt.Sprintf("Received %s message from %s at %s", j.Type, j.ID, time.Now().UTC().Format(time.RFC3339)))
 
 			// Allowed authenticated message with PSK JWT and JWE encrypted with derived secret
 			switch j.Type {
 			case "AuthComplete":
 				returnMessage, err = agents.OPAQUEAuthenticateComplete(j)
 				if err != nil {
-					logging.Server(fmt.Sprintf("Received new agent OPAQUE authentication from %s", agentID))
+					log.Infof(fmt.Sprintf("Received new agent OPAQUE authentication from %s", agentID))
 				}
 			default:
-				message("warn", fmt.Sprintf("Invalid Activity: %s", j.Type))
+				log.Warnf(fmt.Sprintf("Invalid Activity: %s", j.Type))
 				w.WriteHeader(404)
 				return
 			}
 		} else {
 			// If not using the PSK, the agent has previously authenticated
-			if core.Debug {
-				message("info", "Authenticated JWT")
-			}
+			log.Infof("Authenticated JWT")
 
 			// Decrypt JWE
 			key = agents.GetEncryptionKey(agentID)
 
-			j, errDecrypt := decryptJWE(jweString, key)
+			j, errDecrypt := decryptJWE(jweString, key, s)
 			if errDecrypt != nil {
-				message("warn", errDecrypt.Error())
+				log.Warnf(errDecrypt.Error())
 				w.WriteHeader(404)
 				return
 			}
 
-			if core.Debug {
-				message("debug", fmt.Sprintf("[DEBUG]POST DATA: %v", j))
-			}
-			if core.Verbose {
-				message("note", "Authenticated JWT w/ Authenticated JWE agent session key")
-				message("info", fmt.Sprintf("Received %s message from %s at %s", j.Type, j.ID, time.Now().UTC().Format(time.RFC3339)))
-			}
+			log.Debugf(fmt.Sprintf("[DEBUG]POST DATA: %v", j))
+			log.Infof("Authenticated JWT w/ Authenticated JWE agent session key")
+			log.Infof(fmt.Sprintf("Received %s message from %s at %s", j.Type, j.ID, time.Now().UTC().Format(time.RFC3339)))
 
 			// If both an agentID and error were returned, then the claims were likely bad and the agent needs to re-authenticate
 			if (errValidate != nil) && (agentID != uuid.Nil) {
-				message("warn", fmt.Sprintf("Agent %s connected with expired JWT. Instructing agent to re-authenticate", agentID))
+				log.Warnf(fmt.Sprintf("Agent %s connected with expired JWT. Instructing agent to re-authenticate", agentID))
 				j.Type = "ReAuthenticate"
 			}
 
@@ -545,8 +493,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			m := fmt.Sprintf("There was an error during while handling a message from agent %s:\r\n%s", agentID.String(), err.Error())
-			logging.Server(m)
-			message("warn", m)
+			log.Warnf(m)
 			w.WriteHeader(404)
 			return
 		}
@@ -555,15 +502,13 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 			returnMessage.Type = "ServerOk"
 			returnMessage.ID = agentID
 		}
-		if core.Verbose {
-			message("note", fmt.Sprintf("Sending "+returnMessage.Type+" message type to agent"))
-		}
+		log.Infof(fmt.Sprintf("Sending " + returnMessage.Type + " message type to agent"))
 
 		// Get JWT to add to message.Base for all messages except re-authenticate messages
 		if returnMessage.Type != "ReAuthenticate" {
-			jsonWebToken, errJWT := getJWT(agentID, s.jwtKey)
+			jsonWebToken, errJWT := getJWT(agentID, s.jwtKey, s) // Passing server for logging purposes
 			if errJWT != nil {
-				message("warn", errJWT.Error())
+				log.Warnf(errJWT.Error())
 				w.WriteHeader(404)
 				return
 			}
@@ -575,8 +520,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 		errReturnMessageBytes := gob.NewEncoder(returnMessageBytes).Encode(returnMessage)
 		if errReturnMessageBytes != nil {
 			m := fmt.Sprintf("there was an error encoding the %s return message for agent %s into a GOB:\r\n%s", returnMessage.Type, agentID.String(), errReturnMessageBytes.Error())
-			logging.Server(m)
-			message("warn", m)
+			log.Warnf(m)
 			return
 		}
 
@@ -584,8 +528,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 		key = agents.GetEncryptionKey(agentID)
 		jwe, errJWE := core.GetJWESymetric(returnMessageBytes.Bytes(), key)
 		if errJWE != nil {
-			logging.Server(errJWE.Error())
-			message("warn", errJWE.Error())
+			log.Warnf(errJWE.Error())
 		}
 
 		// Set return headers
@@ -595,8 +538,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 		errEncode := gob.NewEncoder(w).Encode(jwe)
 		if errEncode != nil {
 			m := fmt.Sprintf("There was an error encoding the server AuthComplete GOB message:\r\n%s", errEncode.Error())
-			logging.Server(m)
-			message("warn", m)
+			log.Warnf(m)
 			return
 		}
 
@@ -605,10 +547,10 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 			if returnMessage.Payload.(messages.AgentControl).Command == "kill" {
 				err := agents.RemoveAgent(agentID)
 				if err != nil {
-					message("warn", err.Error())
+					log.Warnf(err.Error())
 					return
 				}
-				message("info", fmt.Sprintf("Agent %s was removed from the server", agentID.String()))
+				log.Infof(fmt.Sprintf("Agent %s was removed from the server", agentID.String()))
 				return
 			}
 		}
@@ -618,16 +560,15 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(404)
 	}
-	if core.Debug {
-		message("debug", "Leaving http2.agentHandler function without error")
-	}
+	log.Debugf("Leaving http2.agentHandler function without error")
 }
 
 // getJWT returns a JSON Web Token for the provided agent using the interface JWT Key
-func getJWT(agentID uuid.UUID, key []byte) (string, error) {
-	if core.Debug {
-		message("debug", "Entering into agents.GetJWT function")
-	}
+func getJWT(agentID uuid.UUID, key []byte, s *Server) (string, error) {
+	// Test context logger
+	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceId})
+
+	log.Debugf("Entering into agents.GetJWT function")
 
 	encrypter, encErr := jose.NewEncrypter(jose.A256GCM,
 		jose.Recipient{
@@ -674,22 +615,21 @@ func getJWT(agentID uuid.UUID, key []byte) (string, error) {
 	if errParse != nil {
 		return "", fmt.Errorf("there was an error parsing the encrypted JWT:\r\n%s", errParse.Error())
 	}
-	logging.Server(fmt.Sprintf("Created authenticated JWT for %s", agentID))
-	if core.Debug {
-		message("debug", fmt.Sprintf("Sending agent %s an authenticated JWT with a lifetime of %v:\r\n%v",
-			agentID.String(), lifetime, agentJWT))
-	}
+	log.Infof(fmt.Sprintf("Created authenticated JWT for %s", agentID))
+	log.Debugf(fmt.Sprintf("Sending agent %s an authenticated JWT with a lifetime of %v:\r\n%v",
+		agentID.String(), lifetime, agentJWT))
 
 	return agentJWT, nil
 }
 
 // validateJWT validates the provided JSON Web Token
-func validateJWT(agentJWT string, key []byte) (uuid.UUID, error) {
+func validateJWT(agentJWT string, key []byte, s *Server) (uuid.UUID, error) {
+	// Test context logger
+	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceId})
+
 	var agentID uuid.UUID
-	if core.Debug {
-		message("debug", "Entering into http2.ValidateJWT")
-		message("debug", fmt.Sprintf("Input JWT: %v", agentJWT))
-	}
+	log.Debugf("Entering into http2.ValidateJWT")
+	log.Debugf(fmt.Sprintf("Input JWT: %v", agentJWT))
 
 	claims := jwt.Claims{}
 
@@ -716,9 +656,7 @@ func validateJWT(agentJWT string, key []byte) (uuid.UUID, error) {
 	AgentWaitTime, errWait := agents.GetAgentFieldValue(agentID, "WaitTime")
 	// An error will be returned during OPAQUE registration & authentication
 	if errWait != nil {
-		if core.Debug {
-			message("debug", fmt.Sprintf("there was an error getting the agent's wait time:\r\n%s", errWait.Error()))
-		}
+		log.Debugf(fmt.Sprintf("there was an error getting the agent's wait time:\r\n%s", errWait.Error()))
 	}
 	if AgentWaitTime == "" {
 		AgentWaitTime = "10s"
@@ -734,27 +672,24 @@ func validateJWT(agentJWT string, key []byte) (uuid.UUID, error) {
 	}, WaitTime)
 
 	if errValidate != nil {
-		if core.Verbose {
-			message("warn", fmt.Sprintf("The JWT claims were not valid for %s", agentID))
-			message("note", fmt.Sprintf("JWT Claim Expiry: %s", claims.Expiry.Time()))
-			message("note", fmt.Sprintf("JWT Claim Issued: %s", claims.IssuedAt.Time()))
-		}
+		log.Warnf(fmt.Sprintf("The JWT claims were not valid for %s", agentID))
+		log.Infof(fmt.Sprintf("JWT Claim Expiry: %s", claims.Expiry.Time()))
+		log.Infof(fmt.Sprintf("JWT Claim Issued: %s", claims.IssuedAt.Time()))
 		return agentID, errValidate
 	}
-	if core.Debug {
-		message("debug", fmt.Sprintf("agentID: %s", agentID.String()))
-		message("debug", "Leaving http2.ValidateJWT without error")
-	}
+	log.Debugf(fmt.Sprintf("agentID: %s", agentID.String()))
+	log.Debugf("Leaving http2.ValidateJWT without error")
 	// TODO I need to validate other things like token age/expiry
 	return agentID, nil
 }
 
 // decryptJWE takes provided JWE string and decrypts it using the per-agent key
-func decryptJWE(jweString string, key []byte) (messages.Base, error) {
-	if core.Debug {
-		message("debug", "Entering into http2.DecryptJWE function")
-		message("debug", fmt.Sprintf("Input JWE String: %s", jweString))
-	}
+func decryptJWE(jweString string, key []byte, s *Server) (messages.Base, error) {
+	// Test context logger
+	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceId})
+
+	log.Debugf("Entering into http2.DecryptJWE function")
+	log.Debugf(fmt.Sprintf("Input JWE String: %s", jweString))
 
 	var m messages.Base
 
@@ -765,7 +700,7 @@ func decryptJWE(jweString string, key []byte) (messages.Base, error) {
 	}
 
 	if core.Debug {
-		message("debug", fmt.Sprintf("Parsed JWE:\r\n%+v", jwe))
+		log.Debugf(fmt.Sprintf("Parsed JWE:\r\n%+v", jwe))
 	}
 
 	// Decrypt the JWE
@@ -780,29 +715,7 @@ func decryptJWE(jweString string, key []byte) (messages.Base, error) {
 		return m, fmt.Errorf("there was an error decoding JWE payload message sent by an agent:\r\n%s", errDecode.Error())
 	}
 
-	if core.Debug {
-		message("debug", "Leaving http2.DecryptJWE function without error")
-		message("debug", fmt.Sprintf("Returning message base: %+v", m))
-	}
+	log.Debugf("Leaving http2.DecryptJWE function without error")
+	log.Debugf(fmt.Sprintf("Returning message base: %+v", m))
 	return m, nil
 }
-
-// message is used to print a message to the command line
-func message(level string, message string) {
-	switch level {
-	case "info":
-		color.Cyan("[i]" + message)
-	case "note":
-		color.Yellow("[-]" + message)
-	case "warn":
-		color.Red("[!]" + message)
-	case "debug":
-		color.Red("[DEBUG]" + message)
-	case "success":
-		color.Green("[+]" + message)
-	default:
-		color.Red("[_-_]Invalid message level: " + message)
-	}
-}
-
-// TODO make sure all errors are logged to server log

@@ -253,26 +253,21 @@ func (sm *ServerManager) SpawnServer(request workspace.ServerRequest) {
 	template := Server{}
 	configBlob, _ := ioutil.ReadFile(request.WorkspacePath + "/" + "server.conf")
 	json.Unmarshal(configBlob, &template)
-	fmt.Println(request.WorkspacePath)
-	fmt.Println(template)
 
 	// Instantiate server, and attach it to manager
 	server, _ := New(template.Interface, template.Port, template.Protocol, template.Key,
-		template.Certificate, template.psk, request.Logger.WorkspaceName, request.WorkspaceId)
-	server.log = request.Logger
-	server.Workspace = request.Logger.WorkspaceName
-	server.WorkspaceId = request.WorkspaceId
+		template.Certificate, template.psk, request.Logger.WorkspaceName, request.WorkspaceId, request.Logger)
 	sm.Servers[request.WorkspaceId] = &server
-	fmt.Println(sm.Servers)
 }
 
 // This function instantiates a new Server object upon request of a client
 func (sm *ServerManager) ReloadServer(request messages.ClientRequest) {
+	reuseLogger := sm.Servers[request.CurrentWorkspaceId].log
 	params := request.ServerParams
 	port, _ := strconv.Atoi(params["server.port"])
 	server, err := New(params["server.address"], port,
 		params["server.protocol"], params["server.key"],
-		params["server.certificate"], params["server.psk"], request.CurrentWorkspace, request.CurrentWorkspaceId)
+		params["server.certificate"], params["server.psk"], request.CurrentWorkspace, request.CurrentWorkspaceId, reuseLogger)
 
 	status := ""
 	if err != nil {
