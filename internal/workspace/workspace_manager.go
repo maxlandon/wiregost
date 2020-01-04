@@ -18,7 +18,7 @@ import (
 
 // Used to request the ModuleStack Manager to create a Stack for each new workspace
 // Or to load a saved stack for existing ones.
-var Requests = make(chan map[string]int, 20)
+var ModuleRequests = make(chan messages.StackRequest, 20)
 
 // Used for communicating a workspace ID and its server.conf path.
 var ServerRequests = make(chan messages.ServerRequest, 20)
@@ -165,9 +165,12 @@ func (w *WorkspaceManager) Create(name string, ownerId int, params map[string]st
 	}
 	ServerRequests <- ser
 	// Create new stack
-	stackReq := make(map[string]int)
-	stackReq["create"] = workspace.Id
-	Requests <- stackReq
+	stackReq := messages.StackRequest{
+		Action:      "create",
+		WorkspaceId: workspace.Id,
+		Workspace:   workspace.Name,
+	}
+	ModuleRequests <- stackReq
 	// Create corresponding compiler
 	compReq := messages.CompilerRequest{
 		WorkspaceId:   workspace.Id,
@@ -298,9 +301,13 @@ func (wm *WorkspaceManager) SwitchWorkspace(request messages.ClientRequest) {
 			}
 			ServerRequests <- ser
 			// Ask StackManager to save stack for workspace
-			stackReq := make(map[string]int)
-			stackReq["save"] = request.CurrentWorkspaceId
-			Requests <- stackReq
+			stackReq := messages.StackRequest{
+				Action:      "save",
+				WorkspaceId: request.CurrentWorkspaceId,
+				Workspace:   request.CurrentWorkspace,
+			}
+			fmt.Println("Request save with workspace: " + request.CurrentWorkspace)
+			ModuleRequests <- stackReq
 		}
 		// Save infos for current workspace
 		if ws.Id == request.CurrentWorkspaceId {
@@ -346,8 +353,12 @@ func (wm *WorkspaceManager) LoadWorkspaces() {
 		}
 		CompilerRequests <- compReq
 		// Create new stack
-		stackReq := make(map[string]int)
-		stackReq["create"] = ws.Id
-		Requests <- stackReq
+		stackReq := messages.StackRequest{
+			Action:      "load",
+			WorkspaceId: ws.Id,
+			Workspace:   ws.Name,
+		}
+		fmt.Println("Sending stack request for workspace " + strconv.Itoa(ws.Id))
+		ModuleRequests <- stackReq
 	}
 }

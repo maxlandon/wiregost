@@ -102,3 +102,9 @@ type CompilerRequest struct {
 	WorkspacePath string
 	Logger        *testlog.WorkspaceLogger
 }
+
+type StackRequest struct {
+	WorkspaceId int
+	Workspace   string
+	Action      string
+}
