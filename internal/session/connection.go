@@ -111,12 +111,6 @@ func (s *Session) Connect() error {
 					fmt.Println("Failed to decode log response")
 				}
 				s.logReqs <- log
-			case "stack":
-				var stack messages.StackResponse
-				if err := json.Unmarshal(msg, &stack); err != nil {
-					fmt.Println("Failed to decode log response")
-				}
-				s.stackReqs <- stack
 			case "workspace":
 				var workspace messages.WorkspaceResponse
 				if err := json.Unmarshal(msg, &workspace); err != nil {

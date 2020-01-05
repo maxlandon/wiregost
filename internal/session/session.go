@@ -43,7 +43,6 @@ type Session struct {
 	workspaceReqs chan messages.WorkspaceResponse
 	endpointReqs  chan messages.EndpointResponse
 	serverReqs    chan messages.ServerResponse
-	stackReqs     chan messages.StackResponse
 	compilerReqs  chan compiler.CompilerResponse
 	logEventReqs  chan map[string]string
 }
@@ -59,7 +58,6 @@ func NewSession() *Session {
 		workspaceReqs: make(chan messages.WorkspaceResponse),
 		endpointReqs:  make(chan messages.EndpointResponse),
 		serverReqs:    make(chan messages.ServerResponse),
-		stackReqs:     make(chan messages.StackResponse),
 		compilerReqs:  make(chan compiler.CompilerResponse),
 		logEventReqs:  make(chan map[string]string, 1),
 	}

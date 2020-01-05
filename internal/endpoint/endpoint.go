@@ -5,8 +5,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/maxlandon/wiregost/internal/dispatch"
-	testlog "github.com/maxlandon/wiregost/internal/logging"
+	"github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/user"
 )
@@ -117,7 +116,7 @@ func (e *Endpoint) Listen() {
 					}
 				}
 			} else {
-				// Else, authenticate anyway but forward requests to dispatcher
+				// Else, authenticate anyway but forward requests to messageser
 				switch auth.UserId {
 				case 0:
 					connected := messages.EndpointResponse{
@@ -136,7 +135,7 @@ func (e *Endpoint) Listen() {
 						}
 					}
 				default:
-					dispatch.DispatchRequest(auth)
+					e.DispatchRequest(auth)
 				}
 			}
 		}
@@ -173,15 +172,15 @@ func (e *Endpoint) ForwardResponses() {
 			}
 		}
 		select {
-		case res := <-dispatch.Responses:
-			fmt.Println("Handled response from dispatch")
+		case res := <-messages.Responses:
+			fmt.Println("Handled response from messages")
 			for _, client := range e.clients {
 				fmt.Println(client.id)
 				if client.id == res.ClientId {
 					client.responses <- res
 				}
 			}
-		case res := <-dispatch.Notifications:
+		case res := <-messages.Notifications:
 			if res.Type == "workspace" && res.Action == "delete" {
 				for _, client := range e.clients {
 					if client.CurrentWorkspaceId == res.WorkspaceId {
@@ -207,13 +206,63 @@ func (e *Endpoint) ForwardResponses() {
 				}
 			}
 		// Prepare message when its a log event
-		case res := <-testlog.ForwardLogs:
+		case res := <-logging.ForwardLogs:
 			fmt.Println("handled event from logger")
 			for _, client := range e.clients {
 				if client.CurrentWorkspaceId == res.Data["workspaceId"] {
 					client.Logger.Forward(res)
 				}
 			}
+		}
+	}
+}
+
+func (e *Endpoint) DispatchRequest(req messages.ClientRequest) {
+	// 1. Check commands: most of them can be run in either context
+	// 2. For context-sensitive commands, check context
+	fmt.Println(req.Command[0])
+	switch req.Command[0] {
+	// Server
+	case "server":
+		fmt.Println("launching handleServer")
+		messages.ForwardServerManager <- req
+	// Log
+	case "log":
+		messages.ForwardLogger <- req
+		fmt.Println("Launching handleLog")
+	// Stack
+	case "stack":
+		fmt.Println("Launching handleModule for stack")
+		messages.ForwardModuleStack <- req
+	// Workspace
+	case "workspace":
+		fmt.Println("Launching handleWorkspace")
+		messages.ForwardWorkspace <- req
+	// Module
+	case "run", "show", "reload", "module":
+		fmt.Println("launching handleModule")
+		messages.ForwardModuleStack <- req
+	// Compiler:
+	case "list", "compile", "compiler":
+		fmt.Println("Dispatched request to handleCompiler")
+		messages.ForwardCompiler <- req
+	// Agent
+	case "agent", "interact", "cmd", "back", "download",
+		"execute-shellcode", "kill", "main", "shell", "upload":
+		fmt.Println("Launching handleAgent")
+	// For both commands we need to check context
+	case "use", "info", "set":
+		switch req.Context {
+		case "main":
+			fmt.Println("Launching handleModule")
+			messages.ForwardModuleStack <- req
+		case "module":
+			fmt.Println("Launching handleModule")
+			messages.ForwardModuleStack <- req
+		case "agent":
+			fmt.Println("Launching handleAgent")
+		case "compiler":
+			messages.ForwardCompiler <- req
 		}
 	}
 }

@@ -9,7 +9,6 @@ import (
 
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/wiregost/internal/dispatch"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/workspace"
 )
@@ -104,7 +103,7 @@ func (m *Manager) Create(path string, id int) {
 
 func (m *Manager) handleClientRequests() {
 	for {
-		request := <-dispatch.ForwardCompiler
+		request := <-messages.ForwardCompiler
 		switch request.Command[0] {
 		case "list":
 			fmt.Println("Detected request for compiler options")
@@ -120,7 +119,7 @@ func (m *Manager) handleClientRequests() {
 						Type:     "compiler",
 						Content:  response,
 					}
-					dispatch.Responses <- msg
+					messages.Responses <- msg
 					fmt.Println("Sent back compiler options")
 				}
 			}
@@ -138,7 +137,7 @@ func (m *Manager) handleClientRequests() {
 							Type:     "compiler",
 							Content:  response,
 						}
-						dispatch.Responses <- msg
+						messages.Responses <- msg
 					} else {
 						response := CompilerResponse{
 							User:   "para",
@@ -149,7 +148,7 @@ func (m *Manager) handleClientRequests() {
 							Type:     "compiler",
 							Content:  response,
 						}
-						dispatch.Responses <- msg
+						messages.Responses <- msg
 					}
 				}
 			}

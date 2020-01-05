@@ -9,7 +9,6 @@ import (
 	"os"
 
 	"github.com/evilsocket/islazy/fs"
-	"github.com/maxlandon/wiregost/internal/dispatch"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/sirupsen/logrus"
 )
@@ -107,7 +106,7 @@ func (wl *WorkspaceLogger) GetLogs(request messages.ClientRequest) {
 				Type:     "log",
 				Content:  logs,
 			}
-			dispatch.Responses <- msg
+			messages.Responses <- msg
 			fmt.Println("Sent back logs")
 		}
 	}
@@ -122,7 +121,7 @@ type Hook interface {
 type ForwardToDispatch struct {
 }
 
-// Forward log items to a general log dispatcher, at the Endpoint level.
+// Forward log items to a general log messageser, at the Endpoint level.
 func (h *ForwardToDispatch) Fire(entry *logrus.Entry) error {
 	ForwardLogs <- entry
 	return nil

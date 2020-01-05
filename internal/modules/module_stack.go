@@ -13,7 +13,6 @@ import (
 
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/wiregost/internal/dispatch"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/workspace"
 )
@@ -70,7 +69,7 @@ func (msm *ModuleStackManager) handleWorkspaceRequests() {
 
 func (msm *ModuleStackManager) handleClientRequests() {
 	for {
-		request := <-dispatch.ForwardModuleStack
+		request := <-messages.ForwardModuleStack
 		switch request.Command[0] {
 		case "use":
 			msm.UseModule(request)
@@ -107,7 +106,7 @@ func (msm *ModuleStackManager) ShowModule(request messages.ClientRequest) {
 		Type:     "module",
 		Content:  response,
 	}
-	dispatch.Responses <- msg
+	messages.Responses <- msg
 }
 
 func (msm *ModuleStackManager) UseModule(request messages.ClientRequest) {
@@ -139,8 +138,8 @@ func (msm *ModuleStackManager) UseModule(request messages.ClientRequest) {
 					Type:     "module",
 					Content:  response,
 				}
-				dispatch.Responses <- msg
-				fmt.Println("dispatch received response")
+				messages.Responses <- msg
+				fmt.Println("messages received response")
 				return
 			}
 		}
@@ -165,8 +164,8 @@ func (msm *ModuleStackManager) UseModule(request messages.ClientRequest) {
 			Type:     "module",
 			Content:  response,
 		}
-		dispatch.Responses <- msg
-		fmt.Println("dispatch received response")
+		messages.Responses <- msg
+		fmt.Println("messages received response")
 		return
 	}
 }
@@ -227,7 +226,7 @@ func (msm *ModuleStackManager) PopModule(request messages.ClientRequest) {
 		Type:     "module",
 		Content:  response,
 	}
-	dispatch.Responses <- msg
+	messages.Responses <- msg
 
 	// Notify other clients to fallback.
 	res := messages.Notification{
@@ -238,7 +237,7 @@ func (msm *ModuleStackManager) PopModule(request messages.ClientRequest) {
 		PoppedModule:   poppedMod,
 		FallbackModule: currentMod,
 	}
-	dispatch.Notifications <- res
+	messages.Notifications <- res
 }
 
 func (msm *ModuleStackManager) SetOption(request messages.ClientRequest) {
@@ -263,7 +262,7 @@ func (msm *ModuleStackManager) SetOption(request messages.ClientRequest) {
 					Type:     "module",
 					Content:  response,
 				}
-				dispatch.Responses <- msg
+				messages.Responses <- msg
 			} else {
 				response := ModuleResponse{
 					Status: opt,
@@ -273,7 +272,7 @@ func (msm *ModuleStackManager) SetOption(request messages.ClientRequest) {
 					Type:     "module",
 					Content:  response,
 				}
-				dispatch.Responses <- msg
+				messages.Responses <- msg
 			}
 		}
 	}
@@ -333,7 +332,7 @@ func (msm *ModuleStackManager) GetStackModuleList(request messages.ClientRequest
 		Type:     "module",
 		Content:  response,
 	}
-	dispatch.Responses <- msg
+	messages.Responses <- msg
 }
 
 // Function used for completion
@@ -351,7 +350,7 @@ func (msm *ModuleStackManager) GetStackModuleNames(request messages.ClientReques
 		ClientId: request.ClientId,
 		Content:  response,
 	}
-	dispatch.Responses <- msg
+	messages.Responses <- msg
 }
 
 func (stack *ModuleStack) LoadFromFile() {
@@ -394,5 +393,5 @@ func GetModuleList(request messages.ClientRequest) {
 		Content:  response,
 	}
 	fmt.Println(list)
-	dispatch.Responses <- msg
+	messages.Responses <- msg
 }

@@ -11,33 +11,30 @@ import (
 
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/wiregost/internal/dispatch"
-	testlog "github.com/maxlandon/wiregost/internal/logging"
+	"github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
 )
 
-// Used to request the ModuleStack Manager to create a Stack for each new workspace
-// Or to load a saved stack for existing ones.
-var ModuleRequests = make(chan messages.StackRequest, 20)
+// Channels used for requesting other managers, to perform tasks such as loading, refreshing, etc.
+var ModuleRequests = make(chan messages.StackRequest, 20) // Request ModuleStack to take action.
+var ServerRequests = make(chan ServerRequest, 20)         // Request Server to take action.
+var CompilerRequests = make(chan CompilerRequest, 20)     // Request Compiler to take action.
 
-// Used for communicating a workspace ID and its server.conf path.
-var ServerRequests = make(chan ServerRequest, 20)
-
-var CompilerRequests = make(chan CompilerRequest, 20)
-
+// Message used by WorkspaceManager to request an action from a Server.
 type ServerRequest struct {
 	ClientId      int
 	WorkspaceId   int
 	Action        string
 	WorkspacePath string
-	Logger        *testlog.WorkspaceLogger
+	Logger        *logging.WorkspaceLogger
 }
 
+// Message used by WorkspaceManager to request an action from a Compiler.
 type CompilerRequest struct {
 	WorkspaceId   int
 	Action        string
 	WorkspacePath string
-	Logger        *testlog.WorkspaceLogger
+	Logger        *logging.WorkspaceLogger
 }
 
 type Workspace struct {
@@ -53,7 +50,7 @@ type Workspace struct {
 
 type WorkspaceManager struct {
 	Workspaces []Workspace
-	Loggers    map[int]*testlog.WorkspaceLogger
+	Loggers    map[int]*logging.WorkspaceLogger
 	// Channels
 	Requests  chan messages.ClientRequest
 	Responses chan messages.Message
@@ -63,7 +60,7 @@ func NewWorkspaceManager() *WorkspaceManager {
 	ws := &WorkspaceManager{
 		Requests:  make(chan messages.ClientRequest),
 		Responses: make(chan messages.Message),
-		Loggers:   make(map[int]*testlog.WorkspaceLogger),
+		Loggers:   make(map[int]*logging.WorkspaceLogger),
 	}
 	// Load all workspaces
 	ws.LoadWorkspaces()
@@ -75,14 +72,14 @@ func NewWorkspaceManager() *WorkspaceManager {
 
 func (wm *WorkspaceManager) handleLogRequests() {
 	for {
-		req := <-dispatch.ForwardLogger
+		req := <-messages.ForwardLogger
 		wm.Loggers[req.CurrentWorkspaceId].GetLogs(req)
 	}
 }
 
 func (wm *WorkspaceManager) HandleRequests() {
 	for {
-		req := <-dispatch.ForwardWorkspace
+		req := <-messages.ForwardWorkspace
 		switch req.Command[1] {
 		// Create new workspace
 		case "new":
@@ -96,7 +93,7 @@ func (wm *WorkspaceManager) HandleRequests() {
 				Type:     "workspace",
 				Content:  res,
 			}
-			dispatch.Responses <- msg
+			messages.Responses <- msg
 		// List workspaces
 		case "list":
 			res := messages.WorkspaceResponse{
@@ -107,7 +104,7 @@ func (wm *WorkspaceManager) HandleRequests() {
 				Type:     "workspace",
 				Content:  res,
 			}
-			dispatch.Responses <- msg
+			messages.Responses <- msg
 		case "switch":
 			wm.SwitchWorkspace(req)
 		case "delete":
@@ -120,7 +117,7 @@ func (wm *WorkspaceManager) HandleRequests() {
 				Type:     "workspace",
 				Content:  res,
 			}
-			dispatch.Responses <- msg
+			messages.Responses <- msg
 		}
 	}
 }
@@ -179,7 +176,7 @@ func (w *WorkspaceManager) Create(name string, ownerId int, params map[string]st
 	}
 
 	// Create its associated logger instance
-	w.Loggers[workspace.Id] = testlog.NewWorkspaceLogger(workspace.Name, workspace.Id)
+	w.Loggers[workspace.Id] = logging.NewWorkspaceLogger(workspace.Name, workspace.Id)
 	// Create associated server
 	ser := ServerRequest{
 		WorkspaceId:   workspace.Id,
@@ -288,7 +285,7 @@ func (w *WorkspaceManager) Delete(name string, ownerId int) (result string) {
 				WorkspaceId:         ws.Id,
 				FallbackWorkspaceId: defaultWorkspaceId,
 			}
-			dispatch.Notifications <- res
+			messages.Notifications <- res
 		}
 	}
 	// Update workspace list
@@ -316,7 +313,7 @@ func (wm *WorkspaceManager) SwitchWorkspace(request messages.ClientRequest) {
 				Type:     "workspace",
 				Content:  res,
 			}
-			dispatch.Responses <- msg
+			messages.Responses <- msg
 			// Ask server manager to communicate status about associated server
 			ser := ServerRequest{
 				ClientId:    request.ClientId,
@@ -359,7 +356,7 @@ func (wm *WorkspaceManager) LoadWorkspaces() {
 		fmt.Println(tui.Dim("Loaded workspace " + d.Name()))
 		path, _ := fs.Expand("~/.wiregost/workspaces/" + d.Name())
 		// Load associated loggers
-		wm.Loggers[ws.Id] = testlog.NewWorkspaceLogger(ws.Name, ws.Id)
+		wm.Loggers[ws.Id] = logging.NewWorkspaceLogger(ws.Name, ws.Id)
 		// Load associated compilers
 		compReq := CompilerRequest{
 			WorkspaceId:   ws.Id,

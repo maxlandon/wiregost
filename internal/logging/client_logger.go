@@ -3,7 +3,6 @@ package logging
 import (
 	"fmt"
 
-	"github.com/maxlandon/wiregost/internal/dispatch"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/sirupsen/logrus"
 )
@@ -70,5 +69,5 @@ func (cl *ClientLogger) SetLevel(request messages.ClientRequest) {
 		Type:     "log",
 		Content:  res,
 	}
-	dispatch.Responses <- msg
+	messages.Responses <- msg
 }

@@ -1,5 +1,6 @@
 package messages
 
+// Client messages -----------------------------------------//
 type ClientRequest struct {
 	// Client-specific
 	ClientId int
@@ -25,6 +26,9 @@ type ClientConnRequest struct {
 	UserPassword string
 }
 
+// Server messages -----------------------------------------//
+
+// Message acting as an envelope for other types of responses
 type Message struct {
 	ClientId         int
 	Type             string
@@ -32,6 +36,7 @@ type Message struct {
 	Content          interface{}
 }
 
+// Message used to push updates to clients
 type Notification struct {
 	Type         string
 	Action       string
@@ -45,31 +50,7 @@ type Notification struct {
 	FallbackModule string
 }
 
-// type ModuleResponse struct {
-//         User    string
-//         Options []modules.Option
-//         Modules []modules.Module
-// }
-
-type AgentResponse struct {
-	User string
-	// Agents agents.Agents // Change this
-	Info [][]string
-}
-
-type LogResponse struct {
-	User string
-	Log  string // Used to notify log is set
-	Logs []map[string]string
-}
-
-type LogEvent struct {
-	ClientId    int
-	WorkspaceId int
-	Level       string
-	Message     string
-}
-
+// Response to a workspace command
 type WorkspaceResponse struct {
 	User           string
 	WorkspaceId    int // Return the current/chosen workspace here
@@ -77,27 +58,45 @@ type WorkspaceResponse struct {
 	Result         string
 }
 
-type StackResponse struct {
+// Response to a log command
+type LogResponse struct {
 	User string
-	// ModuleList []modules.Module // We will determine if we need to pass all modules or just their names/info
-	// CurrentModule modules.Module // Maybe we will not need this line for changing shell state.
+	Log  string // Used to notify log is set
+	Logs []map[string]string
 }
 
+// Response to a server command
+type ServerResponse struct {
+	User       string
+	Status     string
+	Error      string
+	ServerList []map[string]string
+}
+
+// Message used to push log events to clients
+type LogEvent struct {
+	ClientId    int
+	WorkspaceId int
+	Level       string
+	Message     string
+}
+
+// Message used to send connection confirmation to a client.
 type EndpointResponse struct {
 	User      string
-	Connected bool // Used upon connection, to notify shell it is correctly connected.
+	Connected bool
 	Status    string
 }
 
+// Message used by WorkspaceManager to request an action from a ModuleStack.
 type StackRequest struct {
 	WorkspaceId int
 	Workspace   string
 	Action      string
 }
 
-type ServerResponse struct {
-	User       string
-	Status     string
-	Error      string
-	ServerList []map[string]string
+type AgentResponse struct {
+	User string
+	// Agents agents.Agents // Change this
+	Info [][]string
 }
