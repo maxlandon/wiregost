@@ -29,12 +29,12 @@ import (
 	"gopkg.in/square/go-jose.v2/jwt"
 
 	// Merlin
-	"github.com/Ne0nd0g/merlin/pkg/logging"  // TO CHANGE WITH OUR OWN WHEN READY
-	"github.com/Ne0nd0g/merlin/pkg/messages" // TO CHANGE WITH OUR OWN WHEN READY
-	"github.com/Ne0nd0g/merlin/pkg/util"     // TO CHANGE WITH OUR OWN WHEN READY
+	loggingMerlin "github.com/Ne0nd0g/merlin/pkg/logging" // TO CHANGE WITH OUR OWN WHEN READY
+	"github.com/Ne0nd0g/merlin/pkg/messages"              // TO CHANGE WITH OUR OWN WHEN READY
+	"github.com/Ne0nd0g/merlin/pkg/util"                  // TO CHANGE WITH OUR OWN WHEN READY
 	"github.com/maxlandon/wiregost/internal/agents"
 	"github.com/maxlandon/wiregost/internal/core"
-	testlog "github.com/maxlandon/wiregost/internal/logging"
+	"github.com/maxlandon/wiregost/internal/logging"
 )
 
 // Server is a structure for creating and instantiating new server objects
@@ -55,11 +55,11 @@ type Server struct {
 	Workspace   string
 	WorkspaceId int
 	Running     bool
-	log         *testlog.WorkspaceLogger
+	log         *logging.WorkspaceLogger
 }
 
 // New instantiates a new server object and returns it
-func New(iface string, port int, protocol string, key string, certificate string, psk string, workspace string, workspaceId int, logger *testlog.WorkspaceLogger) (Server, error) {
+func New(iface string, port int, protocol string, key string, certificate string, psk string, workspace string, workspaceId int, logger *logging.WorkspaceLogger) (Server, error) {
 	s := Server{
 		ID:          uuid.NewV4(),
 		Protocol:    protocol,
@@ -227,8 +227,8 @@ func (s *Server) Run() (status string, err error) {
 				return
 			}
 		}()
-		go logging.Server(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
 		s.Running = true
+		go loggingMerlin.Server(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
 		return m, nil
 	} else if s.Protocol == "hq" {
 		server := s.Server.(*h2quic.Server)
@@ -241,7 +241,7 @@ func (s *Server) Run() (status string, err error) {
 				return
 			}
 		}()
-		go logging.Server(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
+		go loggingMerlin.Server(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
 		// Server is now running
 		s.Running = true
 		return m, nil
@@ -359,8 +359,8 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 				case "RegInit":
 					serverRegInit, err := agents.OPAQUERegistrationInit(k, s.opaqueKey)
 					if err != nil {
-						logging.Server(err.Error())
-						log.Warnf(err.Error())
+						loggingMerlin.Server(err.Error())
+						log.Errorf(err.Error())
 						w.WriteHeader(404)
 						return
 					}

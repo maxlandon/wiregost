@@ -14,7 +14,6 @@ import (
 
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/wiregost/internal/dispatch"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/util"
 	"github.com/maxlandon/wiregost/internal/workspace"
@@ -59,7 +58,7 @@ func (sm *ServerManager) handleWorkspaceRequests() {
 
 func (sm *ServerManager) handleClientRequests() {
 	for {
-		request := <-dispatch.ForwardServerManager
+		request := <-messages.ForwardServerManager
 		fmt.Println()
 		fmt.Println()
 		fmt.Println(sm.Servers)
@@ -98,14 +97,19 @@ func (sm *ServerManager) GiveStatus(request workspace.ServerRequest) {
 		Type:     "server",
 		Content:  res,
 	}
-	dispatch.Responses <- msg
+	messages.Responses <- msg
 }
 
 func (sm *ServerManager) StartServer(request messages.ClientRequest) {
-	status, _ := sm.Servers[request.CurrentWorkspaceId].Run()
+	fmt.Println("Came here")
+	s := sm.Servers[request.CurrentWorkspaceId]
+	go s.Run()
+	// status, _ := sm.Servers[request.CurrentWorkspaceId].Run()
+	m := fmt.Sprintf("%s[*]%s Starting %s listener on %s:%d %s(pre-shared key: %s%s)",
+		tui.GREEN, tui.RESET, s.Protocol, s.Interface, s.Port, tui.DIM, s.Psk, tui.RESET)
 	res := messages.ServerResponse{
 		User:   request.UserName,
-		Status: status,
+		Status: m,
 	}
 	msg := messages.Message{
 		ClientId: request.ClientId,
@@ -113,7 +117,7 @@ func (sm *ServerManager) StartServer(request messages.ClientRequest) {
 		Content:  res,
 	}
 	fmt.Println(sm.Servers[request.CurrentWorkspaceId].Running)
-	dispatch.Responses <- msg
+	messages.Responses <- msg
 }
 
 func (sm *ServerManager) StopServer(request messages.ClientRequest) {
@@ -146,7 +150,7 @@ func (sm *ServerManager) StopServer(request messages.ClientRequest) {
 		Type:     "server",
 		Content:  res,
 	}
-	dispatch.Responses <- msg
+	messages.Responses <- msg
 }
 
 func (sm *ServerManager) ListServers(request messages.ClientRequest) {
@@ -169,7 +173,7 @@ func (sm *ServerManager) ListServers(request messages.ClientRequest) {
 		Type:     "server",
 		Content:  res,
 	}
-	dispatch.Responses <- msg
+	messages.Responses <- msg
 }
 
 func (sm *ServerManager) GenerateCertificate(req messages.ClientRequest) {
@@ -219,7 +223,7 @@ func (sm *ServerManager) GenerateCertificate(req messages.ClientRequest) {
 		Type:     "server",
 		Content:  res,
 	}
-	dispatch.Responses <- msg
+	messages.Responses <- msg
 
 }
 
@@ -399,7 +403,7 @@ func (sm *ServerManager) ReloadServer(request messages.ClientRequest) {
 		Type:     "server",
 		Content:  response,
 	}
-	dispatch.Responses <- msg
+	messages.Responses <- msg
 }
 
 func (sm *ServerManager) FindFreePort() (port int) {
