@@ -89,13 +89,15 @@ type EndpointResponse struct {
 	Status    string
 }
 
-// TO MODIFY
-type ServerResponse struct {
-	Status string // Used upon connection, to notify shell it is correctly connected.
-}
-
 type StackRequest struct {
 	WorkspaceId int
 	Workspace   string
 	Action      string
+}
+
+type ServerResponse struct {
+	User       string
+	Status     string
+	Error      string
+	ServerList []map[string]string
 }

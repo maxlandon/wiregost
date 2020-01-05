@@ -229,6 +229,8 @@ func (s *Session) mainMenuCommand(cmd []string) {
 			s.ServerStop(cmd)
 		case "generate_certificate":
 			s.GenerateCertificate(cmd)
+		case "list":
+			s.ServerList(cmd)
 		}
 	}
 }
@@ -325,6 +327,8 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 			s.ServerStop(cmd)
 		case "generate_certificate":
 			s.GenerateCertificate(cmd)
+		case "list":
+			s.ServerList(cmd)
 		}
 	// Compiler
 	case "compiler":

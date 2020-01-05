@@ -58,6 +58,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		readline.PcItem("server",
 			readline.PcItem("start"), // Add getServerList here
 			readline.PcItem("stop"),
+			readline.PcItem("list"),
 			readline.PcItem("reload"),
 			readline.PcItem("generate_certificate"),
 		),
@@ -157,6 +158,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		readline.PcItem("server",
 			readline.PcItem("start"), // Add getServerList here
 			readline.PcItem("stop"),
+			readline.PcItem("list"),
 			readline.PcItem("reload"),
 			readline.PcItem("generate_certificate"),
 		),
@@ -263,6 +265,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		readline.PcItem("server",
 			readline.PcItem("start"), // Add getServerList here
 			readline.PcItem("stop"),
+			readline.PcItem("list"),
 			readline.PcItem("reload"),
 		),
 

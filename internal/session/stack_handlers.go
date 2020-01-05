@@ -50,7 +50,9 @@ func (s *Session) StackPop(cmd []string) {
 	// Wait for new current module fallback
 	fallback := <-s.moduleReqs
 	if fallback.ModuleName != "" {
-		s.currentModule = fallback.ModuleName
+		if s.currentModule != "" {
+			s.currentModule = fallback.ModuleName
+		}
 	} else {
 		s.currentModule = ""
 		s.Shell.Config.AutoComplete = s.getCompleter("main")

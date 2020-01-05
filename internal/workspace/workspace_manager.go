@@ -185,6 +185,7 @@ func (w *WorkspaceManager) Create(name string, ownerId int, params map[string]st
 		WorkspaceId:   workspace.Id,
 		WorkspacePath: workspaceDir,
 		Action:        "create",
+		Logger:        w.Loggers[workspace.Id],
 	}
 	ServerRequests <- ser
 	// Create new stack

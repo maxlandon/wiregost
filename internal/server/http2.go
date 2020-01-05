@@ -48,7 +48,7 @@ type Server struct {
 	Server      interface{}    // A Golang server object (i.e http.Server or h3quic.Server)
 	Mux         *http.ServeMux // The message handler/multiplexer
 	jwtKey      []byte         // The password used by the server to create JWTs
-	psk         string         // The pre-shared key password used prior to Password Authenticated Key Exchange (PAKE)
+	Psk         string         // The pre-shared key password used prior to Password Authenticated Key Exchange (PAKE)
 	opaqueKey   kyber.Scalar   // OPAQUE server's keys
 
 	// Added
@@ -67,7 +67,7 @@ func New(iface string, port int, protocol string, key string, certificate string
 		Port:        port,
 		Mux:         http.NewServeMux(),
 		jwtKey:      []byte(core.RandStringBytesMaskImprSrc(32)), // Used to sign and encrypt JWT
-		psk:         psk,
+		Psk:         psk,
 		Workspace:   workspace,
 		WorkspaceId: workspaceId,
 		Running:     false,
@@ -207,14 +207,14 @@ func (s *Server) Run() (status string, err error) {
 
 	// Sleep to allow the shell to start up
 	time.Sleep(45 * time.Millisecond)
-	if s.psk == "merlin" {
+	if s.Psk == "merlin" {
 		fmt.Println()
 		log.Warnf("Listener was started using \"merlin\" as the Pre-Shared Key (PSK) allowing anyone" +
 			" decrypt message traffic.")
-		log.Infof("Consider changing the PSK by using the -psk command line flag.")
+		log.Infof("Consider changing the PSK by using the -Psk command line flag.")
 	}
 	m := fmt.Sprintf("%s[*]%s Starting %s listener on %s:%d %s(pre-shared key: %s%s)",
-		tui.GREEN, tui.RESET, s.Protocol, s.Interface, s.Port, tui.DIM, s.psk, tui.RESET)
+		tui.GREEN, tui.RESET, s.Protocol, s.Interface, s.Port, tui.DIM, s.Psk, tui.RESET)
 
 	if s.Protocol == "h2" {
 		server := s.Server.(*http.Server)
@@ -315,24 +315,18 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 		agentID, errValidate = validateJWT(strings.Split(token, " ")[1], s.jwtKey, s)
 		// If agentID was returned, then message contained a JWT encrypted with the HTTP interface key
 		if (errValidate != nil) && (agentID == uuid.Nil) {
-			if core.Verbose {
-				log.Warnf(errValidate.Error())
-				log.Infof("trying again with interface PSK")
-			}
+			log.Warnf(errValidate.Error())
+			log.Infof("trying again with interface PSK")
 			// Validate JWT using interface PSK; Used by unauthenticated agents
-			hashedKey := sha256.Sum256([]byte(s.psk))
+			hashedKey := sha256.Sum256([]byte(s.Psk))
 			key = hashedKey[:]
 			agentID, errValidate = validateJWT(strings.Split(token, " ")[1], key, s)
 			if errValidate != nil {
-				if core.Verbose {
-					log.Warnf(errValidate.Error())
-				}
+				log.Warnf(errValidate.Error())
 				w.WriteHeader(404)
 				return
 			}
-			if core.Debug {
-				log.Infof("Unauthenticated JWT")
-			}
+			log.Infof("Unauthenticated JWT")
 
 			// Decrypt the HTTP payload, a JWE, using interface PSK
 			k, errDecryptPSK := decryptJWE(jweString, key, s)
@@ -699,9 +693,7 @@ func decryptJWE(jweString string, key []byte, s *Server) (messages.Base, error) 
 		return m, fmt.Errorf("there was an error parseing the JWE string into a JSONWebEncryption object:\r\n%s", errObject)
 	}
 
-	if core.Debug {
-		log.Debugf(fmt.Sprintf("Parsed JWE:\r\n%+v", jwe))
-	}
+	log.Debugf(fmt.Sprintf("Parsed JWE:\r\n%+v", jwe))
 
 	// Decrypt the JWE
 	jweMessage, errDecrypt := jwe.Decrypt(key)

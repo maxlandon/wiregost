@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
+	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/internal/messages"
+	"github.com/olekukonko/tablewriter"
 )
 
 func (s *Session) ServerStart(cmd []string) {
@@ -79,6 +82,42 @@ func (s *Session) ServerStop(cmd []string) {
 	status := <-s.serverReqs
 	fmt.Println()
 	fmt.Println(status.Status)
+}
+
+func (s *Session) ServerList(cmd []string) {
+	s.Send(cmd)
+	serv := <-s.serverReqs
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetCenterSeparator(tui.Dim("|"))
+	table.SetRowSeparator(tui.Dim("-"))
+	table.SetColumnSeparator(tui.Dim("|"))
+	table.SetColMinWidth(5, 50)
+	table.SetHeader([]string{"Workspace", "Address", "Protocol", "State", "PSK", "Certificate"})
+	table.SetAutoWrapText(true)
+	table.SetColWidth(80)
+	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+	)
+
+	table.SetBorder(false)
+
+	running := ""
+	for _, v := range serv.ServerList {
+		if v["state"] == "true" {
+			running = tui.Green("Running")
+		} else {
+			running = tui.Red("Stopped")
+		}
+		table.Append([]string{v["workspace"], v["address"], v["protocol"], running, v["psk"], v["certificate"]})
+	}
+	fmt.Println()
+	table.Render()
+
 }
 
 func (s *Session) GenerateCertificate(cmd []string) {
