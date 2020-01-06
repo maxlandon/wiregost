@@ -1,20 +1,3 @@
-// Merlin is a post-exploitation command and control framework.
-// This file is part of Merlin.
-// Copyright (C) 2019  Russel Van Tuyl
-
-// Merlin is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// any later version.
-
-// Merlin is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Merlin.  If not, see <http://www.gnu.org/licenses/>.
-
 package agent
 
 import (
@@ -28,12 +11,12 @@ import (
 	"time"
 
 	// 3rd Party
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 
 	// Merlin
-	"github.com/Ne0nd0g/merlin/pkg/core"
-	"github.com/Ne0nd0g/merlin/pkg/messages"
-	"github.com/Ne0nd0g/merlin/test/testServer"
+	"github.com/maxlandon/wiregost/internal/core"
+	"github.com/maxlandon/wiregost/internal/messages"
+	testserver "github.com/maxlandon/wiregost/test/testServer"
 )
 
 // TestNewHTTPSAgent ensure the agent.New function returns a HTTP/1.1 agent without error

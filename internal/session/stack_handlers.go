@@ -1,7 +1,6 @@
 package session
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -33,15 +32,14 @@ func (s *Session) stackShow() {
 	for i := len(stack.Modules) - 1; i >= 0; i-- {
 		if strings.ToLower(strings.TrimSuffix(strings.Join(stack.Modules[i].Path, "/"), ".json")) == strings.ToLower(s.currentModule) {
 			table.Rich([]string{stack.Modules[i].Name, strings.TrimPrefix(strings.Join(stack.Modules[i].SourceLocal, "/"), "data/src"), stack.Modules[i].Lang},
-				[]tablewriter.Colors{tablewriter.Colors{tablewriter.Bold, tablewriter.FgGreenColor},
-					tablewriter.Colors{tablewriter.Bold, tablewriter.FgGreenColor},
-					tablewriter.Colors{tablewriter.Bold, tablewriter.FgGreenColor},
+				[]tablewriter.Colors{tablewriter.Colors{tablewriter.Normal, tablewriter.FgGreenColor},
+					tablewriter.Colors{tablewriter.Normal, tablewriter.FgGreenColor},
+					tablewriter.Colors{tablewriter.Normal, tablewriter.FgGreenColor},
 				})
 		} else {
 			table.Append([]string{stack.Modules[i].Name, strings.TrimPrefix(strings.Join(stack.Modules[i].SourceLocal, "/"), "data/src"), stack.Modules[i].Lang})
 		}
 	}
-	fmt.Println()
 	table.Render()
 }
 

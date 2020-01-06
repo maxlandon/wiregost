@@ -235,7 +235,8 @@ func moduleHelp() {
 
 	for _, c := range moduleCommands {
 		params = strings.Join(c.Params, " ")
-		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
+		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+strings.ToUpper(params), c.Description)
+		// fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
 	fmt.Println()
 }
@@ -337,17 +338,11 @@ var commandCategories = []commandDescription{
 	{Name: "endpoint", Description: "Commands and parameters for managing WireGost clients' Endpoint (connection, add, generate tokens, etc)"},
 	{Name: "server", Description: "Commands and parameters for managing Agent Servers (state, certificates, tokens, etc.)"},
 	{Name: "log", Description: "Commands for managing the various sets of logs used by WireGost"},
-	// {Name: "chat", Description: "Commands for using WireGost's messaging system"},
 	{Name: "workspace", Description: "Manage WireGost workspaces"},
 	{Name: "stack", Description: "Manage the module stack (all modules currently loaded in this session)"},
-	// {Name: "global", Description: "Manage all global variables in WireGost"},
-	// {Name: "db", Description: "Manage WireGost data services"},
-	// {Name: "listeners", Description: "Manage listeners instantiated in this session"},
-	// {Name: "exploit", Description: "Manage the currently active module, if the module is an exploit"},
 	{Name: "module", Description: "Manage the currently loaded module."},
 	{Name: "agent", Description: "Manage the currently active agent."},
 	{Name: "compiler", Description: "Use the compiler menu to prepare and compile agents."},
-	// {Name: "payload", Description: "Manage the currently active module, if the module is a payload"},
 	// {Name: "hosts", Description: "Commands displaying hosts"},
 	// {Name: "services", Description: "Commands displaying services"},
 	// {Name: "creds", Description: "Commands displaying credentials"},
@@ -463,7 +458,7 @@ var moduleCommands = []commandDescription{
 	{Name: "show", Params: []string{"info | options"}, Description: "Show information about a module or its options."},
 	{Name: "info", Description: "Show information about a module"},
 	{Name: "reload", Description: "Reloads the module to a fresh clean state"},
-	{Name: "set", Params: []string{"<option name>", "<option value>"}, Description: "Set the value for one of the module's options. (Auto-completed options)"},
+	{Name: "set", Params: []string{"<option>", "<value>"}, Description: "Set the value for one of the module's options. (Auto-completed options)"},
 	{Name: "run", Description: "Run or execute the module"},
 }
 

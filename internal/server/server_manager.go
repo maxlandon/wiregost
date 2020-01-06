@@ -87,7 +87,8 @@ func (sm *Manager) giveStatus(request workspace.ServerRequest) {
 			tui.GREEN, tui.RESET, serv.Interface, strconv.Itoa(serv.Port))
 	}
 	res := messages.ServerResponse{
-		Status: status,
+		Status:   status,
+		ServerID: serv.ID,
 	}
 	msg := messages.Message{
 		ClientID: request.ClientID,

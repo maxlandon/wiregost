@@ -12,4 +12,6 @@ var (
 	ForwardServerManager = make(chan ClientRequest, 20)
 	ForwardCompiler      = make(chan ClientRequest, 20)
 	ForwardLogger        = make(chan ClientRequest, 20)
+	ForwardAgents        = make(chan ClientRequest, 20)
+	AgentRequests        = make(chan AgentRequest, 20)
 )

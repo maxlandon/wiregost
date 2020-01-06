@@ -18,10 +18,10 @@ func Log(event messages.LogEvent) {
 	case "warning":
 		fmt.Printf("%s[!]%s %s \n", tui.YELLOW, tui.RESET, event.Message)
 	case "error":
-		fmt.Printf("%s%s[!]%s %s \n", tui.BOLD, tui.RED, tui.RESET, event.Message)
+		fmt.Printf("%s%s[!] %s \n", tui.BOLD, tui.RED, event.Message)
 	case "fatal":
-		fmt.Printf("%s%s[FATAL]%s %s \n", tui.BOLD, tui.RED, tui.RESET, event.Message)
+		fmt.Printf("%s%s[FATAL] %s \n", tui.BOLD, tui.RED, event.Message)
 	case "panic":
-		fmt.Printf("%s%s[PANIC]%s %s \n", tui.BOLD, tui.RED, tui.RESET, event.Message)
+		fmt.Printf("%s%s[PANIC] %s \n", tui.BOLD, tui.RED, event.Message)
 	}
 }

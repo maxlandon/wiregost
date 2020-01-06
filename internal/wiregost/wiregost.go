@@ -1,8 +1,8 @@
 package wiregost
 
 import (
+	"github.com/maxlandon/wiregost/internal/agents"
 	"github.com/maxlandon/wiregost/internal/compiler"
-	"github.com/maxlandon/wiregost/internal/db"
 	"github.com/maxlandon/wiregost/internal/endpoint"
 	"github.com/maxlandon/wiregost/internal/modules"
 	"github.com/maxlandon/wiregost/internal/server"
@@ -14,38 +14,24 @@ import (
 // It is used to instantiate all managers and components.
 type Wiregost struct {
 	// Connections
-	Endpoint *endpoint.Endpoint
-
-	// DB Access
-	DbManager db.Manager
-
-	// User
-	UserManager *user.Manager
-
-	// Workspace
-	WorkspaceManager *workspace.Manager
-
-	// ModuleStackManager
+	Endpoint           *endpoint.Endpoint
+	UserManager        *user.Manager
+	WorkspaceManager   *workspace.Manager
 	ModuleStackManager *modules.Manager
-
-	// Logger
-
-	// Server
-	ServerManager *server.Manager
-
-	// Compiler
-	CompilerManager *compiler.Manager
+	ServerManager      *server.Manager
+	AgentManager       *agents.Manager
+	CompilerManager    *compiler.Manager
 }
 
 // NewWiregost instantiates a new Wiregost server system
 func NewWiregost() *Wiregost {
 	wiregost := &Wiregost{
-		Endpoint: endpoint.NewEndpoint(),
-		// DB
+		Endpoint:           endpoint.NewEndpoint(),
 		UserManager:        user.NewManager(),
 		WorkspaceManager:   workspace.NewManager(),
 		ModuleStackManager: modules.NewManager(),
 		ServerManager:      server.NewManager(),
+		AgentManager:       agents.NewManager(),
 		CompilerManager:    compiler.NewManager(),
 	}
 

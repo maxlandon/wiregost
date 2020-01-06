@@ -13,6 +13,7 @@ import (
 	"github.com/maxlandon/wiregost/internal/compiler"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/modules"
+	uuid "github.com/satori/go.uuid"
 )
 
 // Session is the central object of a Wiregost client shell session.
@@ -27,6 +28,7 @@ type Session struct {
 	currentModule      string
 	currentWorkspace   string
 	CurrentWorkspaceID int
+	currentServerID    uuid.UUID
 	// Environmment variables
 	Env map[string]string
 	// Server connection parameters
@@ -231,6 +233,11 @@ func (s *Session) mainMenuCommand(cmd []string) {
 			s.generateCertificate(cmd)
 		case "list":
 			s.serverList(cmd)
+		}
+	case "agent":
+		switch cmd[1] {
+		case "list":
+			s.listAgents(cmd)
 		}
 	}
 }

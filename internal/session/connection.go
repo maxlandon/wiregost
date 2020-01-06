@@ -39,6 +39,7 @@ func (s *Session) send(cmd []string) error {
 		CurrentWorkspaceID: s.CurrentWorkspaceID,
 		Context:            s.menuContext,
 		CurrentModule:      s.currentModule,
+		CurrentServerID:    s.currentServerID,
 		Command:            cmd,
 	}
 	enc := json.NewEncoder(s.writer)

@@ -47,6 +47,7 @@ func (s *Session) workspaceSwitch(cmd []string) {
 	s.CurrentWorkspaceID = workspace.WorkspaceID
 	s.currentWorkspace = cmd[2]
 	s.currentModule = ""
+	s.currentServerID = server.ServerID
 }
 
 func (s *Session) workspaceDelete(cmd []string) {

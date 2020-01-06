@@ -1,20 +1,3 @@
-// Merlin is a post-exploitation command and control framework.
-// This file is part of Merlin.
-// Copyright (C) 2019  Russel Van Tuyl
-
-// Merlin is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// any later version.
-
-// Merlin is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Merlin.  If not, see <http://www.gnu.org/licenses/>.
-
 package agent
 
 import (
@@ -47,16 +30,16 @@ import (
 	"github.com/fatih/color"
 	"github.com/lucas-clemente/quic-go"
 	"github.com/lucas-clemente/quic-go/h2quic"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/pbkdf2"
 	"golang.org/x/net/http2"
 	"gopkg.in/square/go-jose.v2"
 	"gopkg.in/square/go-jose.v2/jwt"
 
-	// Merlin
-	"github.com/Ne0nd0g/merlin/pkg"
-	"github.com/Ne0nd0g/merlin/pkg/core"
-	"github.com/Ne0nd0g/merlin/pkg/messages"
+	// Wiregost
+	wiregost "github.com/maxlandon/wiregost/internal"
+	"github.com/maxlandon/wiregost/internal/core"
+	"github.com/maxlandon/wiregost/internal/messages"
 )
 
 // GLOBAL VARIABLES
@@ -110,7 +93,7 @@ func New(protocol string, url string, host string, psk string, proxy string, ver
 		Platform:     runtime.GOOS,
 		Architecture: runtime.GOARCH,
 		Pid:          os.Getpid(),
-		Version:      merlin.Version,
+		Version:      wiregost.Version,
 		WaitTime:     30000 * time.Millisecond,
 		PaddingMax:   4096,
 		MaxRetry:     7,
@@ -202,7 +185,7 @@ func (a *Agent) Run() error {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if a.Verbose {
-		message("note", fmt.Sprintf("Agent version: %s", merlin.Version))
+		message("note", fmt.Sprintf("Agent version: %s", wiregost.Version))
 		message("note", fmt.Sprintf("Agent build: %s", build))
 	}
 
@@ -379,7 +362,7 @@ func getClient(protocol string, proxyURL string) (*http.Client, error) {
 	// Setup TLS configuration
 	TLSConfig := &tls.Config{
 		MinVersion:         tls.VersionTLS12,
-		InsecureSkipVerify: true, // #nosec G402 - see https://github.com/Ne0nd0g/merlin/issues/59 TODO fix this
+		InsecureSkipVerify: true, // #nosec G402 - see https://github.com/Ne0nd0g/wiregost/issues/59 TODO fix this
 		CipherSuites: []uint16{
 			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 			tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
@@ -1309,7 +1292,7 @@ func (a *Agent) getAgentInfoMessage() messages.Base {
 	}
 
 	agentInfoMessage := messages.AgentInfo{
-		Version:       merlin.Version,
+		Version:       wiregost.Version,
 		Build:         build,
 		WaitTime:      a.WaitTime.String(),
 		PaddingMax:    a.PaddingMax,

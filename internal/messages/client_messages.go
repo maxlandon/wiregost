@@ -1,5 +1,7 @@
 package messages
 
+import uuid "github.com/satori/go.uuid"
+
 // Client messages -----------------------------------------//
 
 // ClientRequest is a message used by clients to perform all requests
@@ -14,6 +16,7 @@ type ClientRequest struct {
 	CurrentModule      string
 	CurrentWorkspace   string
 	CurrentWorkspaceID int
+	CurrentServerID    uuid.UUID
 	Command            []string
 	ServerParams       map[string]string
 	WorkspaceParams    map[string]string
@@ -25,7 +28,7 @@ type ClientConnRequest struct {
 	UserPassword string
 }
 
-// Server messages -----------------------------------------//
+// Endpoint messages -----------------------------------------//
 
 // Message is acting as an envelope for other types of responses.
 type Message struct {
@@ -69,6 +72,7 @@ type ServerResponse struct {
 	Status     string
 	Error      string
 	ServerList []map[string]string
+	ServerID   uuid.UUID
 }
 
 // LogEvent is used to push log events to clients
@@ -93,9 +97,13 @@ type StackRequest struct {
 	Action      string
 }
 
+type AgentRequest struct {
+	ServerID uuid.UUID
+	Action   string
+	AgentID  uuid.UUID
+}
+
 // AgentResponse is used for sending back status/content about an agent.
 type AgentResponse struct {
-	User string
-	Info [][]string
-	// Agents agents.Agents // Change this
+	Infos []map[string]string
 }

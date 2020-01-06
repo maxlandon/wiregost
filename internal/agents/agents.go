@@ -25,11 +25,10 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"go.dedis.ch/kyber"
 
-	// Merlin
-	"github.com/Ne0nd0g/merlin/pkg/logging"
-	"github.com/Ne0nd0g/merlin/pkg/messages"
-	"github.com/maxlandon/wiregost/internal/core" // CHANGE ALL PATHS ONCE MODULES ARE READY
-	// "github.com/Ne1nd0g/merlin/pkg/core" // CHANGE ALL PATHS ONCE MODULES ARE READY
+	// Wiregost
+	"github.com/Ne0nd0g/merlin/pkg/logging" // CHANGE THIS WHEN READY
+	"github.com/maxlandon/wiregost/internal/core"
+	"github.com/maxlandon/wiregost/internal/messages"
 )
 
 // Global Variables
@@ -123,7 +122,7 @@ func KeyExchange(m messages.Base) (messages.Base, error) {
 }
 
 // OPAQUERegistrationInit is used to register an agent leveraging the OPAQUE Password Authenticated Key Exchange (PAKE) protocol
-func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar) (messages.Base, error) {
+func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serverId uuid.UUID) (messages.Base, error) {
 	if core.Debug {
 		message("debug", "Entering into agents.OPAQUERegistrationInit function")
 	}
@@ -174,6 +173,13 @@ func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar) (mess
 
 	// Add agent to global map
 	Agents[m.ID] = &agent
+	// Add agent UUID to the server's list of agents, via Agent Manager
+	req := messages.AgentRequest{
+		ServerID: serverId,
+		Action:   "add",
+		AgentID:  m.ID,
+	}
+	messages.AgentRequests <- req
 
 	Log(m.ID, "Received agent OPAQUE register initialization message")
 
