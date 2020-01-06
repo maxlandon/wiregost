@@ -208,7 +208,7 @@ func (e *Endpoint) forwardResponses() {
 		// Prepare message when its a log event
 		case res := <-logging.ForwardLogs:
 			for _, client := range e.clients {
-				if client.CurrentWorkspaceID == res.Data["workspaceID"] {
+				if client.CurrentWorkspaceID == res.Data["workspaceId"] {
 					client.Logger.Forward(res)
 				}
 			}
@@ -241,6 +241,7 @@ func (e *Endpoint) dispatchRequest(req messages.ClientRequest) {
 	// Agent
 	case "agent", "interact", "cmd", "back", "download",
 		"execute-shellcode", "kill", "main", "shell", "upload":
+		messages.ForwardAgents <- req
 	// For both commands we need to check context
 	case "use", "info", "set":
 		switch req.Context {
@@ -249,6 +250,7 @@ func (e *Endpoint) dispatchRequest(req messages.ClientRequest) {
 		case "module":
 			messages.ForwardModuleStack <- req
 		case "agent":
+			messages.ForwardAgents <- req
 		case "compiler":
 			messages.ForwardCompiler <- req
 		}

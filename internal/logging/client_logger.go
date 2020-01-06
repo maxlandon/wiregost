@@ -3,6 +3,7 @@ package logging
 import (
 	"fmt"
 
+	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/sirupsen/logrus"
 )
@@ -66,7 +67,7 @@ func (cl *ClientLogger) Forward(entry *logrus.Entry) error {
 func (cl *ClientLogger) SetLevel(request messages.ClientRequest) {
 	cl.Level = levels[request.Command[2]]
 	// Return response
-	status := fmt.Sprintf(" => %s", request.Command[2])
+	status := fmt.Sprintf("[-] level => %s%s", tui.YELLOW, request.Command[2])
 	res := messages.LogResponse{Log: status}
 	msg := messages.Message{
 		ClientID: request.ClientID,

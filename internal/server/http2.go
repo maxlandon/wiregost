@@ -28,12 +28,12 @@ import (
 	"gopkg.in/square/go-jose.v2"
 	"gopkg.in/square/go-jose.v2/jwt"
 
-	// Merlin
-	"github.com/Ne0nd0g/merlin/pkg/messages" // TO CHANGE WITH OUR OWN WHEN READY
-	"github.com/Ne0nd0g/merlin/pkg/util"     // TO CHANGE WITH OUR OWN WHEN READY
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/agents"
 	"github.com/maxlandon/wiregost/internal/core"
 	"github.com/maxlandon/wiregost/internal/logging"
+	"github.com/maxlandon/wiregost/internal/messages"
+	"github.com/maxlandon/wiregost/internal/util"
 )
 
 // Server is a structure for creating and instantiating new server objects
@@ -273,9 +273,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 	// Make sure the message has a JWT
 	token := r.Header.Get("Authorization")
 	if token == "" {
-		if core.Verbose {
-			log.Warnf("incoming request did not contain an Authorization header")
-		}
+		log.Warnf("incoming request did not contain an Authorization header")
 		w.WriteHeader(404)
 		return
 	}
@@ -330,7 +328,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 			k, errDecryptPSK := decryptJWE(jweString, key, s)
 			// Successfully decrypted JWE with interface PSK
 			if errDecryptPSK == nil {
-				log.Debugf(fmt.Sprintf("[DEBUG]POST DATA: %v", k))
+				log.Debugf(fmt.Sprintf("POST DATA: %v", k))
 				log.Infof(fmt.Sprintf("Received %s message, decrypted JWE with interface PSK", k.Type))
 
 				messagePayloadBytes := new(bytes.Buffer)
@@ -355,7 +353,8 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 				case "RegInit":
-					serverRegInit, err := agents.OPAQUERegistrationInit(k, s.opaqueKey)
+					// Added server ID as parameter for registering agent to this server.
+					serverRegInit, err := agents.OPAQUERegistrationInit(k, s.opaqueKey, s.ID)
 					if err != nil {
 						log.Errorf(err.Error())
 						w.WriteHeader(404)
@@ -424,7 +423,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			log.Debugf(fmt.Sprintf("[DEBUG]POST DATA: %v", j))
+			log.Debugf(fmt.Sprintf("POST DATA: %v", j))
 			log.Infof(fmt.Sprintf("Received %s message from %s at %s", j.Type, j.ID, time.Now().UTC().Format(time.RFC3339)))
 
 			// Allowed authenticated message with PSK JWT and JWE encrypted with derived secret
@@ -453,7 +452,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			log.Debugf(fmt.Sprintf("[DEBUG]POST DATA: %v", j))
+			log.Debugf(fmt.Sprintf("POST DATA: %v", j))
 			log.Infof("Authenticated JWT w/ Authenticated JWE agent session key")
 			log.Infof(fmt.Sprintf("Received %s message from %s at %s", j.Type, j.ID, time.Now().UTC().Format(time.RFC3339)))
 
