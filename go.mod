@@ -19,6 +19,7 @@ require (
 	github.com/go-playground/log v6.3.0+incompatible
 	github.com/golang/protobuf v1.3.2
 	github.com/google/gopacket v1.1.17 // indirect
+	github.com/google/uuid v1.1.1
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/lucas-clemente/quic-go v0.10.2
 	github.com/malfunkt/iprange v0.9.0 // indirect
@@ -35,7 +36,7 @@ require (
 	go.dedis.ch/kyber v0.0.0-20190125094535-ffb719103651
 	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
-	golang.org/x/sys v0.0.0-20191210023423-ac6580df4449 // indirect
+	golang.org/x/sys v0.0.0-20191210023423-ac6580df4449
 	google.golang.org/genproto v0.0.0-20191206224255-0243a4be9c8f // indirect
 	google.golang.org/grpc v1.25.1
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect

@@ -34,10 +34,10 @@ func newPrompt(s *Session) Prompt {
 	prompt := Prompt{
 		// Prompt strings
 		PromptVariable:  "$",
-		DefaultPrompt:   "{bdg}{y}{localip} {fb}|{fw} {workspace} {reset} > {dim}in {b}{pwd} {reset}",
-		ModulePrompt:    "{bdg}{y}{localip} {fb}|{fw} {workspace} {reset} > {reset}post({r}{bold}{mod}{reset}) {dim}in {b}{pwd} ",
-		CompilerPrompt:  "{bdg}{y}{localip} {fb}|{fw} {workspace} {reset} > [{bold}{y}Compiler{reset}] {dim}in {b}{pwd} {reset} ",
-		MultilinePrompt: "{g}> {reset}",
+		DefaultPrompt:   "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {reset}",
+		ModulePrompt:    "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {fw}=>{reset} post({y}{mod}{reset})",
+		CompilerPrompt:  "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {fw}=>{reset} [{bold}{y}Compiler{reset}]",
+		MultilinePrompt: "> ",
 		// Prompt variabes
 		CurrentWorkspace: &s.currentWorkspace,
 		CurrentModule:    &s.currentModule,
@@ -62,6 +62,9 @@ func newPrompt(s *Session) Prompt {
 
 		// Custom colors:
 		"{blink}": "\033[5m",
+		"{lb}":    "\033[38;5;117m",
+		"{db}":    "\033[38;5;24m",
+		"{bddg}":  "\033[48;5;237m",
 	}
 	// Callbacks
 	prompt.PromptCallbacks = map[string]func() string{
