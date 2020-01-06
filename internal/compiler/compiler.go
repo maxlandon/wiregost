@@ -21,17 +21,20 @@ import (
 // It is accessible through the shell and used in a special menu context, with
 // a restrained but dedicated set of commands.
 
-type CompilerResponse struct {
+// Response is used to send back status/content to a compiler command.
+type Response struct {
 	User    string
 	Options []Option
 	Status  string
 	Error   string
 }
 
+// Manager stores all compilers associated to workspaces.
 type Manager struct {
 	Compilers map[int]Compiler
 }
 
+// Compiler manages options and compiling processes for making agents.
 type Compiler struct {
 	// Compiler properties
 	Name string
@@ -47,6 +50,7 @@ type Option struct {
 	Description string `json:"description"` // A description of the option
 }
 
+// NewManager instantiates a new Compiler Manager.
 func NewManager() *Manager {
 	man := &Manager{
 		Compilers: make(map[int]Compiler),
@@ -58,7 +62,7 @@ func NewManager() *Manager {
 	return man
 }
 
-func (m *Manager) Create(path string, id int) {
+func (m *Manager) create(path string, id int) {
 	comp := Compiler{
 		// Generic Options
 		Options: []Option{
@@ -108,14 +112,14 @@ func (m *Manager) handleClientRequests() {
 		case "list":
 			fmt.Println("Detected request for compiler options")
 			for k, v := range m.Compilers {
-				if request.CurrentWorkspaceId == k {
+				if request.CurrentWorkspaceID == k {
 					fmt.Println("Detected appropriate workspace ID")
-					response := CompilerResponse{
+					response := Response{
 						User:    "para",
 						Options: v.Options,
 					}
 					msg := messages.Message{
-						ClientId: request.ClientId,
+						ClientID: request.ClientID,
 						Type:     "compiler",
 						Content:  response,
 					}
@@ -125,26 +129,26 @@ func (m *Manager) handleClientRequests() {
 			}
 		case "set":
 			for k, v := range m.Compilers {
-				if request.CurrentWorkspaceId == k {
-					opt, err := v.SetOption(request.Command[1], request.Command[2])
+				if request.CurrentWorkspaceID == k {
+					opt, err := v.setOption(request.Command[1], request.Command[2])
 					if err != nil {
-						response := CompilerResponse{
+						response := Response{
 							User:  "para",
 							Error: err.Error(),
 						}
 						msg := messages.Message{
-							ClientId: request.ClientId,
+							ClientID: request.ClientID,
 							Type:     "compiler",
 							Content:  response,
 						}
 						messages.Responses <- msg
 					} else {
-						response := CompilerResponse{
+						response := Response{
 							User:   "para",
 							Status: opt,
 						}
 						msg := messages.Message{
-							ClientId: request.ClientId,
+							ClientID: request.ClientID,
 							Type:     "compiler",
 							Content:  response,
 						}
@@ -161,16 +165,16 @@ func (m *Manager) handleWorkspaceRequests() {
 		request := <-workspace.CompilerRequests
 		switch request.Action {
 		case "create":
-			m.Create(request.WorkspacePath, request.WorkspaceId)
+			m.create(request.WorkspacePath, request.WorkspaceID)
 		case "spawn":
-			m.LoadCompilers(request.WorkspacePath, request.WorkspaceId)
+			m.loadCompilers(request.WorkspacePath, request.WorkspaceID)
 		case "delete":
-			delete(m.Compilers, request.WorkspaceId)
+			delete(m.Compilers, request.WorkspaceID)
 		}
 	}
 }
 
-func (m *Manager) LoadCompilers(path string, id int) {
+func (m *Manager) loadCompilers(path string, id int) {
 	// Load compiler
 	comp := Compiler{}
 	confPath, _ := fs.Expand(path + "/" + "compiler.conf")
@@ -180,17 +184,17 @@ func (m *Manager) LoadCompilers(path string, id int) {
 	m.Compilers[id] = comp
 }
 
-func (c *Compiler) ListOptions() {
+func (c *Compiler) listOptions() {
 
 }
 
-func (c *Compiler) Compile() {
+func (c *Compiler) compile() {
 
 }
 
-func (c *Compiler) SaveParams() {
-	// Save workspace properties in directory
-	compDir, _ := fs.Expand("~/.wiregost/workspaces" + "/" + c.Name)
+func (c *Compiler) saveParams() {
+	// Save compiler parameters in directory.
+	compDir, _ := fs.Expand("~/.wiregost/server/workspaces" + "/" + c.Name)
 	compConf, _ := os.Create(compDir + "/" + "compiler.conf")
 	defer compConf.Close()
 	file, _ := fs.Expand(compDir + "/" + "compiler.conf")
@@ -206,7 +210,7 @@ func (c *Compiler) SaveParams() {
 }
 
 // SetOption is used to change the passed in compiler option's value. Used when a user is configuring a agent
-func (c *Compiler) SetOption(option string, value string) (string, error) {
+func (c *Compiler) setOption(option string, value string) (string, error) {
 	// Verify this option exists
 	for k, v := range c.Options {
 		if option == v.Name {

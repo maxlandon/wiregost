@@ -2,21 +2,21 @@ package session
 
 import "fmt"
 
-func (s *Session) ListAgents(cmd []string) {
+func (s *Session) listAgents(cmd []string) {
 	// Send(cmd)
 	agent := <-s.agentReqs
 	fmt.Println(agent)
 	// Add func (s *Session)tion for listing agents
 }
 
-func (s *Session) InfoAgent(cmd []string) {
+func (s *Session) infoAgent(cmd []string) {
 	// Send(cmd)
 	agent := <-s.agentReqs
 	fmt.Println(agent)
 	// Add func (s *Session)tion to print info.
 }
 
-func (s *Session) RemoveAgent(cmd []string) {
+func (s *Session) removeAgent(cmd []string) {
 	// Send(cmd)
 	agent := <-s.agentReqs
 	fmt.Println(agent)
@@ -24,7 +24,7 @@ func (s *Session) RemoveAgent(cmd []string) {
 	// and wait for it via the log.
 }
 
-func (s *Session) DownloadAgent(cmd []string) {
+func (s *Session) downloadAgent(cmd []string) {
 	// Send(cmd)
 	agent := <-s.agentReqs
 	fmt.Println(agent)
@@ -32,14 +32,14 @@ func (s *Session) DownloadAgent(cmd []string) {
 	// and wait for it via the log.
 }
 
-func (s *Session) UploadAgent(cmd []string) {
+func (s *Session) uploadAgent(cmd []string) {
 	// Send(cmd)
 	agent := <-s.agentReqs
 	fmt.Println(agent)
 	// Don't know how we will handle this one
 }
 
-func (s *Session) ExecuteShellCodeAgent(cmd []string) {
+func (s *Session) executeShellCodeAgent(cmd []string) {
 	// Send(cmd)
 	agent := <-s.agentReqs
 	fmt.Println(agent)
@@ -47,7 +47,7 @@ func (s *Session) ExecuteShellCodeAgent(cmd []string) {
 	// and wait for it via the log.
 }
 
-func (s *Session) KillAgent(cmd []string) {
+func (s *Session) killAgent(cmd []string) {
 	// Send(cmd)
 	agent := <-s.agentReqs
 	fmt.Println(agent)
@@ -55,7 +55,7 @@ func (s *Session) KillAgent(cmd []string) {
 	// and wait for it via the log.
 }
 
-func (s *Session) SetAgentOption(cmd []string) {
+func (s *Session) setAgentOption(cmd []string) {
 	// Send(cmd)
 	agent := <-s.agentReqs
 	fmt.Println(agent)
@@ -63,21 +63,21 @@ func (s *Session) SetAgentOption(cmd []string) {
 	// and wait for it via the log.
 }
 
-func (s *Session) GetAgentShell(cmd []string) {
+func (s *Session) getAgentShell(cmd []string) {
 	// Send(cmd)
 	agent := <-s.agentReqs
 	fmt.Println(agent)
 	// Don't know how we will handle this one
 }
 
-func (s *Session) BackMainMenu(cmd []string) {
+func (s *Session) backMainMenu(cmd []string) {
 	// Send(cmd)
 	agent := <-s.agentReqs
 	fmt.Println(agent)
 	// Handle change of state here
 }
 
-func (s *Session) MainMenu(cmd []string) {
+func (s *Session) mainMenu(cmd []string) {
 	// Send(cmd)
 	agent := <-s.agentReqs
 	fmt.Println(agent)

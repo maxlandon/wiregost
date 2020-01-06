@@ -12,14 +12,14 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func (s *Session) ServerStart(cmd []string) {
-	s.Send(cmd)
+func (s *Session) serverStart(cmd []string) {
+	s.send(cmd)
 	status := <-s.serverReqs
 	fmt.Println()
 	fmt.Println(status.Status)
 }
 
-func (s *Session) ServerReload(cmd []string) {
+func (s *Session) serverReload(cmd []string) {
 	// Fill up required parameters
 	params := make(map[string]string)
 	for k, v := range s.Env {
@@ -32,7 +32,7 @@ func (s *Session) ServerReload(cmd []string) {
 		UserName:           s.user.Name,
 		UserPassword:       s.user.PasswordHashString,
 		CurrentWorkspace:   s.currentWorkspace,
-		CurrentWorkspaceId: s.CurrentWorkspaceId,
+		CurrentWorkspaceID: s.CurrentWorkspaceID,
 		Context:            s.menuContext,
 		CurrentModule:      s.currentModule,
 		Command:            cmd,
@@ -50,7 +50,7 @@ func (s *Session) ServerReload(cmd []string) {
 	fmt.Println(status.Status)
 }
 
-func (s *Session) ServerStop(cmd []string) {
+func (s *Session) serverStop(cmd []string) {
 	// Fill up required parameters
 	params := make(map[string]string)
 	for k, v := range s.Env {
@@ -66,7 +66,7 @@ func (s *Session) ServerStop(cmd []string) {
 		UserName:           s.user.Name,
 		UserPassword:       s.user.PasswordHashString,
 		CurrentWorkspace:   s.currentWorkspace,
-		CurrentWorkspaceId: s.CurrentWorkspaceId,
+		CurrentWorkspaceID: s.CurrentWorkspaceID,
 		Context:            s.menuContext,
 		CurrentModule:      s.currentModule,
 		Command:            cmd,
@@ -84,8 +84,8 @@ func (s *Session) ServerStop(cmd []string) {
 	fmt.Println(status.Status)
 }
 
-func (s *Session) ServerList(cmd []string) {
-	s.Send(cmd)
+func (s *Session) serverList(cmd []string) {
+	s.send(cmd)
 	serv := <-s.serverReqs
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -120,9 +120,10 @@ func (s *Session) ServerList(cmd []string) {
 
 }
 
-func (s *Session) GenerateCertificate(cmd []string) {
-	s.Send(cmd)
-	server := <-s.serverReqs
+func (s *Session) generateCertificate(cmd []string) {
+	s.send(cmd)
 	fmt.Println()
+	fmt.Println("  Generating Certificate and private key...")
+	server := <-s.serverReqs
 	fmt.Println(server.Status)
 }

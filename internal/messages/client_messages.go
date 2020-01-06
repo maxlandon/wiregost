@@ -1,26 +1,25 @@
 package messages
 
 // Client messages -----------------------------------------//
+
+// ClientRequest is a message used by clients to perform all requests
+// to the managers of Wiregost. They will use the fields they need,
+// depending on the context and command.
 type ClientRequest struct {
-	// Client-specific
-	ClientId int
-	// User-specific
-	UserId       int
-	UserName     string
-	UserPassword string
-	// Context-specific
+	ClientID           int
+	UserID             int
+	UserName           string
+	UserPassword       string
 	Context            string
 	CurrentModule      string
 	CurrentWorkspace   string
-	CurrentWorkspaceId int
-	// Command-specific
-	Command []string
-	// Server-specific
-	ServerParams map[string]string
-	// Workspace-specific
-	WorkspaceParams map[string]string
+	CurrentWorkspaceID int
+	Command            []string
+	ServerParams       map[string]string
+	WorkspaceParams    map[string]string
 }
 
+// ClientConnRequest is used for requesting connection to the Wiregost Endpoint.
 type ClientConnRequest struct {
 	UserName     string
 	UserPassword string
@@ -28,44 +27,43 @@ type ClientConnRequest struct {
 
 // Server messages -----------------------------------------//
 
-// Message acting as an envelope for other types of responses
+// Message is acting as an envelope for other types of responses.
 type Message struct {
-	ClientId         int
+	ClientID         int
 	Type             string
 	NotificationType string
 	Content          interface{}
 }
 
-// Message used to push updates to clients
+// Notification is used to push updates to clients. This message is used
+// for all sorts of notifications, and fields will be used only if needed.
 type Notification struct {
-	Type         string
-	Action       string
-	NotConcerned int
-	// Workspace
-	WorkspaceId         int
-	FallbackWorkspaceId int
+	Type                string
+	Action              string
+	NotConcerned        int
+	WorkspaceID         int
+	FallbackWorkspaceID int
 	Workspace           string
-	// Module
-	PoppedModule   string
-	FallbackModule string
+	PoppedModule        string
+	FallbackModule      string
 }
 
-// Response to a workspace command
+// WorkspaceResponse is used to send back status/content to a workspace command.
 type WorkspaceResponse struct {
 	User           string
-	WorkspaceId    int // Return the current/chosen workspace here
+	WorkspaceID    int
 	WorkspaceInfos [][]string
 	Result         string
 }
 
-// Response to a log command
+// LogResponse is used to send back status/content to a log command.
 type LogResponse struct {
 	User string
 	Log  string // Used to notify log is set
 	Logs []map[string]string
 }
 
-// Response to a server command
+// ServerResponse is used to send back status/content to a server command.
 type ServerResponse struct {
 	User       string
 	Status     string
@@ -73,30 +71,31 @@ type ServerResponse struct {
 	ServerList []map[string]string
 }
 
-// Message used to push log events to clients
+// LogEvent is used to push log events to clients
 type LogEvent struct {
-	ClientId    int
-	WorkspaceId int
+	ClientID    int
+	WorkspaceID int
 	Level       string
 	Message     string
 }
 
-// Message used to send connection confirmation to a client.
+// EndpointResponse is used to send connection confirmation to a client.
 type EndpointResponse struct {
 	User      string
 	Connected bool
 	Status    string
 }
 
-// Message used by WorkspaceManager to request an action from a ModuleStack.
+// StackRequest is used by WorkspaceManager to request an action from a ModuleStack.
 type StackRequest struct {
-	WorkspaceId int
+	WorkspaceID int
 	Workspace   string
 	Action      string
 }
 
+// AgentResponse is used for sending back status/content about an agent.
 type AgentResponse struct {
 	User string
-	// Agents agents.Agents // Change this
 	Info [][]string
+	// Agents agents.Agents // Change this
 }

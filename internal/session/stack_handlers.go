@@ -9,8 +9,8 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func (s *Session) StackShow() {
-	s.Send(strings.Fields("stack show"))
+func (s *Session) stackShow() {
+	s.send(strings.Fields("stack show"))
 	stack := <-s.moduleReqs
 
 	// Print stack
@@ -45,8 +45,8 @@ func (s *Session) StackShow() {
 	table.Render()
 }
 
-func (s *Session) StackPop(cmd []string) {
-	s.Send(cmd)
+func (s *Session) stackPop(cmd []string) {
+	s.send(cmd)
 	// Wait for new current module fallback
 	fallback := <-s.moduleReqs
 	if fallback.ModuleName != "" {
@@ -60,8 +60,8 @@ func (s *Session) StackPop(cmd []string) {
 
 }
 
-func (s *Session) StackUse(cmd []string) {
-	s.Send([]string{"use", "module", cmd[2]})
+func (s *Session) stackUse(cmd []string) {
+	s.send([]string{"use", "module", cmd[2]})
 	mod := <-s.moduleReqs
 	// Switch shell context
 	s.Shell.Config.AutoComplete = s.getCompleter("module")

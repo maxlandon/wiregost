@@ -10,8 +10,8 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func (s *Session) UseModule(cmd []string) {
-	s.Send(cmd)
+func (s *Session) useModule(cmd []string) {
+	s.send(cmd)
 	mod := <-s.moduleReqs
 	// Switch shell context
 	s.Shell.Config.AutoComplete = s.getCompleter("module")
@@ -20,8 +20,8 @@ func (s *Session) UseModule(cmd []string) {
 	// Add code to change current module in the prompt
 }
 
-func (s *Session) ShowOptions(cmd []string) {
-	s.Send(cmd)
+func (s *Session) showOptions(cmd []string) {
+	s.send(cmd)
 	mod := <-s.moduleReqs
 	m := mod.Modules[0]
 
@@ -49,8 +49,8 @@ func (s *Session) ShowOptions(cmd []string) {
 	table.Render()
 }
 
-func (s *Session) ShowInfo() {
-	s.Send(strings.Fields("show options"))
+func (s *Session) showInfo() {
+	s.send(strings.Fields("show options"))
 	mod := <-s.moduleReqs
 	m := mod.Modules[0]
 
@@ -97,7 +97,7 @@ func (s *Session) ShowInfo() {
 	fmt.Println()
 }
 
-func (s *Session) GetModuleList(cmd []string) {
+func (s *Session) getModuleList(cmd []string) {
 	// Send(cmd)
 	mod := <-s.moduleReqs
 
@@ -105,8 +105,8 @@ func (s *Session) GetModuleList(cmd []string) {
 	fmt.Println(list)
 }
 
-func (s *Session) SetModuleOption(cmd []string) {
-	s.Send(cmd)
+func (s *Session) setModuleOption(cmd []string) {
+	s.send(cmd)
 	opt := <-s.moduleReqs
 	if opt.Status != "" {
 		fmt.Println()
@@ -118,21 +118,21 @@ func (s *Session) SetModuleOption(cmd []string) {
 	}
 }
 
-func (s *Session) SetAgent(cmd []string) {
+func (s *Session) setAgent(cmd []string) {
 	// Send(cmd)
 	mod := <-s.moduleReqs
 	fmt.Println(mod)
 	// Add some verification that agent is correctly set here.
 }
 
-func (s *Session) RunModule(cmd []string) {
+func (s *Session) runModule(cmd []string) {
 	// Send(cmd)
 	mod := <-s.moduleReqs
 	fmt.Println(mod)
 	// Add some verification that agent is correctly set here.
 }
 
-func (s *Session) BackModule() {
+func (s *Session) backModule() {
 	s.Shell.Config.AutoComplete = s.getCompleter("main")
 	s.menuContext = "main"
 	s.currentModule = ""

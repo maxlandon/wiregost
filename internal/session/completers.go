@@ -41,13 +41,13 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		readline.PcItem("cd"),
 		readline.PcItem("!"),
 		readline.PcItem("exit"),
-		readline.PcItem("get", readline.PcItemDynamic(s.ListParams())),
+		readline.PcItem("get", readline.PcItemDynamic(s.listParams())),
 
 		// Endpoint
 		readline.PcItem("endpoint",
-			readline.PcItem("connect", readline.PcItemDynamic(s.GetEndpointList())),
+			readline.PcItem("connect", readline.PcItemDynamic(s.getEndpointList())),
 			readline.PcItem("list"),
-			readline.PcItem("delete", readline.PcItemDynamic(s.GetEndpointList())),
+			readline.PcItem("delete", readline.PcItemDynamic(s.getEndpointList())),
 			readline.PcItem("add"),
 		),
 
@@ -81,20 +81,20 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		// Module Stack
 		readline.PcItem("stack",
 			readline.PcItem("use",
-				readline.PcItemDynamic(s.ListStackModules())),
+				readline.PcItemDynamic(s.listStackModules())),
 			readline.PcItem("show"),
 			readline.PcItem("pop",
-				readline.PcItemDynamic(s.ListStackModules())),
+				readline.PcItemDynamic(s.listStackModules())),
 		),
 
 		// Workspace
 		readline.PcItem("workspace",
 			readline.PcItem("list"),
 			readline.PcItem("switch",
-				readline.PcItemDynamic(s.ListWorkspaces())),
+				readline.PcItemDynamic(s.listWorkspaces())),
 			readline.PcItem("new"),
 			readline.PcItem("delete",
-				readline.PcItemDynamic(s.ListWorkspaces())),
+				readline.PcItemDynamic(s.listWorkspaces())),
 		),
 
 		// Agent
@@ -108,10 +108,10 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		// Module
 		readline.PcItem("use",
 			readline.PcItem("module",
-				readline.PcItemDynamic(s.ListModules())),
+				readline.PcItemDynamic(s.listModules())),
 		),
 		readline.PcItem("set",
-			readline.PcItemDynamic(s.ListParams()),
+			readline.PcItemDynamic(s.listParams()),
 		),
 	)
 
@@ -141,13 +141,13 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		readline.PcItem("cd"),
 		readline.PcItem("!"),
 		readline.PcItem("exit"),
-		readline.PcItem("get", readline.PcItemDynamic(s.ListParams())),
+		readline.PcItem("get", readline.PcItemDynamic(s.listParams())),
 
 		// Endpoint
 		readline.PcItem("endpoint",
-			readline.PcItem("connect", readline.PcItemDynamic(s.GetEndpointList())),
+			readline.PcItem("connect", readline.PcItemDynamic(s.getEndpointList())),
 			readline.PcItem("list"),
-			readline.PcItem("delete", readline.PcItemDynamic(s.GetEndpointList())),
+			readline.PcItem("delete", readline.PcItemDynamic(s.getEndpointList())),
 			readline.PcItem("add"),
 		),
 
@@ -181,20 +181,20 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		// Module Stack
 		readline.PcItem("stack",
 			readline.PcItem("use",
-				readline.PcItemDynamic(s.ListStackModules())),
+				readline.PcItemDynamic(s.listStackModules())),
 			readline.PcItem("show"),
 			readline.PcItem("pop",
-				readline.PcItemDynamic(s.ListStackModules())),
+				readline.PcItemDynamic(s.listStackModules())),
 		),
 
 		// Workspace
 		readline.PcItem("workspace",
 			readline.PcItem("list"),
 			readline.PcItem("switch",
-				readline.PcItemDynamic(s.ListWorkspaces())),
+				readline.PcItemDynamic(s.listWorkspaces())),
 			readline.PcItem("new"),
 			readline.PcItem("delete",
-				readline.PcItemDynamic(s.ListWorkspaces())),
+				readline.PcItemDynamic(s.listWorkspaces())),
 		),
 
 		// Agent
@@ -208,7 +208,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		// Module
 		readline.PcItem("use",
 			readline.PcItem("module",
-				readline.PcItemDynamic(s.ListModules())),
+				readline.PcItemDynamic(s.listModules())),
 		),
 		readline.PcItem("info"),
 		readline.PcItem("reload"),
@@ -222,7 +222,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 			readline.PcItem("agent",
 				readline.PcItem("all"), // add getAgentsList here
 			),
-			readline.PcItemDynamic(s.GetModuleOptions()),
+			readline.PcItemDynamic(s.getModuleOptions()),
 		),
 	)
 
@@ -288,14 +288,14 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		readline.PcItem("stack",
 			readline.PcItem("show"),
 			readline.PcItem("pop",
-				readline.PcItemDynamic(s.ListStackModules())),
+				readline.PcItemDynamic(s.listStackModules())),
 		),
 
 		// Workspace
 		readline.PcItem("workspace",
 			readline.PcItem("list"),
 			readline.PcItem("new"),
-			readline.PcItem("delete", readline.PcItemDynamic(s.ListWorkspaces())),
+			readline.PcItem("delete", readline.PcItemDynamic(s.listWorkspaces())),
 		),
 
 		// Agent
@@ -327,7 +327,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		readline.PcItem("list",
 			readline.PcItem("servers"),
 			readline.PcItem("parameters")),
-		readline.PcItem("set", readline.PcItemDynamic(s.GetCompilerOptions())),
+		readline.PcItem("set", readline.PcItemDynamic(s.getCompilerOptions())),
 		readline.PcItem("use"), // Add server completion function here
 	)
 
@@ -349,7 +349,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 }
 
 // DYNAMIC COMPLETER FUNCTIONS
-func (s *Session) ListParams() func(string) (names []string) {
+func (s *Session) listParams() func(string) (names []string) {
 	return func(string) []string {
 		sessionParams := []string{
 			// Server
@@ -376,9 +376,9 @@ func (s *Session) ListParams() func(string) (names []string) {
 	}
 }
 
-func (s *Session) ListWorkspaces() func(string) (names []string) {
+func (s *Session) listWorkspaces() func(string) (names []string) {
 	return func(string) []string {
-		s.Send([]string{"workspace", "list"})
+		s.send([]string{"workspace", "list"})
 		workspace := <-s.workspaceReqs
 		var list []string
 		// Handle change of state here
@@ -389,9 +389,9 @@ func (s *Session) ListWorkspaces() func(string) (names []string) {
 	}
 }
 
-func (s *Session) ListModules() func(string) (names []string) {
+func (s *Session) listModules() func(string) (names []string) {
 	return func(string) []string {
-		s.Send([]string{"module", "list"})
+		s.send([]string{"module", "list"})
 		resp := <-s.moduleReqs
 		list := resp.ModuleList
 		// This is useless, but we should devise way to recursively update paths
@@ -405,9 +405,9 @@ func (s *Session) ListModules() func(string) (names []string) {
 	}
 }
 
-func (s *Session) ListStackModules() func(string) (names []string) {
+func (s *Session) listStackModules() func(string) (names []string) {
 	return func(string) []string {
-		s.Send([]string{"stack", "list"})
+		s.send([]string{"stack", "list"})
 		resp := <-s.moduleReqs
 		list := resp.ModuleList
 		// This is useless, but we should devise way to recursively update paths
@@ -421,9 +421,9 @@ func (s *Session) ListStackModules() func(string) (names []string) {
 	}
 }
 
-func (s *Session) GetModuleOptions() func(string) (options []string) {
+func (s *Session) getModuleOptions() func(string) (options []string) {
 	return func(string) []string {
-		s.Send([]string{"show", "options"})
+		s.send([]string{"show", "options"})
 		mod := <-s.moduleReqs
 		opts := mod.Modules[0]
 		list := make([]string, 0)
@@ -434,9 +434,9 @@ func (s *Session) GetModuleOptions() func(string) (options []string) {
 	}
 }
 
-func (s *Session) GetCompilerOptions() func(string) (options []string) {
+func (s *Session) getCompilerOptions() func(string) (options []string) {
 	return func(string) []string {
-		s.Send([]string{"list", "parameters"})
+		s.send([]string{"list", "parameters"})
 		comp := <-s.compilerReqs
 		opts := comp.Options
 		list := make([]string, 0)
@@ -447,7 +447,7 @@ func (s *Session) GetCompilerOptions() func(string) (options []string) {
 	}
 }
 
-func (s *Session) GetEndpointList() func(string) (options []string) {
+func (s *Session) getEndpointList() func(string) (options []string) {
 
 	return func(string) []string {
 		endpoints := []string{}

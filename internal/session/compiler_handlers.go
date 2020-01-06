@@ -9,14 +9,14 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func (s *Session) UseCompiler() {
+func (s *Session) useCompiler() {
 	// Switch shell context
 	s.Shell.Config.AutoComplete = s.getCompleter("compiler")
 	s.menuContext = "compiler"
 	// Switch prompt
 }
 
-func (s *Session) QuitCompiler() {
+func (s *Session) quitCompiler() {
 	// Switch prompt
 	// Switch shell context
 	if s.currentModule != "" {
@@ -29,8 +29,8 @@ func (s *Session) QuitCompiler() {
 	}
 }
 
-func (s *Session) ShowCompilerOptions(cmd []string) {
-	s.Send(cmd)
+func (s *Session) showCompilerOptions(cmd []string) {
+	s.send(cmd)
 	comp := <-s.compilerReqs
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -56,8 +56,8 @@ func (s *Session) ShowCompilerOptions(cmd []string) {
 	table.Render()
 }
 
-func (s *Session) SetCompilerOption(cmd []string) {
-	s.Send(cmd)
+func (s *Session) setCompilerOption(cmd []string) {
+	s.send(cmd)
 	opt := <-s.compilerReqs
 	if opt.Status != "" {
 		fmt.Println()

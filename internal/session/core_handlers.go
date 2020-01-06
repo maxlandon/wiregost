@@ -58,26 +58,27 @@ func setModeHandler(args []string, mode bool) (new bool) {
 
 // Shell Command // BROKEN !!!! NEEDS TO FIX THE args[0] (doesnt take arguments)
 func shellHandler(args []string) error {
-	out, err := CmdShell(args[0])
+	out, err := cmdShell(args[0])
 	if err == nil {
 		fmt.Printf("%s\n", out)
 	}
 	return err
 }
 
-func CmdShell(cmd string) (string, error) {
+func cmdShell(cmd string) (string, error) {
 	return Exec("/bin/sh", []string{"-c", cmd})
 }
 
+// Exec needs to be exported because of os/exec package conflict.
 func Exec(executable string, args []string) (string, error) {
-	out, err := ExecSilent(executable, args)
+	out, err := execSilent(executable, args)
 	if err != nil {
 		fmt.Printf("ERROR for '%s %s': %s\n", executable, args, err)
 	}
 	return out, err
 }
 
-func ExecSilent(executable string, args []string) (string, error) {
+func execSilent(executable string, args []string) (string, error) {
 	path, err := exec.LookPath(executable)
 	if err != nil {
 		return "", err
@@ -86,9 +87,8 @@ func ExecSilent(executable string, args []string) (string, error) {
 	raw, err := exec.Command(path, args...).CombinedOutput()
 	if err != nil {
 		return "", err
-	} else {
-		return str.Trim(string(raw)), nil
 	}
+	return str.Trim(string(raw)), nil
 }
 
 // Change directory
@@ -101,7 +101,7 @@ func changeDirHandler(args []string) string {
 }
 
 // Set parameter option handler.
-func (s *Session) SetOption(cmd []string) {
+func (s *Session) setOption(cmd []string) {
 	// Keep values locally for workspace
 	if strings.HasPrefix(cmd[1], "workspace") {
 		s.Env[cmd[1]] = strings.Join(cmd[2:], " ")
@@ -129,7 +129,7 @@ func (s *Session) SetOption(cmd []string) {
 	}
 }
 
-func (s *Session) GetOption(cmd []string) {
+func (s *Session) getOption(cmd []string) {
 	var value string
 	if v, ok := s.Env[cmd[1]]; ok {
 		value = v

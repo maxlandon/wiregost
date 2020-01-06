@@ -12,10 +12,10 @@ import (
 	"github.com/evilsocket/islazy/tui"
 )
 
-func (s *Session) EndpointConnect(cmd []string) {
+func (s *Session) endpointConnect(cmd []string) {
 	// In case where shell is already connected to a server, disconnect it
 	if s.connection != nil {
-		s.Disconnect()
+		s.disconnect()
 	}
 
 	// Set Current endpoint
@@ -24,13 +24,10 @@ func (s *Session) EndpointConnect(cmd []string) {
 			s.CurrentEndpoint = v
 		}
 	}
-	s.Connect()
-	// Send(cmd)
-	// endpoint := <-endpointReqs
-	// fmt.Println(endpoint)
+	s.connect()
 }
 
-func (s *Session) AddEndpoint() error {
+func (s *Session) addEndpoint() error {
 	// Load params from Env
 	params := make(map[string]string)
 	for k, v := range s.Env {
@@ -92,12 +89,12 @@ func (s *Session) AddEndpoint() error {
 	s.SavedEndpoints = append(s.SavedEndpoints, template)
 	fmt.Println()
 	fmt.Printf("%s[*]%s Added endpoint %s at %s:%d \n", tui.GREEN, tui.RESET, template.FQDN, template.IPAddress, template.Port)
-	s.WriteEndpointList()
+	s.writeEndpointList()
 
 	return nil
 }
 
-func (s *Session) DeleteEndpoint(cmd []string) error {
+func (s *Session) deleteEndpoint(cmd []string) error {
 	newList := s.SavedEndpoints[:0]
 	for _, v := range s.SavedEndpoints {
 		if v.FQDN != cmd[2] {
@@ -105,12 +102,12 @@ func (s *Session) DeleteEndpoint(cmd []string) error {
 		}
 	}
 	s.SavedEndpoints = newList
-	s.WriteEndpointList()
+	s.writeEndpointList()
 
 	return nil
 }
 
-func (s *Session) SetDefaultEndpoint(cmd []string) error {
+func (s *Session) setDefaultEndpoint(cmd []string) error {
 	for _, v := range s.SavedEndpoints {
 		if v.IsDefault == true {
 			v.IsDefault = false
@@ -120,13 +117,13 @@ func (s *Session) SetDefaultEndpoint(cmd []string) error {
 		}
 	}
 
-	s.WriteEndpointList()
+	s.writeEndpointList()
 
 	return nil
 }
 
 // List Servers
-func (s *Session) ListEndpoints() error {
+func (s *Session) listEndpoints() error {
 	columns := []string{
 		tui.Yellow("FQDN (Common Name)"),
 		tui.Yellow("Address"),
@@ -168,7 +165,7 @@ func (s *Session) ListEndpoints() error {
 	return nil
 }
 
-func (s *Session) WriteEndpointList() error {
+func (s *Session) writeEndpointList() error {
 	endpointFile, _ := fs.Expand("~/.wiregost/client/server.conf")
 	var servConf *os.File
 	if !fs.Exists(endpointFile) {
@@ -194,6 +191,7 @@ func (s *Session) WriteEndpointList() error {
 // ----------------------------------------------------------------------
 // ENDPOINT LOADING
 
+// Endpoint is a struct used to load, add delete and connect to a Wiregost endpoint.
 type Endpoint struct {
 	IPAddress   string
 	Port        int
@@ -203,7 +201,7 @@ type Endpoint struct {
 	IsDefault   bool
 }
 
-func (s *Session) LoadEndpointList() error {
+func (s *Session) loadEndpointList() error {
 	serverList := []Endpoint{}
 
 	userDir, _ := fs.Expand("~/.wiregost/client/")
@@ -235,7 +233,7 @@ func (s *Session) LoadEndpointList() error {
 	return nil
 }
 
-func (s *Session) GetDefaultEndpoint() error {
+func (s *Session) getDefaultEndpoint() error {
 	for _, i := range s.SavedEndpoints {
 		if i.IsDefault == true {
 			s.CurrentEndpoint = i

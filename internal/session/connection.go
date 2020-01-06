@@ -18,7 +18,7 @@ import (
 // ----------------------------------------------------------------------
 // ENDPOINT CONNECTION
 
-func (s *Session) ConnectionStatus(conn messages.EndpointResponse) {
+func (s *Session) connectionStatus(conn messages.EndpointResponse) {
 	switch conn.Status {
 	case "authenticated":
 		fmt.Printf("Connected as " + tui.Bold(tui.Yellow(s.user.Name)+" (Administrator rights)."))
@@ -31,12 +31,12 @@ func (s *Session) ConnectionStatus(conn messages.EndpointResponse) {
 	}
 }
 
-func (s *Session) Send(cmd []string) error {
+func (s *Session) send(cmd []string) error {
 	msg := messages.ClientRequest{
 		UserName:           s.user.Name,
 		UserPassword:       s.user.PasswordHashString,
 		CurrentWorkspace:   s.currentWorkspace,
-		CurrentWorkspaceId: s.CurrentWorkspaceId,
+		CurrentWorkspaceID: s.CurrentWorkspaceID,
 		Context:            s.menuContext,
 		CurrentModule:      s.currentModule,
 		Command:            cmd,
@@ -50,7 +50,7 @@ func (s *Session) Send(cmd []string) error {
 	return nil
 }
 
-func (s *Session) Connect() error {
+func (s *Session) connect() error {
 
 	// Prepare TLS conf and connect.
 	certFile, _ := fs.Expand(s.CurrentEndpoint.Certificate)
@@ -72,7 +72,7 @@ func (s *Session) Connect() error {
 	s.writer = bufio.NewWriter(s.connection)
 
 	// Send authenticated connection request
-	s.Send([]string{"connect"})
+	s.send([]string{"connect"})
 
 	// Listen for incoming data
 	go func() {
@@ -92,7 +92,7 @@ func (s *Session) Connect() error {
 				if err := json.Unmarshal(msg, &conn); err != nil {
 					fmt.Println("Failed to decode Module message: " + err.Error())
 				}
-				s.ConnectionStatus(conn)
+				s.connectionStatus(conn)
 			case "module":
 				var mod modules.ModuleResponse
 				if err := json.Unmarshal(msg, &mod); err != nil {
@@ -130,7 +130,7 @@ func (s *Session) Connect() error {
 				}
 				s.endpointReqs <- endpoint
 			case "compiler":
-				var compiler compiler.CompilerResponse
+				var compiler compiler.Response
 				if err := json.Unmarshal(msg, &compiler); err != nil {
 					fmt.Println("Failed to decode log response")
 				}
@@ -154,7 +154,7 @@ func (s *Session) Connect() error {
 	return nil
 }
 
-func (s *Session) Disconnect() error {
+func (s *Session) disconnect() error {
 	err := s.connection.Close()
 	if err != nil {
 		return err

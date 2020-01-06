@@ -3,7 +3,6 @@ package logging
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -13,22 +12,21 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Channels. All channels convey log entries, with all information needed
-// var moduleLogs = make(chan log.Entry)
-// var workspaceLogs = make(chan log.Entry)
+// ForwardLogs is used to forward log events of a workspace to all ClientLoggers.
 var ForwardLogs = make(chan *logrus.Entry, 100)
 
-// Each workspace has its own dedicated WorkspaceLogger instance, because it can then
-// modulate its log level independently of others, and save logs in the appropriate directory.
+// WorkspaceLogger is in charge of logging all events happening in a single workspace, and of
+// forwarding these logs to all ClientLoggers. It also saves logs to disk.
 // This logger is embedded to other components (Server, ModuleStack, Workspace) and allows them
 // to log their information.
 type WorkspaceLogger struct {
 	*logrus.Logger
-	WorkspaceId   int
+	WorkspaceID   int
 	WorkspaceName string
 	LogFile       string
 }
 
+// NewWorkspaceLogger instantiates a new Logger attached to a workspace.
 func NewWorkspaceLogger(name string, id int) *WorkspaceLogger {
 	logger := &WorkspaceLogger{
 		logrus.New(),
@@ -39,8 +37,6 @@ func NewWorkspaceLogger(name string, id int) *WorkspaceLogger {
 	// Setup formatting
 	logger.SetFormatter(&logrus.JSONFormatter{
 		TimestampFormat: "01-02 15:04:05",
-		// DisableColors:   true,
-		// FullTimestamp:   true,
 	})
 	// Setup level
 	logger.SetLevel(logrus.DebugLevel)
@@ -48,7 +44,7 @@ func NewWorkspaceLogger(name string, id int) *WorkspaceLogger {
 	hook := new(ForwardToDispatch)
 	logger.AddHook(hook)
 	// Setup log file and log path
-	logger.LogFile, _ = fs.Expand("~/.wiregost/workspaces/" + name + "/" + name + ".log")
+	logger.LogFile, _ = fs.Expand("~/.wiregost/server/workspaces/" + name + "/" + name + ".log")
 	if !fs.Exists(logger.LogFile) {
 		os.Create(logger.LogFile)
 	}
@@ -62,9 +58,8 @@ func NewWorkspaceLogger(name string, id int) *WorkspaceLogger {
 	return logger
 }
 
+// GetLogs is used to send back a list of last x logs to a client, for a given workspace.
 func (wl *WorkspaceLogger) GetLogs(request messages.ClientRequest) {
-	// Setup all necessary paths
-	// framework, _ := fs.Expand("~/.wiregost/server/wiregost.log")
 	// Setup list of logs
 	list := make([]map[string]string, 0)
 
@@ -78,7 +73,7 @@ func (wl *WorkspaceLogger) GetLogs(request messages.ClientRequest) {
 			hlength := 0
 			scanner := bufio.NewScanner(file)
 			for scanner.Scan() {
-				hlength += 1
+				hlength++
 			}
 			file.Close()
 			// Read file and add each JSON line to list
@@ -92,41 +87,42 @@ func (wl *WorkspaceLogger) GetLogs(request messages.ClientRequest) {
 					json.Unmarshal(scan.Bytes(), &line)
 					if line["component"] == request.Command[2] {
 						list = append(list, line)
-						count += 1
+						count++
 					}
 				}
-				hlength -= 1
+				hlength--
 			}
 			// Send back logs to client
 			logs := messages.LogResponse{
 				Logs: list,
 			}
 			msg := messages.Message{
-				ClientId: request.ClientId,
+				ClientID: request.ClientID,
 				Type:     "log",
 				Content:  logs,
 			}
 			messages.Responses <- msg
-			fmt.Println("Sent back logs")
 		}
 	}
 }
 
-// Hooks
+// Hook is an interface needed by logrus logger for triggering actions upon log receival.
 type Hook interface {
 	Levels() []logrus.Level
 	Fire(*logrus.Entry) error
 }
 
+// ForwardToDispatch is necessary for hooks
 type ForwardToDispatch struct {
 }
 
-// Forward log items to a general log messageser, at the Endpoint level.
+// Fire forwards all log entries to ClientLoggers, at the Endpoint level.
 func (h *ForwardToDispatch) Fire(entry *logrus.Entry) error {
 	ForwardLogs <- entry
 	return nil
 }
 
+// Levels is needed to satisfy the Hook interface
 func (h *ForwardToDispatch) Levels() []logrus.Level {
 	return logrus.AllLevels
 }

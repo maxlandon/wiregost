@@ -318,13 +318,13 @@ func helpHandler(args []string) error {
 	return nil
 }
 
-type CommandDescription struct {
+type commandDescription struct {
 	Name        string
 	Params      []string
 	Description string
 }
 
-type ParamDescription struct {
+type paramDescription struct {
 	Name        string
 	Description string
 	Default     string
@@ -332,7 +332,7 @@ type ParamDescription struct {
 
 //-------------------------------------------------------------------------------------------------------------------------
 // List of all handler sets and their description
-var commandCategories = []CommandDescription{
+var commandCategories = []commandDescription{
 	{Name: "core", Description: "WireGost core commands, (resource loading and making, input & navigation mode, etc...)"},
 	{Name: "endpoint", Description: "Commands and parameters for managing WireGost clients' Endpoint (connection, add, generate tokens, etc)"},
 	{Name: "server", Description: "Commands and parameters for managing Agent Servers (state, certificates, tokens, etc.)"},
@@ -355,7 +355,7 @@ var commandCategories = []CommandDescription{
 
 //-------------------------------------------------------------------------------------------------------------------------
 // Core commands help list
-var coreCommands = []CommandDescription{
+var coreCommands = []commandDescription{
 	{Name: "quit", Description: "Exit WireGost (without confirmation prompt)"},
 	{Name: "config", Description: "Show environment configuration (personal directories, config files, etc...)"},
 	{Name: "help", Description: "Show help categories (core, server, log, chat, workspace, stack, db, listeners, exploit, payload, etc...)"},
@@ -369,7 +369,7 @@ var coreCommands = []CommandDescription{
 
 //-------------------------------------------------------------------------------------------------------------------------
 // Server commands
-var serverCommands = []CommandDescription{
+var serverCommands = []commandDescription{
 	{Name: "server start", Description: "Start a server, in the current workspace, listening for agents."},
 	{Name: "server stop", Description: "Stop the server."},
 	{Name: "server reload", Description: "Re-instantiate the server with parameters below, ready to start. (Parameters will be saved for subsequent starts)"},
@@ -378,7 +378,7 @@ var serverCommands = []CommandDescription{
 	{Name: "server list", Description: "List all servers and their state (running, agents, etc.), regardless of the current workspace."},
 }
 
-var serverParams = []ParamDescription{
+var serverParams = []paramDescription{
 	{Name: "server.address", Description: "IP address on which the server will listen"},
 	{Name: "server.port", Description: "Listening port of the server"},
 	{Name: "server.protocol", Description: "The protocol (i.e. HTTP/2 or HTTP/3) the server will use (type 'h2' or 'h3')"},
@@ -390,7 +390,7 @@ var serverParams = []ParamDescription{
 
 //-------------------------------------------------------------------------------------------------------------------------
 // Log commands
-var logCommands = []CommandDescription{
+var logCommands = []commandDescription{
 	{Name: "log.global", Params: []string{"int"}, Description: "Show last (int) lines of global log (aggregation of all specfic logs)"},
 	{Name: "log.exploit", Params: []string{"int"}, Description: "Show last (int) lines of exploit-specific logs."},
 	{Name: "log.payload", Params: []string{"int"}, Description: "Show last (int) lines of payload-specific logs."},
@@ -399,7 +399,7 @@ var logCommands = []CommandDescription{
 }
 
 // Log parameters
-var logParams = []ParamDescription{
+var logParams = []paramDescription{
 	{"log.global.path", "Path to global logs", "~/.wiregost/logs/global.log"},
 	{"log.exploit.path", "Path to exploit logs", "~/.wiregost/logs/exploit.log"},
 	{"log.payload.path", "Path to payload logs", "~/.wiregost/logs/payload.log"},
@@ -411,14 +411,14 @@ var logParams = []ParamDescription{
 // Server commands
 // These commands are used for connecting clients to a given Wiregost instance, and for admin tasks
 
-var endpointCommands = []CommandDescription{
+var endpointCommands = []commandDescription{
 	{Name: "endpoint connect", Params: []string{"name"}, Description: "Connect to one of the saved WireGost endpoints."},
 	{Name: "endpoint add", Description: "Add endpoint based on the current value of parameters."},
 	{Name: "endpoint list", Description: "Show a list of saved endpoints and their parameters."},
 	{Name: "endpoint delete", Params: []string{"name"}, Description: "Delete an endpoint from the list of saved endpoints."},
 }
 
-var endpointParams = []ParamDescription{
+var endpointParams = []paramDescription{
 	{Name: "endpoint.address", Description: "IP or resolved address of the endpoint"},
 	{Name: "endpoint.port", Description: "Listening port of the endpoint"},
 	{Name: "endpoint.name", Description: "Name under which this endpoint will be saved or displayed"},
@@ -427,7 +427,7 @@ var endpointParams = []ParamDescription{
 	{Name: "endpoint.default", Description: "Make this endpoint the default endpoint to connect to when client is started"},
 }
 
-var endpointAdminCommands = []CommandDescription{
+var endpointAdminCommands = []commandDescription{
 	{Name: "endpoint.admin.show", Description: "Show registered users (and if they are active)"},
 	{Name: "endpoint.admin.add_user", Params: []string{"name"}, Description: "Register a new user (password will be sent first connection)"},
 	{Name: "endpoint.admin.delete_user", Params: []string{"name"}, Description: "Delete one or more registered users"},
@@ -435,14 +435,14 @@ var endpointAdminCommands = []CommandDescription{
 
 //-------------------------------------------------------------------------------------------------------------------------
 // Workspace commands
-var workspaceCommands = []CommandDescription{
+var workspaceCommands = []commandDescription{
 	{Name: "workspace show", Description: "Show all workspaces."},
 	{Name: "workspace switch", Description: "Switch to workspace. (Parameters, variables and modules in the current workspace will be automatically saved)"},
 	{Name: "workspace new", Params: []string{"name"}, Description: "Create new workspace with specified name, and with parameters below if set."},
 	{Name: "workspace delete", Params: []string{"name"}, Description: "Delete the specified workspace. (Completed)"},
 }
 
-var workspaceParams = []ParamDescription{
+var workspaceParams = []paramDescription{
 	{Name: "workspace.description", Description: "Description for the current workspace"},
 	{Name: "workspace.boundary", Description: "Network address/range in which activity is allowed for this workspace."},
 	{Name: "workspace.limit", Description: "If set to true, limit activities such as scans to the IP range given as workspace.boundary."},
@@ -450,7 +450,7 @@ var workspaceParams = []ParamDescription{
 
 //-------------------------------------------------------------------------------------------------------------------------
 // Stack commands
-var stackCommands = []CommandDescription{
+var stackCommands = []commandDescription{
 	{Name: "stack (show)", Description: "Show one or some modules currently loaded in the Module Stack. Also works with 'stack'."},
 	{Name: "stack pop", Params: []string{"all | module_name"}, Description: "Unload one or more modules from the Module Stack."},
 	{Name: "stack use", Params: []string{"module_name"}, Description: "Use a module from the Module Stack (faster with completion)."},
@@ -458,7 +458,7 @@ var stackCommands = []CommandDescription{
 
 //-------------------------------------------------------------------------------------------------------------------------
 // Module commands
-var moduleCommands = []CommandDescription{
+var moduleCommands = []commandDescription{
 	{Name: "back", Description: "Exit from current module. (Doesn't unload it from stack)"},
 	{Name: "show", Params: []string{"info | options"}, Description: "Show information about a module or its options."},
 	{Name: "info", Description: "Show information about a module"},
@@ -469,7 +469,7 @@ var moduleCommands = []CommandDescription{
 
 //-------------------------------------------------------------------------------------------------------------------------
 // Agent commands
-var agentCommands = []CommandDescription{
+var agentCommands = []commandDescription{
 	{Name: "info", Description: "Display all information about the agent"},
 	{Name: "back | main", Description: "Return to the main menu"},
 	{Name: "status", Description: "Print the current status of the agent."},
@@ -490,7 +490,7 @@ var agentCommands = []CommandDescription{
 
 //-------------------------------------------------------------------------------------------------------------------------
 // Compiler commands
-var compilerCommands = []CommandDescription{
+var compilerCommands = []commandDescription{
 	{Name: "back", Description: "Exit from compiler menu."},
 	{Name: "help", Description: "Show this help"},
 	{Name: "list servers", Description: "Shows all currently instantiated servers, their informations and state."},
@@ -502,7 +502,7 @@ var compilerCommands = []CommandDescription{
 
 //------------------------------------------------------------------------------------------------------------------------
 // Database commands
-// var dbCommands = []CommandDescription{
+// var dbCommands = []commandDescription{
 //     {Name: "db.source.connect", Params: {"source"}, Description: "Connect to data service. (Completion based on saved sources.)"},
 //     {Name: "db.source.show", Description: "Show all data service sources."},
 //     {Name: "db.source.add", Description: "Add data service source based on the current value of parameters below."},
@@ -512,7 +512,7 @@ var compilerCommands = []CommandDescription{
 // }
 //
 // // Database parameters
-// var dbParams = []ParamDescription{
+// var dbParams = []paramDescription{
 //     {"db.source.name", "Data Service name"},
 //     {"db.source.url", "Path to Data Service API."},
 //     {"db.source.password", "Data Service user password"},
@@ -525,7 +525,7 @@ var compilerCommands = []CommandDescription{
 //
 // //-------------------------------------------------------------------------------------------------------------------------
 // // Entities commands
-// var hostsCommands = []CommandDescription{
+// var hostsCommands = []commandDescription{
 //     {"hosts", Description: "Show all hosts"},
 //     {"hosts.ip", {"ip"}, Description: "Show hosts matching the provided IP address"},
 //     {"hosts.mac", {"mac"}, Description: "Show hosts matching the provided MAC address"},
@@ -535,7 +535,7 @@ var compilerCommands = []CommandDescription{
 //     {"hosts.filter", {"string"}, Description: "Show hosts matching the provided (string) filter"},
 // }
 //
-// var servicesCommands = []CommandDescription{
+// var servicesCommands = []commandDescription{
 //     {"services", Description: "Show all services"},
 //     {"services.port", {"port"}, "Show all services listening on this port"},
 //     {"services.host", {"host"}, "Show all services served on this IP Address"},
@@ -546,7 +546,7 @@ var compilerCommands = []CommandDescription{
 //     {"services.filter", {"string"}, "Show all services matching the provided (string) filter"},
 // }
 //
-// var credsCommands = []CommandDescription{
+// var credsCommands = []commandDescription{
 //     {"creds", Description: "Show all credentials"},
 //     {"creds.type", {"type"}, "Show credentials matching this type"},
 //     {"creds.priv", {"priv"}, "Show all credentials matching this private type"},
@@ -555,7 +555,7 @@ var compilerCommands = []CommandDescription{
 //
 // //-------------------------------------------------------------------------------------------------------------------------
 // // Editor commands
-// var editorCommands = []CommandDescription{
+// var editorCommands = []commandDescription{
 //     {"edit", Description: "Edit the currently active module's code"},
 //     {"loadpath", {"string"}, "Load the provided (string) path for modules"},
 //     {"reload", {"all", "lib", "modules"}, "Reload all, libraries or modules code."},
@@ -563,7 +563,7 @@ var compilerCommands = []CommandDescription{
 //
 // //-------------------------------------------------------------------------------------------------------------------------
 // // Listeners commands
-// var listenersCommands = []CommandDescription{
+// var listenersCommands = []commandDescription{
 //     {"listeners.show", {"all", "listener_name"}, "Show one or more listeners"},
 //     {"listeners.kill", {"all", "listener_name"}, "Kill one or more listeners"},
 //     {"listeners.rename", {"current", "new"}, "Rename (current) listeners with (new) name"},

@@ -15,6 +15,7 @@ import (
 	"github.com/maxlandon/wiregost/internal/modules"
 )
 
+// Session is the central object of a Wiregost client shell session.
 type Session struct {
 	// Shell
 	Shell  *readline.Instance
@@ -25,7 +26,7 @@ type Session struct {
 	menuContext        string
 	currentModule      string
 	currentWorkspace   string
-	CurrentWorkspaceId int
+	CurrentWorkspaceID int
 	// Environmment variables
 	Env map[string]string
 	// Server connection parameters
@@ -43,10 +44,11 @@ type Session struct {
 	workspaceReqs chan messages.WorkspaceResponse
 	endpointReqs  chan messages.EndpointResponse
 	serverReqs    chan messages.ServerResponse
-	compilerReqs  chan compiler.CompilerResponse
+	compilerReqs  chan compiler.Response
 	logEventReqs  chan map[string]string
 }
 
+// NewSession instantiates a new Session object.
 func NewSession() *Session {
 	session := &Session{
 		menuContext: "main",
@@ -58,7 +60,7 @@ func NewSession() *Session {
 		workspaceReqs: make(chan messages.WorkspaceResponse),
 		endpointReqs:  make(chan messages.EndpointResponse),
 		serverReqs:    make(chan messages.ServerResponse),
-		compilerReqs:  make(chan compiler.CompilerResponse),
+		compilerReqs:  make(chan compiler.Response),
 		logEventReqs:  make(chan map[string]string, 1),
 	}
 
@@ -74,35 +76,35 @@ func NewSession() *Session {
 		// FilterInputRune: To be used later if needed
 	})
 	// Set Prompt
-	session.prompt = NewPrompt(session)
+	session.prompt = newPrompt(session)
 
 	// Set Auth
 	session.user = NewUser()
 	session.user.LoadCreds()
 
 	// Load saved servers
-	session.LoadEndpointList()
-	session.GetDefaultEndpoint()
+	session.loadEndpointList()
+	session.getDefaultEndpoint()
 	session.connected = false
 
 	// Connect to default server
-	session.Connect()
+	session.connect()
 
 	// Launch console but give time to connect
 	time.Sleep(time.Millisecond * 50)
-	session.Start()
+	session.start()
 
 	return session
 }
 
-func (s *Session) Start() {
+func (s *Session) start() {
 
 	// Eventually close the session
 	defer s.Shell.Close()
 
 	// Authenticate
 	s.user.Authenticate()
-	RefreshPrompt(s.prompt, s.Shell)
+	refreshPrompt(s.prompt, s.Shell)
 
 	// Read commands
 	for {
@@ -132,12 +134,12 @@ func (s *Session) Start() {
 		}
 
 		// Refresh shell & prompt after each command, at least.
-		s.Refresh()
+		s.refresh()
 	}
 }
 
-func (s *Session) Refresh() {
-	RefreshPrompt(s.prompt, s.Shell)
+func (s *Session) refresh() {
+	refreshPrompt(s.prompt, s.Shell)
 	s.Shell.Refresh()
 }
 
@@ -156,79 +158,79 @@ func (s *Session) mainMenuCommand(cmd []string) {
 	case "exit":
 		exit()
 	case "set":
-		s.SetOption(cmd)
+		s.setOption(cmd)
 	case "get":
-		s.GetOption(cmd)
+		s.setOption(cmd)
 	// Endpoint
 	case "endpoint":
 		switch cmd[1] {
 		case "list":
-			s.ListEndpoints()
+			s.listEndpoints()
 		case "add":
-			s.AddEndpoint()
+			s.addEndpoint()
 		case "connect":
-			s.EndpointConnect(cmd)
+			s.endpointConnect(cmd)
 		case "delete":
-			s.DeleteEndpoint(cmd)
+			s.deleteEndpoint(cmd)
 		}
 	// Workspace
 	case "workspace":
 		switch cmd[1] {
 		case "switch":
-			s.WorkspaceSwitch(cmd)
+			s.workspaceSwitch(cmd)
 		case "new":
-			s.WorkspaceNew(cmd)
+			s.workspaceNew(cmd)
 		case "delete":
-			s.WorkspaceDelete(cmd)
+			s.workspaceDelete(cmd)
 		case "list":
-			s.WorkspaceList(cmd)
+			s.workspaceList(cmd)
 		}
 	case "log":
 		switch cmd[1] {
 		case "level":
-			s.SetLogLevel(cmd)
+			s.setLogLevel(cmd)
 		case "show":
-			s.LogShow(cmd)
+			s.logShow(cmd)
 		}
 	// Module
 	case "use":
-		s.UseModule(cmd)
+		s.useModule(cmd)
 	// Stack
 	case "stack":
 		switch len(cmd) {
 		case 1:
-			s.StackShow()
+			s.stackShow()
 		case 2:
 			switch cmd[1] {
 			case "show":
-				s.StackShow()
+				s.stackShow()
 			case "pop":
-				s.StackPop(cmd)
+				s.stackPop(cmd)
 			}
 		case 3:
 			switch cmd[1] {
 			case "use":
-				s.StackUse(cmd)
+				s.stackUse(cmd)
 			case "pop":
-				s.StackPop(cmd)
+				s.stackPop(cmd)
 			}
 		}
 	// Compiler
 	case "compiler":
-		s.UseCompiler()
+		s.useCompiler()
 	// Server
 	case "server":
 		switch cmd[1] {
 		case "reload":
-			s.ServerReload(cmd)
+			s.serverReload(cmd)
 		case "start":
-			s.ServerStart(cmd)
+			s.serverStart(cmd)
 		case "stop":
-			s.ServerStop(cmd)
+			s.serverStop(cmd)
 		case "generate_certificate":
-			s.GenerateCertificate(cmd)
+			s.generateCertificate(cmd)
 		case "list":
-			s.ServerList(cmd)
+			s.serverList(cmd)
 		}
 	}
 }
@@ -246,91 +248,91 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 	case "!":
 		shellHandler(cmd[1:])
 	case "get":
-		s.GetOption(cmd)
+		s.getOption(cmd)
 	case "exit":
 		exit()
 	// Endpoint
 	case "endpoint":
 		switch cmd[1] {
 		case "list":
-			s.ListEndpoints()
+			s.listEndpoints()
 		case "add":
-			s.AddEndpoint()
+			s.addEndpoint()
 		case "connect":
-			s.EndpointConnect(cmd)
+			s.endpointConnect(cmd)
 		case "delete":
-			s.DeleteEndpoint(cmd)
+			s.deleteEndpoint(cmd)
 		}
 	// Workspace
 	case "workspace":
 		switch cmd[1] {
 		case "switch":
-			s.WorkspaceSwitch(cmd)
+			s.workspaceSwitch(cmd)
 		case "new":
-			s.WorkspaceNew(cmd)
+			s.workspaceNew(cmd)
 		case "list":
-			s.WorkspaceList(cmd)
+			s.workspaceList(cmd)
 		}
 	case "log":
 		switch cmd[1] {
 		case "level":
-			s.SetLogLevel(cmd)
+			s.setLogLevel(cmd)
 		case "show":
-			s.LogShow(cmd)
+			s.logShow(cmd)
 		}
 	// Module
 	case "use":
-		s.UseModule(cmd)
+		s.useModule(cmd)
 	case "show":
 		switch cmd[1] {
 		case "options":
-			s.ShowOptions(cmd)
+			s.showOptions(cmd)
 		case "info":
-			s.ShowInfo()
+			s.showInfo()
 		}
 	case "info":
-		s.ShowInfo()
+		s.showInfo()
 	case "set":
-		s.SetModuleOption(cmd)
+		s.setModuleOption(cmd)
 	case "back":
-		s.BackModule()
+		s.backModule()
 	// Stack
 	case "stack":
 		switch len(cmd) {
 		case 1:
-			s.StackShow()
+			s.stackShow()
 		case 2:
 			switch cmd[1] {
 			case "show":
-				s.StackShow()
+				s.stackShow()
 			case "pop":
-				s.StackPop(cmd)
+				s.stackPop(cmd)
 			}
 		case 3:
 			switch cmd[1] {
 			case "use":
-				s.StackUse(cmd)
+				s.stackUse(cmd)
 			case "pop":
-				s.StackPop(cmd)
+				s.stackPop(cmd)
 			}
 		}
 	// Server
 	case "server":
 		switch cmd[1] {
 		case "reload":
-			s.ServerReload(cmd)
+			s.serverReload(cmd)
 		case "start":
-			s.ServerStart(cmd)
+			s.serverStart(cmd)
 		case "stop":
-			s.ServerStop(cmd)
+			s.serverStop(cmd)
 		case "generate_certificate":
-			s.GenerateCertificate(cmd)
+			s.generateCertificate(cmd)
 		case "list":
-			s.ServerList(cmd)
+			s.serverList(cmd)
 		}
 	// Compiler
 	case "compiler":
-		s.UseCompiler()
+		s.useCompiler()
 		// Server
 	}
 }
@@ -340,13 +342,13 @@ func (s *Session) compilerMenuCommand(cmd []string) {
 	case "help":
 		compilerHelp()
 	case "back":
-		s.QuitCompiler()
+		s.quitCompiler()
 	case "list":
 		switch cmd[1] {
 		case "parameters":
-			s.ShowCompilerOptions(cmd)
+			s.showCompilerOptions(cmd)
 		}
 	case "set":
-		s.SetCompilerOption(cmd)
+		s.setCompilerOption(cmd)
 	}
 }

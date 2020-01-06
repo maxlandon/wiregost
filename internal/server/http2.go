@@ -29,9 +29,8 @@ import (
 	"gopkg.in/square/go-jose.v2/jwt"
 
 	// Merlin
-	loggingMerlin "github.com/Ne0nd0g/merlin/pkg/logging" // TO CHANGE WITH OUR OWN WHEN READY
-	"github.com/Ne0nd0g/merlin/pkg/messages"              // TO CHANGE WITH OUR OWN WHEN READY
-	"github.com/Ne0nd0g/merlin/pkg/util"                  // TO CHANGE WITH OUR OWN WHEN READY
+	"github.com/Ne0nd0g/merlin/pkg/messages" // TO CHANGE WITH OUR OWN WHEN READY
+	"github.com/Ne0nd0g/merlin/pkg/util"     // TO CHANGE WITH OUR OWN WHEN READY
 	"github.com/maxlandon/wiregost/internal/agents"
 	"github.com/maxlandon/wiregost/internal/core"
 	"github.com/maxlandon/wiregost/internal/logging"
@@ -53,13 +52,13 @@ type Server struct {
 
 	// Added
 	Workspace   string
-	WorkspaceId int
+	WorkspaceID int
 	Running     bool
 	log         *logging.WorkspaceLogger
 }
 
 // New instantiates a new server object and returns it
-func New(iface string, port int, protocol string, key string, certificate string, psk string, workspace string, workspaceId int, logger *logging.WorkspaceLogger) (Server, error) {
+func New(iface string, port int, protocol string, key string, certificate string, psk string, workspace string, workspaceID int, logger *logging.WorkspaceLogger) (Server, error) {
 	s := Server{
 		ID:          uuid.NewV4(),
 		Protocol:    protocol,
@@ -69,12 +68,12 @@ func New(iface string, port int, protocol string, key string, certificate string
 		jwtKey:      []byte(core.RandStringBytesMaskImprSrc(32)), // Used to sign and encrypt JWT
 		Psk:         psk,
 		Workspace:   workspace,
-		WorkspaceId: workspaceId,
+		WorkspaceID: workspaceID,
 		Running:     false,
 		log:         logger,
 	}
 	// Set context logger
-	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceId})
+	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceID})
 
 	// OPAQUE Server Public/Private keys; Can be used with every agent
 	s.opaqueKey = gopaque.CryptoDefault.NewKey(nil)
@@ -148,12 +147,12 @@ func New(iface string, port int, protocol string, key string, certificate string
 	}
 
 	// Log certificate information
-	log.Infof(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a %s signature of %s",
+	log.Debugf(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a %s signature of %s",
 		x.SignatureAlgorithm.String(), hex.EncodeToString(x.Signature)))
-	log.Infof(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a public key of %v", x.PublicKey))
-	log.Infof(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a serial number of %d", x.SerialNumber))
-	log.Infof(fmt.Sprintf("Starting Merlin Server using an X.509 certifcate with a subject of %s", x.Subject.String()))
-	log.Infof(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a SHA256 hash, "+
+	log.Debugf(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a public key of %v", x.PublicKey))
+	log.Debugf(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a serial number of %d", x.SerialNumber))
+	log.Debugf(fmt.Sprintf("Starting Merlin Server using an X.509 certifcate with a subject of %s", x.Subject.String()))
+	log.Debugf(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a SHA256 hash, "+
 		"calculated by Merlin, of %s", sha256Fingerprint))
 
 	// Configure TLS
@@ -203,12 +202,11 @@ func New(iface string, port int, protocol string, key string, certificate string
 // Run function starts the server on the preconfigured port for the preconfigured service
 func (s *Server) Run() (status string, err error) {
 	// Test context logger
-	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceId})
+	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceID})
 
 	// Sleep to allow the shell to start up
 	time.Sleep(45 * time.Millisecond)
 	if s.Psk == "merlin" {
-		fmt.Println()
 		log.Warnf("Listener was started using \"merlin\" as the Pre-Shared Key (PSK) allowing anyone" +
 			" decrypt message traffic.")
 		log.Infof("Consider changing the PSK by using the -Psk command line flag.")
@@ -228,7 +226,7 @@ func (s *Server) Run() (status string, err error) {
 			}
 		}()
 		s.Running = true
-		go loggingMerlin.Server(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
+		go log.Errorf(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
 		return m, nil
 	} else if s.Protocol == "hq" {
 		server := s.Server.(*h2quic.Server)
@@ -241,7 +239,7 @@ func (s *Server) Run() (status string, err error) {
 				return
 			}
 		}()
-		go loggingMerlin.Server(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
+		go log.Errorf(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
 		// Server is now running
 		s.Running = true
 		return m, nil
@@ -252,7 +250,7 @@ func (s *Server) Run() (status string, err error) {
 // agentHandler function is responsible for all Merlin agent traffic
 func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 	// Test context logger
-	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceId})
+	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceID})
 
 	log.Infof(fmt.Sprintf("Received %s %s connection from %s", r.Proto, r.Method, r.RemoteAddr))
 
@@ -359,7 +357,6 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 				case "RegInit":
 					serverRegInit, err := agents.OPAQUERegistrationInit(k, s.opaqueKey)
 					if err != nil {
-						loggingMerlin.Server(err.Error())
 						log.Errorf(err.Error())
 						w.WriteHeader(404)
 						return
@@ -560,7 +557,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 // getJWT returns a JSON Web Token for the provided agent using the interface JWT Key
 func getJWT(agentID uuid.UUID, key []byte, s *Server) (string, error) {
 	// Test context logger
-	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceId})
+	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceID})
 
 	log.Debugf("Entering into agents.GetJWT function")
 
@@ -619,7 +616,7 @@ func getJWT(agentID uuid.UUID, key []byte, s *Server) (string, error) {
 // validateJWT validates the provided JSON Web Token
 func validateJWT(agentJWT string, key []byte, s *Server) (uuid.UUID, error) {
 	// Test context logger
-	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceId})
+	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceID})
 
 	var agentID uuid.UUID
 	log.Debugf("Entering into http2.ValidateJWT")
@@ -680,7 +677,7 @@ func validateJWT(agentJWT string, key []byte, s *Server) (uuid.UUID, error) {
 // decryptJWE takes provided JWE string and decrypts it using the per-agent key
 func decryptJWE(jweString string, key []byte, s *Server) (messages.Base, error) {
 	// Test context logger
-	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceId})
+	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceID})
 
 	log.Debugf("Entering into http2.DecryptJWE function")
 	log.Debugf(fmt.Sprintf("Input JWE String: %s", jweString))

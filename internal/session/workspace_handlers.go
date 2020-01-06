@@ -12,8 +12,8 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func (s *Session) WorkspaceList(cmd []string) {
-	s.Send(cmd)
+func (s *Session) workspaceList(cmd []string) {
+	s.send(cmd)
 	workspace := <-s.workspaceReqs
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -37,33 +37,33 @@ func (s *Session) WorkspaceList(cmd []string) {
 	table.Render()
 }
 
-func (s *Session) WorkspaceSwitch(cmd []string) {
-	s.Send(cmd)
+func (s *Session) workspaceSwitch(cmd []string) {
+	s.send(cmd)
 	workspace := <-s.workspaceReqs
 	server := <-s.serverReqs
 	fmt.Println()
 	fmt.Printf(workspace.Result)
 	fmt.Println(server.Status)
-	s.CurrentWorkspaceId = workspace.WorkspaceId
+	s.CurrentWorkspaceID = workspace.WorkspaceID
 	s.currentWorkspace = cmd[2]
 	s.currentModule = ""
 }
 
-func (s *Session) WorkspaceDelete(cmd []string) {
+func (s *Session) workspaceDelete(cmd []string) {
 	if cmd[2] == s.currentWorkspace {
 		fmt.Println()
 		fmt.Printf("%s[!]%s Cannot delete current workspace", tui.RED, tui.RESET)
 		fmt.Println()
 	} else {
-		s.Send(cmd)
+		s.send(cmd)
 		workspace := <-s.workspaceReqs
 		fmt.Println()
 		fmt.Println(workspace.Result)
 	}
 }
 
-func (s *Session) WorkspaceNew(cmd []string) {
-	// Send params if they are set
+func (s *Session) workspaceNew(cmd []string) {
+	// send params if they are set
 	params := make(map[string]string)
 	for k, v := range s.Env {
 		if strings.HasPrefix(k, "workspace") {
@@ -74,7 +74,7 @@ func (s *Session) WorkspaceNew(cmd []string) {
 		UserName:           s.user.Name,
 		UserPassword:       s.user.PasswordHashString,
 		CurrentWorkspace:   s.currentWorkspace,
-		CurrentWorkspaceId: s.CurrentWorkspaceId,
+		CurrentWorkspaceID: s.CurrentWorkspaceID,
 		Context:            s.menuContext,
 		CurrentModule:      s.currentModule,
 		Command:            cmd,

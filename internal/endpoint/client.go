@@ -12,6 +12,8 @@ import (
 	"github.com/maxlandon/wiregost/internal/messages"
 )
 
+// Client is in charge of managing connection and message passing between
+// a client shell and the Wiregost server, via its Endpoint.
 type Client struct {
 	// Connection
 	conn       net.Conn
@@ -22,7 +24,7 @@ type Client struct {
 	id         int
 	// User-specific
 	User               *db.User
-	CurrentWorkspaceId int
+	CurrentWorkspaceID int
 	CurrentWorkspace   string
 	Context            string // Will influence how commands are dispatched.
 	// Message-specific
@@ -34,6 +36,7 @@ type Client struct {
 	Logger *logging.ClientLogger
 }
 
+// CreateClient instantiates a new Client object, upon connection of a shell to the Wiregost endpoint.
 func CreateClient(conn net.Conn) *Client {
 	writer := bufio.NewWriter(conn)
 	reader := bufio.NewReader(conn)
@@ -52,7 +55,7 @@ func CreateClient(conn net.Conn) *Client {
 		Context: "main", // Default context is always main when a shell is spawned
 	}
 	// Setup logger
-	client.Logger = logging.NewClientLogger(client.id, &client.CurrentWorkspaceId, client.responses)
+	client.Logger = logging.NewClientLogger(client.id, &client.CurrentWorkspaceID, client.responses)
 
 	go client.Write()
 	go client.Read()
@@ -92,14 +95,14 @@ func (client *Client) Read() {
 			break
 		}
 		// Fill message with client information
-		message.ClientId = client.id
+		message.ClientID = client.id
 
 		// Fill client information with message
 		client.Context = message.Context
 
-		if message.CurrentWorkspaceId != 0 {
+		if message.CurrentWorkspaceID != 0 {
 			// Fill client with message information
-			client.CurrentWorkspaceId = message.CurrentWorkspaceId
+			client.CurrentWorkspaceID = message.CurrentWorkspaceID
 			client.CurrentWorkspace = message.CurrentWorkspace
 		}
 

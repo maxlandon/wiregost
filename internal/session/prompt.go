@@ -23,15 +23,14 @@ type Prompt struct {
 	CurrentModule    *string
 	MenuContext      *string
 	// Other prompt variables
-	serverIp *string
+	serverIP *string
 	// Callbacks and colors
 	PromptCallbacks map[string]func() string
 	effects         map[string]string
 }
 
-func NewPrompt(s *Session) Prompt {
-	// these are here because if colors are disabled,
-	// we need the updated tui.* variable
+func newPrompt(s *Session) Prompt {
+	// These are here because if colors are disabled, we need the updated tui.* variable
 	prompt := Prompt{
 		// Prompt strings
 		PromptVariable:  "$",
@@ -83,9 +82,9 @@ func NewPrompt(s *Session) Prompt {
 			addrs, _ := net.InterfaceAddrs()
 			var ip string
 			for _, addr := range addrs {
-				networkIp, ok := addr.(*net.IPNet)
-				if ok && !networkIp.IP.IsLoopback() && networkIp.IP.To4() != nil {
-					ip = networkIp.IP.String()
+				network, ok := addr.(*net.IPNet)
+				if ok && !network.IP.IsLoopback() && network.IP.To4() != nil {
+					ip = network.IP.String()
 				}
 			}
 			return ip
@@ -99,7 +98,7 @@ func NewPrompt(s *Session) Prompt {
 	return prompt
 }
 
-func (p Prompt) Render() (first string, multi string) {
+func (p Prompt) render() (first string, multi string) {
 
 	var prompt string
 
@@ -134,9 +133,9 @@ func (p Prompt) Render() (first string, multi string) {
 }
 
 // Refresh prompt
-func RefreshPrompt(prompt Prompt, input *readline.Instance) {
-	p, _ := prompt.Render()
-	_, m := prompt.Render()
+func refreshPrompt(prompt Prompt, input *readline.Instance) {
+	p, _ := prompt.render()
+	_, m := prompt.render()
 	fmt.Println()
 	fmt.Println(p)
 	input.SetPrompt(m)

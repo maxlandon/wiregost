@@ -10,39 +10,42 @@ import (
 	"github.com/maxlandon/wiregost/internal/workspace"
 )
 
+// Wiregost is the central point of the Wiregost server system.
+// It is used to instantiate all managers and components.
 type Wiregost struct {
 	// Connections
 	Endpoint *endpoint.Endpoint
 
 	// DB Access
-	DbManager db.DBManager
+	DbManager db.Manager
 
 	// User
-	UserManager *user.UserManager
+	UserManager *user.Manager
 
 	// Workspace
-	WorkspaceManager *workspace.WorkspaceManager
+	WorkspaceManager *workspace.Manager
 
 	// ModuleStackManager
-	ModuleStackManager *modules.ModuleStackManager
+	ModuleStackManager *modules.Manager
 
 	// Logger
 
 	// Server
-	ServerManager *server.ServerManager
+	ServerManager *server.Manager
 
 	// Compiler
 	CompilerManager *compiler.Manager
 }
 
+// NewWiregost instantiates a new Wiregost server system
 func NewWiregost() *Wiregost {
 	wiregost := &Wiregost{
 		Endpoint: endpoint.NewEndpoint(),
 		// DB
-		UserManager:        user.NewUserManager(),
-		WorkspaceManager:   workspace.NewWorkspaceManager(),
-		ModuleStackManager: modules.NewModuleStackManager(),
-		ServerManager:      server.NewServerManager(),
+		UserManager:        user.NewManager(),
+		WorkspaceManager:   workspace.NewManager(),
+		ModuleStackManager: modules.NewManager(),
+		ServerManager:      server.NewManager(),
 		CompilerManager:    compiler.NewManager(),
 	}
 

@@ -14,6 +14,8 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+// User is used to store per-shell user credentials, which will
+// be used to authenticate to a server when connecting/sending requests.
 type User struct {
 	Name               string
 	PasswordHashString string
@@ -21,11 +23,13 @@ type User struct {
 	CredsFile          string
 }
 
+// NewUser instantiates a new User.
 func NewUser() *User {
 	user := &User{CredsFile: "~/.wiregost/client/.auth"}
 	return user
 }
 
+// LoadCreds loads user credentials from a configuration file.
 func (user *User) LoadCreds() (err error) {
 	// Check for personal directory, exit if not present.
 	credsFile, _ := fs.Expand(user.CredsFile)
@@ -43,7 +47,7 @@ func (user *User) LoadCreds() (err error) {
 	return err
 }
 
-// Local Authentication
+// Authenticate is used to perform local (shell only) authentication.
 func (user *User) Authenticate() {
 	attempts := 0
 	fmt.Printf(tui.Bold("Password: \n"))
@@ -61,7 +65,7 @@ func (user *User) Authenticate() {
 				fmt.Println("Wrong password. Retry:")
 				pass, _ = terminal.ReadPassword(int(syscall.Stdin))
 				hash = sha256.Sum256(pass)
-				attempts += 1
+				attempts++
 			}
 			if attempts == 3 {
 				fmt.Println(tui.Red("Authentication failure. Leaving WireGost"))

@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var Levels = map[string]int{
+var levels = map[string]int{
 	"debug":   1,
 	"info":    2,
 	"warning": 3,
@@ -16,24 +16,28 @@ var Levels = map[string]int{
 	"panic":   6,
 }
 
+// ClientLogger is used to forward log events to its respective client.
+// It filters what event to send based on its log level filter, which can be changed
+// for and from each client shell.
 type ClientLogger struct {
 	// Client
-	ClientId           int
-	CurrentWorkspaceId *int
+	ClientID           int
+	CurrentWorkspaceID *int
 	// Level
 	Level int
 	// Channels with client
 	ForwardClients chan<- messages.Message
 }
 
-func NewClientLogger(clientId int, workspaceId *int, channel chan<- messages.Message) *ClientLogger {
+// NewClientLogger instantiates a new Logger, dedicated to one client only.
+func NewClientLogger(clientID int, workspaceID *int, channel chan<- messages.Message) *ClientLogger {
 	logger := &ClientLogger{
-		ClientId:           clientId,
-		CurrentWorkspaceId: workspaceId,
+		ClientID:           clientID,
+		CurrentWorkspaceID: workspaceID,
 		ForwardClients:     channel,
 	}
 	// Setup default level at startup
-	logger.Level = Levels["info"]
+	logger.Level = levels["info"]
 
 	return logger
 }
@@ -41,15 +45,15 @@ func NewClientLogger(clientId int, workspaceId *int, channel chan<- messages.Mes
 // Forward log items to a given client
 func (cl *ClientLogger) Forward(entry *logrus.Entry) error {
 
-	if Levels[entry.Level.String()] >= cl.Level {
+	if levels[entry.Level.String()] >= cl.Level {
 		event := messages.LogEvent{
-			ClientId:    cl.ClientId,
-			WorkspaceId: *cl.CurrentWorkspaceId,
+			ClientID:    cl.ClientID,
+			WorkspaceID: *cl.CurrentWorkspaceID,
 			Level:       entry.Level.String(),
 			Message:     entry.Message,
 		}
 		msg := messages.Message{
-			ClientId: cl.ClientId,
+			ClientID: cl.ClientID,
 			Type:     "logEvent",
 			Content:  event,
 		}
@@ -60,12 +64,12 @@ func (cl *ClientLogger) Forward(entry *logrus.Entry) error {
 }
 
 func (cl *ClientLogger) SetLevel(request messages.ClientRequest) {
-	cl.Level = Levels[request.Command[2]]
+	cl.Level = levels[request.Command[2]]
 	// Return response
 	status := fmt.Sprintf(" => %s", request.Command[2])
 	res := messages.LogResponse{Log: status}
 	msg := messages.Message{
-		ClientId: request.ClientId,
+		ClientID: request.ClientID,
 		Type:     "log",
 		Content:  res,
 	}

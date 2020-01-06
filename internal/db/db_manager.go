@@ -13,7 +13,8 @@ import (
 	"github.com/go-pg/pg"
 )
 
-type DBManager struct {
+// Manager is an interface to a PostgreSQL database.
+type Manager struct {
 	User     string
 	Database string
 	Password string
@@ -21,8 +22,9 @@ type DBManager struct {
 	DB *pg.DB
 }
 
-func NewDBManager() *DBManager {
-	man := &DBManager{}
+// NewDBManager instantiates a new PostgreSQL interface.
+func NewDBManager() *Manager {
+	man := &Manager{}
 
 	// Load credentials
 	dbFile := "~/.wiregost/server/database.conf"

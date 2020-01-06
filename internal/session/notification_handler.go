@@ -14,14 +14,14 @@ func (s *Session) handleNotifications(notif messages.Notification) {
 		switch notif.Action {
 		case "switch":
 			s.currentWorkspace = notif.Workspace
-			s.CurrentWorkspaceId = notif.WorkspaceId
+			s.CurrentWorkspaceID = notif.WorkspaceID
 		case "delete":
 			fmt.Printf("%s[!]%s Workspace %s deleted from another client shell. Falling back to default.",
 				tui.BOLD, tui.RESET, s.currentWorkspace)
 			s.currentWorkspace = "default"
-			s.CurrentWorkspaceId = notif.FallbackWorkspaceId
+			s.CurrentWorkspaceID = notif.FallbackWorkspaceID
 			// Refresh shell
-			s.Refresh()
+			s.refresh()
 		}
 	case "module":
 		switch notif.Action {
@@ -32,7 +32,7 @@ func (s *Session) handleNotifications(notif messages.Notification) {
 					s.Shell.Config.AutoComplete = s.getCompleter("main")
 				}
 				// Refresh shell
-				s.Refresh()
+				s.refresh()
 			}
 		}
 	}

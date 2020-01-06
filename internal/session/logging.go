@@ -7,6 +7,7 @@ import (
 	"github.com/maxlandon/wiregost/internal/messages"
 )
 
+// Log needs to be exported because of log package conflict.
 func Log(event messages.LogEvent) {
 	// Set colors and signs for levels
 	switch event.Level {

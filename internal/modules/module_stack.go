@@ -8,15 +8,14 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/evilsocket/islazy/fs"
-	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/workspace"
 )
 
+// ModuleResponse is the message used to send back module/stack content and status to clients.
 type ModuleResponse struct {
 	ModuleName string
 	Status     string
@@ -26,19 +25,24 @@ type ModuleResponse struct {
 	Modules    []*Module
 }
 
+// ModuleStack is a structure containing a list of previously loaded modules.
+// It is used to keep their state and options alive during a session, and to have quick access to them.
 type ModuleStack struct {
-	WorkspaceId   int
-	Id            int
+	WorkspaceID   int
+	ID            int
 	CurrentModule *Module
 	Modules       []*Module
 }
 
-type ModuleStackManager struct {
+// Manager stores all modules stacks and perform operations either upon them or their modules.
+// It also searches the list of available modules and manages them.
+type Manager struct {
 	Stacks map[int]*ModuleStack
 }
 
-func NewModuleStackManager() *ModuleStackManager {
-	man := &ModuleStackManager{Stacks: make(map[int]*ModuleStack)}
+// NewManager instantiates a new Module/Stack Manager, which handles all requests from clients or workspaces.
+func NewManager() *Manager {
+	man := &Manager{Stacks: make(map[int]*ModuleStack)}
 
 	go man.handleWorkspaceRequests()
 	go man.handleClientRequests()
@@ -46,112 +50,97 @@ func NewModuleStackManager() *ModuleStackManager {
 	return man
 }
 
-func (msm *ModuleStackManager) Create(workspaceId int) {
-	msm.Stacks[workspaceId] = &ModuleStack{Id: rand.Int(), WorkspaceId: workspaceId}
+func (msm *Manager) create(workspaceID int) {
+	msm.Stacks[workspaceID] = &ModuleStack{ID: rand.Int(), WorkspaceID: workspaceID}
 }
 
-func (msm *ModuleStackManager) handleWorkspaceRequests() {
+func (msm *Manager) handleWorkspaceRequests() {
 	for {
 		request := <-workspace.ModuleRequests
 		switch request.Action {
 		case "create":
-			fmt.Println("Identified create request")
-			fmt.Println("Creating stack linked to workspace")
-			msm.Create(request.WorkspaceId)
+			msm.create(request.WorkspaceID)
 		case "load":
-			fmt.Println("Received load request")
-			msm.LoadStack(request.Workspace, request.WorkspaceId)
+			msm.loadStack(request.Workspace, request.WorkspaceID)
 		case "save":
-			msm.SaveStack(request.Workspace, request.WorkspaceId)
+			msm.saveStack(request.Workspace, request.WorkspaceID)
 		}
 	}
 }
 
-func (msm *ModuleStackManager) handleClientRequests() {
+func (msm *Manager) handleClientRequests() {
 	for {
 		request := <-messages.ForwardModuleStack
 		switch request.Command[0] {
 		case "use":
-			msm.UseModule(request)
+			msm.useModule(request)
 		// Cas "show" works for both info and options, as it sends the whole module
 		case "show":
-			msm.ShowModule(request)
+			msm.showModule(request)
 		case "set":
-			msm.SetOption(request)
+			msm.setOption(request)
 		// List command for completers. This command "module" is not available in the shell
 		case "module":
-			GetModuleList(request)
+			getModuleList(request)
 		// STACK COMMANDS
 		case "stack":
 			switch request.Command[1] {
 			case "show":
-				msm.GetStackModuleList(request)
+				msm.getStackModuleList(request)
 			case "pop":
-				msm.PopModule(request)
+				msm.popModule(request)
 			case "list":
-				msm.GetStackModuleNames(request)
+				msm.getStackModuleNames(request)
 			}
 		}
 	}
 }
 
-func (msm *ModuleStackManager) ShowModule(request messages.ClientRequest) {
+func (msm *Manager) showModule(request messages.ClientRequest) {
 	var module []*Module
-	module = append(module, msm.Stacks[request.CurrentWorkspaceId].CurrentModule)
+	module = append(module, msm.Stacks[request.CurrentWorkspaceID].CurrentModule)
 	response := ModuleResponse{
 		Modules: module,
 	}
 	msg := messages.Message{
-		ClientId: request.ClientId,
+		ClientID: request.ClientID,
 		Type:     "module",
 		Content:  response,
 	}
 	messages.Responses <- msg
 }
 
-func (msm *ModuleStackManager) UseModule(request messages.ClientRequest) {
-	stack := msm.Stacks[request.CurrentWorkspaceId]
-	fmt.Println(stack.Id)
+func (msm *Manager) useModule(request messages.ClientRequest) {
+	stack := msm.Stacks[request.CurrentWorkspaceID]
 	// Check if module already in stack
 	name := request.Command[2]
 	modPath := strings.Split(name, "/")
 	modName := modPath[len(modPath)-1]
-	fmt.Printf("Module name after split: ")
-	fmt.Println(modName)
-	fmt.Printf("Module names in stack: ")
-	fmt.Println(len(stack.Modules))
 	if stack.Modules != nil {
 		for _, mod := range stack.Modules {
 			stackModNameSuf := mod.Path[len(mod.Path)-1]
 			stackModName := strings.TrimSuffix(stackModNameSuf, ".json")
-			fmt.Printf("Stack mod name based on path")
-			fmt.Println(stackModName)
 			if strings.ToLower(stackModName) == strings.ToLower(modName) {
-				fmt.Println("Module already in stack, updating current module")
 				stack.CurrentModule = mod
 				// Dispatch response
 				response := ModuleResponse{
 					ModuleName: name,
 				}
 				msg := messages.Message{
-					ClientId: request.ClientId,
+					ClientID: request.ClientID,
 					Type:     "module",
 					Content:  response,
 				}
 				messages.Responses <- msg
-				fmt.Println("messages received response")
 				return
 			}
 		}
 	}
 	// If not, create it and add it to stack
-	fmt.Println("Module not yet in stack, adding it")
 	var mPath = path.Join("/home/para/go/src/github.com/Ne0nd0g/merlin",
 		"data", "modules", name+".json")
 	module, _ := Create(mPath)
 	stack.Modules = append(stack.Modules, &module)
-	fmt.Println("Stack modules after adding one")
-	fmt.Println(stack.Modules)
 
 	stack.CurrentModule = &module
 	if stack.CurrentModule != nil {
@@ -160,22 +149,21 @@ func (msm *ModuleStackManager) UseModule(request messages.ClientRequest) {
 			ModuleName: name,
 		}
 		msg := messages.Message{
-			ClientId: request.ClientId,
+			ClientID: request.ClientID,
 			Type:     "module",
 			Content:  response,
 		}
 		messages.Responses <- msg
-		fmt.Println("messages received response")
 		return
 	}
 }
 
-func (msm *ModuleStackManager) PopModule(request messages.ClientRequest) {
+func (msm *Manager) popModule(request messages.ClientRequest) {
 	var poppedMod string
-	// Identify concerned stack and prepare it for changes.
-	stack := msm.Stacks[request.CurrentWorkspaceId]
+	// IDentify concerned stack and prepare it for changes.
+	stack := msm.Stacks[request.CurrentWorkspaceID]
 	newStack := stack.Modules[:0]
-	// Identify command
+	// IDentify command
 	switch len(request.Command) {
 	// Pop current module
 	case 2:
@@ -188,19 +176,16 @@ func (msm *ModuleStackManager) PopModule(request messages.ClientRequest) {
 			}
 		}
 		// If other modules in stack, use last one as current
-		fmt.Println("stack length: " + strconv.Itoa(len(newStack)))
 		if len(newStack) != 0 {
 			stack.CurrentModule = newStack[len(newStack)-1]
-			fmt.Println(stack.CurrentModule.Name)
 		} else {
 			// If empty, just fill with an empty one
 			stack.CurrentModule = &Module{}
 		}
-		fmt.Println("Detected no module name, popping current one")
 	case 3:
 		// Pop all modules
 		if request.Command[2] == "all" {
-			stack = &ModuleStack{Id: rand.Int(), WorkspaceId: request.CurrentWorkspaceId}
+			stack = &ModuleStack{ID: rand.Int(), WorkspaceID: request.CurrentWorkspaceID}
 
 		} else {
 			// Pop selected one
@@ -210,7 +195,6 @@ func (msm *ModuleStackManager) PopModule(request messages.ClientRequest) {
 					newStack = append(newStack, m)
 				}
 			}
-			fmt.Println("Detected module name, popping designated module")
 		}
 	}
 	// Set new stack
@@ -222,7 +206,7 @@ func (msm *ModuleStackManager) PopModule(request messages.ClientRequest) {
 		ModuleName: currentMod,
 	}
 	msg := messages.Message{
-		ClientId: request.ClientId,
+		ClientID: request.ClientID,
 		Type:     "module",
 		Content:  response,
 	}
@@ -232,25 +216,21 @@ func (msm *ModuleStackManager) PopModule(request messages.ClientRequest) {
 	res := messages.Notification{
 		Type:           "module",
 		Action:         "pop",
-		NotConcerned:   request.ClientId,
-		WorkspaceId:    request.CurrentWorkspaceId,
+		NotConcerned:   request.ClientID,
+		WorkspaceID:    request.CurrentWorkspaceID,
 		PoppedModule:   poppedMod,
 		FallbackModule: currentMod,
 	}
 	messages.Notifications <- res
 }
 
-func (msm *ModuleStackManager) SetOption(request messages.ClientRequest) {
-	fmt.Println("detected set option command")
+func (msm *Manager) setOption(request messages.ClientRequest) {
 	// It is possible that the string formatting in this "set" case is overkill,
 	// because we could juste compare names like in the "show" case juste above.
 	// For now we keep it like that.
-	for _, mod := range msm.Stacks[request.CurrentWorkspaceId].Modules {
+	for _, mod := range msm.Stacks[request.CurrentWorkspaceID].Modules {
 		stackModNameSuf := strings.Join(mod.Path, "/")
 		stackModName := strings.TrimSuffix(stackModNameSuf, ".json")
-		fmt.Printf("Stack mod name based on path")
-		fmt.Println(strings.ToLower(stackModName))
-		fmt.Println(strings.ToLower(request.CurrentModule))
 		if strings.ToLower(stackModName) == strings.ToLower(request.CurrentModule) {
 			opt, err := mod.SetOption(request.Command[1], request.Command[2])
 			if err != nil {
@@ -258,7 +238,7 @@ func (msm *ModuleStackManager) SetOption(request messages.ClientRequest) {
 					Error: err.Error(),
 				}
 				msg := messages.Message{
-					ClientId: request.ClientId,
+					ClientID: request.ClientID,
 					Type:     "module",
 					Content:  response,
 				}
@@ -268,7 +248,7 @@ func (msm *ModuleStackManager) SetOption(request messages.ClientRequest) {
 					Status: opt,
 				}
 				msg := messages.Message{
-					ClientId: request.ClientId,
+					ClientID: request.ClientID,
 					Type:     "module",
 					Content:  response,
 				}
@@ -279,34 +259,30 @@ func (msm *ModuleStackManager) SetOption(request messages.ClientRequest) {
 
 }
 
-func (msm *ModuleStackManager) LoadStack(name string, id int) {
+func (msm *Manager) loadStack(name string, id int) {
 	stack := ModuleStack{}
-	confPath, _ := fs.Expand("~/.wiregost/workspaces/" + name + "/" + "stack.conf")
+	confPath, _ := fs.Expand("~/.wiregost/server/workspaces/" + name + "/" + "stack.conf")
 	if !fs.Exists(confPath) {
-		msm.Create(id)
+		msm.create(id)
 		return
 	}
 	configBlob, _ := ioutil.ReadFile(confPath)
 	json.Unmarshal(configBlob, &stack)
-	msm.Stacks[stack.WorkspaceId] = &stack
-	fmt.Println(tui.Dim("Loaded stack " + strconv.Itoa(stack.WorkspaceId)))
+	msm.Stacks[stack.WorkspaceID] = &stack
 }
 
-func (msm *ModuleStackManager) SaveStack(name string, id int) {
+func (msm *Manager) saveStack(name string, id int) {
 	// Avoid saving for an empty workspace. WILL MOVE THAT ONCE DEFAULT IS USED AT SHELL SPAWN
 	if name == "" {
 		return
 	}
 	// Else save stack
 	stack := msm.Stacks[id]
-	stackDir, _ := fs.Expand("~/.wiregost/workspaces" + "/" + name)
+	stackDir, _ := fs.Expand("~/.wiregost/server/workspaces" + "/" + name)
 	stackConf, _ := os.Create(stackDir + "/" + "stack.conf")
-	fmt.Println(stackDir)
-	fmt.Println(stackConf)
 	defer stackConf.Close()
 	// Save workspace properties in directory
 	file, _ := fs.Expand(stackDir + "/" + "stack.conf")
-	fmt.Println(file)
 	var jsonData []byte
 	jsonData, err := json.MarshalIndent(stack, "", "    ")
 	if err != nil {
@@ -314,12 +290,11 @@ func (msm *ModuleStackManager) SaveStack(name string, id int) {
 		fmt.Println(err)
 	} else {
 		_ = ioutil.WriteFile(file, jsonData, 0755)
-		fmt.Println("Saved stack.conf for " + name)
 	}
 }
 
-func (msm *ModuleStackManager) GetStackModuleList(request messages.ClientRequest) {
-	stack := msm.Stacks[request.CurrentWorkspaceId]
+func (msm *Manager) getStackModuleList(request messages.ClientRequest) {
+	stack := msm.Stacks[request.CurrentWorkspaceID]
 	var modules []*Module
 	for _, m := range stack.Modules {
 		modules = append(modules, m)
@@ -328,7 +303,7 @@ func (msm *ModuleStackManager) GetStackModuleList(request messages.ClientRequest
 		Modules: modules,
 	}
 	msg := messages.Message{
-		ClientId: request.ClientId,
+		ClientID: request.ClientID,
 		Type:     "module",
 		Content:  response,
 	}
@@ -336,8 +311,8 @@ func (msm *ModuleStackManager) GetStackModuleList(request messages.ClientRequest
 }
 
 // Function used for completion
-func (msm *ModuleStackManager) GetStackModuleNames(request messages.ClientRequest) {
-	stack := msm.Stacks[request.CurrentWorkspaceId]
+func (msm *Manager) getStackModuleNames(request messages.ClientRequest) {
+	stack := msm.Stacks[request.CurrentWorkspaceID]
 	modules := make([]string, 0)
 	for _, m := range stack.Modules {
 		modules = append(modules, strings.TrimSuffix(strings.Join(m.Path, "/"), ".json"))
@@ -347,18 +322,14 @@ func (msm *ModuleStackManager) GetStackModuleNames(request messages.ClientReques
 	}
 	msg := messages.Message{
 		Type:     "module",
-		ClientId: request.ClientId,
+		ClientID: request.ClientID,
 		Content:  response,
 	}
 	messages.Responses <- msg
 }
 
-func (stack *ModuleStack) LoadFromFile() {
-
-}
-
 // Used for completion
-func GetModuleList(request messages.ClientRequest) {
+func getModuleList(request messages.ClientRequest) {
 	currentDir, _ := os.Getwd()
 	ModuleDir := path.Join(filepath.ToSlash(currentDir), "data", "modules")
 	list := make([]string, 0)
@@ -388,10 +359,9 @@ func GetModuleList(request messages.ClientRequest) {
 		ModuleList: list,
 	}
 	msg := messages.Message{
-		ClientId: request.ClientId,
+		ClientID: request.ClientID,
 		Type:     "module",
 		Content:  response,
 	}
-	fmt.Println(list)
 	messages.Responses <- msg
 }
