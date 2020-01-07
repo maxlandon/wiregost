@@ -156,6 +156,9 @@ func (wm *Manager) create(name string, ownerID int, params map[string]string) (r
 	os.Mkdir(workspaceDir+"/"+workspace.Name, 0755)
 	workspaceDir, _ = fs.Expand("~/.wiregost/server/workspaces" + "/" + workspace.Name)
 
+	// Create subdirectory for agents
+	os.Mkdir(workspaceDir+"/agents", 0755)
+
 	// Save workspace properties in directory
 	workspaceConf, _ := os.Create(workspaceDir + "/" + "workspace.conf")
 	defer workspaceConf.Close()

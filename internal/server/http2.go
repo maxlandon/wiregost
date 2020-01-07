@@ -252,7 +252,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 	// Test context logger
 	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceID})
 
-	log.Infof(fmt.Sprintf("Received %s %s connection from %s", r.Proto, r.Method, r.RemoteAddr))
+	log.Debugf(fmt.Sprintf("Received %s %s connection from %s", r.Proto, r.Method, r.RemoteAddr))
 
 	log.Debugf(fmt.Sprintf("HTTP Connection Details:"))
 	log.Debugf(fmt.Sprintf("Host: %s", r.Host))
@@ -312,7 +312,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 		// If agentID was returned, then message contained a JWT encrypted with the HTTP interface key
 		if (errValidate != nil) && (agentID == uuid.Nil) {
 			log.Warnf(errValidate.Error())
-			log.Infof("trying again with interface PSK")
+			log.Debugf("trying again with interface PSK")
 			// Validate JWT using interface PSK; Used by unauthenticated agents
 			hashedKey := sha256.Sum256([]byte(s.Psk))
 			key = hashedKey[:]
@@ -322,14 +322,14 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(404)
 				return
 			}
-			log.Infof("Unauthenticated JWT")
+			log.Debugf("Unauthenticated JWT")
 
 			// Decrypt the HTTP payload, a JWE, using interface PSK
 			k, errDecryptPSK := decryptJWE(jweString, key, s)
 			// Successfully decrypted JWE with interface PSK
 			if errDecryptPSK == nil {
-				log.Debugf(fmt.Sprintf("POST DATA: %v", k))
-				log.Infof(fmt.Sprintf("Received %s message, decrypted JWE with interface PSK", k.Type))
+				log.Tracef(fmt.Sprintf("POST DATA: %v", k))
+				log.Debugf(fmt.Sprintf("Received %s message, decrypted JWE with interface PSK", k.Type))
 
 				messagePayloadBytes := new(bytes.Buffer)
 
@@ -342,7 +342,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(404)
 						return
 					}
-					log.Infof(fmt.Sprintf("Received new agent OPAQUE authentication from %s", agentID))
+					log.Debugf(fmt.Sprintf("Received new agent OPAQUE authentication from %s", agentID))
 
 					// Encode return message into a gob
 					errAuthInit := gob.NewEncoder(messagePayloadBytes).Encode(serverAuthInit)
@@ -354,13 +354,13 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 					}
 				case "RegInit":
 					// Added server ID as parameter for registering agent to this server.
-					serverRegInit, err := agents.OPAQUERegistrationInit(k, s.opaqueKey, s.ID)
+					serverRegInit, err := agents.OPAQUERegistrationInit(k, s.opaqueKey, s.ID, s.WorkspaceID, s.Workspace, s.log)
 					if err != nil {
 						log.Errorf(err.Error())
 						w.WriteHeader(404)
 						return
 					}
-					log.Infof(fmt.Sprintf("Received new agent OPAQUE user registration initialization from %s", agentID))
+					log.Debugf(fmt.Sprintf("Received new agent OPAQUE user registration initialization from %s", agentID))
 
 					// Encode return message into a gob
 					errRegInit := gob.NewEncoder(messagePayloadBytes).Encode(serverRegInit)
@@ -377,7 +377,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(404)
 						return
 					}
-					log.Infof(fmt.Sprintf("Received new agent OPAQUE user registration complete from %s", agentID))
+					log.Debugf(fmt.Sprintf("Received new agent OPAQUE user registration complete from %s", agentID))
 
 					// Encode return message into a gob
 					errRegInit := gob.NewEncoder(messagePayloadBytes).Encode(serverRegComplete)
@@ -414,7 +414,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 
 				return
 			}
-			log.Infof("Unauthenticated JWT w/ Authenticated JWE agent session key")
+			log.Debugf("Unauthenticated JWT w/ Authenticated JWE agent session key")
 			// Decrypt the HTTP payload, a JWE, using agent session key
 			j, errDecrypt := decryptJWE(jweString, agents.GetEncryptionKey(agentID), s)
 			if errDecrypt != nil {
@@ -423,15 +423,15 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			log.Debugf(fmt.Sprintf("POST DATA: %v", j))
-			log.Infof(fmt.Sprintf("Received %s message from %s at %s", j.Type, j.ID, time.Now().UTC().Format(time.RFC3339)))
+			log.Tracef(fmt.Sprintf("POST DATA: %v", j))
+			log.Debugf(fmt.Sprintf("Received %s message from %s at %s", j.Type, j.ID, time.Now().UTC().Format(time.RFC3339)))
 
 			// Allowed authenticated message with PSK JWT and JWE encrypted with derived secret
 			switch j.Type {
 			case "AuthComplete":
 				returnMessage, err = agents.OPAQUEAuthenticateComplete(j)
 				if err != nil {
-					log.Infof(fmt.Sprintf("Received new agent OPAQUE authentication from %s", agentID))
+					log.Debugf(fmt.Sprintf("Received new agent OPAQUE authentication from %s", agentID))
 				}
 			default:
 				log.Warnf(fmt.Sprintf("Invalid Activity: %s", j.Type))
@@ -440,7 +440,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			// If not using the PSK, the agent has previously authenticated
-			log.Infof("Authenticated JWT")
+			log.Debugf("Authenticated JWT")
 
 			// Decrypt JWE
 			key = agents.GetEncryptionKey(agentID)
@@ -452,9 +452,9 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			log.Debugf(fmt.Sprintf("POST DATA: %v", j))
-			log.Infof("Authenticated JWT w/ Authenticated JWE agent session key")
-			log.Infof(fmt.Sprintf("Received %s message from %s at %s", j.Type, j.ID, time.Now().UTC().Format(time.RFC3339)))
+			log.Tracef(fmt.Sprintf("POST DATA: %v", j))
+			log.Debugf("Authenticated JWT w/ Authenticated JWE agent session key")
+			log.Debugf(fmt.Sprintf("Received %s message from %s at %s", j.Type, j.ID, time.Now().UTC().Format(time.RFC3339)))
 
 			// If both an agentID and error were returned, then the claims were likely bad and the agent needs to re-authenticate
 			if (errValidate != nil) && (agentID != uuid.Nil) {
@@ -492,7 +492,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 			returnMessage.Type = "ServerOk"
 			returnMessage.ID = agentID
 		}
-		log.Infof(fmt.Sprintf("Sending " + returnMessage.Type + " message type to agent"))
+		log.Debugf(fmt.Sprintf("Sending " + returnMessage.Type + " message type to agent"))
 
 		// Get JWT to add to message.Base for all messages except re-authenticate messages
 		if returnMessage.Type != "ReAuthenticate" {
@@ -540,7 +540,7 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 					log.Warnf(err.Error())
 					return
 				}
-				log.Infof(fmt.Sprintf("Agent %s was removed from the server", agentID.String()))
+				log.Debugf(fmt.Sprintf("Agent %s was removed from the server", agentID.String()))
 				return
 			}
 		}
@@ -605,7 +605,7 @@ func getJWT(agentID uuid.UUID, key []byte, s *Server) (string, error) {
 	if errParse != nil {
 		return "", fmt.Errorf("there was an error parsing the encrypted JWT:\r\n%s", errParse.Error())
 	}
-	log.Infof(fmt.Sprintf("Created authenticated JWT for %s", agentID))
+	log.Debugf(fmt.Sprintf("Created authenticated JWT for %s", agentID))
 	log.Debugf(fmt.Sprintf("Sending agent %s an authenticated JWT with a lifetime of %v:\r\n%v",
 		agentID.String(), lifetime, agentJWT))
 
@@ -619,7 +619,7 @@ func validateJWT(agentJWT string, key []byte, s *Server) (uuid.UUID, error) {
 
 	var agentID uuid.UUID
 	log.Debugf("Entering into http2.ValidateJWT")
-	log.Debugf(fmt.Sprintf("Input JWT: %v", agentJWT))
+	log.Tracef(fmt.Sprintf("Input JWT: %v", agentJWT))
 
 	claims := jwt.Claims{}
 
@@ -663,8 +663,8 @@ func validateJWT(agentJWT string, key []byte, s *Server) (uuid.UUID, error) {
 
 	if errValidate != nil {
 		log.Warnf(fmt.Sprintf("The JWT claims were not valid for %s", agentID))
-		log.Infof(fmt.Sprintf("JWT Claim Expiry: %s", claims.Expiry.Time()))
-		log.Infof(fmt.Sprintf("JWT Claim Issued: %s", claims.IssuedAt.Time()))
+		log.Warnf(fmt.Sprintf("JWT Claim Expiry: %s", claims.Expiry.Time()))
+		log.Warnf(fmt.Sprintf("JWT Claim Issued: %s", claims.IssuedAt.Time()))
 		return agentID, errValidate
 	}
 	log.Debugf(fmt.Sprintf("agentID: %s", agentID.String()))
@@ -679,7 +679,7 @@ func decryptJWE(jweString string, key []byte, s *Server) (messages.Base, error) 
 	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceID})
 
 	log.Debugf("Entering into http2.DecryptJWE function")
-	log.Debugf(fmt.Sprintf("Input JWE String: %s", jweString))
+	log.Tracef(fmt.Sprintf("Input JWE String: %s", jweString))
 
 	var m messages.Base
 
@@ -689,7 +689,7 @@ func decryptJWE(jweString string, key []byte, s *Server) (messages.Base, error) 
 		return m, fmt.Errorf("there was an error parseing the JWE string into a JSONWebEncryption object:\r\n%s", errObject)
 	}
 
-	log.Debugf(fmt.Sprintf("Parsed JWE:\r\n%+v", jwe))
+	log.Tracef(fmt.Sprintf("Parsed JWE:\r\n%+v", jwe))
 
 	// Decrypt the JWE
 	jweMessage, errDecrypt := jwe.Decrypt(key)

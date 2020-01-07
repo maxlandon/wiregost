@@ -96,20 +96,20 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 			readline.PcItem("delete",
 				readline.PcItemDynamic(s.listWorkspaces())),
 		),
-
 		// Agent
 		readline.PcItem("agent",
-			readline.PcItem("list"),     // Add getAgentsList here
-			readline.PcItem("interact"), // same
-			readline.PcItem("remove"),   // same
+			readline.PcItem("list"),
+			readline.PcItem("interact", readline.PcItemDynamic(s.getAgentList())),
+			readline.PcItem("remove", readline.PcItemDynamic(s.getAgentList())),
 		),
-		readline.PcItem("interact"), // Same
+		readline.PcItem("interact", readline.PcItemDynamic(s.getAgentList())),
 
 		// Module
 		readline.PcItem("use",
 			readline.PcItem("module",
 				readline.PcItemDynamic(s.listModules())),
 		),
+		// General parameters
 		readline.PcItem("set",
 			readline.PcItemDynamic(s.listParams()),
 		),
@@ -199,11 +199,11 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 
 		// Agent
 		readline.PcItem("agent",
-			readline.PcItem("list"),     // Add getAgentsList here
-			readline.PcItem("interact"), // same
-			readline.PcItem("remove"),   // same
+			readline.PcItem("list"),
+			readline.PcItem("interact", readline.PcItemDynamic(s.getAgentList())),
+			readline.PcItem("remove", readline.PcItemDynamic(s.getAgentList())),
 		),
-		readline.PcItem("interact"), // Same
+		readline.PcItem("interact", readline.PcItemDynamic(s.getAgentList())),
 
 		// Module
 		readline.PcItem("use",
@@ -220,7 +220,8 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		),
 		readline.PcItem("set",
 			readline.PcItem("agent",
-				readline.PcItem("all"), // add getAgentsList here
+				readline.PcItem("all"),
+				readline.PcItemDynamic(s.getAgentList()),
 			),
 			readline.PcItemDynamic(s.getModuleOptions()),
 		),
@@ -447,8 +448,7 @@ func (s *Session) getCompilerOptions() func(string) (options []string) {
 	}
 }
 
-func (s *Session) getEndpointList() func(string) (options []string) {
-
+func (s *Session) getEndpointList() func(string) (endpoints []string) {
 	return func(string) []string {
 		endpoints := []string{}
 		for _, l := range s.SavedEndpoints {
@@ -457,5 +457,18 @@ func (s *Session) getEndpointList() func(string) (options []string) {
 		}
 		return endpoints
 
+	}
+}
+
+func (s *Session) getAgentList() func(string) (agents []string) {
+	return func(string) []string {
+		s.send([]string{"agent", "show"})
+		agents := <-s.agentReqs
+		list := make([]string, 0)
+		for _, a := range agents.Infos {
+			agent := a["id"] + " " + tui.Dim("as "+a["username"]) + tui.Bold("@") + tui.Dim(a["hostname"])
+			list = append(list, agent)
+		}
+		return list
 	}
 }

@@ -12,7 +12,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -20,14 +19,16 @@ import (
 
 	// 3rd Party
 	"github.com/cretz/gopaque/gopaque"
-	"github.com/fatih/color"
+	"github.com/evilsocket/islazy/fs"
 	"github.com/olekukonko/tablewriter"
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 	"go.dedis.ch/kyber"
 
 	// Wiregost
 	"github.com/Ne0nd0g/merlin/pkg/logging" // CHANGE THIS WHEN READY
 	"github.com/maxlandon/wiregost/internal/core"
+	testlog "github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
 )
 
@@ -64,13 +65,15 @@ type agent struct {
 	OPAQUEServerAuth gopaque.ServerAuth             // OPAQUE Server Authentication information used to derive shared secret
 	OPAQUEServerReg  gopaque.ServerRegister         // OPAQUE server registration information
 	OPAQUERecord     gopaque.ServerRegisterComplete // Holds the OPAQUE kU, EnvU, PrivS, PubU
+
+	// Added
+	log         *testlog.WorkspaceLogger
+	WorkspaceID int
 }
 
 // KeyExchange is used to exchange public keys between the server and agent
 func KeyExchange(m messages.Base) (messages.Base, error) {
-	if core.Debug {
-		message("debug", "Entering into agents.KeyExchange function")
-	}
+	Log(m.ID, "trace", "Entering into agents.KeyExchange function")
 
 	serverKeyMessage := messages.Base{
 		ID:      m.ID,
@@ -88,9 +91,7 @@ func KeyExchange(m messages.Base) (messages.Base, error) {
 
 	ke := m.Payload.(messages.KeyExchange)
 
-	if core.Debug {
-		message("debug", fmt.Sprintf("Received new public key from %s:\r\n%v", m.ID, ke.PublicKey))
-	}
+	Log(m.ID, "debug", fmt.Sprintf("Received new public key from %s:\r\n%v", m.ID, ke.PublicKey))
 
 	serverKeyMessage.ID = Agents[m.ID].ID
 	Agents[m.ID].PublicKey = ke.PublicKey
@@ -103,9 +104,7 @@ func KeyExchange(m messages.Base) (messages.Base, error) {
 
 	Agents[m.ID].RSAKeys = privateKey
 
-	if core.Debug {
-		message("debug", fmt.Sprintf("Server's Public Key: %v", Agents[m.ID].RSAKeys.PublicKey))
-	}
+	Log(m.ID, "debug", fmt.Sprintf("Server's Public Key: %v", Agents[m.ID].RSAKeys.PublicKey))
 
 	pk := messages.KeyExchange{
 		PublicKey: Agents[m.ID].RSAKeys.PublicKey,
@@ -114,18 +113,16 @@ func KeyExchange(m messages.Base) (messages.Base, error) {
 	serverKeyMessage.ID = m.ID
 	serverKeyMessage.Payload = pk
 
-	if core.Debug {
-		message("debug", "Leaving agents.KeyExchange returning without error")
-		message("debug", fmt.Sprintf("serverKeyMessage: %v", serverKeyMessage))
-	}
+	Log(m.ID, "trace", "Leaving agents.KeyExchange returning without error")
+	Log(m.ID, "trace", fmt.Sprintf("serverKeyMessage: %v", serverKeyMessage))
+
 	return serverKeyMessage, nil
 }
 
 // OPAQUERegistrationInit is used to register an agent leveraging the OPAQUE Password Authenticated Key Exchange (PAKE) protocol
-func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serverId uuid.UUID) (messages.Base, error) {
-	if core.Debug {
-		message("debug", "Entering into agents.OPAQUERegistrationInit function")
-	}
+func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serverId uuid.UUID, wsId int, ws string, logger *testlog.WorkspaceLogger) (messages.Base, error) {
+	// Defer log message until agent is registered.
+	enterFunc := "Entering into agents.OPAQUERegistrationInit function"
 
 	returnMessage := messages.Base{
 		ID:      m.ID,
@@ -147,11 +144,12 @@ func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serve
 		return returnMessage, fmt.Errorf("there was an error unmarshalling the OPAQUE user register initialization message from bytes:\r\n%s", errUserRegInit.Error())
 	}
 
+	var opaqueUserID string
+	var merlinMsgUserID string
 	if !bytes.Equal(userRegInit.UserID, m.ID.Bytes()) {
-		if core.Verbose {
-			message("note", fmt.Sprintf("OPAQUE UserID: %v", userRegInit.UserID))
-			message("note", fmt.Sprintf("Merlin Message UserID: %v", m.ID.Bytes()))
-		}
+		// Again, defer log message until agent is registered.
+		opaqueUserID = fmt.Sprintf("OPAQUE UserID: %v", userRegInit.UserID)
+		merlinMsgUserID = fmt.Sprintf("Merlin Message UserID: %v", m.ID.Bytes())
 		return returnMessage, errors.New("the OPAQUE UserID doesn't match the Merlin message ID")
 	}
 
@@ -164,8 +162,8 @@ func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serve
 
 	returnMessage.Payload = serverRegInitBytes
 
-	// Create new agent and add it to the global map
-	agent, agentErr := newAgent(m.ID)
+	// Create new agent and add it to the global map, pass workspace name for creating agent directory
+	agent, agentErr := newAgent(m.ID, ws)
 	if agentErr != nil {
 		return returnMessage, fmt.Errorf("there was an error creating a new agent instance for %s:\r\n%s", m.ID.String(), agentErr.Error())
 	}
@@ -173,6 +171,7 @@ func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serve
 
 	// Add agent to global map
 	Agents[m.ID] = &agent
+
 	// Add agent UUID to the server's list of agents, via Agent Manager
 	req := messages.AgentRequest{
 		ServerID: serverId,
@@ -181,20 +180,26 @@ func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serve
 	}
 	messages.AgentRequests <- req
 
-	Log(m.ID, "Received agent OPAQUE register initialization message")
+	// Attach logger to agent.
+	// The logger will be used by using global map indexing in each function.
+	agent.log = logger
+	agent.WorkspaceID = wsId
 
-	if core.Debug {
-		message("debug", "Leaving agents.OPAQUERegistrationInit function without error")
-	}
+	// Catch up with previously defered log messages
+	Log(m.ID, "trace", enterFunc)
+	Log(m.ID, "trace", opaqueUserID)
+	Log(m.ID, "trace", merlinMsgUserID)
+
+	// We have now caught up.
+	Log(m.ID, "info", "Received agent OPAQUE register initialization message")
+	Log(m.ID, "trace", "Leaving agents.OPAQUERegistrationInit function without error")
 
 	return returnMessage, nil
 }
 
 // OPAQUERegistrationComplete is used to complete OPAQUE user registration and store the encrypted envelope EnvU
 func OPAQUERegistrationComplete(m messages.Base) (messages.Base, error) {
-	if core.Debug {
-		message("debug", "Entering into agents.OPAQUERegistrationComplete function")
-	}
+	Log(m.ID, "trace", "Entering into agents.OPAQUERegistrationComplete function")
 
 	returnMessage := messages.Base{
 		ID:      m.ID,
@@ -222,20 +227,15 @@ func OPAQUERegistrationComplete(m messages.Base) (messages.Base, error) {
 		return returnMessage, fmt.Errorf("the OPAQUE UserID: %v doesn't match the Merlin UserID: %v", Agents[m.ID].OPAQUERecord.UserID, m.ID.Bytes())
 	}
 
-	Log(m.ID, "OPAQUE registration complete")
-
-	if core.Debug {
-		message("debug", "Leaving agents.OPAQUERegistrationComplete function without error")
-	}
+	Log(m.ID, "debug", "OPAQUE registration complete")
+	Log(m.ID, "trace", "Leaving agents.OPAQUERegistrationComplete function without error")
 
 	return returnMessage, nil
 }
 
 // OPAQUEAuthenticateInit is used to authenticate an agent leveraging the OPAQUE Password Authenticated Key Exchange (PAKE) protocol and pre-shared key
 func OPAQUEAuthenticateInit(m messages.Base) (messages.Base, error) {
-	if core.Debug {
-		message("debug", "Entering into agents.OPAQUEAuthenticateInit function")
-	}
+	Log(m.ID, "trace", "Entering into agents.OPAQUEAuthenticateInit function")
 
 	returnMessage := messages.Base{
 		ID:      m.ID,
@@ -257,7 +257,7 @@ func OPAQUEAuthenticateInit(m messages.Base) (messages.Base, error) {
 	var userInit gopaque.UserAuthInit
 	errFromBytes := userInit.FromBytes(gopaque.CryptoDefault, m.Payload.([]byte))
 	if errFromBytes != nil {
-		message("warn", fmt.Sprintf("there was an error unmarshalling the user init message from bytes:\r\n%s", errFromBytes.Error()))
+		Log(m.ID, "warn", fmt.Sprintf("there was an error unmarshalling the user init message from bytes:\r\n%s", errFromBytes.Error()))
 	}
 
 	serverAuthComplete, errServerAuthComplete := serverAuth.Complete(&userInit, &Agents[m.ID].OPAQUERecord)
@@ -266,10 +266,8 @@ func OPAQUEAuthenticateInit(m messages.Base) (messages.Base, error) {
 		return returnMessage, fmt.Errorf("there was an error completing the OPAQUE server authentication:\r\n%s", errServerAuthComplete.Error())
 	}
 
-	if core.Debug {
-		message("debug", fmt.Sprintf("User Auth Init:\r\n%+v", userInit))
-		message("debug", fmt.Sprintf("Server Auth Complete:\r\n%+v", serverAuthComplete))
-	}
+	Log(m.ID, "trace", fmt.Sprintf("User Auth Init:\r\n%+v", userInit))
+	Log(m.ID, "trace", fmt.Sprintf("Server Auth Complete:\r\n%+v", serverAuthComplete))
 
 	serverAuthCompleteBytes, errServerAuthCompleteBytes := serverAuthComplete.ToBytes()
 	if errServerAuthCompleteBytes != nil {
@@ -279,21 +277,18 @@ func OPAQUEAuthenticateInit(m messages.Base) (messages.Base, error) {
 	returnMessage.Payload = serverAuthCompleteBytes
 	Agents[m.ID].secret = []byte(serverKex.SharedSecret.String())
 
-	Log(m.ID, "Received new agent OPAQUE authentication initialization message")
+	Log(m.ID, "debug", "Received new agent OPAQUE authentication initialization message")
 
-	if core.Debug {
-		message("debug", fmt.Sprintf("Received new agent OPAQUE authentication for %s at %s", m.ID, time.Now().UTC().Format(time.RFC3339)))
-		message("debug", "Leaving agents.OPAQUEAuthenticateInit function without error")
-		message("debug", fmt.Sprintf("Server OPAQUE key exchange shared secret: %v", Agents[m.ID].secret))
-	}
+	Log(m.ID, "debug", fmt.Sprintf("Received new agent OPAQUE authentication for %s at %s", m.ID, time.Now().UTC().Format(time.RFC3339)))
+	Log(m.ID, "trace", "Leaving agents.OPAQUEAuthenticateInit function without error")
+	Log(m.ID, "debug", fmt.Sprintf("Server OPAQUE key exchange shared secret: %v", Agents[m.ID].secret))
+
 	return returnMessage, nil
 }
 
 // OPAQUEAuthenticateComplete is used to receive the OPAQUE UserAuthComplete
 func OPAQUEAuthenticateComplete(m messages.Base) (messages.Base, error) {
-	if core.Debug {
-		message("debug", "Entering into agents.OPAQUEAuthenticateComplete function")
-	}
+	Log(m.ID, "trace", "Entering into agents.OPAQUEAuthenticateComplete function")
 
 	returnMessage := messages.Base{
 		ID:      m.ID,
@@ -307,32 +302,29 @@ func OPAQUEAuthenticateComplete(m messages.Base) (messages.Base, error) {
 		return returnMessage, fmt.Errorf("%s is not a known agent", m.ID.String())
 	}
 
-	Log(m.ID, "Received agent OPAQUE authentication complete message")
+	Log(m.ID, "debug", "Received agent OPAQUE authentication complete message")
 
 	var userComplete gopaque.UserAuthComplete
 	errFromBytes := userComplete.FromBytes(gopaque.CryptoDefault, m.Payload.([]byte))
 	if errFromBytes != nil {
-		message("warn", fmt.Sprintf("there was an error unmarshalling the user complete message from bytes:\r\n%s", errFromBytes.Error()))
+		Log(m.ID, "warn", fmt.Sprintf("there was an error unmarshalling the user complete message from bytes:\r\n%s", errFromBytes.Error()))
 	}
 
 	// server auth finish
 	errAuthFinish := Agents[m.ID].OPAQUEServerAuth.Finish(&userComplete)
 	if errAuthFinish != nil {
-		message("warn", fmt.Sprintf("there was an error finishing authentication:\r\n%s", errAuthFinish.Error()))
+		Log(m.ID, "warn", fmt.Sprintf("there was an error finishing authentication:\r\n%s", errAuthFinish.Error()))
 	}
 
-	message("success", fmt.Sprintf("New authenticated agent checkin for %s at %s", m.ID.String(), time.Now().UTC().Format(time.RFC3339)))
-	if core.Debug {
-		message("debug", "Leaving agents.OPAQUEAuthenticateComplete function without error")
-	}
+	Log(m.ID, "info", fmt.Sprintf("New authenticated agent checkin for %s at %s", m.ID.String(), time.Now().UTC().Format(time.RFC3339)))
+	Log(m.ID, "trace", "Leaving agents.OPAQUEAuthenticateComplete function without error")
+
 	return returnMessage, nil
 }
 
 // OPAQUEReAuthenticate is used when an agent has previously completed OPAQUE registration but needs to re-authenticate
 func OPAQUEReAuthenticate(agentID uuid.UUID) (messages.Base, error) {
-	if core.Debug {
-		message("debug", "Entering into agents.OPAQUEReAuthenticate function")
-	}
+	Log(agentID, "trace", "Entering into agents.OPAQUEReAuthenticate function")
 
 	returnMessage := messages.Base{
 		ID:      agentID,
@@ -346,28 +338,23 @@ func OPAQUEReAuthenticate(agentID uuid.UUID) (messages.Base, error) {
 		return returnMessage, fmt.Errorf("the %s agent has not OPAQUE registered", agentID.String())
 	}
 
-	if core.Debug {
-		message("debug", "Leaving agents.OPAQUEReAuthenticate function without error")
-	}
-	Log(agentID, "Instructing agent to re-authenticate with OPAQUE protocol")
+	Log(agentID, "trace", "Leaving agents.OPAQUEReAuthenticate function without error")
+	Log(agentID, "info", "Instructing agent to re-authenticate with OPAQUE protocol")
 
 	return returnMessage, nil
 }
 
 // GetEncryptionKey retrieves the per-agent payload encryption key used to decrypt messages for any protocol
 func GetEncryptionKey(agentID uuid.UUID) []byte {
-	if core.Debug {
-		message("debug", "Entering into agents.GetEncryptionKey function")
-	}
+	Log(agentID, "trace", "Entering into agents.GetEncryptionKey function")
 	var key []byte
 
 	if isAgent(agentID) {
 		key = Agents[agentID].secret
 	}
 
-	if core.Debug {
-		message("debug", "Leaving agents.GetEncryptionKey function")
-	}
+	Log(agentID, "trace", "Leaving agents.GetEncryptionKey function")
+
 	return key
 }
 
@@ -376,7 +363,7 @@ func StatusCheckIn(m messages.Base) (messages.Base, error) {
 	// Check to make sure agent UUID is in dataset
 	_, ok := Agents[m.ID]
 	if !ok {
-		message("warn", fmt.Sprintf("Orphaned agent %s has checked in at %s. Instructing agent to re-initialize...",
+		Log(m.ID, "warn", fmt.Sprintf("Orphaned agent %s has checked in at %s. Instructing agent to re-initialize...",
 			time.Now().UTC().Format(time.RFC3339), m.ID.String()))
 		logging.Server(fmt.Sprintf("[Orphaned agent %s has checked in", m.ID.String()))
 		job := Job{
@@ -389,23 +376,17 @@ func StatusCheckIn(m messages.Base) (messages.Base, error) {
 		return m, mErr
 	}
 
-	Log(m.ID, "Agent status check in")
-	if core.Verbose {
-		message("success", fmt.Sprintf("Received agent status checkin from %s", m.ID))
-	}
-	if core.Debug {
-		message("debug", fmt.Sprintf("Received agent status checkin from %s", m.ID))
-		message("debug", fmt.Sprintf("Channel length: %d", len(Agents[m.ID].channel)))
-		message("debug", fmt.Sprintf("Channel content: %v", Agents[m.ID].channel))
-	}
+	Log(m.ID, "debug", fmt.Sprintf("Received agent status checkin from %s", m.ID))
+	Log(m.ID, "debug", fmt.Sprintf("Channel length: %d", len(Agents[m.ID].channel)))
+	Log(m.ID, "debug", fmt.Sprintf("Channel content: %v", Agents[m.ID].channel))
 
 	Agents[m.ID].StatusCheckIn = time.Now().UTC()
 	// Check to see if there are any jobs
 	if len(Agents[m.ID].channel) >= 1 {
 		job := <-Agents[m.ID].channel
 		if core.Debug {
-			message("debug", fmt.Sprintf("Channel command string: %s", job))
-			message("debug", fmt.Sprintf("Agent command type: %s", job[0].Type))
+			Log(m.ID, "debug", fmt.Sprintf("Channel command string: %s", job))
+			Log(m.ID, "debug", fmt.Sprintf("Agent command type: %s", job[0].Type))
 		}
 
 		m, mErr := GetMessageForJob(m.ID, job[0])
@@ -422,38 +403,24 @@ func StatusCheckIn(m messages.Base) (messages.Base, error) {
 
 // UpdateInfo is used to update an agent's information with the passed in message data
 func UpdateInfo(m messages.Base) error {
-	if core.Debug {
-		message("debug", "Entering into agents.UpdateInfo function")
-	}
+	Log(m.ID, "trace", "Entering into agents.UpdateInfo function")
 
 	p := m.Payload.(messages.AgentInfo)
 
 	if !isAgent(m.ID) {
-		message("warn", "The agent was not found while processing an AgentInfo message")
+		Log(m.ID, "warn", "The agent was not found while processing an AgentInfo message")
 		return fmt.Errorf("%s is not a known agent", m.ID)
 	}
-	if core.Debug {
-		message("debug", "Processing new agent info")
-		message("debug", fmt.Sprintf("Agent Version: %s", p.Version))
-		message("debug", fmt.Sprintf("Agent Build: %s", p.Build))
-		message("debug", fmt.Sprintf("Agent waitTime: %s", p.WaitTime))
-		message("debug", fmt.Sprintf("Agent skew: %d", p.Skew))
-		message("debug", fmt.Sprintf("Agent paddingMax: %d", p.PaddingMax))
-		message("debug", fmt.Sprintf("Agent maxRetry: %d", p.MaxRetry))
-		message("debug", fmt.Sprintf("Agent failedCheckin: %d", p.FailedCheckin))
-		message("debug", fmt.Sprintf("Agent proto: %s", p.Proto))
-		message("debug", fmt.Sprintf("Agent killdate: %s", time.Unix(p.KillDate, 0).UTC().Format(time.RFC3339)))
-	}
-	Log(m.ID, fmt.Sprintf("Processing AgentInfo message:"))
-	Log(m.ID, fmt.Sprintf("\tAgent Version: %s ", p.Version))
-	Log(m.ID, fmt.Sprintf("\tAgent Build: %s ", p.Build))
-	Log(m.ID, fmt.Sprintf("\tAgent waitTime: %s ", p.WaitTime))
-	Log(m.ID, fmt.Sprintf("\tAgent skew: %d ", p.Skew))
-	Log(m.ID, fmt.Sprintf("\tAgent paddingMax: %d ", p.PaddingMax))
-	Log(m.ID, fmt.Sprintf("\tAgent maxRetry: %d ", p.MaxRetry))
-	Log(m.ID, fmt.Sprintf("\tAgent failedCheckin: %d ", p.FailedCheckin))
-	Log(m.ID, fmt.Sprintf("\tAgent proto: %s ", p.Proto))
-	Log(m.ID, fmt.Sprintf("\tAgent KillDate: %s", time.Unix(p.KillDate, 0).UTC().Format(time.RFC3339)))
+	Log(m.ID, "debug", fmt.Sprintf("Processing AgentInfo message:"))
+	Log(m.ID, "debug", fmt.Sprintf("\tAgent Version: %s ", p.Version))
+	Log(m.ID, "debug", fmt.Sprintf("\tAgent Build: %s ", p.Build))
+	Log(m.ID, "debug", fmt.Sprintf("\tAgent waitTime: %s ", p.WaitTime))
+	Log(m.ID, "debug", fmt.Sprintf("\tAgent skew: %d ", p.Skew))
+	Log(m.ID, "debug", fmt.Sprintf("\tAgent paddingMax: %d ", p.PaddingMax))
+	Log(m.ID, "debug", fmt.Sprintf("\tAgent maxRetry: %d ", p.MaxRetry))
+	Log(m.ID, "debug", fmt.Sprintf("\tAgent failedCheckin: %d ", p.FailedCheckin))
+	Log(m.ID, "debug", fmt.Sprintf("\tAgent proto: %s ", p.Proto))
+	Log(m.ID, "debug", fmt.Sprintf("\tAgent KillDate: %s", time.Unix(p.KillDate, 0).UTC().Format(time.RFC3339)))
 
 	Agents[m.ID].Version = p.Version
 	Agents[m.ID].Build = p.Build
@@ -473,20 +440,27 @@ func UpdateInfo(m messages.Base) error {
 	Agents[m.ID].UserName = p.SysInfo.UserName
 	Agents[m.ID].UserGUID = p.SysInfo.UserGUID
 
-	if core.Debug {
-		message("debug", "Leaving agents.UpdateInfo function")
-	}
+	Log(m.ID, "trace", "Leaving agents.UpdateInfo function")
+
 	return nil
 }
 
 // Log is used to write log messages to the agent's log file
-func Log(agentID uuid.UUID, logMessage string) {
-	if core.Debug {
-		message("debug", "Entering into agents.Log")
-	}
-	_, err := Agents[agentID].agentLog.WriteString(fmt.Sprintf("[%s]%s\r\n", time.Now().UTC().Format(time.RFC3339), logMessage))
-	if err != nil {
-		message("warn", fmt.Sprintf("There was an error writing to the agent log agents.Log:\r\n%s", err.Error()))
+func Log(agentID uuid.UUID, logLevel string, logMessage string) {
+	log := Agents[agentID].log.WithFields(logrus.Fields{"component": "agent",
+		"agentId": agentID.String(), "workspaceId": Agents[agentID].WorkspaceID})
+
+	switch logLevel {
+	case "trace":
+		log.Tracef(logMessage)
+	case "debug":
+		log.Debugf(logMessage)
+	case "info":
+		log.Infof(logMessage)
+	case "warn":
+		log.Warnf(logMessage)
+	case "error":
+		log.Errorf(logMessage)
 	}
 }
 
@@ -505,7 +479,7 @@ func GetAgentList() func(string) []string {
 func ShowInfo(agentID uuid.UUID) {
 
 	if !isAgent(agentID) {
-		message("warn", fmt.Sprintf("%s is not a valid agent!", agentID))
+		Log(agentID, "warn", fmt.Sprintf("%s is not a valid agent!", agentID))
 		return
 	}
 
@@ -540,32 +514,12 @@ func ShowInfo(agentID uuid.UUID) {
 	fmt.Println()
 }
 
-// message is used to print a message to the command line
-func message(level string, message string) {
-	switch level {
-	case "info":
-		color.Cyan("[i]" + message)
-	case "note":
-		color.Yellow("[-]" + message)
-	case "warn":
-		color.Red("[!]" + message)
-	case "debug":
-		color.Red("[DEBUG]" + message)
-	case "success":
-		color.Green("[+]" + message)
-	default:
-		color.Red("[_-_]Invalid message level: " + message)
-	}
-}
-
 // AddJob creates a job and adds it to the specified agent's channel and returns the Job ID or an error
 func AddJob(agentID uuid.UUID, jobType string, jobArgs []string) (string, error) {
 	// TODO turn this into a method of the agent struct
-	if core.Debug {
-		message("debug", fmt.Sprintf("In agents.AddJob function for agent: %s", agentID.String()))
-		message("debug", fmt.Sprintf("In agents.AddJob function for type: %s", jobType))
-		message("debug", fmt.Sprintf("In agents.AddJob function for command: %s", jobArgs))
-	}
+	Log(agentID, "debug", fmt.Sprintf("In agents.AddJob function for agent: %s", agentID.String()))
+	Log(agentID, "debug", fmt.Sprintf("In agents.AddJob function for type: %s", jobType))
+	Log(agentID, "debug", fmt.Sprintf("In agents.AddJob function for command: %s", jobArgs))
 
 	if isAgent(agentID) || agentID.String() == "ffffffff-ffff-ffff-ffff-ffffffffffff" {
 		job := Job{
@@ -583,7 +537,7 @@ func AddJob(agentID uuid.UUID, jobType string, jobArgs []string) (string, error)
 				s := Agents[k].channel
 				job.ID = core.RandStringBytesMaskImprSrc(10)
 				s <- []Job{job}
-				Log(k, fmt.Sprintf("Created job Type:%s, ID:%s, Status:%s, Args:%s",
+				Log(k, "info", fmt.Sprintf("Created job Type:%s, ID:%s, Status:%s, Args:%s",
 					job.Type,
 					job.ID,
 					job.Status,
@@ -594,7 +548,7 @@ func AddJob(agentID uuid.UUID, jobType string, jobArgs []string) (string, error)
 		job.ID = core.RandStringBytesMaskImprSrc(10)
 		s := Agents[agentID].channel
 		s <- []Job{job}
-		Log(agentID, fmt.Sprintf("Created job Type:%s, ID:%s, Status:%s, Args:%s",
+		Log(agentID, "info", fmt.Sprintf("Created job Type:%s, ID:%s, Status:%s, Args:%s",
 			job.Type,
 			job.ID,
 			job.Status,
@@ -645,7 +599,7 @@ func GetMessageForJob(agentID uuid.UUID, job Job) (messages.Base, error) {
 		m.Payload = p
 	case "download":
 		m.Type = "FileTransfer"
-		Log(agentID, fmt.Sprintf("Downloading file from agent at %s\n", job.Args[0]))
+		Log(agentID, "info", fmt.Sprintf("Downloading file from agent at %s\n", job.Args[0]))
 
 		p := messages.FileTransfer{
 			FileLocation: job.Args[0],
@@ -769,9 +723,9 @@ func GetMessageForJob(agentID uuid.UUID, job Job) (messages.Base, error) {
 		fileHash := sha256.New()
 		_, err := io.WriteString(fileHash, string(uploadFile))
 		if err != nil {
-			message("warn", fmt.Sprintf("There was an error generating file hash:\r\n%s", err.Error()))
+			Log(agentID, "warn", fmt.Sprintf("There was an error generating file hash:\r\n%s", err.Error()))
 		}
-		Log(agentID, fmt.Sprintf("Uploading file from server at %s of size %d bytes and SHA-256: %x to agent at %s",
+		Log(agentID, "info", fmt.Sprintf("Uploading file from server at %s of size %d bytes and SHA-256: %x to agent at %s",
 			job.Args[0],
 			len(uploadFile),
 			fileHash.Sum(nil),
@@ -799,7 +753,7 @@ func GetAgentStatus(agentID uuid.UUID) string {
 	}
 	dur, errDur := time.ParseDuration(Agents[agentID].WaitTime)
 	if errDur != nil {
-		message("warn", fmt.Sprintf("Error converting %s to a time duration: %s", Agents[agentID].WaitTime,
+		Log(agentID, "warn", fmt.Sprintf("Error converting %s to a time duration: %s", Agents[agentID].WaitTime,
 			errDur.Error()))
 	}
 	if Agents[agentID].StatusCheckIn.Add(dur).After(time.Now()) {
@@ -851,15 +805,25 @@ func isAgent(agentID uuid.UUID) bool {
 }
 
 // newAgent creates a new Agent and returns the object but does not add it to the global agents map
-func newAgent(agentID uuid.UUID) (agent, error) {
-	if core.Debug {
-		message("debug", "Entering into agents.newAgent function")
-	}
+func newAgent(agentID uuid.UUID, ws string) (agent, error) {
+	// Log(agentID, "trace", "Entering into agents.newAgent function")
+
 	var agent agent
 	if isAgent(agentID) {
 		return agent, fmt.Errorf("the %s agent already exists", agentID)
 	}
 
+	// Create agent directory
+	agentDirPath, _ := fs.Expand("~/.wiregost/server/workspaces/" + ws + "/agents")
+	if _, err := os.Stat(agentDirPath + "/" + agentID.String()); os.IsNotExist(err) {
+		errM := os.MkdirAll(agentDirPath+"/"+agentID.String(), 0750)
+		if errM != nil {
+			return agent, fmt.Errorf("there was an error creating a directory for agent %s:\r\n%s",
+				agentID.String(), err.Error())
+		}
+	}
+
+	// MERLIN CODE TO BE REMOVED
 	agentsDir := filepath.Join(core.CurrentDir, "data", "agents")
 
 	// Create a directory for the new agent's files
@@ -882,10 +846,8 @@ func newAgent(agentID uuid.UUID) (agent, error) {
 			return agent, fmt.Errorf("there was an error changing the file permissions for the agent log:\r\n%s", errChmod.Error())
 		}
 
-		if core.Verbose {
-			message("note", fmt.Sprintf("Created agent log file at: %s agent_log.txt",
-				path.Join(agentsDir, agentID.String())))
-		}
+		// Log(agentID, "debug", fmt.Sprintf("Created agent log file at: %s agent_log.txt",
+		// path.Join(agentsDir, agentID.String())))
 	}
 	// Open agent's log file for writing
 	f, err := os.OpenFile(filepath.Join(agentsDir, agentID.String(), "agent_log.txt"), os.O_APPEND|os.O_WRONLY, 0600)
@@ -901,20 +863,17 @@ func newAgent(agentID uuid.UUID) (agent, error) {
 
 	_, errAgentLog := agent.agentLog.WriteString(fmt.Sprintf("[%s]%s\r\n", time.Now().UTC().Format(time.RFC3339), "Instantiated agent"))
 	if errAgentLog != nil {
-		message("warn", fmt.Sprintf("There was an error writing to the agent log agents.Log:\r\n%s", errAgentLog.Error()))
+		// Log(agentID, "warn", fmt.Sprintf("There was an error writing to the agent log agents.Log:\r\n%s", errAgentLog.Error()))
 	}
 
-	if core.Debug {
-		message("debug", "Leaving agents.newAgent function without error")
-	}
+	// Log(agentID, "trace", "Leaving agents.newAgent function without error")
+
 	return agent, nil
 }
 
 // JobResults handles the response message sent by the agent
 func JobResults(m messages.Base) error {
-	if core.Debug {
-		message("debug", "Entering into agents.JobResults")
-	}
+	Log(m.ID, "trace", "Entering into agents.JobResults")
 
 	// Check to make sure it is a known agent
 	if !isAgent(m.ID) {
@@ -924,32 +883,25 @@ func JobResults(m messages.Base) error {
 	// Check to make sure it was a real job for that agent
 
 	p := m.Payload.(messages.CmdResults)
-	Log(m.ID, fmt.Sprintf("Results for job: %s", p.Job))
+	Log(m.ID, "info", fmt.Sprintf("Results for job: %s", p.Job))
 
-	fmt.Println()
-	message("success", fmt.Sprintf("Results for job %s at %s", p.Job, time.Now().UTC().Format(time.RFC3339)))
-	fmt.Println()
 	if len(p.Stdout) > 0 {
-		Log(m.ID, fmt.Sprintf("Command Results (stdout):\r\n%s", p.Stdout))
-		color.Green(p.Stdout)
+		Log(m.ID, "info", fmt.Sprintf("Command Results (stdout):\r\n%s", p.Stdout))
+		// color.Green(p.Stdout)
 	}
 	if len(p.Stderr) > 0 {
-		Log(m.ID, fmt.Sprintf("Command Results (stderr):\r\n%s", p.Stderr))
-		color.Red(p.Stderr)
+		Log(m.ID, "info", fmt.Sprintf("Command Results (stderr):\r\n%s", p.Stderr))
+		// color.Red(p.Stderr)
 	}
 
-	if core.Debug {
-		message("debug", "Leaving agents.JobResults")
-	}
-	fmt.Println()
+	Log(m.ID, "trace", "Leaving agents.JobResults")
+
 	return nil
 }
 
 // FileTransfer handles file upload/download operations
 func FileTransfer(m messages.Base) error {
-	if core.Debug {
-		message("debug", "Entering into agents.FileTransfer")
-	}
+	Log(m.ID, "trace", "Entering into agents.FileTransfer")
 
 	// Check to make sure it is a known agent
 	if !isAgent(m.ID) {
@@ -963,22 +915,22 @@ func FileTransfer(m messages.Base) error {
 		_, f := filepath.Split(p.FileLocation) // We don't need the directory part for anything
 		if _, errD := os.Stat(agentsDir); os.IsNotExist(errD) {
 			errorMessage := fmt.Errorf("there was an error locating the agent's directory:\r\n%s", errD.Error())
-			Log(m.ID, errorMessage.Error())
+			Log(m.ID, "error", errorMessage.Error())
 			return errorMessage
 		}
-		message("success", fmt.Sprintf("Results for job %s", p.Job))
+		Log(m.ID, "debug", fmt.Sprintf("Results for job %s", p.Job))
 		downloadBlob, downloadBlobErr := base64.StdEncoding.DecodeString(p.FileBlob)
 
 		if downloadBlobErr != nil {
 			errorMessage := fmt.Errorf("there was an error decoding the fileBlob:\r\n%s", downloadBlobErr.Error())
-			Log(m.ID, errorMessage.Error())
+			Log(m.ID, "error", errorMessage.Error())
 			return errorMessage
 		}
 		downloadFile := filepath.Join(agentsDir, m.ID.String(), f)
 		writingErr := ioutil.WriteFile(downloadFile, downloadBlob, 0644)
 		if writingErr != nil {
 			errorMessage := fmt.Errorf("there was an error writing to -> %s:\r\n%s", p.FileLocation, writingErr.Error())
-			Log(m.ID, errorMessage.Error())
+			Log(m.ID, "error", errorMessage.Error())
 			return errorMessage
 		}
 		successMessage := fmt.Sprintf("Successfully downloaded file %s with a size of %d bytes from agent %s to %s",
@@ -987,20 +939,16 @@ func FileTransfer(m messages.Base) error {
 			m.ID.String(),
 			downloadFile)
 
-		message("success", successMessage)
-		Log(m.ID, successMessage)
+		Log(m.ID, "info", successMessage)
 	}
-	if core.Debug {
-		message("debug", "Leaving agents.FileTransfer")
-	}
+	Log(m.ID, "trace", "Leaving agents.FileTransfer")
+
 	return nil
 }
 
 // GetLifetime returns the amount an agent could live without successfully communicating with the server
 func GetLifetime(agentID uuid.UUID) (time.Duration, error) {
-	if core.Debug {
-		message("debug", "Entering into agents.GetLifeTime")
-	}
+	Log(agentID, "trace", "Entering into agents.GetLifeTime")
 	// Check to make sure it is a known agent
 	if !isAgent(agentID) {
 		return 0, fmt.Errorf("%s is not a known agent", agentID)
@@ -1040,9 +988,7 @@ func GetLifetime(agentID uuid.UUID) (time.Duration, error) {
 		}
 	}
 
-	if core.Debug {
-		message("debug", "Leaving agents.GetLifeTime without error")
-	}
+	Log(agentID, "trace", "Leaving agents.GetLifeTime without error")
 
 	return lifetime, nil
 

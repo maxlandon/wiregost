@@ -340,7 +340,11 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 	// Compiler
 	case "compiler":
 		s.useCompiler()
-		// Server
+	case "agent":
+		switch cmd[1] {
+		case "list":
+			s.listAgents(cmd)
+		}
 	}
 }
 
