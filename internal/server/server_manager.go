@@ -158,6 +158,7 @@ func (sm *Manager) listServers(request messages.ClientRequest) {
 		list["state"] = strconv.FormatBool(v.Running)
 		list["psk"] = v.Psk
 		list["certificate"] = v.Certificate
+		list["id"] = v.ID.String()
 		servers = append(servers, list)
 	}
 	res := messages.ServerResponse{

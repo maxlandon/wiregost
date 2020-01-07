@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/evilsocket/islazy/tui"
@@ -85,18 +86,28 @@ func (s *Session) serverStop(cmd []string) {
 }
 
 func (s *Session) serverList(cmd []string) {
+	// Get Servers
 	s.send(cmd)
 	serv := <-s.serverReqs
+
+	// Get number of agents per server
+	agents := make(map[string]int)
+	for _, v := range serv.ServerList {
+		s.send([]string{"agent", "list", v["id"]})
+		a := <-s.agentReqs
+		agents[v["id"]] = a.AgentNb[v["id"]]
+	}
 
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetCenterSeparator(tui.Dim("|"))
 	table.SetRowSeparator(tui.Dim("-"))
 	table.SetColumnSeparator(tui.Dim("|"))
-	table.SetColMinWidth(5, 50)
-	table.SetHeader([]string{"Workspace", "Address", "Protocol", "State", "PSK", "Certificate"})
+	table.SetColMinWidth(6, 50)
+	table.SetHeader([]string{"Workspace", "Address", "Protocol", "State", "PSK", "Agents", "Certificate"})
 	table.SetAutoWrapText(true)
 	table.SetColWidth(80)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -113,7 +124,7 @@ func (s *Session) serverList(cmd []string) {
 		} else {
 			running = tui.Red("Stopped")
 		}
-		table.Append([]string{v["workspace"], v["address"], v["protocol"], running, v["psk"], v["certificate"]})
+		table.Append([]string{v["workspace"], v["address"], v["protocol"], running, v["psk"], strconv.Itoa(agents[v["id"]]), v["certificate"]})
 	}
 	fmt.Println()
 	table.Render()

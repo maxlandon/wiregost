@@ -300,7 +300,12 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 	case "info":
 		s.showInfo()
 	case "set":
-		s.setModuleOption(cmd)
+		switch cmd[1] {
+		case "agent":
+			s.setAgent(cmd)
+		default:
+			s.setModuleOption(cmd)
+		}
 	case "back":
 		s.backModule()
 	// Stack

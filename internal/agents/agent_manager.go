@@ -36,8 +36,28 @@ func (am *Manager) handleClientRequests() {
 		switch request.Command[1] {
 		case "show":
 			am.showInfo(request)
+		case "list":
+			am.listServerAgents(request)
 		}
 	}
+}
+
+func (am *Manager) listServerAgents(request messages.ClientRequest) {
+	serverUUID, _ := uuid.FromString(request.Command[2])
+
+	agentList := make(map[string]int)
+	if _, ok := am.Agents[serverUUID]; ok {
+		agentList[request.Command[2]] = len(am.Agents[serverUUID])
+	}
+	res := messages.AgentResponse{
+		AgentNb: agentList,
+	}
+	msg := messages.Message{
+		ClientID: request.ClientID,
+		Type:     "agent",
+		Content:  res,
+	}
+	messages.Responses <- msg
 }
 
 func (am *Manager) showInfo(request messages.ClientRequest) {

@@ -78,7 +78,12 @@ func (msm *Manager) handleClientRequests() {
 		case "show":
 			msm.showModule(request)
 		case "set":
-			msm.setOption(request)
+			switch request.Command[1] {
+			case "agent":
+				msm.setAgent(request)
+			default:
+				msm.setOption(request)
+			}
 		// List command for completers. This command "module" is not available in the shell
 		case "module":
 			getModuleList(request)
@@ -233,6 +238,41 @@ func (msm *Manager) setOption(request messages.ClientRequest) {
 		stackModName := strings.TrimSuffix(stackModNameSuf, ".json")
 		if strings.ToLower(stackModName) == strings.ToLower(request.CurrentModule) {
 			opt, err := mod.SetOption(request.Command[1], request.Command[2])
+			if err != nil {
+				response := ModuleResponse{
+					Error: err.Error(),
+				}
+				msg := messages.Message{
+					ClientID: request.ClientID,
+					Type:     "module",
+					Content:  response,
+				}
+				messages.Responses <- msg
+			} else {
+				response := ModuleResponse{
+					Status: opt,
+				}
+				msg := messages.Message{
+					ClientID: request.ClientID,
+					Type:     "module",
+					Content:  response,
+				}
+				messages.Responses <- msg
+			}
+		}
+	}
+
+}
+
+func (msm *Manager) setAgent(request messages.ClientRequest) {
+	// It is possible that the string formatting in this "set" case is overkill,
+	// because we could juste compare names like in the "show" case juste above.
+	// For now we keep it like that.
+	for _, mod := range msm.Stacks[request.CurrentWorkspaceID].Modules {
+		stackModNameSuf := strings.Join(mod.Path, "/")
+		stackModName := strings.TrimSuffix(stackModNameSuf, ".json")
+		if strings.ToLower(stackModName) == strings.ToLower(request.CurrentModule) {
+			opt, err := mod.SetAgent(request.Command[2])
 			if err != nil {
 				response := ModuleResponse{
 					Error: err.Error(),

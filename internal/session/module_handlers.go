@@ -119,10 +119,16 @@ func (s *Session) setModuleOption(cmd []string) {
 }
 
 func (s *Session) setAgent(cmd []string) {
-	// Send(cmd)
-	mod := <-s.moduleReqs
-	fmt.Println(mod)
-	// Add some verification that agent is correctly set here.
+	s.send(cmd)
+	opt := <-s.moduleReqs
+	if opt.Status != "" {
+		fmt.Println()
+		fmt.Println(opt.Status)
+	}
+	if opt.Error != "" {
+		fmt.Println()
+		fmt.Println(opt.Error)
+	}
 }
 
 func (s *Session) runModule(cmd []string) {

@@ -105,5 +105,6 @@ type AgentRequest struct {
 
 // AgentResponse is used for sending back status/content about an agent.
 type AgentResponse struct {
-	Infos []map[string]string
+	Infos   []map[string]string
+	AgentNb map[string]int
 }
