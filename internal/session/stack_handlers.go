@@ -45,10 +45,17 @@ func (s *Session) stackShow() {
 
 func (s *Session) stackPop(cmd []string) {
 	s.send(cmd)
+	var popped string
+	if len(cmd) == 3 {
+		popped = cmd[2]
+	} else {
+		popped = s.currentModule
+	}
+
 	// Wait for new current module fallback
 	fallback := <-s.moduleReqs
 	if fallback.ModuleName != "" {
-		if s.currentModule != "" {
+		if s.currentModule != "" && s.currentModule == popped {
 			s.currentModule = fallback.ModuleName
 		}
 	} else {

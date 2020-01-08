@@ -31,10 +31,9 @@ type ModuleResponse struct {
 // ModuleStack is a structure containing a list of previously loaded modules.
 // It is used to keep their state and options alive during a session, and to have quick access to them.
 type ModuleStack struct {
-	WorkspaceID   int
-	ID            int
-	CurrentModule *Module
-	Modules       []*Module
+	WorkspaceID int
+	ID          int
+	Modules     []*Module
 }
 
 // Manager stores all modules stacks and perform operations either upon them or their modules.
@@ -108,7 +107,13 @@ func (msm *Manager) handleClientRequests() {
 
 func (msm *Manager) showModule(request messages.ClientRequest) {
 	var module []*Module
-	module = append(module, msm.Stacks[request.CurrentWorkspaceID].CurrentModule)
+	stack := msm.Stacks[request.CurrentWorkspaceID]
+	for _, m := range stack.Modules {
+		candidate := strings.ToLower(strings.TrimSuffix(strings.Join(m.Path, "/"), ".json"))
+		if candidate == strings.ToLower(request.CurrentModule) {
+			module = append(module, m)
+		}
+	}
 	response := ModuleResponse{
 		Modules: module,
 	}
@@ -131,7 +136,6 @@ func (msm *Manager) useModule(request messages.ClientRequest) {
 			stackModNameSuf := mod.Path[len(mod.Path)-1]
 			stackModName := strings.TrimSuffix(stackModNameSuf, ".json")
 			if strings.ToLower(stackModName) == strings.ToLower(modName) {
-				stack.CurrentModule = mod
 				// Dispatch response
 				response := ModuleResponse{
 					ModuleName: name,
@@ -152,20 +156,17 @@ func (msm *Manager) useModule(request messages.ClientRequest) {
 	module, _ := Create(mPath)
 	stack.Modules = append(stack.Modules, &module)
 
-	stack.CurrentModule = &module
-	if stack.CurrentModule != nil {
-		// Dispatch response
-		response := ModuleResponse{
-			ModuleName: name,
-		}
-		msg := messages.Message{
-			ClientID: request.ClientID,
-			Type:     "module",
-			Content:  response,
-		}
-		messages.Responses <- msg
-		return
+	// Dispatch response
+	response := ModuleResponse{
+		ModuleName: name,
 	}
+	msg := messages.Message{
+		ClientID: request.ClientID,
+		Type:     "module",
+		Content:  response,
+	}
+	messages.Responses <- msg
+	return
 }
 
 func (msm *Manager) popModule(request messages.ClientRequest) {
@@ -179,18 +180,11 @@ func (msm *Manager) popModule(request messages.ClientRequest) {
 	case 2:
 		for _, m := range stack.Modules {
 			candidate := strings.ToLower(strings.TrimSuffix(strings.Join(m.Path, "/"), ".json"))
-			popped := strings.ToLower(strings.TrimSuffix(strings.Join(stack.CurrentModule.Path, "/"), ".json"))
-			poppedMod = strings.TrimSuffix(strings.Join(stack.CurrentModule.Path, "/"), ".json")
+			popped := strings.ToLower(request.CurrentModule)
+			poppedMod = request.CurrentModule
 			if candidate != popped {
 				newStack = append(newStack, m)
 			}
-		}
-		// If other modules in stack, use last one as current
-		if len(newStack) != 0 {
-			stack.CurrentModule = newStack[len(newStack)-1]
-		} else {
-			// If empty, just fill with an empty one
-			stack.CurrentModule = &Module{}
 		}
 	case 3:
 		// Pop all modules
@@ -201,6 +195,7 @@ func (msm *Manager) popModule(request messages.ClientRequest) {
 			// Pop selected one
 			for _, m := range stack.Modules {
 				candidate := strings.ToLower(strings.TrimSuffix(strings.Join(m.Path, "/"), ".json"))
+				poppedMod = request.Command[2]
 				if candidate != strings.ToLower(request.Command[2]) {
 					newStack = append(newStack, m)
 				}
@@ -211,7 +206,7 @@ func (msm *Manager) popModule(request messages.ClientRequest) {
 	stack.Modules = newStack
 
 	// Send back new current module (empty response if no modules in stack left)
-	currentMod := strings.TrimSuffix(strings.Join(stack.CurrentModule.Path, "/"), ".json")
+	currentMod := strings.TrimSuffix(strings.Join(stack.Modules[len(stack.Modules)-1].Path, "/"), ".json")
 	response := ModuleResponse{
 		ModuleName: currentMod,
 	}
@@ -320,7 +315,8 @@ func (msm *Manager) runModule(request messages.ClientRequest) {
 	var m string
 	r, err := module.Run()
 	if err != nil {
-		status = fmt.Sprintf("%s[!]%s %s", tui.YELLOW, tui.RESET, err.Error())
+		runErr := err.Error()
+		status = fmt.Sprintf("%s[!]%s %s", tui.YELLOW, tui.RESET, runErr)
 		goto response
 	}
 	if len(r) <= 0 {
