@@ -132,10 +132,9 @@ func (s *Session) setAgent(cmd []string) {
 }
 
 func (s *Session) runModule(cmd []string) {
-	// Send(cmd)
+	s.send(cmd)
 	mod := <-s.moduleReqs
 	fmt.Println(mod)
-	// Add some verification that agent is correctly set here.
 }
 
 func (s *Session) backModule() {

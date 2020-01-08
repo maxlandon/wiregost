@@ -11,14 +11,17 @@ import (
 	// 3rd Party
 	"github.com/evilsocket/islazy/tui"
 	"github.com/fatih/color"
+	"github.com/maxlandon/wiregost/internal/modules/minidump"
+	"github.com/maxlandon/wiregost/internal/modules/shellcode"
+	"github.com/maxlandon/wiregost/internal/modules/srdi"
 	uuid "github.com/satori/go.uuid"
-	// Merlin
 )
 
 // Module is a structure containing the base information or template for modules
 type Module struct {
 	Agent        uuid.UUID   // The Agent that will later be associated with this module prior to execution
 	Name         string      `json:"name"`                 // Name of the module
+	Type         string      `json:"type"`                 // Type of module (i.e. standard or extended)
 	Author       []string    `json:"author"`               // A list of module authors
 	Credits      []string    `json:"credits"`              // A list of people to credit for underlying tool or techniques
 	Path         []string    `json:"path"`                 // Path to the module (i.e. data/modules/powershell/powerview)
@@ -213,4 +216,33 @@ func marshalMessage(m interface{}) []byte {
 		color.Red(err.Error())
 	}
 	return k
+}
+
+// getExtendedCommand processes "extended" modules and returns the associated command by matching the extended module's
+// name to a the Parse function of its associated module package
+func getExtendedCommand(m *Module) ([]string, error) {
+	// TODO document that every extended module must have a parse function as its entry point
+	var extendedCommand []string
+	var err error
+	switch strings.ToLower(m.Name) {
+	case "minidump":
+		extendedCommand, err = minidump.Parse(m.getMapFromOptions())
+	case "shellcodeinjection":
+		extendedCommand, err = shellcode.Parse(m.getMapFromOptions())
+	case "srdi":
+		extendedCommand, err = srdi.Parse(m.getMapFromOptions())
+	default:
+		return nil, fmt.Errorf("the %s module's extended command function was not found", m.Name)
+	}
+	return extendedCommand, err
+}
+
+// getMapFromOptions is used to generate a map containing module option names and values to be used with other functions
+func (m *Module) getMapFromOptions() map[string]string {
+	optionsMap := make(map[string]string)
+
+	for _, v := range m.Options {
+		optionsMap[v.Name] = v.Value
+	}
+	return optionsMap
 }

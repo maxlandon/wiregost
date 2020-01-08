@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Ne0nd0g/merlin/pkg/modules/shellcode"
 	"github.com/evilsocket/islazy/tui"
 	"github.com/mattn/go-shellwords"
 	"github.com/maxlandon/wiregost/internal/messages"
@@ -35,6 +36,8 @@ func (am *Manager) handleServerRequests() {
 		switch request.Action {
 		case "add":
 			am.Agents[request.ServerID] = append(am.Agents[request.ServerID], request.AgentID)
+		case "delete":
+			am.deleteAgent(request)
 		}
 	}
 }
@@ -68,8 +71,22 @@ func (am *Manager) handleClientRequests() {
 			am.agentUpload(request)
 		case "set":
 			am.setAgentOption(request)
+		case "execute-shellcode":
+			am.executeShellCodeAgent(request)
 		}
 	}
+}
+
+func (am *Manager) deleteAgent(request messages.AgentRequest) {
+	serverAgents := am.Agents[request.ServerID]
+	newList := make([]uuid.UUID, 0)
+
+	for _, a := range serverAgents {
+		if a != request.AgentID {
+			newList = append(newList, a)
+		}
+	}
+	am.Agents[request.ServerID] = newList
 }
 
 func (am *Manager) listServerAgents(request messages.ClientRequest) {
@@ -92,6 +109,7 @@ func (am *Manager) listServerAgents(request messages.ClientRequest) {
 
 func (am *Manager) showAgents(request messages.ClientRequest) {
 	agentList := make([]map[string]string, 0)
+
 	for _, a := range am.Agents[request.CurrentServerID] {
 		infos := make(map[string]string)
 		infos["id"] = Agents[a].ID.String()
@@ -470,4 +488,85 @@ func (am *Manager) setAgentOption(request messages.ClientRequest) {
 		}
 		messages.Responses <- msg
 	}
+}
+
+func (am *Manager) executeShellCodeAgent(request messages.ClientRequest) {
+	cmd := request.Command
+	var status string
+	if len(cmd) > 2 {
+		options := make(map[string]string)
+		switch strings.ToLower(cmd[1]) {
+		case "self":
+			options["method"] = "self"
+			options["pid"] = ""
+			options["shellcode"] = strings.Join(cmd[2:], " ")
+		case "remote":
+			if len(cmd) > 3 {
+				options["method"] = "remote"
+				options["pid"] = cmd[2]
+				options["shellcode"] = strings.Join(cmd[3:], " ")
+			} else {
+				status = fmt.Sprintf("%s[!]%s Not enough arguments. Try using the help command."+
+					"\n\texecute-shellcode remote <pid> <shellcode>", tui.YELLOW, tui.RESET)
+				goto response
+			}
+		case "rtlcreateuserthread":
+			if len(cmd) > 3 {
+				options["method"] = "rtlcreateuserthread"
+				options["pid"] = cmd[2]
+				options["shellcode"] = strings.Join(cmd[3:], " ")
+			} else {
+				status = fmt.Sprintf("%s[!]%s Not enough arguments. Try using the help command."+
+					"\n\texecute-shellcode RtlCreateUserThread <pid> <shellcode>", tui.YELLOW, tui.RESET)
+				goto response
+			}
+		case "userapc":
+			if len(cmd) > 3 {
+				options["method"] = "userapc"
+				options["pid"] = cmd[2]
+				options["shellcode"] = strings.Join(cmd[3:], " ")
+			} else {
+				status = fmt.Sprintf("%s[!]%s Not enough arguments. Try using the help command."+
+					"\n\texecute-shellcode UserAPC <pid> <shellcode>", tui.YELLOW, tui.RESET)
+				goto response
+			}
+		default:
+			status = fmt.Sprintf("%s[!]%s invalid method provided", tui.YELLOW, tui.RESET)
+			goto response
+		}
+		if len(options) > 0 {
+			sh, errSh := shellcode.Parse(options)
+			if errSh != nil {
+				status = fmt.Sprintf("%s[!]%s there was an error parsing the shellcode:\r\n%s",
+					tui.YELLOW, tui.RESET, errSh.Error())
+				goto response
+			}
+			m, err := AddJob(request.CurrentAgentID, sh[0], sh[1:])
+			if err != nil {
+				status = fmt.Sprintf("%s[!]%s %s", tui.YELLOW, tui.RESET, err.Error())
+				goto response
+			} else {
+				status = fmt.Sprintf("%s[*]%s Created job %s for agent %s at %s", tui.GREEN, tui.RESET,
+					m, request.CurrentAgentID, time.Now().UTC().Format(time.RFC3339))
+				goto response
+			}
+		}
+	} else {
+		status = fmt.Sprintf("%s[!]%s Not enough arguments were provided"+
+			"\n\texecute-shellcode self <shellcode>"+
+			"\n\texecute-shellcode remote <pid> <shellcode>"+
+			"\n\texecute-shellcode RtlCreateUserThread <pid> <shellcode>", tui.YELLOW, tui.RESET)
+		goto response
+	}
+
+response:
+	res := messages.AgentResponse{
+		Status: status,
+	}
+	msg := messages.Message{
+		ClientID: request.ClientID,
+		Type:     "agent",
+		Content:  res,
+	}
+	messages.Responses <- msg
 }

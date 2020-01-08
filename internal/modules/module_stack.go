@@ -9,8 +9,11 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/evilsocket/islazy/fs"
+	"github.com/evilsocket/islazy/tui"
+	"github.com/maxlandon/wiregost/internal/agents"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/workspace"
 )
@@ -84,6 +87,8 @@ func (msm *Manager) handleClientRequests() {
 			default:
 				msm.setOption(request)
 			}
+		case "run":
+			msm.runModule(request)
 		// List command for completers. This command "module" is not available in the shell
 		case "module":
 			getModuleList(request)
@@ -297,6 +302,58 @@ func (msm *Manager) setAgent(request messages.ClientRequest) {
 		}
 	}
 
+}
+
+func (msm *Manager) runModule(request messages.ClientRequest) {
+	var status string
+	var module *Module
+	// IDentify concerned stack and prepare it for changes.
+	stack := msm.Stacks[request.CurrentWorkspaceID]
+	for _, mod := range stack.Modules {
+		stackModNameSuf := strings.Join(mod.Path, "/")
+		stackModName := strings.TrimSuffix(stackModNameSuf, ".json")
+		if strings.ToLower(stackModName) == strings.ToLower(request.CurrentModule) {
+			module = mod
+		}
+	}
+	// Run module, handle response.
+	var m string
+	r, err := module.Run()
+	if err != nil {
+		status = fmt.Sprintf("%s[!]%s %s", tui.YELLOW, tui.RESET, err.Error())
+		goto response
+	}
+	if len(r) <= 0 {
+		status = fmt.Sprintf("%s[!]%s The %s module did not return a command to task an"+
+			" agent with", tui.YELLOW, tui.RESET, module.Name)
+		goto response
+	}
+	if strings.ToLower(module.Type) == "standard" {
+		m, err = agents.AddJob(module.Agent, "cmd", r)
+	} else {
+		m, err = agents.AddJob(module.Agent, r[0], r[1:])
+	}
+
+	if err != nil {
+		status = fmt.Sprintf("%s[!]%s There was an error adding the job to the specified agent:\n\t%s",
+			tui.YELLOW, tui.RESET, err.Error())
+		goto response
+	} else {
+		status = fmt.Sprintf("%s[*]%s Created job %s for agent %s at %s",
+			tui.GREEN, tui.RESET, m, module.Agent, time.Now().UTC().Format(time.RFC3339))
+		goto response
+	}
+
+response:
+	response := ModuleResponse{
+		Status: status,
+	}
+	msg := messages.Message{
+		ClientID: request.ClientID,
+		Type:     "module",
+		Content:  response,
+	}
+	messages.Responses <- msg
 }
 
 func (msm *Manager) loadStack(name string, id int) {

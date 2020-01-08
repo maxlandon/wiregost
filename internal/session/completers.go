@@ -323,6 +323,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 			readline.PcItem("self"),
 			readline.PcItem("remote"),
 			readline.PcItem("RtlCreateUserThread"),
+			readline.PcItem("UserAPC"),
 		),
 		readline.PcItem("set",
 			readline.PcItem("killdate"),

@@ -314,6 +314,8 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 		default:
 			s.setModuleOption(cmd)
 		}
+	case "run":
+		s.runModule(cmd)
 	case "back":
 		s.backModule()
 	// Stack
@@ -478,6 +480,8 @@ func (s *Session) agentMenuCommand(cmd []string) {
 		s.uploadAgent(cmd)
 	case "set":
 		s.setAgentOption(cmd)
+	case "execute-shellcode":
+		s.executeShellCodeAgent(cmd)
 	case "interact":
 		// Need to use custom command for handler to handle it correctly
 		s.agentInteract([]string{"agent", "interact", cmd[1]})

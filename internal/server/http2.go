@@ -541,6 +541,14 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				log.Debugf(fmt.Sprintf("Agent %s was removed from the server", agentID.String()))
+
+				// Send request to agent manager for removing reference to agent
+				req := messages.AgentRequest{
+					ServerID: s.ID,
+					Action:   "delete",
+					AgentID:  agentID,
+				}
+				messages.AgentRequests <- req
 				return
 			}
 		}
