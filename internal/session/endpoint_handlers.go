@@ -10,6 +10,7 @@ import (
 
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
+	"github.com/olekukonko/tablewriter"
 )
 
 func (s *Session) endpointConnect(cmd []string) {
@@ -124,44 +125,41 @@ func (s *Session) setDefaultEndpoint(cmd []string) error {
 
 // List Servers
 func (s *Session) listEndpoints() error {
-	columns := []string{
-		tui.Yellow("FQDN (Common Name)"),
-		tui.Yellow("Address"),
-		tui.Yellow("Certificate"),
-		tui.Yellow("Connected"),
-		tui.Yellow("Default"),
-	}
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetCenterSeparator(tui.Dim("|"))
+	table.SetRowSeparator(tui.Dim("-"))
+	table.SetColumnSeparator(tui.Dim("|"))
+	table.SetHeader([]string{"FQDN (Common Name)", "Address", "Certificate", "Connected", "Default"})
+	table.SetAutoWrapText(true)
+	table.SetColWidth(80)
+	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+	)
 
-	rows := [][]string{}
+	table.SetBorder(false)
 
+	connected := ""
+	defaultEndpoint := ""
 	for _, l := range s.SavedEndpoints {
-		row := []string{}
-		// Name
-		row = append(row, l.FQDN)
-		// IP:Port
-		address := l.IPAddress + ":" + strconv.Itoa(l.Port)
-		row = append(row, address)
-		// Certificate name (removing path)
-		row = append(row, l.Certificate)
-		// Connected
 		if s.CurrentEndpoint == l {
-			row = append(row, tui.Green("Connected"))
+			connected = tui.Green("Connected")
+		} else {
+			connected = ""
 		}
-		if s.CurrentEndpoint != l {
-			row = append(row, " ")
+		if l.IsDefault {
+			defaultEndpoint = "default"
+		} else {
+			defaultEndpoint = ""
 		}
-		// Default
-		if l.IsDefault == true {
-			row = append(row, "default")
-		}
-		if l.IsDefault == false {
-			row = append(row, " ")
-		}
-		//Append to servers list
-		rows = append(rows, row)
+		table.Append([]string{l.FQDN, l.IPAddress + ":" + strconv.Itoa(l.Port), l.Certificate, connected, defaultEndpoint})
 	}
-	// Print table
-	tui.Table(os.Stdout, columns, rows)
+
+	fmt.Println()
+	table.Render()
+
 	return nil
 }
 

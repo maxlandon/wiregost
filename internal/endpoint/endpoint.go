@@ -1,6 +1,7 @@
 package endpoint
 
 import (
+	"fmt"
 	"net"
 	"strings"
 
@@ -87,29 +88,30 @@ func (e *Endpoint) listen() {
 			if auth.Command[0] == "connect" {
 				e.authenticateConn(msg, auth.UserID)
 				// Send current workspace of last shell to new shell
-				if len(e.clients) > 1 {
-					for i := 1; i < len(e.clients); i++ {
-						if e.clients[i].UserID == auth.UserID {
-							res := messages.Notification{
-								Type:        "workspace",
-								Action:      "switch",
-								WorkspaceID: e.clients[i].CurrentWorkspaceID,
-								Workspace:   e.clients[i].CurrentWorkspace,
-							}
-							msg := messages.Message{
-								ClientID: auth.ClientID,
-								Type:     "notification",
-								Content:  res,
-							}
-							for _, client := range e.clients {
-								if client.id == auth.ClientID {
-									client.responses <- msg
-								}
-							}
-
-						}
-					}
-				}
+				e.pushLastWorkspace(auth)
+				// if len(e.clients) > 1 {
+				//         for i := 1; i < len(e.clients); i++ {
+				//                 if e.clients[i].UserID == auth.UserID {
+				//                         res := messages.Notification{
+				//                                 Type:        "workspace",
+				//                                 Action:      "switch",
+				//                                 WorkspaceID: e.clients[i].CurrentWorkspaceID,
+				//                                 Workspace:   e.clients[i].CurrentWorkspace,
+				//                         }
+				//                         msg := messages.Message{
+				//                                 ClientID: auth.ClientID,
+				//                                 Type:     "notification",
+				//                                 Content:  res,
+				//                         }
+				//                         for _, client := range e.clients {
+				//                                 if client.id == auth.ClientID {
+				//                                         client.responses <- msg
+				//                                 }
+				//                         }
+				//
+				//                 }
+				//         }
+				// }
 			}
 			if strings.Join(auth.Command[:2], " ") == "log level" {
 				for _, client := range e.clients {
@@ -139,6 +141,61 @@ func (e *Endpoint) listen() {
 				default:
 					e.dispatchRequest(auth)
 				}
+			}
+		}
+	}
+}
+
+func (e *Endpoint) pushLastWorkspace(request messages.ClientRequest) {
+	fmt.Println("Entered push workspace")
+	switch {
+	case len(e.clients) == 2:
+		if e.clients[0].UserID == request.UserID {
+			res := messages.Notification{
+				Type:        "workspace",
+				Action:      "switch",
+				WorkspaceID: e.clients[0].CurrentWorkspaceID,
+				Workspace:   e.clients[0].CurrentWorkspace,
+			}
+			msg := messages.Message{
+				ClientID: request.ClientID,
+				Type:     "notification",
+				Content:  res,
+			}
+			for _, client := range e.clients {
+				if client.id == request.ClientID {
+					client.responses <- msg
+				}
+			}
+		}
+	case len(e.clients) > 2:
+		fmt.Println("Currently more than two clients")
+		var lastMatch int
+		var lastMatchString string
+		count := len(e.clients)
+		for _, c := range e.clients {
+			if c.UserID == request.UserID && count > 1 {
+				fmt.Println("Found matching users")
+				lastMatch = c.CurrentWorkspaceID
+				lastMatchString = c.CurrentWorkspace
+				count--
+			}
+		}
+		res := messages.Notification{
+			Type:        "workspace",
+			Action:      "switch",
+			WorkspaceID: lastMatch,
+			Workspace:   lastMatchString,
+		}
+		msg := messages.Message{
+			ClientID: request.ClientID,
+			Type:     "notification",
+			Content:  res,
+		}
+		for _, client := range e.clients {
+			if client.id == request.ClientID {
+				client.responses <- msg
+				fmt.Println("Pushed notification to client")
 			}
 		}
 	}
