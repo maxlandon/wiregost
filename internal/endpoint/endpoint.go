@@ -239,11 +239,31 @@ func (e *Endpoint) dispatchRequest(req messages.ClientRequest) {
 	case "list", "compile", "compiler":
 		messages.ForwardCompiler <- req
 	// Agent
-	case "agent", "interact", "cmd", "back", "download",
-		"execute-shellcode", "kill", "main", "shell", "upload":
+	case "agent", "ls", "cd", "pwd", "cmd", "download",
+		"execute-shellcode", "kill", "shell", "upload":
 		messages.ForwardAgents <- req
-	// For both commands we need to check context
-	case "use", "info", "set":
+	// For these commands we need to check context
+	case "use":
+		switch req.Context {
+		case "main":
+			messages.ForwardModuleStack <- req
+		case "module", "agent":
+			messages.ForwardModuleStack <- req
+		case "compiler":
+			messages.ForwardCompiler <- req
+		}
+	case "set":
+		switch req.Context {
+		case "main":
+			messages.ForwardModuleStack <- req
+		case "module":
+			messages.ForwardModuleStack <- req
+		case "agent":
+			messages.ForwardAgents <- req
+		case "compiler":
+			messages.ForwardCompiler <- req
+		}
+	case "info":
 		switch req.Context {
 		case "main":
 			messages.ForwardModuleStack <- req

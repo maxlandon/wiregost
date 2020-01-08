@@ -10,6 +10,7 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/olekukonko/tablewriter"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (s *Session) workspaceList(cmd []string) {
@@ -44,10 +45,18 @@ func (s *Session) workspaceSwitch(cmd []string) {
 	fmt.Println()
 	fmt.Printf(workspace.Result)
 	fmt.Println(server.Status)
+	// Change menu context and completion
+	s.menuContext = "main"
+	s.Shell.Config.AutoComplete = s.getCompleter("main")
+	// Change workspace variables
 	s.CurrentWorkspaceID = workspace.WorkspaceID
 	s.currentWorkspace = cmd[2]
+	// Reset modules
 	s.currentModule = ""
+	// Change server variables
 	s.currentServerID = server.ServerID
+	// Reset agent variables
+	s.currentAgentID = uuid.FromStringOrNil("")
 }
 
 func (s *Session) workspaceDelete(cmd []string) {

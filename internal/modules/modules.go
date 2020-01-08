@@ -121,7 +121,7 @@ func (m *Module) SetAgent(agentUUID string) (string, error) {
 		return "", fmt.Errorf("invalid UUID")
 	}
 	m.Agent = i
-	return fmt.Sprintf("agent set to %s", m.Agent.String()), nil
+	return fmt.Sprintf("%s[*]%s agent set to %s", tui.GREEN, tui.RESET, m.Agent.String()), nil
 }
 
 // Create is module function used to instantiate a module object using the provided file path to a module's json file

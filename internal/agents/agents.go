@@ -20,7 +20,6 @@ import (
 	// 3rd Party
 	"github.com/cretz/gopaque/gopaque"
 	"github.com/evilsocket/islazy/fs"
-	"github.com/olekukonko/tablewriter"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"go.dedis.ch/kyber"
@@ -475,45 +474,6 @@ func GetAgentList() func(string) []string {
 	}
 }
 
-// ShowInfo lists all of the agent's structure value in a table
-func ShowInfo(agentID uuid.UUID) {
-
-	if !isAgent(agentID) {
-		Log(agentID, "warn", fmt.Sprintf("%s is not a valid agent!", agentID))
-		return
-	}
-
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-
-	data := [][]string{
-		{"Status", GetAgentStatus(agentID)},
-		{"ID", Agents[agentID].ID.String()},
-		{"Platform", Agents[agentID].Platform},
-		{"Architecture", Agents[agentID].Architecture},
-		{"UserName", Agents[agentID].UserName},
-		{"User GUID", Agents[agentID].UserGUID},
-		{"Hostname", Agents[agentID].HostName},
-		{"Process ID", strconv.Itoa(Agents[agentID].Pid)},
-		{"IP", fmt.Sprintf("%v", Agents[agentID].Ips)},
-		{"Initial Check In", Agents[agentID].InitialCheckIn.Format(time.RFC3339)},
-		{"Last Check In", Agents[agentID].StatusCheckIn.Format(time.RFC3339)},
-		{"Agent Version", Agents[agentID].Version},
-		{"Agent Build", Agents[agentID].Build},
-		{"Agent Wait Time", Agents[agentID].WaitTime},
-		{"Agent Wait Time Skew", strconv.FormatInt(Agents[agentID].Skew, 10)},
-		{"Agent Message Padding Max", strconv.Itoa(Agents[agentID].PaddingMax)},
-		{"Agent Max Retries", strconv.Itoa(Agents[agentID].MaxRetry)},
-		{"Agent Failed Check In", strconv.Itoa(Agents[agentID].FailedCheckin)},
-		{"Agent Kill Date", time.Unix(Agents[agentID].KillDate, 0).UTC().Format(time.RFC3339)},
-		{"Agent Communication Protocol", Agents[agentID].Proto},
-	}
-	table.AppendBulk(data)
-	fmt.Println()
-	table.Render()
-	fmt.Println()
-}
-
 // AddJob creates a job and adds it to the specified agent's channel and returns the Job ID or an error
 func AddJob(agentID uuid.UUID, jobType string, jobArgs []string) (string, error) {
 	// TODO turn this into a method of the agent struct
@@ -537,7 +497,7 @@ func AddJob(agentID uuid.UUID, jobType string, jobArgs []string) (string, error)
 				s := Agents[k].channel
 				job.ID = core.RandStringBytesMaskImprSrc(10)
 				s <- []Job{job}
-				Log(k, "info", fmt.Sprintf("Created job Type:%s, ID:%s, Status:%s, Args:%s",
+				Log(k, "debug", fmt.Sprintf("Created job Type:%s, ID:%s, Status:%s, Args:%s",
 					job.Type,
 					job.ID,
 					job.Status,
@@ -548,7 +508,7 @@ func AddJob(agentID uuid.UUID, jobType string, jobArgs []string) (string, error)
 		job.ID = core.RandStringBytesMaskImprSrc(10)
 		s := Agents[agentID].channel
 		s <- []Job{job}
-		Log(agentID, "info", fmt.Sprintf("Created job Type:%s, ID:%s, Status:%s, Args:%s",
+		Log(agentID, "debug", fmt.Sprintf("Created job Type:%s, ID:%s, Status:%s, Args:%s",
 			job.Type,
 			job.ID,
 			job.Status,
@@ -887,11 +847,9 @@ func JobResults(m messages.Base) error {
 
 	if len(p.Stdout) > 0 {
 		Log(m.ID, "info", fmt.Sprintf("Command Results (stdout):\r\n%s", p.Stdout))
-		// color.Green(p.Stdout)
 	}
 	if len(p.Stderr) > 0 {
 		Log(m.ID, "info", fmt.Sprintf("Command Results (stderr):\r\n%s", p.Stderr))
-		// color.Red(p.Stderr)
 	}
 
 	Log(m.ID, "trace", "Leaving agents.JobResults")

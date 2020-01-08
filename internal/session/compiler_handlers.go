@@ -11,13 +11,12 @@ import (
 
 func (s *Session) useCompiler() {
 	// Switch shell context
-	s.Shell.Config.AutoComplete = s.getCompleter("compiler")
 	s.menuContext = "compiler"
+	s.Shell.Config.AutoComplete = s.getCompleter("compiler")
 	// Switch prompt
 }
 
 func (s *Session) quitCompiler() {
-	// Switch prompt
 	// Switch shell context
 	if s.currentModule != "" {
 		s.Shell.Config.AutoComplete = s.getCompleter("module")

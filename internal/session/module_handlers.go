@@ -20,7 +20,7 @@ func (s *Session) useModule(cmd []string) {
 	// Add code to change current module in the prompt
 }
 
-func (s *Session) showOptions(cmd []string) {
+func (s *Session) showModuleOptions(cmd []string) {
 	s.send(cmd)
 	mod := <-s.moduleReqs
 	m := mod.Modules[0]
@@ -49,7 +49,7 @@ func (s *Session) showOptions(cmd []string) {
 	table.Render()
 }
 
-func (s *Session) showInfo() {
+func (s *Session) showModuleInfo() {
 	s.send(strings.Fields("show options"))
 	mod := <-s.moduleReqs
 	m := mod.Modules[0]

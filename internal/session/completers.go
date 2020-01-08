@@ -259,15 +259,13 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		readline.PcItem("!"),
 		readline.PcItem("exit"),
 
-		// Compiler // ADD SPECIAL HANDLING CODE FOR MANAGING SHELL STATE HERE
-		// readline.PcItem("compiler"),
-
 		// Server
 		readline.PcItem("server",
 			readline.PcItem("start"), // Add getServerList here
 			readline.PcItem("stop"),
 			readline.PcItem("list"),
 			readline.PcItem("reload"),
+			readline.PcItem("generate_certificate"),
 		),
 
 		// Log
@@ -285,8 +283,16 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 			),
 		),
 
+		// Module
+		readline.PcItem("use",
+			readline.PcItem("module",
+				readline.PcItemDynamic(s.listModules())),
+		),
+
 		// Module Stack
 		readline.PcItem("stack",
+			readline.PcItem("use",
+				readline.PcItemDynamic(s.listStackModules())),
 			readline.PcItem("show"),
 			readline.PcItem("pop",
 				readline.PcItemDynamic(s.listStackModules())),
@@ -294,31 +300,42 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 
 		// Workspace
 		readline.PcItem("workspace",
+			readline.PcItem("switch",
+				readline.PcItemDynamic(s.listWorkspaces())),
 			readline.PcItem("list"),
 			readline.PcItem("new"),
 			readline.PcItem("delete", readline.PcItemDynamic(s.listWorkspaces())),
 		),
 
 		// Agent
-		readline.PcItem("cmd"),
 		readline.PcItem("back"),
+		readline.PcItem("main"),
+		readline.PcItem("info"),
+		readline.PcItem("kill"),
+		readline.PcItem("ls"),
+		readline.PcItem("cd"),
+		readline.PcItem("pwd"),
+		readline.PcItem("cmd"),
+		readline.PcItem("shell"),
 		readline.PcItem("download"),
+		readline.PcItem("upload"),
 		readline.PcItem("execute-shellcode",
 			readline.PcItem("self"),
 			readline.PcItem("remote"),
 			readline.PcItem("RtlCreateUserThread"),
 		),
-		readline.PcItem("info"),
-		readline.PcItem("kill"),
-		readline.PcItem("main"),
-		readline.PcItem("shell"),
 		readline.PcItem("set",
+			readline.PcItem("killdate"),
 			readline.PcItem("maxretry"),
 			readline.PcItem("padding"),
 			readline.PcItem("skew"),
 			readline.PcItem("sleep"),
 		),
-		readline.PcItem("upload"),
+		readline.PcItem("agent",
+			readline.PcItem("list"),
+			readline.PcItem("interact", readline.PcItemDynamic(s.getAgentList())),
+		),
+		readline.PcItem("interact", readline.PcItemDynamic(s.getAgentList())),
 	)
 
 	var compiler = readline.NewPrefixCompleter(

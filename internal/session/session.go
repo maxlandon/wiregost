@@ -29,6 +29,7 @@ type Session struct {
 	currentWorkspace   string
 	CurrentWorkspaceID int
 	currentServerID    uuid.UUID
+	currentAgentID     uuid.UUID
 	// Environmment variables
 	Env map[string]string
 	// Server connection parameters
@@ -132,6 +133,8 @@ func (s *Session) start() {
 				s.moduleMenuCommand(cmd)
 			case "compiler":
 				s.compilerMenuCommand(cmd)
+			case "agent":
+				s.agentMenuCommand(cmd)
 			}
 		}
 
@@ -238,7 +241,12 @@ func (s *Session) mainMenuCommand(cmd []string) {
 		switch cmd[1] {
 		case "list":
 			s.listAgents(cmd)
+		case "interact":
+			s.agentInteract(cmd)
 		}
+	case "interact":
+		// Need to use custom command for handler to handle it correctly
+		s.agentInteract([]string{"agent", "interact", cmd[1]})
 	}
 }
 
@@ -293,12 +301,12 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 	case "show":
 		switch cmd[1] {
 		case "options":
-			s.showOptions(cmd)
+			s.showModuleOptions(cmd)
 		case "info":
-			s.showInfo()
+			s.showModuleInfo()
 		}
 	case "info":
-		s.showInfo()
+		s.showModuleInfo()
 	case "set":
 		switch cmd[1] {
 		case "agent":
@@ -349,7 +357,132 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 		switch cmd[1] {
 		case "list":
 			s.listAgents(cmd)
+		case "interact":
+			s.agentInteract(cmd)
 		}
+	case "interact":
+		// Need to use custom command for handler to handle it correctly
+		s.agentInteract([]string{"agent", "interact", cmd[1]})
+	}
+}
+
+func (s *Session) agentMenuCommand(cmd []string) {
+	switch cmd[0] {
+	// Core Commands
+	case "help":
+		helpHandler(cmd)
+	// case "cd":
+	//         changeDirHandler(cmd)
+	case "mode":
+		mode := setModeHandler(cmd, s.Shell.IsVimMode())
+		s.Shell.SetVimMode(mode)
+	case "!":
+		shellHandler(cmd[1:])
+	case "get":
+		s.getOption(cmd)
+	case "exit":
+		exit()
+	// Endpoint
+	case "endpoint":
+		switch cmd[1] {
+		case "list":
+			s.listEndpoints()
+		case "add":
+			s.addEndpoint()
+		case "connect":
+			s.endpointConnect(cmd)
+		case "delete":
+			s.deleteEndpoint(cmd)
+		}
+	// Workspace
+	case "workspace":
+		switch cmd[1] {
+		case "switch":
+			s.workspaceSwitch(cmd)
+		case "new":
+			s.workspaceNew(cmd)
+		case "list":
+			s.workspaceList(cmd)
+		}
+	case "log":
+		switch cmd[1] {
+		case "level":
+			s.setLogLevel(cmd)
+		case "show":
+			s.logShow(cmd)
+		}
+	// Module
+	case "use":
+		s.useModule(cmd)
+	// Stack
+	case "stack":
+		switch len(cmd) {
+		case 1:
+			s.stackShow()
+		case 2:
+			switch cmd[1] {
+			case "show":
+				s.stackShow()
+			case "pop":
+				s.stackPop(cmd)
+			}
+		case 3:
+			switch cmd[1] {
+			case "use":
+				s.stackUse(cmd)
+			case "pop":
+				s.stackPop(cmd)
+			}
+		}
+	// Server
+	case "server":
+		switch cmd[1] {
+		case "reload":
+			s.serverReload(cmd)
+		case "start":
+			s.serverStart(cmd)
+		case "stop":
+			s.serverStop(cmd)
+		case "generate_certificate":
+			s.generateCertificate(cmd)
+		case "list":
+			s.serverList(cmd)
+		}
+	// Compiler
+	case "compiler":
+		s.useCompiler()
+
+		// Agent
+	case "agent":
+		switch cmd[1] {
+		case "list":
+			s.listAgents(cmd)
+		case "interact":
+			s.agentInteract(cmd)
+		}
+	case "info":
+		s.infoAgent(cmd)
+	case "kill":
+		s.killAgent(cmd)
+	case "ls":
+		s.listAgentDirectories(cmd)
+	case "cd":
+		s.changeAgentDirectory(cmd)
+	case "pwd":
+		s.printAgentDirectory(cmd)
+	case "cmd", "shell":
+		s.agentCmd(cmd)
+	case "download":
+		s.downloadAgent(cmd)
+	case "upload":
+		s.uploadAgent(cmd)
+	case "set":
+		s.setAgentOption(cmd)
+	case "interact":
+		// Need to use custom command for handler to handle it correctly
+		s.agentInteract([]string{"agent", "interact", cmd[1]})
+	case "back", "main":
+		s.backAgentMenu(cmd)
 	}
 }
 

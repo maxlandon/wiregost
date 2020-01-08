@@ -17,6 +17,7 @@ type ClientRequest struct {
 	CurrentWorkspace   string
 	CurrentWorkspaceID int
 	CurrentServerID    uuid.UUID
+	CurrentAgentID     uuid.UUID
 	Command            []string
 	ServerParams       map[string]string
 	WorkspaceParams    map[string]string
@@ -105,6 +106,8 @@ type AgentRequest struct {
 
 // AgentResponse is used for sending back status/content about an agent.
 type AgentResponse struct {
-	Infos   []map[string]string
-	AgentNb map[string]int
+	Infos     []map[string]string
+	AgentNb   map[string]int
+	AgentInfo [][]string
+	Status    string
 }

@@ -40,6 +40,7 @@ func (s *Session) send(cmd []string) error {
 		Context:            s.menuContext,
 		CurrentModule:      s.currentModule,
 		CurrentServerID:    s.currentServerID,
+		CurrentAgentID:     s.currentAgentID,
 		Command:            cmd,
 	}
 	enc := json.NewEncoder(s.writer)

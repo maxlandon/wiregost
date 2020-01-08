@@ -6,7 +6,14 @@ import (
 
 	"github.com/evilsocket/islazy/tui"
 	"github.com/olekukonko/tablewriter"
+	uuid "github.com/satori/go.uuid"
 )
+
+func (s *Session) agentInteract(cmd []string) {
+	s.menuContext = "agent"
+	s.currentAgentID, _ = uuid.FromString(cmd[2])
+	s.Shell.Config.AutoComplete = s.getCompleter("agent")
+}
 
 func (s *Session) listAgents(cmd []string) {
 	s.send([]string{"agent", "show"})
@@ -47,10 +54,92 @@ func (s *Session) listAgents(cmd []string) {
 }
 
 func (s *Session) infoAgent(cmd []string) {
-	// Send(cmd)
+	s.send(cmd)
 	agent := <-s.agentReqs
-	fmt.Println(agent)
-	// Add func (s *Session)tion to print info.
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetColumnSeparator(tui.Dim("|"))
+	table.SetAutoWrapText(true)
+	table.SetColWidth(80)
+	table.SetBorder(false)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.AppendBulk(agent.AgentInfo)
+
+	fmt.Println()
+	fmt.Println(tui.Bold(tui.Blue(" Agent Information ")))
+	fmt.Println()
+	table.Render()
+}
+
+func (s *Session) listAgentDirectories(cmd []string) {
+	s.send(cmd)
+	agent := <-s.agentReqs
+	fmt.Println(agent.Status)
+}
+
+func (s *Session) changeAgentDirectory(cmd []string) {
+	s.send(cmd)
+	agent := <-s.agentReqs
+	fmt.Println(agent.Status)
+}
+
+func (s *Session) printAgentDirectory(cmd []string) {
+	s.send(cmd)
+	agent := <-s.agentReqs
+	fmt.Println(agent.Status)
+}
+
+func (s *Session) agentCmd(cmd []string) {
+	s.send(cmd)
+	agent := <-s.agentReqs
+	fmt.Println(agent.Status)
+}
+
+func (s *Session) downloadAgent(cmd []string) {
+	s.send(cmd)
+	agent := <-s.agentReqs
+	fmt.Println(agent.Status)
+}
+
+func (s *Session) uploadAgent(cmd []string) {
+	s.send(cmd)
+	agent := <-s.agentReqs
+	fmt.Println(agent.Status)
+}
+
+func (s *Session) executeShellCodeAgent(cmd []string) {
+	s.send(cmd)
+	agent := <-s.agentReqs
+	fmt.Println(agent.Status)
+}
+
+func (s *Session) killAgent(cmd []string) {
+	s.send(cmd)
+	agent := <-s.agentReqs
+	fmt.Println(agent.Status)
+	// Reset current agent
+	s.currentAgentID = uuid.FromStringOrNil("")
+	// Switch shell context
+	if s.currentModule != "" {
+		s.Shell.Config.AutoComplete = s.getCompleter("module")
+		s.menuContext = "module"
+		// Switch prompt context
+	} else {
+		s.Shell.Config.AutoComplete = s.getCompleter("main")
+		s.menuContext = "main"
+	}
+}
+
+func (s *Session) setAgentOption(cmd []string) {
+	s.send(cmd)
+	agent := <-s.agentReqs
+	fmt.Println(agent.Status)
+}
+
+func (s *Session) getAgentShell(cmd []string) {
+	s.send(cmd)
+	agent := <-s.agentReqs
+	fmt.Println(agent.Status)
 }
 
 func (s *Session) removeAgent(cmd []string) {
@@ -61,62 +150,14 @@ func (s *Session) removeAgent(cmd []string) {
 	// and wait for it via the log.
 }
 
-func (s *Session) downloadAgent(cmd []string) {
-	// Send(cmd)
-	agent := <-s.agentReqs
-	fmt.Println(agent)
-	// Check to see if we need an answer here, or if we can just go on
-	// and wait for it via the log.
-}
-
-func (s *Session) uploadAgent(cmd []string) {
-	// Send(cmd)
-	agent := <-s.agentReqs
-	fmt.Println(agent)
-	// Don't know how we will handle this one
-}
-
-func (s *Session) executeShellCodeAgent(cmd []string) {
-	// Send(cmd)
-	agent := <-s.agentReqs
-	fmt.Println(agent)
-	// Check to see if we need an answer here, or if we can just go on
-	// and wait for it via the log.
-}
-
-func (s *Session) killAgent(cmd []string) {
-	// Send(cmd)
-	agent := <-s.agentReqs
-	fmt.Println(agent)
-	// Check to see if we need an answer here, or if we can just go on
-	// and wait for it via the log.
-}
-
-func (s *Session) setAgentOption(cmd []string) {
-	// Send(cmd)
-	agent := <-s.agentReqs
-	fmt.Println(agent)
-	// Check to see if we need an answer here, or if we can just go on
-	// and wait for it via the log.
-}
-
-func (s *Session) getAgentShell(cmd []string) {
-	// Send(cmd)
-	agent := <-s.agentReqs
-	fmt.Println(agent)
-	// Don't know how we will handle this one
-}
-
-func (s *Session) backMainMenu(cmd []string) {
-	// Send(cmd)
-	agent := <-s.agentReqs
-	fmt.Println(agent)
-	// Handle change of state here
-}
-
-func (s *Session) mainMenu(cmd []string) {
-	// Send(cmd)
-	agent := <-s.agentReqs
-	fmt.Println(agent)
-	// Handle change of state here
+func (s *Session) backAgentMenu(cmd []string) {
+	// Switch shell context
+	if s.currentModule != "" {
+		s.Shell.Config.AutoComplete = s.getCompleter("module")
+		s.menuContext = "module"
+		// Switch prompt context
+	} else {
+		s.Shell.Config.AutoComplete = s.getCompleter("main")
+		s.menuContext = "main"
+	}
 }

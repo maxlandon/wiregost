@@ -16,6 +16,7 @@ type Prompt struct {
 	PromptVariable  string
 	DefaultPrompt   string
 	ModulePrompt    string
+	AgentPrompt     string
 	CompilerPrompt  string
 	MultilinePrompt string
 	// Prompt variables
@@ -36,6 +37,7 @@ func newPrompt(s *Session) Prompt {
 		PromptVariable:  "$",
 		DefaultPrompt:   "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {reset}",
 		ModulePrompt:    "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {fw}=>{reset} post({y}{mod}{reset})",
+		AgentPrompt:     "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {fw}=>{reset} agent[{bold}{db}{agent}{reset}]",
 		CompilerPrompt:  "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {fw}=>{reset} [{bold}{y}Compiler{reset}]",
 		MultilinePrompt: "> ",
 		// Prompt variabes
@@ -96,6 +98,10 @@ func newPrompt(s *Session) Prompt {
 		"{mod}": func() string {
 			return *prompt.CurrentModule
 		},
+		// Current agent
+		"{agent}": func() string {
+			return s.currentAgentID.String()
+		},
 	}
 
 	return prompt
@@ -114,6 +120,10 @@ func (p Prompt) render() (first string, multi string) {
 	// ... and is overidden by the context string if needed.
 	if *p.MenuContext == "compiler" {
 		prompt = p.CompilerPrompt
+	}
+	// ... or overriden by the context agent if needed.
+	if *p.MenuContext == "agent" {
+		prompt = p.AgentPrompt
 	}
 
 	multiline := p.MultilinePrompt
