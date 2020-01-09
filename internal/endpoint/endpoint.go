@@ -1,13 +1,13 @@
 package endpoint
 
 import (
-	"fmt"
 	"net"
 	"strings"
 
 	"github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/user"
+	uuid "github.com/satori/go.uuid"
 )
 
 // Endpoint manages all connections and message passing between client shells
@@ -29,6 +29,8 @@ func NewEndpoint() *Endpoint {
 
 	go e.listen()
 	go e.forwardResponses()
+	go e.forwardNotifications()
+	go e.forwardLogs()
 
 	return e
 }
@@ -84,43 +86,20 @@ func (e *Endpoint) listen() {
 		case msg := <-e.requests:
 			user.AuthReqs <- msg
 			auth := <-user.AuthResp
-			// If client is opening connection, send him confirmation
-			if auth.Command[0] == "connect" {
+			switch {
+			// Case clients is connecting and wants confirmation
+			case auth.Command[0] == "connect":
 				e.authenticateConn(msg, auth.UserID)
-				// Send current workspace of last shell to new shell
 				e.pushLastWorkspace(auth)
-				// if len(e.clients) > 1 {
-				//         for i := 1; i < len(e.clients); i++ {
-				//                 if e.clients[i].UserID == auth.UserID {
-				//                         res := messages.Notification{
-				//                                 Type:        "workspace",
-				//                                 Action:      "switch",
-				//                                 WorkspaceID: e.clients[i].CurrentWorkspaceID,
-				//                                 Workspace:   e.clients[i].CurrentWorkspace,
-				//                         }
-				//                         msg := messages.Message{
-				//                                 ClientID: auth.ClientID,
-				//                                 Type:     "notification",
-				//                                 Content:  res,
-				//                         }
-				//                         for _, client := range e.clients {
-				//                                 if client.id == auth.ClientID {
-				//                                         client.responses <- msg
-				//                                 }
-				//                         }
-				//
-				//                 }
-				//         }
-				// }
-			}
-			if strings.Join(auth.Command[:2], " ") == "log level" {
+				// Client wants to modify its log level
+			case strings.Join(auth.Command[:2], " ") == "log level":
 				for _, client := range e.clients {
 					if client.id == auth.ClientID {
 						client.Logger.SetLevel(auth)
 					}
 				}
-			} else {
-				// Else, authenticate anyway but forward requests to messageser
+			default:
+				// Else, authenticate the request anyway
 				switch auth.UserID {
 				case 0:
 					connected := messages.EndpointResponse{
@@ -139,63 +118,9 @@ func (e *Endpoint) listen() {
 						}
 					}
 				default:
+					// If authenticated, dispath resquest.
 					e.dispatchRequest(auth)
 				}
-			}
-		}
-	}
-}
-
-func (e *Endpoint) pushLastWorkspace(request messages.ClientRequest) {
-	fmt.Println("Entered push workspace")
-	switch {
-	case len(e.clients) == 2:
-		if e.clients[0].UserID == request.UserID {
-			res := messages.Notification{
-				Type:        "workspace",
-				Action:      "switch",
-				WorkspaceID: e.clients[0].CurrentWorkspaceID,
-				Workspace:   e.clients[0].CurrentWorkspace,
-			}
-			msg := messages.Message{
-				ClientID: request.ClientID,
-				Type:     "notification",
-				Content:  res,
-			}
-			for _, client := range e.clients {
-				if client.id == request.ClientID {
-					client.responses <- msg
-				}
-			}
-		}
-	case len(e.clients) > 2:
-		fmt.Println("Currently more than two clients")
-		var lastMatch int
-		var lastMatchString string
-		count := len(e.clients)
-		for _, c := range e.clients {
-			if c.UserID == request.UserID && count > 1 {
-				fmt.Println("Found matching users")
-				lastMatch = c.CurrentWorkspaceID
-				lastMatchString = c.CurrentWorkspace
-				count--
-			}
-		}
-		res := messages.Notification{
-			Type:        "workspace",
-			Action:      "switch",
-			WorkspaceID: lastMatch,
-			Workspace:   lastMatchString,
-		}
-		msg := messages.Message{
-			ClientID: request.ClientID,
-			Type:     "notification",
-			Content:  res,
-		}
-		for _, client := range e.clients {
-			if client.id == request.ClientID {
-				client.responses <- msg
-				fmt.Println("Pushed notification to client")
 			}
 		}
 	}
@@ -222,6 +147,63 @@ func (e *Endpoint) Remove(i int) {
 	e.clients = append(e.clients[:i], e.clients[i+1:]...)
 }
 
+func (e *Endpoint) forwardLogs() {
+	for {
+		// Remove disconnected clients
+		for i, client := range e.clients {
+			if client.status == 0 {
+				e.Remove(i)
+			}
+		}
+		// Prepare message when its a log event
+		res := <-logging.ForwardLogs
+		for _, client := range e.clients {
+			if client.CurrentWorkspaceID == res.Data["workspaceId"] {
+				client.Logger.Forward(res)
+			}
+		}
+
+	}
+}
+
+func (e *Endpoint) forwardNotifications() {
+	for {
+		// Remove disconnected clients
+		for i, client := range e.clients {
+			if client.status == 0 {
+				e.Remove(i)
+			}
+		}
+		// Forward notification
+		res := <-messages.Notifications
+		switch {
+		case res.Type == "workspace" && res.Action == "delete":
+			for _, client := range e.clients {
+				if client.CurrentWorkspaceID == res.WorkspaceID {
+					msg := messages.Message{
+						ClientID: client.id,
+						Type:     "notification",
+						Content:  res,
+					}
+					client.responses <- msg
+				}
+			}
+		case res.Type == "module" && res.Action == "pop":
+			for _, client := range e.clients {
+				if client.CurrentWorkspaceID == res.WorkspaceID && client.id != res.NotConcerned {
+					msg := messages.Message{
+						ClientID: client.id,
+						Type:     "notification",
+						Content:  res,
+					}
+					client.responses <- msg
+				}
+			}
+
+		}
+	}
+}
+
 func (e *Endpoint) forwardResponses() {
 	for {
 		// Remove disconnected clients
@@ -230,44 +212,33 @@ func (e *Endpoint) forwardResponses() {
 				e.Remove(i)
 			}
 		}
-		select {
-		case res := <-messages.Responses:
-			for _, client := range e.clients {
-				if client.id == res.ClientID {
-					client.responses <- res
-				}
-			}
-		case res := <-messages.Notifications:
-			if res.Type == "workspace" && res.Action == "delete" {
+		res := <-messages.Responses
+		// If its a workspace response, save the current workspace on the client-side, to server is aware.
+		if res.Type == "workspace" {
+			content := res.Content.(messages.WorkspaceResponse)
+			if content.Workspace != "" {
 				for _, client := range e.clients {
-					if client.CurrentWorkspaceID == res.WorkspaceID {
-						msg := messages.Message{
-							ClientID: client.id,
-							Type:     "notification",
-							Content:  res,
-						}
-						client.responses <- msg
+					if client.id == res.ClientID {
+						client.CurrentWorkspaceID = content.WorkspaceID
+						client.CurrentWorkspace = content.Workspace
 					}
 				}
 			}
-			if res.Type == "module" && res.Action == "pop" {
+		}
+		if res.Type == "server" {
+			content := res.Content.(messages.ServerResponse)
+			if content.ServerID.String() != "" {
 				for _, client := range e.clients {
-					if client.CurrentWorkspaceID == res.WorkspaceID && client.id != res.NotConcerned {
-						msg := messages.Message{
-							ClientID: client.id,
-							Type:     "notification",
-							Content:  res,
-						}
-						client.responses <- msg
+					if client.id == res.ClientID {
+						client.CurrentServerID = content.ServerID
 					}
 				}
 			}
-		// Prepare message when its a log event
-		case res := <-logging.ForwardLogs:
-			for _, client := range e.clients {
-				if client.CurrentWorkspaceID == res.Data["workspaceId"] {
-					client.Logger.Forward(res)
-				}
+		}
+		// Forward response
+		for _, client := range e.clients {
+			if client.id == res.ClientID {
+				client.responses <- res
 			}
 		}
 	}
@@ -330,6 +301,93 @@ func (e *Endpoint) dispatchRequest(req messages.ClientRequest) {
 			messages.ForwardAgents <- req
 		case "compiler":
 			messages.ForwardCompiler <- req
+		}
+	}
+}
+
+func (e *Endpoint) pushLastWorkspace(request messages.ClientRequest) {
+	switch {
+	case len(e.clients) == 2:
+		if e.clients[0].UserID == request.UserID {
+			// Craft workspace notification
+			wsRes := messages.Notification{
+				Type:        "workspace",
+				Action:      "switch",
+				WorkspaceID: e.clients[0].CurrentWorkspaceID,
+				Workspace:   e.clients[0].CurrentWorkspace,
+			}
+			wsMsg := messages.Message{
+				ClientID: request.ClientID,
+				Type:     "notification",
+				Content:  wsRes,
+			}
+			// Craft server notification
+			servRes := messages.Notification{
+				Type:     "server",
+				ServerID: e.clients[0].CurrentServerID,
+			}
+			servMsg := messages.Message{
+				ClientID: request.ClientID,
+				Type:     "notification",
+				Content:  servRes,
+			}
+			for _, client := range e.clients {
+				if client.id == request.ClientID {
+					// Fill client with workspace info and send notification
+					client.CurrentWorkspaceID = wsRes.WorkspaceID
+					client.CurrentWorkspace = wsRes.Workspace
+					client.responses <- wsMsg
+					// Fill client with server info and send notification
+					client.CurrentServerID = servRes.ServerID
+					client.responses <- servMsg
+				}
+			}
+		}
+	case len(e.clients) > 2:
+		var lastMatch int
+		var lastMatchString string
+		var lastMatchServer uuid.UUID
+		count := len(e.clients)
+		for _, c := range e.clients {
+			if c.UserID == request.UserID && count > 1 {
+				lastMatch = c.CurrentWorkspaceID
+				lastMatchString = c.CurrentWorkspace
+				lastMatchServer = c.CurrentServerID
+				count--
+			}
+		}
+		// Craft workspace notification
+		wsRes := messages.Notification{
+			Type:        "workspace",
+			Action:      "switch",
+			WorkspaceID: lastMatch,
+			Workspace:   lastMatchString,
+		}
+		wsMsg := messages.Message{
+			ClientID: request.ClientID,
+			Type:     "notification",
+			Content:  wsRes,
+		}
+		// Craft server notification
+		servRes := messages.Notification{
+			Type:     "server",
+			ServerID: lastMatchServer,
+		}
+		servMsg := messages.Message{
+			ClientID: request.ClientID,
+			Type:     "notification",
+			Content:  servRes,
+		}
+		for _, client := range e.clients {
+			if client.id == request.ClientID {
+				// Fill client with workspace info and send notification
+				client.CurrentWorkspaceID = wsRes.WorkspaceID
+				client.CurrentWorkspace = wsRes.Workspace
+				client.responses <- wsMsg
+				// Fill client with server info and send notification
+				client.CurrentServerID = servRes.ServerID
+				client.responses <- servMsg
+			}
 		}
 	}
 }

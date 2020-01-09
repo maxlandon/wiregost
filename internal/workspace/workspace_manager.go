@@ -302,6 +302,7 @@ func (wm *Manager) switchWorkspace(request messages.ClientRequest) {
 			result := fmt.Sprintf("%s[*]%s => %s \n", tui.GREEN, tui.RESET, ws.Name)
 			res := messages.WorkspaceResponse{
 				WorkspaceID: ws.ID,
+				Workspace:   ws.Name,
 				Result:      result,
 			}
 			msg := messages.Message{

@@ -23,6 +23,8 @@ func (s *Session) handleNotifications(notif messages.Notification) {
 			// Refresh shell
 			s.refresh()
 		}
+	case "server":
+		s.currentServerID = notif.ServerID
 	case "module":
 		switch notif.Action {
 		case "pop":

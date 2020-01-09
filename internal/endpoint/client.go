@@ -10,6 +10,7 @@ import (
 	"github.com/maxlandon/wiregost/internal/db"
 	"github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
+	uuid "github.com/satori/go.uuid"
 )
 
 // Client is in charge of managing connection and message passing between
@@ -26,6 +27,7 @@ type Client struct {
 	User               *db.User
 	CurrentWorkspaceID int
 	CurrentWorkspace   string
+	CurrentServerID    uuid.UUID
 	Context            string // Will influence how commands are dispatched.
 	// Message-specific
 	requests  chan messages.ClientRequest
@@ -104,6 +106,7 @@ func (client *Client) Read() {
 			// Fill client with message information
 			client.CurrentWorkspaceID = message.CurrentWorkspaceID
 			client.CurrentWorkspace = message.CurrentWorkspace
+			client.CurrentServerID = message.CurrentServerID
 		}
 
 		// Forward message
