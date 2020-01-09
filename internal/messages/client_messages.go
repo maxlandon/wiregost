@@ -46,6 +46,7 @@ type Notification struct {
 	Action              string
 	NotConcerned        int
 	WorkspaceID         int
+	ServerID            uuid.UUID
 	FallbackWorkspaceID int
 	Workspace           string
 	PoppedModule        string
@@ -56,6 +57,7 @@ type Notification struct {
 type WorkspaceResponse struct {
 	User           string
 	WorkspaceID    int
+	Workspace      string
 	WorkspaceInfos [][]string
 	Result         string
 }
@@ -64,7 +66,7 @@ type WorkspaceResponse struct {
 type LogResponse struct {
 	User string
 	Log  string // Used to notify log is set
-	Logs []map[string]string
+	Logs []string
 }
 
 // ServerResponse is used to send back status/content to a server command.

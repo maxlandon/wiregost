@@ -2,9 +2,9 @@ package logging
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
@@ -120,7 +120,7 @@ func (h *LogAgent) Fire(entry *logrus.Entry) error {
 		defer file.Close()
 
 		// Log event
-		event := fmt.Sprintf(entry.Time.String() + " [" + entry.Level.String() + "] " + entry.Message + "\n")
+		event := fmt.Sprintf(entry.Time.Format("2006-01-02T15:04:05") + " [" + entry.Level.String() + "] " + entry.Message + "\n")
 		_, err := file.WriteString(event)
 		if err != nil {
 			fmt.Println(tui.Red(err.Error()))
@@ -176,47 +176,91 @@ func (h *LogServer) Levels() []logrus.Level {
 // GetLogs is used to send back a list of last x logs to a client, for a given workspace.
 func (wl *WorkspaceLogger) GetLogs(request messages.ClientRequest) {
 	// Setup list of logs
-	list := make([]map[string]string, 0)
+	list := make([]string, 0)
 
-	switch len(request.Command) {
 	// If three elements in commmand, asked for a specific set of logs.
-	case 3:
-		switch request.Command[2] {
-		case "server":
-			// Determine file length for subsequent selection
-			file, _ := os.Open(wl.LogFile)
-			hlength := 0
-			scanner := bufio.NewScanner(file)
-			for scanner.Scan() {
-				hlength++
-			}
-			file.Close()
-			// Read file and add each JSON line to list
+	switch request.Command[2] {
+	case "server":
+		// Determine file length for subsequent selection
+		file, _ := os.Open(wl.LogFile)
+		hlength := 0
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			hlength++
+		}
+		file.Close()
+		switch len(request.Command) {
+		case 3:
 			file, _ = os.Open(wl.LogFile)
 			defer file.Close()
 			count := 1
 			scan := bufio.NewScanner(file)
 			for scan.Scan() {
-				if hlength <= 20 {
-					line := make(map[string]string)
-					json.Unmarshal(scan.Bytes(), &line)
-					if line["component"] == request.Command[2] {
-						list = append(list, line)
-						count++
-					}
+				if hlength >= 20 && count <= 20 {
+					list = append(list, scan.Text())
+					count++
 				}
-				hlength--
 			}
-			// Send back logs to client
-			logs := messages.LogResponse{
-				Logs: list,
+			hlength--
+		case 4:
+			file, _ = os.Open(wl.LogFile)
+			defer file.Close()
+			count := 1
+			scan := bufio.NewScanner(file)
+			for scan.Scan() {
+				requested, _ := strconv.Atoi(request.Command[3])
+				if hlength >= 20 && count <= requested {
+					list = append(list, scan.Text())
+					count++
+				}
 			}
-			msg := messages.Message{
-				ClientID: request.ClientID,
-				Type:     "log",
-				Content:  logs,
-			}
-			messages.Responses <- msg
+			hlength--
 		}
+	case "agent":
+		agentLogFile, _ := fs.Expand("~/.wiregost/server/workspaces/" + wl.WorkspaceName + "/agents/" + request.Command[3] + "/agent_log.txt")
+		file, _ := os.Open(agentLogFile)
+		hlength := 0
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			hlength++
+		}
+		file.Close()
+		switch len(request.Command) {
+		case 4:
+			file, _ = os.Open(agentLogFile)
+			defer file.Close()
+			count := 1
+			scan := bufio.NewScanner(file)
+			for scan.Scan() {
+				if hlength >= 20 && count <= 20 {
+					list = append(list, scan.Text())
+					count++
+				}
+			}
+			hlength--
+		case 5:
+			file, _ = os.Open(agentLogFile)
+			defer file.Close()
+			count := 1
+			scan := bufio.NewScanner(file)
+			for scan.Scan() {
+				requested, _ := strconv.Atoi(request.Command[4])
+				if hlength >= 20 && count <= requested {
+					list = append(list, scan.Text())
+					count++
+				}
+			}
+			hlength--
+		}
+		// Send back logs to client
+		logs := messages.LogResponse{
+			Logs: list,
+		}
+		msg := messages.Message{
+			ClientID: request.ClientID,
+			Type:     "log",
+			Content:  logs,
+		}
+		messages.Responses <- msg
 	}
 }

@@ -66,6 +66,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		// Log
 		readline.PcItem("log",
 			readline.PcItem("level",
+				readline.PcItem("trace"),
 				readline.PcItem("debug"),
 				readline.PcItem("info"),
 				readline.PcItem("warning"),
@@ -73,7 +74,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 			),
 			readline.PcItem("show",
 				readline.PcItem("all"),
-				readline.PcItem("agent"),
+				readline.PcItem("agent", readline.PcItemDynamic(s.getAgentIds())),
 				readline.PcItem("server"),
 			),
 		),
@@ -166,6 +167,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		// Log
 		readline.PcItem("log",
 			readline.PcItem("level",
+				readline.PcItem("trace"),
 				readline.PcItem("debug"),
 				readline.PcItem("info"),
 				readline.PcItem("warning"),
@@ -174,7 +176,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 			readline.PcItem("show",
 				readline.PcItem("all"),
 				readline.PcItem("server"),
-				readline.PcItem("agent"),
+				readline.PcItem("agent", readline.PcItemDynamic(s.getAgentIds())),
 			),
 		),
 
@@ -271,6 +273,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 		// Log
 		readline.PcItem("log",
 			readline.PcItem("level",
+				readline.PcItem("trace"),
 				readline.PcItem("debug"),
 				readline.PcItem("info"),
 				readline.PcItem("warning"),
@@ -279,7 +282,7 @@ func (s *Session) getCompleter(completer string) *readline.PrefixCompleter {
 			readline.PcItem("show",
 				readline.PcItem("all"),
 				readline.PcItem("server"),
-				readline.PcItem("agent"),
+				readline.PcItem("agent", readline.PcItemDynamic(s.getAgentIds())),
 			),
 		),
 
@@ -486,6 +489,18 @@ func (s *Session) getAgentList() func(string) (agents []string) {
 		for _, a := range agents.Infos {
 			agent := a["id"] + " " + tui.Dim("as "+a["username"]) + tui.Bold("@") + tui.Dim(a["hostname"])
 			list = append(list, agent)
+		}
+		return list
+	}
+}
+
+func (s *Session) getAgentIds() func(string) (agents []string) {
+	return func(string) []string {
+		s.send([]string{"agent", "show"})
+		agents := <-s.agentReqs
+		list := make([]string, 0)
+		for _, a := range agents.Infos {
+			list = append(list, a["id"])
 		}
 		return list
 	}

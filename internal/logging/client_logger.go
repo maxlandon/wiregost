@@ -9,12 +9,13 @@ import (
 )
 
 var levels = map[string]int{
-	"debug":   1,
-	"info":    2,
-	"warning": 3,
-	"error":   4,
-	"fatal":   5,
-	"panic":   6,
+	"trace":   1,
+	"debug":   2,
+	"info":    3,
+	"warning": 4,
+	"error":   5,
+	"fatal":   6,
+	"panic":   7,
 }
 
 // ClientLogger is used to forward log events to its respective client.

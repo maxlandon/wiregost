@@ -26,7 +26,6 @@ func generalHelp() {
 	for _, c := range commandCategories {
 		fmt.Printf("  "+tui.Yellow(pad)+" : %s\n", c.Name, c.Description)
 	}
-	fmt.Println()
 }
 
 func coreHelp() {
@@ -45,7 +44,6 @@ func coreHelp() {
 		params = strings.Join(c.Params, " ")
 		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
-	fmt.Println()
 }
 
 func serverHelp() {
@@ -84,7 +82,6 @@ func serverHelp() {
 		dflt := tui.Dim("(default: ") + tui.Dim(c.Default) + tui.Dim(")")
 		fmt.Printf("  "+tui.Yellow(pad)+" : %s %s\n", c.Name, c.Description, dflt)
 	}
-	fmt.Println()
 }
 
 func endpointHelp() {
@@ -121,7 +118,6 @@ func endpointHelp() {
 		dflt := tui.Dim("(default: ") + tui.Dim(c.Default) + tui.Dim(")")
 		fmt.Printf("  "+tui.Yellow(pad)+" : %s %s\n", c.Name, c.Description, dflt)
 	}
-	fmt.Println()
 }
 
 func logHelp() {
@@ -142,23 +138,6 @@ func logHelp() {
 		params = strings.Join(c.Params, " ")
 		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
-
-	// Parameters
-	fmt.Println(tui.Bold(tui.Blue("\n  Parameters \n")))
-	maxLen = 0
-	for _, c := range logParams {
-		len := len(c.Name)
-		if len > maxLen {
-			maxLen = len
-		}
-	}
-	pad = "%" + strconv.Itoa(maxLen) + "s"
-
-	for _, c := range logParams {
-		dflt := tui.Dim("(default: ") + tui.Dim(c.Default) + tui.Dim(")")
-		fmt.Printf("  "+tui.Yellow(pad)+" : %s %s\n", c.Name, c.Description, dflt)
-	}
-	fmt.Println()
 }
 
 func workspaceHelp() {
@@ -195,7 +174,6 @@ func workspaceHelp() {
 		dflt := tui.Dim("(default: ") + tui.Dim(c.Default) + tui.Dim(")")
 		fmt.Printf("  "+tui.Yellow(pad)+" : %s %s\n", c.Name, c.Description, dflt)
 	}
-	fmt.Println()
 }
 
 func stackHelp() {
@@ -216,7 +194,6 @@ func stackHelp() {
 		params = strings.Join(c.Params, " ")
 		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
-	fmt.Println()
 }
 
 func moduleHelp() {
@@ -236,9 +213,7 @@ func moduleHelp() {
 	for _, c := range moduleCommands {
 		params = strings.Join(c.Params, " ")
 		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+strings.ToUpper(params), c.Description)
-		// fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
-	fmt.Println()
 }
 
 func agentHelp() {
@@ -261,7 +236,6 @@ func agentHelp() {
 		params = strings.Join(c.Params, " ")
 		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
-	fmt.Println()
 }
 
 func compilerHelp() {
@@ -284,7 +258,6 @@ func compilerHelp() {
 		params = strings.Join(c.Params, " ")
 		fmt.Printf("  "+tui.Bold(pad)+" : %s\n", c.Name+" "+tui.Green(params), c.Description)
 	}
-	fmt.Println()
 }
 
 func helpHandler(args []string) error {
@@ -386,20 +359,9 @@ var serverParams = []paramDescription{
 //-------------------------------------------------------------------------------------------------------------------------
 // Log commands
 var logCommands = []commandDescription{
-	{Name: "log.global", Params: []string{"int"}, Description: "Show last (int) lines of global log (aggregation of all specfic logs)"},
-	{Name: "log.exploit", Params: []string{"int"}, Description: "Show last (int) lines of exploit-specific logs."},
-	{Name: "log.payload", Params: []string{"int"}, Description: "Show last (int) lines of payload-specific logs."},
-	{Name: "log.listeners", Params: []string{"int"}, Description: "Show last (int) lines of listeners-specific logs."},
-	{Name: "log.db", Params: []string{"int"}, Description: "Show last (int) lines of database-specific logs."},
-}
-
-// Log parameters
-var logParams = []paramDescription{
-	{"log.global.path", "Path to global logs", "~/.wiregost/logs/global.log"},
-	{"log.exploit.path", "Path to exploit logs", "~/.wiregost/logs/exploit.log"},
-	{"log.payload.path", "Path to payload logs", "~/.wiregost/logs/payload.log"},
-	{"log.listeners.path", "Path to listeners logs", "~/.wiregost/logs/listeners.log"},
-	{"log.db.path", "Path to Data Service logs", "~/.wiregost/logs/db.log"},
+	{Name: "log level", Description: "Set the level of log messages to be show in this client (trace/debug/info/warning/error) "},
+	{Name: "log show server", Params: []string{"int"}, Description: "Show last (int) lines of logs for this workspace's HTTP/2 agent server. (default 20 lines)"},
+	{Name: "log show agent", Params: []string{"agentID", "int"}, Description: "Show last (int) lines of logs for the (agentID) agent. (default 20 lines)"},
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
