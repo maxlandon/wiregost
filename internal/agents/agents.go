@@ -45,7 +45,6 @@ type agent struct {
 	HostName         string
 	Ips              []string
 	Pid              int
-	agentLog         *os.File
 	channel          chan []Job
 	InitialCheckIn   time.Time
 	StatusCheckIn    time.Time
@@ -68,6 +67,7 @@ type agent struct {
 	// Added
 	log         *testlog.WorkspaceLogger
 	WorkspaceID int
+	dirPath     string
 }
 
 // KeyExchange is used to exchange public keys between the server and agent
@@ -783,50 +783,11 @@ func newAgent(agentID uuid.UUID, ws string) (agent, error) {
 		}
 	}
 
-	// MERLIN CODE TO BE REMOVED
-	agentsDir := filepath.Join(core.CurrentDir, "data", "agents")
-
-	// Create a directory for the new agent's files
-	if _, err := os.Stat(filepath.Join(agentsDir, agentID.String())); os.IsNotExist(err) {
-		errM := os.MkdirAll(filepath.Join(agentsDir, agentID.String()), 0750)
-		if errM != nil {
-			return agent, fmt.Errorf("there was an error creating a directory for agent %s:\r\n%s",
-				agentID.String(), err.Error())
-		}
-		// Create the agent's log file
-		agentLog, errC := os.Create(filepath.Join(agentsDir, agentID.String(), "agent_log.txt"))
-		if errC != nil {
-			return agent, fmt.Errorf("there was an error creating the agent_log.txt file for agnet %s:\r\n%s",
-				agentID.String(), err.Error())
-		}
-
-		// Change the file's permissions
-		errChmod := agentLog.Chmod(0640)
-		if errChmod != nil {
-			return agent, fmt.Errorf("there was an error changing the file permissions for the agent log:\r\n%s", errChmod.Error())
-		}
-
-		// Log(agentID, "debug", fmt.Sprintf("Created agent log file at: %s agent_log.txt",
-		// path.Join(agentsDir, agentID.String())))
-	}
-	// Open agent's log file for writing
-	f, err := os.OpenFile(filepath.Join(agentsDir, agentID.String(), "agent_log.txt"), os.O_APPEND|os.O_WRONLY, 0600)
-	if err != nil {
-		return agent, fmt.Errorf("there was an error openeing the %s agent's log file:\r\n%s", agentID.String(), err.Error())
-	}
-
 	agent.ID = agentID
-	agent.agentLog = f
 	agent.InitialCheckIn = time.Now().UTC()
 	agent.StatusCheckIn = time.Now().UTC()
 	agent.channel = make(chan []Job, 10)
-
-	_, errAgentLog := agent.agentLog.WriteString(fmt.Sprintf("[%s]%s\r\n", time.Now().UTC().Format(time.RFC3339), "Instantiated agent"))
-	if errAgentLog != nil {
-		// Log(agentID, "warn", fmt.Sprintf("There was an error writing to the agent log agents.Log:\r\n%s", errAgentLog.Error()))
-	}
-
-	// Log(agentID, "trace", "Leaving agents.newAgent function without error")
+	agent.dirPath = agentDirPath
 
 	return agent, nil
 }
@@ -869,7 +830,7 @@ func FileTransfer(m messages.Base) error {
 	p := m.Payload.(messages.FileTransfer)
 
 	if p.IsDownload {
-		agentsDir := filepath.Join(core.CurrentDir, "data", "agents")
+		agentsDir := Agents[m.ID].dirPath
 		_, f := filepath.Split(p.FileLocation) // We don't need the directory part for anything
 		if _, errD := os.Stat(agentsDir); os.IsNotExist(errD) {
 			errorMessage := fmt.Errorf("there was an error locating the agent's directory:\r\n%s", errD.Error())
