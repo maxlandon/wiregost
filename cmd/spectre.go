@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/maxlandon/wiregost/internal/wiregost"
 )
@@ -24,8 +25,11 @@ func main() {
 		fmt.Println(err)
 	}
 
+	// Change directory to Wiregost root project
+	os.Chdir("/home/para/pentest/wiregost")
+
+	// Start server
 	wg := wiregost.NewWiregost()
-	// server := server.NewEndpoint()
 
 	for {
 		conn, err := listener.Accept()
