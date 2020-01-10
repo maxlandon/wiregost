@@ -1,13 +1,17 @@
 package endpoint
 
 import (
+	// Standard
 	"net"
 	"strings"
 
+	// 3rd party
+	uuid "github.com/satori/go.uuid"
+
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/user"
-	uuid "github.com/satori/go.uuid"
 )
 
 // Endpoint manages all connections and message passing between client shells

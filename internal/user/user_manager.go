@@ -1,6 +1,7 @@
 package user
 
 import (
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/db"
 	"github.com/maxlandon/wiregost/internal/messages"
 )

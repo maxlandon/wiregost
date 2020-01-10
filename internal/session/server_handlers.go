@@ -1,6 +1,7 @@
 package session
 
 import (
+	// Standard
 	"encoding/json"
 	"fmt"
 	"log"
@@ -8,9 +9,12 @@ import (
 	"strconv"
 	"strings"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/olekukonko/tablewriter"
+
+	// Wiregost
+	"github.com/maxlandon/wiregost/internal/messages"
 )
 
 func (s *Session) serverStart(cmd []string) {

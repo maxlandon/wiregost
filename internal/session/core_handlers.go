@@ -1,11 +1,13 @@
 package session
 
 import (
+	// Standard
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/str"
 	"github.com/evilsocket/islazy/tui"

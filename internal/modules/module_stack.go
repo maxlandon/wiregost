@@ -1,6 +1,7 @@
 package modules
 
 import (
+	// Standard
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,8 +12,11 @@ import (
 	"strings"
 	"time"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
+
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/agents"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/workspace"

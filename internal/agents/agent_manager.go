@@ -1,17 +1,21 @@
 package agents
 
 import (
+	// Standard
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/tui"
 	"github.com/mattn/go-shellwords"
+	uuid "github.com/satori/go.uuid"
+
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/modules/shellcode"
-	uuid "github.com/satori/go.uuid"
 )
 
 type Manager struct {

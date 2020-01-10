@@ -1,11 +1,13 @@
 package session
 
 import (
+	// Standard
 	"fmt"
 	"net"
 	"os"
 	"strings"
 
+	// 3rd party
 	"github.com/chzyer/readline"
 	"github.com/evilsocket/islazy/tui"
 )

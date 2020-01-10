@@ -1,6 +1,7 @@
 package session
 
 import (
+	// Standard
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
 	"github.com/olekukonko/tablewriter"

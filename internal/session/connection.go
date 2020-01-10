@@ -1,6 +1,7 @@
 package session
 
 import (
+	// Standard
 	"bufio"
 	"crypto/tls"
 	"encoding/json"
@@ -9,8 +10,11 @@ import (
 	"log"
 	"strconv"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
+
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/compiler"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/modules"

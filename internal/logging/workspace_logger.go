@@ -1,15 +1,19 @@
 package logging
 
 import (
+	// Standard
 	"bufio"
 	"fmt"
 	"os"
 	"strconv"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/sirupsen/logrus"
+
+	// Wiregost
+	"github.com/maxlandon/wiregost/internal/messages"
 )
 
 // ForwardLogs is used to forward log events of a workspace to all ClientLoggers.

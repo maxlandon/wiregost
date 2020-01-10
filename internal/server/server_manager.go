@@ -1,6 +1,7 @@
 package server
 
 import (
+	// Standard
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -14,12 +15,15 @@ import (
 	"strings"
 	"time"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
+	"github.com/tjarratt/babble"
+
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/util"
 	"github.com/maxlandon/wiregost/internal/workspace"
-	"github.com/tjarratt/babble"
 )
 
 // Manager stores all instantiated agent servers and perform operations on them,

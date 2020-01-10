@@ -13,6 +13,7 @@ import (
 	// 3rd Party
 	"gopkg.in/square/go-jose.v2"
 
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/messages"
 )
 

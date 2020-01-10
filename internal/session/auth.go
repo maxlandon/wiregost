@@ -1,6 +1,7 @@
 package session
 
 import (
+	// Standard
 	"bytes"
 	"crypto/sha256"
 	"encoding/json"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"syscall"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
 	"golang.org/x/crypto/ssh/terminal"

@@ -1,9 +1,13 @@
 package main
 
 import (
+	// Standard
 	"fmt"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/tui"
+
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/session"
 )
 

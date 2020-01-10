@@ -11,10 +11,12 @@ import (
 	// 3rd Party
 	"github.com/evilsocket/islazy/tui"
 	"github.com/fatih/color"
+	uuid "github.com/satori/go.uuid"
+
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/modules/minidump"
 	"github.com/maxlandon/wiregost/internal/modules/shellcode"
 	"github.com/maxlandon/wiregost/internal/modules/srdi"
-	uuid "github.com/satori/go.uuid"
 )
 
 // Module is a structure containing the base information or template for modules

@@ -1,6 +1,7 @@
 package workspace
 
 import (
+	// Standard
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,8 +10,11 @@ import (
 	"strconv"
 	"time"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
+
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
 )

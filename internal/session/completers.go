@@ -1,9 +1,11 @@
 package session
 
 import (
+	// Standard
 	"strconv"
 	"strings"
 
+	// 3rd party
 	"github.com/chzyer/readline"
 	"github.com/evilsocket/islazy/tui"
 )

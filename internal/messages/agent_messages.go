@@ -1,9 +1,11 @@
 package messages
 
 import (
+	// Standard
 	"crypto/rsa"
 	"encoding/gob"
 
+	// 3rd party
 	uuid "github.com/satori/go.uuid"
 )
 

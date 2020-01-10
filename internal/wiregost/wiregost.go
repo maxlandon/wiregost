@@ -1,6 +1,7 @@
 package wiregost
 
 import (
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/agents"
 	"github.com/maxlandon/wiregost/internal/compiler"
 	"github.com/maxlandon/wiregost/internal/endpoint"

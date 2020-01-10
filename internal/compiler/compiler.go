@@ -1,14 +1,18 @@
 package compiler
 
 import (
+	// Standard
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
+
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/workspace"
 )

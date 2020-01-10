@@ -1,6 +1,7 @@
 package session
 
 import (
+	// Standard
 	"bufio"
 	"crypto/tls"
 	"fmt"
@@ -12,10 +13,12 @@ import (
 	// 3rd party
 	"github.com/chzyer/readline"
 	"github.com/evilsocket/islazy/tui"
+	uuid "github.com/satori/go.uuid"
+
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/compiler"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/modules"
-	uuid "github.com/satori/go.uuid"
 )
 
 // Session is the central object of a Wiregost client shell session.

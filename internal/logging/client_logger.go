@@ -1,11 +1,15 @@
 package logging
 
 import (
+	// Standard
 	"fmt"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/sirupsen/logrus"
+
+	// Wiregost
+	"github.com/maxlandon/wiregost/internal/messages"
 )
 
 var levels = map[string]int{

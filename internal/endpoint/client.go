@@ -1,16 +1,20 @@
 package endpoint
 
 import (
+	// Standard
 	"bufio"
 	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net"
 
+	// 3rd party
+	uuid "github.com/satori/go.uuid"
+
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/db"
 	"github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
-	uuid "github.com/satori/go.uuid"
 )
 
 // Client is in charge of managing connection and message passing between

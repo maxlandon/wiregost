@@ -1,9 +1,11 @@
 package session
 
 import (
+	// Standard
 	"fmt"
 	"os"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/tui"
 	"github.com/olekukonko/tablewriter"
 	uuid "github.com/satori/go.uuid"

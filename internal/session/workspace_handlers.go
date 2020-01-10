@@ -1,6 +1,7 @@
 package session
 
 import (
+	// Standard
 	"bufio"
 	"encoding/json"
 	"fmt"
@@ -8,10 +9,13 @@ import (
 	"os"
 	"strings"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/olekukonko/tablewriter"
 	uuid "github.com/satori/go.uuid"
+
+	// Wiregost
+	"github.com/maxlandon/wiregost/internal/messages"
 )
 
 func (s *Session) workspaceList(cmd []string) {

@@ -1,13 +1,13 @@
 package db
 
-// This file contains all the code used for Database management.
-
 import (
+	// Standard
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
 	"github.com/go-pg/pg"

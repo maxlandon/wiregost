@@ -1,11 +1,13 @@
 package main
 
 import (
+	// Standard
 	"crypto/tls"
 	"fmt"
 	"log"
 	"os"
 
+	// Wiregost
 	"github.com/maxlandon/wiregost/internal/wiregost"
 )
 

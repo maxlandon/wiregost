@@ -1,11 +1,13 @@
 package session
 
 import (
+	// Standard
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 
+	// 3rd party
 	"github.com/evilsocket/islazy/tui"
 	"github.com/olekukonko/tablewriter"
 )
