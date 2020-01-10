@@ -17,6 +17,7 @@ type ClientRequest struct {
 	CurrentWorkspace   string
 	CurrentWorkspaceID int
 	CurrentServerID    uuid.UUID
+	ServerRunning      bool
 	CurrentAgentID     uuid.UUID
 	Command            []string
 	ServerParams       map[string]string
@@ -47,6 +48,7 @@ type Notification struct {
 	NotConcerned        int
 	WorkspaceID         int
 	ServerID            uuid.UUID
+	ServerRunning       bool
 	FallbackWorkspaceID int
 	Workspace           string
 	PoppedModule        string
@@ -71,11 +73,12 @@ type LogResponse struct {
 
 // ServerResponse is used to send back status/content to a server command.
 type ServerResponse struct {
-	User       string
-	Status     string
-	Error      string
-	ServerList []map[string]string
-	ServerID   uuid.UUID
+	User          string
+	Status        string
+	Error         string
+	ServerList    []map[string]string
+	ServerID      uuid.UUID
+	ServerRunning bool
 }
 
 // LogEvent is used to push log events to clients

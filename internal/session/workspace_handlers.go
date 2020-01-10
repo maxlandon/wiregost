@@ -55,6 +55,7 @@ func (s *Session) workspaceSwitch(cmd []string) {
 	s.currentModule = ""
 	// Change server variables
 	s.currentServerID = server.ServerID
+	s.serverRunning = server.ServerRunning
 	// Reset agent variables
 	s.currentAgentID = uuid.FromStringOrNil("")
 }

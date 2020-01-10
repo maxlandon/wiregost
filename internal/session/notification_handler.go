@@ -25,6 +25,7 @@ func (s *Session) handleNotifications(notif messages.Notification) {
 		}
 	case "server":
 		s.currentServerID = notif.ServerID
+		s.serverRunning = notif.ServerRunning
 	case "module":
 		switch notif.Action {
 		case "pop":

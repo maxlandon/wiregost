@@ -216,7 +216,6 @@ func (s *Server) Run() (status string, err error) {
 
 	if s.Protocol == "h2" {
 		server := s.Server.(*http.Server)
-
 		defer func() {
 			err := server.Close()
 			if err != nil {
@@ -239,9 +238,9 @@ func (s *Server) Run() (status string, err error) {
 				return
 			}
 		}()
-		go log.Errorf(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
 		// Server is now running
 		s.Running = true
+		go log.Errorf(server.ListenAndServeTLS(s.Certificate, s.Key).Error())
 		return m, nil
 	}
 	return fmt.Errorf("%s is an invalid server protocol", s.Protocol).Error(), nil

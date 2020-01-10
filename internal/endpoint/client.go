@@ -28,6 +28,7 @@ type Client struct {
 	CurrentWorkspaceID int
 	CurrentWorkspace   string
 	CurrentServerID    uuid.UUID
+	serverRunning      bool
 	Context            string // Will influence how commands are dispatched.
 	// Message-specific
 	requests  chan messages.ClientRequest
@@ -55,6 +56,8 @@ func CreateClient(conn net.Conn) *Client {
 		id: rand.Int(),
 		// User: Add user
 		Context: "main", // Default context is always main when a shell is spawned
+		// Server
+		serverRunning: false,
 	}
 	// Setup logger
 	client.Logger = logging.NewClientLogger(client.id, &client.CurrentWorkspaceID, client.responses)
@@ -107,6 +110,7 @@ func (client *Client) Read() {
 			client.CurrentWorkspaceID = message.CurrentWorkspaceID
 			client.CurrentWorkspace = message.CurrentWorkspace
 			client.CurrentServerID = message.CurrentServerID
+			client.serverRunning = message.ServerRunning
 		}
 
 		// Forward message

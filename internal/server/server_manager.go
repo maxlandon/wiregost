@@ -8,9 +8,11 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
@@ -87,8 +89,9 @@ func (sm *Manager) giveStatus(request workspace.ServerRequest) {
 			tui.GREEN, tui.RESET, serv.Interface, strconv.Itoa(serv.Port))
 	}
 	res := messages.ServerResponse{
-		Status:   status,
-		ServerID: serv.ID,
+		Status:        status,
+		ServerID:      serv.ID,
+		ServerRunning: serv.Running,
 	}
 	msg := messages.Message{
 		ClientID: request.ClientID,
@@ -101,12 +104,15 @@ func (sm *Manager) giveStatus(request workspace.ServerRequest) {
 func (sm *Manager) startServer(request messages.ClientRequest) {
 	s := sm.Servers[request.CurrentWorkspaceID]
 	go s.Run()
-	// status, _ := sm.Servers[request.CurrentWorkspaceID].Run()
 	m := fmt.Sprintf("%s[*]%s Starting %s listener on %s:%d %s(pre-shared key: %s%s)",
 		tui.GREEN, tui.RESET, s.Protocol, s.Interface, s.Port, tui.DIM, s.Psk, tui.RESET)
+	// Give server time to start and set its status
+	time.Sleep(time.Millisecond * 50)
+
 	res := messages.ServerResponse{
-		User:   request.UserName,
-		Status: m,
+		User:          request.UserName,
+		ServerRunning: s.Running,
+		Status:        m,
 	}
 	msg := messages.Message{
 		ClientID: request.ClientID,
@@ -117,6 +123,8 @@ func (sm *Manager) startServer(request messages.ClientRequest) {
 }
 
 func (sm *Manager) stopServer(request messages.ClientRequest) {
+	// Stop previous server before reinstantiating it. Will need to change this if other than HTTP/2 is available
+	sm.Servers[request.CurrentWorkspaceID].Server.(*http.Server).Close()
 	// 1. Load configuration from file
 	path, _ := fs.Expand("~/.wiregost/server/workspaces/")
 	template := Server{}
@@ -137,8 +145,9 @@ func (sm *Manager) stopServer(request messages.ClientRequest) {
 	// Send response
 	status := fmt.Sprintf("%s[-]%s HTTP2 Server has been stopped.", tui.GREEN, tui.RESET)
 	res := messages.ServerResponse{
-		User:   request.UserName,
-		Status: status,
+		User:          request.UserName,
+		ServerRunning: server.Running,
+		Status:        status,
 	}
 	msg := messages.Message{
 		ClientID: request.ClientID,
@@ -380,7 +389,8 @@ func (sm *Manager) reloadServer(request messages.ClientRequest) {
 		}
 	}
 	response := messages.ServerResponse{
-		Status: status,
+		ServerRunning: server.Running,
+		Status:        status,
 	}
 	msg := messages.Message{
 		ClientID: request.ClientID,

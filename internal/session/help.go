@@ -330,8 +330,8 @@ var coreCommands = []commandDescription{
 	{Name: "mode", Description: "Manage Input & Navigation mode (Vim or Emacs). Type 'mode' for displaying current mode"},
 	{Name: "cd", Params: []string{"dir"}, Description: "Change current directory within WireGost. (Supports basic variable subsitution: ~/.././ )"},
 	{Name: "!", Params: []string{"cmd"}, Description: "Execute a shell command through WireGost"},
-	{Name: "resource.make", Params: []string{"file.rc", "int"}, Description: "Make a resource file. (name: resource name, int: number of history commands to save in file."},
-	{Name: "resource.load", Params: []string{"file.rc"}, Description: "Load a resource file. (Completion based on files stored in the resource directory)"},
+	// {Name: "resource.make", Params: []string{"file.rc", "int"}, Description: "Make a resource file. (name: resource name, int: number of history commands to save in file."},
+	// {Name: "resource.load", Params: []string{"file.rc"}, Description: "Load a resource file. (Completion based on files stored in the resource directory)"},
 	{Name: "history.show", Params: []string{"int"}, Description: "Show last (int) number of commands used."},
 }
 
@@ -342,7 +342,7 @@ var serverCommands = []commandDescription{
 	{Name: "server stop", Description: "Stop the server."},
 	{Name: "server reload", Description: "Re-instantiate the server with parameters below, ready to start. (Parameters will be saved for subsequent starts)"},
 	{Name: "server generate_certificate", Params: []string{"name"}, Description: "Generate a certificate and key pair to use with the server in this workspace's directory."},
-	{Name: "server generate_jwt", Description: "(Optional) Generate a new JSON Web Token that agents dedicated to this workspace/server will use for authenticating."},
+	// {Name: "server generate_jwt", Description: "(Optional) Generate a new JSON Web Token that agents dedicated to this workspace/server will use for authenticating."},
 	{Name: "server list", Description: "List all servers and their state (running, agents, etc.), regardless of the current workspace."},
 }
 
@@ -353,7 +353,7 @@ var serverParams = []paramDescription{
 	{Name: "server.certificate", Description: "Path to x.509 certificate needed for connection (default is the certificate in this workspace's directory)"},
 	{Name: "server.key", Description: "Path to x.509 private key used for decrypting communications with agents"},
 	{Name: "server.psk", Description: "The pre-shared key password used prior to Password Authenticated Key Exchange (PAKE)"},
-	{Name: "server.jwt", Description: "JSON Web Token used for authenticating agents"},
+	// {Name: "server.jwt", Description: "JSON Web Token used for authenticating agents"},
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -385,9 +385,9 @@ var endpointParams = []paramDescription{
 }
 
 var endpointAdminCommands = []commandDescription{
-	{Name: "endpoint.admin.show", Description: "Show registered users (and if they are active)"},
-	{Name: "endpoint.admin.add_user", Params: []string{"name"}, Description: "Register a new user (password will be sent first connection)"},
-	{Name: "endpoint.admin.delete_user", Params: []string{"name"}, Description: "Delete one or more registered users"},
+	{Name: "endpoint.admin show_users", Description: "Show registered users (and if they are active)"},
+	{Name: "endpoint.admin add_user", Params: []string{"name"}, Description: "Register a new user (password will be sent first connection)"},
+	{Name: "endpoint.admin delete_user", Params: []string{"name"}, Description: "Delete one or more registered users"},
 }
 
 //-------------------------------------------------------------------------------------------------------------------------

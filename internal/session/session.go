@@ -28,8 +28,10 @@ type Session struct {
 	currentModule      string
 	currentWorkspace   string
 	CurrentWorkspaceID int
-	currentServerID    uuid.UUID
 	currentAgentID     uuid.UUID
+	// Server state
+	currentServerID uuid.UUID
+	serverRunning   bool
 	// Environmment variables
 	Env map[string]string
 	// Server connection parameters
@@ -56,6 +58,8 @@ func NewSession() *Session {
 	session := &Session{
 		menuContext: "main",
 		Env:         make(map[string]string),
+		// Server
+		serverRunning: false,
 		// Response channels
 		moduleReqs:    make(chan modules.ModuleResponse),
 		agentReqs:     make(chan messages.AgentResponse),

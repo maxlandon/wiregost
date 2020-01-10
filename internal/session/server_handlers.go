@@ -18,6 +18,7 @@ func (s *Session) serverStart(cmd []string) {
 	status := <-s.serverReqs
 	fmt.Println()
 	fmt.Println(status.Status)
+	s.serverRunning = status.ServerRunning
 }
 
 func (s *Session) serverReload(cmd []string) {
@@ -47,6 +48,7 @@ func (s *Session) serverReload(cmd []string) {
 	s.writer.Flush()
 
 	status := <-s.serverReqs
+	s.serverRunning = status.ServerRunning
 	fmt.Println()
 	fmt.Println(status.Status)
 }
@@ -81,6 +83,7 @@ func (s *Session) serverStop(cmd []string) {
 	s.writer.Flush()
 
 	status := <-s.serverReqs
+	s.serverRunning = status.ServerRunning
 	fmt.Println()
 	fmt.Println(status.Status)
 }

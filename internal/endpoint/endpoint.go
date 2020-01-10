@@ -323,8 +323,9 @@ func (e *Endpoint) pushLastWorkspace(request messages.ClientRequest) {
 			}
 			// Craft server notification
 			servRes := messages.Notification{
-				Type:     "server",
-				ServerID: e.clients[0].CurrentServerID,
+				Type:          "server",
+				ServerID:      e.clients[0].CurrentServerID,
+				ServerRunning: e.clients[0].serverRunning,
 			}
 			servMsg := messages.Message{
 				ClientID: request.ClientID,
@@ -339,6 +340,7 @@ func (e *Endpoint) pushLastWorkspace(request messages.ClientRequest) {
 					client.responses <- wsMsg
 					// Fill client with server info and send notification
 					client.CurrentServerID = servRes.ServerID
+					client.serverRunning = servRes.ServerRunning
 					client.responses <- servMsg
 				}
 			}
@@ -347,12 +349,14 @@ func (e *Endpoint) pushLastWorkspace(request messages.ClientRequest) {
 		var lastMatch int
 		var lastMatchString string
 		var lastMatchServer uuid.UUID
+		var lastMatchServerRunning bool
 		count := len(e.clients)
 		for _, c := range e.clients {
 			if c.UserID == request.UserID && count > 1 {
 				lastMatch = c.CurrentWorkspaceID
 				lastMatchString = c.CurrentWorkspace
 				lastMatchServer = c.CurrentServerID
+				lastMatchServerRunning = c.serverRunning
 				count--
 			}
 		}
@@ -370,8 +374,9 @@ func (e *Endpoint) pushLastWorkspace(request messages.ClientRequest) {
 		}
 		// Craft server notification
 		servRes := messages.Notification{
-			Type:     "server",
-			ServerID: lastMatchServer,
+			Type:          "server",
+			ServerID:      lastMatchServer,
+			ServerRunning: lastMatchServerRunning,
 		}
 		servMsg := messages.Message{
 			ClientID: request.ClientID,
@@ -386,6 +391,7 @@ func (e *Endpoint) pushLastWorkspace(request messages.ClientRequest) {
 				client.responses <- wsMsg
 				// Fill client with server info and send notification
 				client.CurrentServerID = servRes.ServerID
+				client.serverRunning = servRes.ServerRunning
 				client.responses <- servMsg
 			}
 		}

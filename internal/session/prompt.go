@@ -35,10 +35,10 @@ func newPrompt(s *Session) Prompt {
 	prompt := Prompt{
 		// Prompt strings
 		PromptVariable:  "$",
-		DefaultPrompt:   "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {reset}",
-		ModulePrompt:    "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {fw}=>{reset} post({y}{mod}{reset})",
-		AgentPrompt:     "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {fw}=>{reset} agent[{bold}{db}{agent}{reset}]",
-		CompilerPrompt:  "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {fw}=>{reset} [{bold}{y}Compiler{reset}]",
+		DefaultPrompt:   "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {server}",
+		ModulePrompt:    "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {server} {fw}=>{reset} post({y}{mod}{reset})",
+		AgentPrompt:     "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {server} {fw}=>{reset} agent[{bold}{db}{agent}{reset}]",
+		CompilerPrompt:  "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {server} {fw}=>{reset} [{bold}{y}Compiler{reset}]",
 		MultilinePrompt: "> ",
 		// Prompt variabes
 		CurrentWorkspace: &s.currentWorkspace,
@@ -101,6 +101,14 @@ func newPrompt(s *Session) Prompt {
 		// Current agent
 		"{agent}": func() string {
 			return s.currentAgentID.String()
+		},
+		// Server state
+		"{server}": func() string {
+			if s.serverRunning {
+				return fmt.Sprintf("%s(%son%s)", tui.RESET, tui.GREEN, tui.RESET)
+			} else {
+				return fmt.Sprintf("%s(%soff%s)", tui.RESET, tui.RED, tui.RESET)
+			}
 		},
 	}
 

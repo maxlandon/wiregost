@@ -40,6 +40,7 @@ func (s *Session) send(cmd []string) error {
 		Context:            s.menuContext,
 		CurrentModule:      s.currentModule,
 		CurrentServerID:    s.currentServerID,
+		ServerRunning:      s.serverRunning,
 		CurrentAgentID:     s.currentAgentID,
 		Command:            cmd,
 	}
