@@ -14,18 +14,37 @@ import (
 )
 
 func (s *Session) endpointConnect(cmd []string) {
-	// In case where shell is already connected to a server, disconnect it
-	if s.connection != nil {
-		s.disconnect()
-	}
-
-	// Set Current endpoint
-	for _, v := range s.SavedEndpoints {
-		if v.FQDN == cmd[2] {
-			s.CurrentEndpoint = v
+	// If no endpoint provided, connect to default
+	if len(cmd) == 2 {
+		for _, v := range s.SavedEndpoints {
+			if v.IsDefault {
+				// In case where shell is already connected to a server, disconnect it
+				if s.connection != nil {
+					s.disconnect()
+				}
+				s.CurrentEndpoint = v
+				s.connect()
+			}
 		}
 	}
-	s.connect()
+
+	if len(cmd) == 3 {
+		recognized := false
+		for _, v := range s.SavedEndpoints {
+			if v.FQDN == cmd[2] {
+				// In case where shell is already connected to a server, disconnect it
+				if s.connection != nil {
+					s.disconnect()
+				}
+				recognized = true
+				s.CurrentEndpoint = v
+				s.connect()
+			}
+		}
+		if !recognized {
+			fmt.Printf("%s[!]%s Endpoint name not in saved endpoints.'\n", tui.RED, tui.RESET)
+		}
+	}
 }
 
 func (s *Session) addEndpoint() error {

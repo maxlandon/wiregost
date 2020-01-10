@@ -1,6 +1,7 @@
 package session
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -44,14 +45,28 @@ func (s *Session) stackShow() {
 }
 
 func (s *Session) stackPop(cmd []string) {
-	s.send(cmd)
 	var popped string
 	if len(cmd) == 3 {
-		popped = cmd[2]
+		// Check module, so we don't send garbage to the server.
+		s.send([]string{"stack", "list"})
+		resp := <-s.moduleReqs
+		list := resp.ModuleList
+		recognized := false
+		for _, m := range list {
+			if m == cmd[2] {
+				recognized = true
+				popped = cmd[2]
+			}
+		}
+		if !recognized {
+			fmt.Printf("%s[!]%s Error in module name: not in stack.'\n", tui.RED, tui.RESET)
+			return
+		}
 	} else {
 		popped = s.currentModule
 	}
-
+	// Eventually send command
+	s.send(cmd)
 	// Wait for new current module fallback
 	fallback := <-s.moduleReqs
 	if fallback.ModuleName != "" {
@@ -66,6 +81,24 @@ func (s *Session) stackPop(cmd []string) {
 }
 
 func (s *Session) stackUse(cmd []string) {
+	if len(cmd) < 3 {
+		fmt.Printf("%s[!]%s Invalid command: give a stack module to use'\n", tui.RED, tui.RESET)
+		return
+	}
+	// Check module, so we don't send garbage to the server.
+	s.send([]string{"stack", "list"})
+	resp := <-s.moduleReqs
+	list := resp.ModuleList
+	recognized := false
+	for _, m := range list {
+		if m == cmd[2] {
+			recognized = true
+		}
+	}
+	if !recognized {
+		fmt.Printf("%s[!]%s Error in module name: not in stack.'\n", tui.RED, tui.RESET)
+		return
+	}
 	s.send([]string{"use", "module", cmd[2]})
 	mod := <-s.moduleReqs
 	// Switch shell context

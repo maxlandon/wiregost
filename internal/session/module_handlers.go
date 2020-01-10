@@ -11,6 +11,25 @@ import (
 )
 
 func (s *Session) useModule(cmd []string) {
+	if len(cmd) < 3 {
+		fmt.Printf("%s[!]%s Invalid command: select module to use. \n", tui.RED, tui.RESET)
+		return
+	}
+	// Check workspace, so we don't send garbage to the server.
+	s.send([]string{"module", "list"})
+	resp := <-s.moduleReqs
+	list := resp.ModuleList
+	recognized := false
+	for _, w := range list {
+		if w == cmd[2] {
+			recognized = true
+		}
+	}
+	if !recognized {
+		fmt.Printf("%s[!]%s Error: module does not exist.'\n", tui.RED, tui.RESET)
+		return
+	}
+	// Eventually send command
 	s.send(cmd)
 	mod := <-s.moduleReqs
 	// Switch shell context
@@ -106,6 +125,10 @@ func (s *Session) getModuleList(cmd []string) {
 }
 
 func (s *Session) setModuleOption(cmd []string) {
+	if len(cmd) < 3 {
+		fmt.Printf("%s[!]%s Invalid command: use 'set <option> <value>'. \n", tui.RED, tui.RESET)
+		return
+	}
 	s.send(cmd)
 	opt := <-s.moduleReqs
 	if opt.Status != "" {
@@ -119,6 +142,10 @@ func (s *Session) setModuleOption(cmd []string) {
 }
 
 func (s *Session) setAgent(cmd []string) {
+	if len(cmd) < 3 {
+		fmt.Printf("%s[!]%s Invalid command: Provide an agent to use'. \n", tui.RED, tui.RESET)
+		return
+	}
 	s.send(cmd)
 	opt := <-s.moduleReqs
 	if opt.Status != "" {

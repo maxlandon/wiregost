@@ -39,6 +39,25 @@ func (s *Session) workspaceList(cmd []string) {
 }
 
 func (s *Session) workspaceSwitch(cmd []string) {
+	if len(cmd) < 3 {
+		fmt.Printf("%s[!]%s Invalid command: provide a workspace name'\n", tui.RED, tui.RESET)
+		return
+	}
+
+	// Check workspace, so we don't send garbage to the server.
+	s.send([]string{"workspace", "list"})
+	workspaceList := <-s.workspaceReqs
+	recognized := false
+	for _, w := range workspaceList.WorkspaceInfos {
+		if w[0] == cmd[2] {
+			recognized = true
+		}
+	}
+	if !recognized {
+		fmt.Printf("%s[!]%s Error: workspace %s does not exist.'\n", tui.RED, tui.RESET, cmd[2])
+		return
+	}
+	// Eventually send command
 	s.send(cmd)
 	workspace := <-s.workspaceReqs
 	server := <-s.serverReqs
@@ -61,6 +80,26 @@ func (s *Session) workspaceSwitch(cmd []string) {
 }
 
 func (s *Session) workspaceDelete(cmd []string) {
+	if len(cmd) < 3 {
+		fmt.Printf("%s[!]%s Invalid command: provide a workspace name'\n", tui.RED, tui.RESET)
+		return
+	}
+
+	// Check workspace, so we don't send garbage to the server.
+	s.send([]string{"workspace", "list"})
+	workspaceList := <-s.workspaceReqs
+	recognized := false
+	for _, w := range workspaceList.WorkspaceInfos {
+		if w[0] == cmd[2] {
+			recognized = true
+		}
+	}
+	if !recognized {
+		fmt.Printf("%s[!]%s Error: workspace %s does not exist.'\n", tui.RED, tui.RESET, cmd[2])
+		return
+	}
+
+	// Check if workspace is not current one
 	if cmd[2] == s.currentWorkspace {
 		fmt.Println()
 		fmt.Printf("%s[!]%s Cannot delete current workspace", tui.RED, tui.RESET)
@@ -74,6 +113,10 @@ func (s *Session) workspaceDelete(cmd []string) {
 }
 
 func (s *Session) workspaceNew(cmd []string) {
+	if len(cmd) < 3 {
+		fmt.Printf("%s[!]%s Invalid command: provide a workspace name'\n", tui.RED, tui.RESET)
+		return
+	}
 	// send params if they are set
 	params := make(map[string]string)
 	for k, v := range s.Env {

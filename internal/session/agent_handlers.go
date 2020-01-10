@@ -10,8 +10,27 @@ import (
 )
 
 func (s *Session) agentInteract(cmd []string) {
-	s.menuContext = "agent"
-	s.currentAgentID, _ = uuid.FromString(cmd[2])
+	// Check command
+	if cmd[0] == "interact" {
+		if len(cmd) < 2 {
+			fmt.Printf("%s[!]%s Invalid command: select agent.\n", tui.RED, tui.RESET)
+			return
+
+		}
+		s.menuContext = "agent"
+		s.currentAgentID, _ = uuid.FromString(cmd[1])
+
+	}
+	if cmd[0] == "agent" {
+		if len(cmd) < 3 {
+			fmt.Printf("%s[!]%s Invalid command: select agent.\n", tui.RED, tui.RESET)
+			return
+		}
+		s.menuContext = "agent"
+		s.currentAgentID, _ = uuid.FromString(cmd[2])
+
+	}
+	// Change menu
 	s.Shell.Config.AutoComplete = s.getCompleter("agent")
 }
 

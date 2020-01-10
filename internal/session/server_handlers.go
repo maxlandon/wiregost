@@ -135,6 +135,10 @@ func (s *Session) serverList(cmd []string) {
 }
 
 func (s *Session) generateCertificate(cmd []string) {
+	if len(cmd) < 3 {
+		fmt.Printf("%s[!]%s Invalid command: Provide a name for the certificate. \n", tui.RED, tui.RESET)
+		return
+	}
 	s.send(cmd)
 	fmt.Println()
 	fmt.Println("  Generating Certificate and private key...")

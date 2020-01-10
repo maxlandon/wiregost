@@ -3,6 +3,7 @@ package session
 import (
 	"bufio"
 	"crypto/tls"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -10,6 +11,7 @@ import (
 
 	// 3rd party
 	"github.com/chzyer/readline"
+	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/internal/compiler"
 	"github.com/maxlandon/wiregost/internal/messages"
 	"github.com/maxlandon/wiregost/internal/modules"
@@ -184,6 +186,10 @@ func (s *Session) mainMenuCommand(cmd []string) {
 		}
 	// Workspace
 	case "workspace":
+		if len(cmd) < 2 {
+			fmt.Printf("%s[!]%s Invalid command: use 'workspace <command>'\n", tui.RED, tui.RESET)
+			break
+		}
 		switch cmd[1] {
 		case "switch":
 			s.workspaceSwitch(cmd)
@@ -211,6 +217,8 @@ func (s *Session) mainMenuCommand(cmd []string) {
 			s.stackShow()
 		case 2:
 			switch cmd[1] {
+			case "use":
+				s.stackUse(cmd)
 			case "show":
 				s.stackShow()
 			case "pop":
@@ -222,6 +230,8 @@ func (s *Session) mainMenuCommand(cmd []string) {
 				s.stackUse(cmd)
 			case "pop":
 				s.stackPop(cmd)
+			case "show":
+				s.stackShow()
 			}
 		}
 	// Compiler
@@ -229,6 +239,10 @@ func (s *Session) mainMenuCommand(cmd []string) {
 		s.useCompiler()
 	// Server
 	case "server":
+		if len(cmd) < 2 {
+			fmt.Printf("%s[!]%s Invalid command: use 'server <command>'\n", tui.RED, tui.RESET)
+			break
+		}
 		switch cmd[1] {
 		case "reload":
 			s.serverReload(cmd)
@@ -242,6 +256,11 @@ func (s *Session) mainMenuCommand(cmd []string) {
 			s.serverList(cmd)
 		}
 	case "agent":
+		// Check
+		if len(cmd) == 1 {
+			fmt.Printf("%s[!]%s Invalid command: use 'agent <command>'\n", tui.RED, tui.RESET)
+			break
+		}
 		switch cmd[1] {
 		case "list":
 			s.listAgents(cmd)
@@ -249,8 +268,7 @@ func (s *Session) mainMenuCommand(cmd []string) {
 			s.agentInteract(cmd)
 		}
 	case "interact":
-		// Need to use custom command for handler to handle it correctly
-		s.agentInteract([]string{"agent", "interact", cmd[1]})
+		s.agentInteract(cmd)
 	}
 }
 
@@ -284,6 +302,10 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 		}
 	// Workspace
 	case "workspace":
+		if len(cmd) < 2 {
+			fmt.Printf("%s[!]%s Invalid command: use 'workspace <command>'\n", tui.RED, tui.RESET)
+			break
+		}
 		switch cmd[1] {
 		case "switch":
 			s.workspaceSwitch(cmd)
@@ -344,6 +366,10 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 		}
 	// Server
 	case "server":
+		if len(cmd) < 2 {
+			fmt.Printf("%s[!]%s Invalid command: use 'server <command>'\n", tui.RED, tui.RESET)
+			break
+		}
 		switch cmd[1] {
 		case "reload":
 			s.serverReload(cmd)
@@ -360,6 +386,10 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 	case "compiler":
 		s.useCompiler()
 	case "agent":
+		if len(cmd) == 1 {
+			fmt.Printf("%s[!]%s Invalid command: use 'agent <command>'\n", tui.RED, tui.RESET)
+			break
+		}
 		switch cmd[1] {
 		case "list":
 			s.listAgents(cmd)
@@ -367,8 +397,7 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 			s.agentInteract(cmd)
 		}
 	case "interact":
-		// Need to use custom command for handler to handle it correctly
-		s.agentInteract([]string{"agent", "interact", cmd[1]})
+		s.agentInteract(cmd)
 	}
 }
 
@@ -402,6 +431,10 @@ func (s *Session) agentMenuCommand(cmd []string) {
 		}
 	// Workspace
 	case "workspace":
+		if len(cmd) < 2 {
+			fmt.Printf("%s[!]%s Invalid command: use 'workspace <command>'\n", tui.RED, tui.RESET)
+			break
+		}
 		switch cmd[1] {
 		case "switch":
 			s.workspaceSwitch(cmd)
@@ -442,6 +475,10 @@ func (s *Session) agentMenuCommand(cmd []string) {
 		}
 	// Server
 	case "server":
+		if len(cmd) < 2 {
+			fmt.Printf("%s[!]%s Invalid command: use 'server <command>'\n", tui.RED, tui.RESET)
+			break
+		}
 		switch cmd[1] {
 		case "reload":
 			s.serverReload(cmd)
@@ -460,12 +497,18 @@ func (s *Session) agentMenuCommand(cmd []string) {
 
 		// Agent
 	case "agent":
+		if len(cmd) == 1 {
+			fmt.Printf("%s[!]%s Invalid command: use 'agent <command>'\n", tui.RED, tui.RESET)
+			break
+		}
 		switch cmd[1] {
 		case "list":
 			s.listAgents(cmd)
 		case "interact":
 			s.agentInteract(cmd)
 		}
+	case "interact":
+		s.agentInteract(cmd)
 	case "info":
 		s.infoAgent(cmd)
 	case "kill":
@@ -486,9 +529,6 @@ func (s *Session) agentMenuCommand(cmd []string) {
 		s.setAgentOption(cmd)
 	case "execute-shellcode":
 		s.executeShellCodeAgent(cmd)
-	case "interact":
-		// Need to use custom command for handler to handle it correctly
-		s.agentInteract([]string{"agent", "interact", cmd[1]})
 	case "back", "main":
 		s.backAgentMenu(cmd)
 	}

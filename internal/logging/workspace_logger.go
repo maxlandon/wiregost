@@ -252,15 +252,15 @@ func (wl *WorkspaceLogger) GetLogs(request messages.ClientRequest) {
 			}
 			hlength--
 		}
-		// Send back logs to client
-		logs := messages.LogResponse{
-			Logs: list,
-		}
-		msg := messages.Message{
-			ClientID: request.ClientID,
-			Type:     "log",
-			Content:  logs,
-		}
-		messages.Responses <- msg
 	}
+	// Send back logs to client
+	logs := messages.LogResponse{
+		Logs: list,
+	}
+	msg := messages.Message{
+		ClientID: request.ClientID,
+		Type:     "log",
+		Content:  logs,
+	}
+	messages.Responses <- msg
 }
