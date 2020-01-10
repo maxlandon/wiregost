@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Ne0nd0g/merlin/pkg/modules/shellcode"
 	"github.com/evilsocket/islazy/tui"
 	"github.com/mattn/go-shellwords"
 	"github.com/maxlandon/wiregost/internal/messages"
+	"github.com/maxlandon/wiregost/internal/modules/shellcode"
 	uuid "github.com/satori/go.uuid"
 )
 

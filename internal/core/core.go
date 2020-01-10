@@ -16,13 +16,13 @@ import (
 	"github.com/maxlandon/wiregost/internal/messages"
 )
 
-// Debug puts Merlin into debug mode and displays debug messages
+// Debug puts Wiregost into debug mode and displays debug messages
 var Debug = false
 
-// Verbose puts Merlin into verbose mode and displays verbose messages
+// Verbose puts Wiregost into verbose mode and displays verbose messages
 var Verbose = false
 
-// CurrentDir is the current directory where Merlin was executed from
+// CurrentDir is the current directory where Wiregost was executed from
 var CurrentDir, _ = os.Getwd()
 var src = rand.NewSource(time.Now().UnixNano())
 

@@ -36,8 +36,8 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		color.Blue(fmt.Sprintf("Merlin Agent Version: %s", wiregost.Version))
-		color.Blue(fmt.Sprintf("Merlin Agent Build: %s", build))
+		color.Blue(fmt.Sprintf("Wiregost Agent Version: %s", wiregost.Version))
+		color.Blue(fmt.Sprintf("Wiregost Agent Build: %s", build))
 		os.Exit(0)
 	}
 
@@ -61,7 +61,7 @@ func main() {
 
 // usage prints command line options
 func usage() {
-	fmt.Printf("Merlin Agent\r\n")
+	fmt.Printf("Wiregost Agent\r\n")
 	flag.PrintDefaults()
 	os.Exit(0)
 }

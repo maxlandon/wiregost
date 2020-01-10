@@ -120,7 +120,7 @@ func New(iface string, port int, protocol string, key string, certificate string
 	}
 
 	if len(cer.Certificate) < 1 || cer.PrivateKey == nil {
-		m := "Unable to import certificate for use in Merlin: empty certificate structure."
+		m := "Unable to import certificate for use in Wiregost: empty certificate structure."
 		log.Warnf(m)
 		return s, errors.New("empty certificate structure")
 	}
@@ -137,23 +137,23 @@ func New(iface string, port int, protocol string, key string, certificate string
 	S256 := sha256.Sum256(x.Raw)
 	sha256Fingerprint := hex.EncodeToString(S256[:])
 
-	// merlinCRT is the string representation of the SHA1 fingerprint for the public x.509 certificate distributed with Merlin
-	merlinCRT := "4af9224c77821bc8a46503cfc2764b94b1fc8aa2521afc627e835f0b3c449f50"
+	// wiregostCRT is the string representation of the SHA1 fingerprint for the public x.509 certificate distributed with Wiregost
+	wiregostCRT := "4af9224c77821bc8a46503cfc2764b94b1fc8aa2521afc627e835f0b3c449f50"
 
-	// Check to see if the Public Key SHA1 finger print matches the certificate distributed with Merlin for testing
-	if merlinCRT == sha256Fingerprint {
-		log.Warnf("Insecure publicly distributed Merlin x.509 testing certificate in use")
-		log.Infof("Additional details: https://github.com/Ne0nd0g/merlin/wiki/TLS-Certificates")
+	// Check to see if the Public Key SHA1 finger print matches the certificate distributed with Wiregost for testing
+	if wiregostCRT == sha256Fingerprint {
+		log.Warnf("Insecure publicly distributed Wiregost x.509 testing certificate in use")
+		log.Infof("Additional details: https://github.com/Ne0nd0g/wiregost/wiki/TLS-Certificates")
 	}
 
 	// Log certificate information
-	log.Debugf(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a %s signature of %s",
+	log.Debugf(fmt.Sprintf("Starting Wiregost Server using an X.509 certificate with a %s signature of %s",
 		x.SignatureAlgorithm.String(), hex.EncodeToString(x.Signature)))
-	log.Debugf(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a public key of %v", x.PublicKey))
-	log.Debugf(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a serial number of %d", x.SerialNumber))
-	log.Debugf(fmt.Sprintf("Starting Merlin Server using an X.509 certifcate with a subject of %s", x.Subject.String()))
-	log.Debugf(fmt.Sprintf("Starting Merlin Server using an X.509 certificate with a SHA256 hash, "+
-		"calculated by Merlin, of %s", sha256Fingerprint))
+	log.Debugf(fmt.Sprintf("Starting Wiregost Server using an X.509 certificate with a public key of %v", x.PublicKey))
+	log.Debugf(fmt.Sprintf("Starting Wiregost Server using an X.509 certificate with a serial number of %d", x.SerialNumber))
+	log.Debugf(fmt.Sprintf("Starting Wiregost Server using an X.509 certifcate with a subject of %s", x.Subject.String()))
+	log.Debugf(fmt.Sprintf("Starting Wiregost Server using an X.509 certificate with a SHA256 hash, "+
+		"calculated by Wiregost, of %s", sha256Fingerprint))
 
 	// Configure TLS
 	TLSConfig := &tls.Config{
@@ -206,8 +206,8 @@ func (s *Server) Run() (status string, err error) {
 
 	// Sleep to allow the shell to start up
 	time.Sleep(45 * time.Millisecond)
-	if s.Psk == "merlin" {
-		log.Warnf("Listener was started using \"merlin\" as the Pre-Shared Key (PSK) allowing anyone" +
+	if s.Psk == "wiregost" {
+		log.Warnf("Listener was started using \"wiregost\" as the Pre-Shared Key (PSK) allowing anyone" +
 			" decrypt message traffic.")
 		log.Infof("Consider changing the PSK by using the -Psk command line flag.")
 	}
@@ -246,7 +246,7 @@ func (s *Server) Run() (status string, err error) {
 	return fmt.Errorf("%s is an invalid server protocol", s.Protocol).Error(), nil
 }
 
-// agentHandler function is responsible for all Merlin agent traffic
+// agentHandler function is responsible for all Wiregost agent traffic
 func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 	// Test context logger
 	log := s.log.WithFields(logrus.Fields{"component": "server", "workspaceId": s.WorkspaceID})
@@ -264,9 +264,9 @@ func (s *Server) agentHandler(w http.ResponseWriter, r *http.Request) {
 	log.Debugf(fmt.Sprintf("TLS Server Name: %s", r.TLS.ServerName))
 	log.Debugf(fmt.Sprintf("Content Length: %d", r.ContentLength))
 
-	// Check for Merlin PRISM activity
+	// Check for Wiregost PRISM activity
 	if r.UserAgent() == "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36 " {
-		log.Warnf(fmt.Sprintf("Someone from %s is attempting to fingerprint this Merlin server", r.RemoteAddr))
+		log.Warnf(fmt.Sprintf("Someone from %s is attempting to fingerprint this Wiregost server", r.RemoteAddr))
 		//w.WriteHeader(404)
 	}
 	// Make sure the message has a JWT

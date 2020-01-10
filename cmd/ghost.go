@@ -8,9 +8,6 @@ import (
 )
 
 func main() {
-	// In Merlin,
-	// go cli.Shell()       Ending right away. Why ?
-
 	// Print welcome picture
 	fmt.Println(tui.Dim("----------------------------------------------------------------" +
 		"--------------------------------------------------------------------------------"))

@@ -103,7 +103,7 @@ type Module struct {
 	Result  string   `json:"result"`
 }
 
-// NativeCmd is a JSON payload to execute commands native inside of Merlin using go instead of executing the binary
+// NativeCmd is a JSON payload to execute commands native inside of Wiregost using go instead of executing the binary
 // program on the host (i.e. ls)
 type NativeCmd struct {
 	Job     string `json:"job"`

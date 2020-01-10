@@ -26,9 +26,8 @@ import (
 	"go.dedis.ch/kyber"
 
 	// Wiregost
-	"github.com/Ne0nd0g/merlin/pkg/logging" // CHANGE THIS WHEN READY
 	"github.com/maxlandon/wiregost/internal/core"
-	testlog "github.com/maxlandon/wiregost/internal/logging"
+	"github.com/maxlandon/wiregost/internal/logging"
 	"github.com/maxlandon/wiregost/internal/messages"
 )
 
@@ -66,7 +65,7 @@ type agent struct {
 	OPAQUERecord     gopaque.ServerRegisterComplete // Holds the OPAQUE kU, EnvU, PrivS, PubU
 
 	// Added
-	log         *testlog.WorkspaceLogger
+	log         *logging.WorkspaceLogger
 	WorkspaceID int
 	dirPath     string
 }
@@ -87,7 +86,7 @@ func KeyExchange(m messages.Base) (messages.Base, error) {
 		return serverKeyMessage, fmt.Errorf("the agent does not exist")
 	}
 
-	logging.Server(fmt.Sprintf("Received new agent key exchange from %s", m.ID))
+	Log(m.ID, "debug", fmt.Sprintf("Received new agent key exchange from %s", m.ID))
 
 	ke := m.Payload.(messages.KeyExchange)
 
@@ -120,7 +119,7 @@ func KeyExchange(m messages.Base) (messages.Base, error) {
 }
 
 // OPAQUERegistrationInit is used to register an agent leveraging the OPAQUE Password Authenticated Key Exchange (PAKE) protocol
-func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serverId uuid.UUID, wsId int, ws string, logger *testlog.WorkspaceLogger) (messages.Base, error) {
+func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serverId uuid.UUID, wsId int, ws string, logger *logging.WorkspaceLogger) (messages.Base, error) {
 	// Defer log message until agent is registered.
 	enterFunc := "Entering into agents.OPAQUERegistrationInit function"
 
@@ -145,12 +144,12 @@ func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serve
 	}
 
 	var opaqueUserID string
-	var merlinMsgUserID string
+	var wiregostMsgUserID string
 	if !bytes.Equal(userRegInit.UserID, m.ID.Bytes()) {
 		// Again, defer log message until agent is registered.
 		opaqueUserID = fmt.Sprintf("OPAQUE UserID: %v", userRegInit.UserID)
-		merlinMsgUserID = fmt.Sprintf("Merlin Message UserID: %v", m.ID.Bytes())
-		return returnMessage, errors.New("the OPAQUE UserID doesn't match the Merlin message ID")
+		wiregostMsgUserID = fmt.Sprintf("Wiregost Message UserID: %v", m.ID.Bytes())
+		return returnMessage, errors.New("the OPAQUE UserID doesn't match the Wiregost message ID")
 	}
 
 	serverRegInit := serverReg.Init(&userRegInit)
@@ -188,7 +187,7 @@ func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serve
 	// Catch up with previously defered log messages
 	Log(m.ID, "trace", enterFunc)
 	Log(m.ID, "trace", opaqueUserID)
-	Log(m.ID, "trace", merlinMsgUserID)
+	Log(m.ID, "trace", wiregostMsgUserID)
 
 	// We have now caught up.
 	Log(m.ID, "info", "Received agent OPAQUE register initialization message")
@@ -222,9 +221,9 @@ func OPAQUERegistrationComplete(m messages.Base) (messages.Base, error) {
 
 	Agents[m.ID].OPAQUERecord = *Agents[m.ID].OPAQUEServerReg.Complete(&userRegComplete)
 
-	// Check to make sure Merlin  UserID matches OPAQUE UserID
+	// Check to make sure Wiregost  UserID matches OPAQUE UserID
 	if !bytes.Equal(m.ID.Bytes(), Agents[m.ID].OPAQUERecord.UserID) {
-		return returnMessage, fmt.Errorf("the OPAQUE UserID: %v doesn't match the Merlin UserID: %v", Agents[m.ID].OPAQUERecord.UserID, m.ID.Bytes())
+		return returnMessage, fmt.Errorf("the OPAQUE UserID: %v doesn't match the Wiregost UserID: %v", Agents[m.ID].OPAQUERecord.UserID, m.ID.Bytes())
 	}
 
 	Log(m.ID, "debug", "OPAQUE registration complete")
@@ -365,7 +364,7 @@ func StatusCheckIn(m messages.Base) (messages.Base, error) {
 	if !ok {
 		Log(m.ID, "warn", fmt.Sprintf("Orphaned agent %s has checked in at %s. Instructing agent to re-initialize...",
 			time.Now().UTC().Format(time.RFC3339), m.ID.String()))
-		logging.Server(fmt.Sprintf("[Orphaned agent %s has checked in", m.ID.String()))
+		Log(m.ID, "info", fmt.Sprintf("[Orphaned agent %s has checked in", m.ID.String()))
 		job := Job{
 			ID:      core.RandStringBytesMaskImprSrc(10),
 			Type:    "initialize",
