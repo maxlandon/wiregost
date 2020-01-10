@@ -109,6 +109,8 @@ func (h *DispatchClients) Levels() []logrus.Level {
 // -----------------------------------------------------------------------------------------
 // LOG AGENT MESSAGES
 
+// LogAgent is a hook in charge of logging all Agent logs to their
+// respective files in their directories.
 type LogAgent struct {
 	logPath string
 }
@@ -141,6 +143,8 @@ func (h *LogAgent) Levels() []logrus.Level {
 // -----------------------------------------------------------------------------------------
 // LOG SERVER MESSAGES
 
+// LogServer is a hook in charge of logging all Server logs to their
+// respective files in their directories.
 type LogServer struct {
 	serverLogPath string
 }

@@ -18,11 +18,14 @@ import (
 	"github.com/maxlandon/wiregost/internal/modules/shellcode"
 )
 
+// Manager is in charge of mapping agents to their servers, so that query is made
+// with respect to a workspace context.
 type Manager struct {
 	// This map is just used for functions that require server filtering
 	Agents map[uuid.UUID][]uuid.UUID
 }
 
+// NewManager instantiates an Agent Manager, which handles requests from Servers and Clients
 func NewManager() *Manager {
 	manager := &Manager{
 		Agents: make(map[uuid.UUID][]uuid.UUID, 0),

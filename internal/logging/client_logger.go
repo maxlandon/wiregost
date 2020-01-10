@@ -69,6 +69,7 @@ func (cl *ClientLogger) Forward(entry *logrus.Entry) error {
 	return nil
 }
 
+// SetLevel is used by clients to regulate the level of log events that are forwarded to them.
 func (cl *ClientLogger) SetLevel(request messages.ClientRequest) {
 	cl.Level = levels[request.Command[2]]
 	// Return response

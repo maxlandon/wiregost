@@ -119,7 +119,7 @@ func KeyExchange(m messages.Base) (messages.Base, error) {
 }
 
 // OPAQUERegistrationInit is used to register an agent leveraging the OPAQUE Password Authenticated Key Exchange (PAKE) protocol
-func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serverId uuid.UUID, wsId int, ws string, logger *logging.WorkspaceLogger) (messages.Base, error) {
+func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serverID uuid.UUID, wsID int, ws string, logger *logging.WorkspaceLogger) (messages.Base, error) {
 	// Defer log message until agent is registered.
 	enterFunc := "Entering into agents.OPAQUERegistrationInit function"
 
@@ -173,7 +173,7 @@ func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serve
 
 	// Add agent UUID to the server's list of agents, via Agent Manager
 	req := messages.AgentRequest{
-		ServerID: serverId,
+		ServerID: serverID,
 		Action:   "add",
 		AgentID:  m.ID,
 	}
@@ -182,7 +182,7 @@ func OPAQUERegistrationInit(m messages.Base, opaqueServerKey kyber.Scalar, serve
 	// Attach logger to agent.
 	// The logger will be used by using global map indexing in each function.
 	agent.log = logger
-	agent.WorkspaceID = wsId
+	agent.WorkspaceID = wsID
 
 	// Catch up with previously defered log messages
 	Log(m.ID, "trace", enterFunc)

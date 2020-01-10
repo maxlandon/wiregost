@@ -134,7 +134,7 @@ func (wm *Manager) handleRequests() {
 		case "switch":
 			wm.switchWorkspace(req)
 		case "delete":
-			result := wm.deleteServer(req.Command[2], req.UserID, req.ClientID)
+			result := wm.deleteServer(req.Command[2], req.UserID)
 			res := messages.WorkspaceResponse{
 				Result: result,
 			}
@@ -267,7 +267,7 @@ func (ws *Workspace) saveServer() {
 	}
 }
 
-func (wm *Manager) deleteServer(name string, ownerID int, clientId int) (result string) {
+func (wm *Manager) deleteServer(name string, ownerID int) (result string) {
 	var res string
 	for _, ws := range wm.Workspaces {
 		if ws.OwnerID == ownerID && name == ws.Name {
