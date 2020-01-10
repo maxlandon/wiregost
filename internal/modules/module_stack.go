@@ -157,7 +157,7 @@ func (msm *Manager) useModule(request messages.ClientRequest) {
 		}
 	}
 	// If not, create it and add it to stack
-	var mPath = path.Join("/home/para/go/src/github.com/Ne0nd0g/merlin",
+	var mPath = path.Join("/home/para/pentest/wiregost",
 		"data", "modules", name+".json")
 	module, _ := Create(mPath)
 	stack.Modules = append(stack.Modules, &module)
@@ -187,7 +187,7 @@ func (msm *Manager) reloadModule(request messages.ClientRequest) {
 		stackModNameSuf := mod.Path[len(mod.Path)-1]
 		stackModName := strings.TrimSuffix(stackModNameSuf, ".json")
 		if strings.ToLower(stackModName) == strings.ToLower(modName) {
-			var mPath = path.Join("/home/para/go/src/github.com/Ne0nd0g/merlin",
+			var mPath = path.Join("/home/para/pentest/wiregost",
 				"data", "modules", name+".json")
 			*mod, _ = Create(mPath)
 			response := ModuleResponse{

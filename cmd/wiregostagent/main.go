@@ -10,6 +10,7 @@ import (
 	// 3rd Party
 	"github.com/fatih/color"
 
+	// Wiregost
 	wiregost "github.com/maxlandon/wiregost/internal"
 	"github.com/maxlandon/wiregost/internal/agent"
 )
