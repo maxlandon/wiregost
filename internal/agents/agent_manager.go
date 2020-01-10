@@ -38,6 +38,19 @@ func (am *Manager) handleServerRequests() {
 			am.Agents[request.ServerID] = append(am.Agents[request.ServerID], request.AgentID)
 		case "delete":
 			am.deleteAgent(request)
+		case "delete_all":
+			for s, a := range am.Agents {
+				if s == request.ServerID {
+					for _, agent := range a {
+						reqKill := messages.ClientRequest{Command: []string{"kill"}, CurrentAgentID: agent}
+						fmt.Println(agent)
+						am.killAgent(reqKill)
+						time.Sleep(time.Second * 10)
+					}
+					delete(am.Agents, s)
+				}
+			}
+			fmt.Println(am.Agents)
 		}
 	}
 }
@@ -119,6 +132,7 @@ func (am *Manager) showAgents(request messages.ClientRequest) {
 		infos["hostname"] = Agents[a].HostName
 		infos["protocol"] = Agents[a].Proto
 		infos["statusCheckIn"] = Agents[a].StatusCheckIn.Format("2006-01-02T15:04:05")
+		infos["status"] = GetAgentStatus(Agents[a].ID)
 
 		agentList = append(agentList, infos)
 	}

@@ -43,10 +43,11 @@ func (s *Session) listAgents(cmd []string) {
 	table.SetCenterSeparator(tui.Dim("|"))
 	table.SetRowSeparator(tui.Dim("-"))
 	table.SetColumnSeparator(tui.Dim("|"))
-	table.SetHeader([]string{"Agent ID", "Platform", "UserName", "HostName", "Proto", "Status CheckIn"})
+	table.SetHeader([]string{"Agent ID", "Platform", "UserName", "HostName", "Status", "Transport", "Status CheckIn"})
 	table.SetAutoWrapText(true)
 	table.SetColWidth(80)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -66,7 +67,7 @@ func (s *Session) listAgents(cmd []string) {
 		} else if a["protocol"] == "hq" {
 			proto = "QUIC (hq)"
 		}
-		table.Append([]string{a["id"], a["platform"] + "/" + a["arch"], a["username"], a["hostname"], proto, a["statusCheckIn"]})
+		table.Append([]string{a["id"], a["platform"] + "/" + a["arch"], a["username"], a["hostname"], a["status"], proto, a["statusCheckIn"]})
 	}
 	fmt.Println()
 	table.Render()

@@ -20,6 +20,7 @@ import (
 	// 3rd Party
 	"github.com/cretz/gopaque/gopaque"
 	"github.com/evilsocket/islazy/fs"
+	"github.com/evilsocket/islazy/tui"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"go.dedis.ch/kyber"
@@ -717,11 +718,11 @@ func GetAgentStatus(agentID uuid.UUID) string {
 			errDur.Error()))
 	}
 	if Agents[agentID].StatusCheckIn.Add(dur).After(time.Now()) {
-		status = "Active"
+		status = tui.Green("Active")
 	} else if Agents[agentID].StatusCheckIn.Add(dur * time.Duration(Agents[agentID].MaxRetry+1)).After(time.Now()) { // +1 to account for skew
-		status = "Delayed"
+		status = tui.Yellow("Delayed")
 	} else {
-		status = "Dead"
+		status = tui.Red("Dead")
 	}
 	return status
 }
