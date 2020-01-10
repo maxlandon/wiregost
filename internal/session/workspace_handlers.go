@@ -1,6 +1,7 @@
 package session
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -105,10 +106,18 @@ func (s *Session) workspaceDelete(cmd []string) {
 		fmt.Printf("%s[!]%s Cannot delete current workspace", tui.RED, tui.RESET)
 		fmt.Println()
 	} else {
-		s.send(cmd)
-		workspace := <-s.workspaceReqs
-		fmt.Println()
-		fmt.Println(workspace.Result)
+		fmt.Println("Warning: deleting workspace will erase all agents and data related to it. Continue ? (Yes/No)")
+		reader := bufio.NewReader(os.Stdin)
+		text, _ := reader.ReadString('\n')
+		if (text == "yes\n") || (text == "Yes\n") {
+			s.send(cmd)
+			workspace := <-s.workspaceReqs
+			fmt.Println()
+			fmt.Println(workspace.Result)
+		} else {
+			fmt.Println()
+			fmt.Println("[*] Aborted workspace deletion")
+		}
 	}
 }
 

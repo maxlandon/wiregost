@@ -18,7 +18,7 @@ func (s *Session) handleNotifications(notif messages.Notification) {
 		case "delete":
 			fmt.Printf("%s[!]%s Workspace %s deleted from another client shell. Falling back to default.",
 				tui.BOLD, tui.RESET, s.currentWorkspace)
-			s.currentWorkspace = "default"
+			s.currentWorkspace = notif.Workspace
 			s.CurrentWorkspaceID = notif.FallbackWorkspaceID
 			// Refresh shell
 			s.refresh()

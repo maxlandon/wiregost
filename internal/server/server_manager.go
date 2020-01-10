@@ -53,6 +53,14 @@ func (sm *Manager) handleWorkspaceRequests() {
 		case "spawn":
 			sm.loadServer(request)
 		case "delete":
+			// Remove all agents tied to server
+			agentReq := messages.AgentRequest{
+				Action:   "delete_all",
+				ServerID: sm.Servers[request.WorkspaceID].ID,
+			}
+			messages.AgentRequests <- agentReq
+			// Give time to server to send kill messages
+			time.Sleep(time.Second * 30)
 			delete(sm.Servers, request.WorkspaceID)
 		case "status":
 			sm.giveStatus(request)
