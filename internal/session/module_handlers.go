@@ -39,6 +39,13 @@ func (s *Session) useModule(cmd []string) {
 	// Add code to change current module in the prompt
 }
 
+func (s *Session) reloadModule(cmd []string) {
+	s.send(cmd)
+	status := <-s.moduleReqs
+	fmt.Println()
+	fmt.Println(status.Status)
+}
+
 func (s *Session) showModuleOptions(cmd []string) {
 	s.send(cmd)
 	mod := <-s.moduleReqs
@@ -60,7 +67,7 @@ func (s *Session) showModuleOptions(cmd []string) {
 
 	table.SetBorder(false)
 	// TODO add option for agent alias here
-	table.Append([]string{"Agent", m.Agent.String(), "true", "Agent on which to run module " + m.Name})
+	table.Append([]string{"Agent", tui.Blue(tui.Bold(m.Agent.String())), "true", "Agent on which to run module " + m.Name})
 	for _, v := range m.Options {
 		table.Append([]string{v.Name, v.Value, strconv.FormatBool(v.Required), v.Description})
 	}

@@ -341,6 +341,8 @@ func (s *Session) moduleMenuCommand(cmd []string) {
 		default:
 			s.setModuleOption(cmd)
 		}
+	case "reload":
+		s.reloadModule(cmd)
 	case "run":
 		s.runModule(cmd)
 	case "back":

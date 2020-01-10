@@ -91,6 +91,8 @@ func (msm *Manager) handleClientRequests() {
 		// List command for completers. This command "module" is not available in the shell
 		case "module":
 			getModuleList(request)
+		case "reload":
+			msm.reloadModule(request)
 		// STACK COMMANDS
 		case "stack":
 			switch request.Command[1] {
@@ -156,6 +158,9 @@ func (msm *Manager) useModule(request messages.ClientRequest) {
 	module, _ := Create(mPath)
 	stack.Modules = append(stack.Modules, &module)
 
+	// Save stack
+	msm.saveStack(request.CurrentWorkspace, request.CurrentWorkspaceID)
+
 	// Dispatch response
 	response := ModuleResponse{
 		ModuleName: name,
@@ -167,6 +172,31 @@ func (msm *Manager) useModule(request messages.ClientRequest) {
 	}
 	messages.Responses <- msg
 	return
+}
+
+func (msm *Manager) reloadModule(request messages.ClientRequest) {
+	stack := msm.Stacks[request.CurrentWorkspaceID]
+	name := request.CurrentModule
+	modPath := strings.Split(name, "/")
+	modName := modPath[len(modPath)-1]
+	for _, mod := range stack.Modules {
+		stackModNameSuf := mod.Path[len(mod.Path)-1]
+		stackModName := strings.TrimSuffix(stackModNameSuf, ".json")
+		if strings.ToLower(stackModName) == strings.ToLower(modName) {
+			var mPath = path.Join("/home/para/go/src/github.com/Ne0nd0g/merlin",
+				"data", "modules", name+".json")
+			*mod, _ = Create(mPath)
+			response := ModuleResponse{
+				Status: fmt.Sprintf("%s[*]%s Module reloaded", tui.GREEN, tui.RESET),
+			}
+			msg := messages.Message{
+				ClientID: request.ClientID,
+				Type:     "module",
+				Content:  response,
+			}
+			messages.Responses <- msg
+		}
+	}
 }
 
 func (msm *Manager) popModule(request messages.ClientRequest) {
@@ -204,6 +234,9 @@ func (msm *Manager) popModule(request messages.ClientRequest) {
 	}
 	// Set new stack
 	stack.Modules = newStack
+
+	// Save stack
+	msm.saveStack(request.CurrentWorkspace, request.CurrentWorkspaceID)
 
 	// Send back new current module (empty response if no modules in stack left)
 	currentMod := strings.TrimSuffix(strings.Join(stack.Modules[len(stack.Modules)-1].Path, "/"), ".json")
@@ -261,7 +294,8 @@ func (msm *Manager) setOption(request messages.ClientRequest) {
 			}
 		}
 	}
-
+	// Save stack
+	msm.saveStack(request.CurrentWorkspace, request.CurrentWorkspaceID)
 }
 
 func (msm *Manager) setAgent(request messages.ClientRequest) {
@@ -296,7 +330,8 @@ func (msm *Manager) setAgent(request messages.ClientRequest) {
 			}
 		}
 	}
-
+	// Save stack
+	msm.saveStack(request.CurrentWorkspace, request.CurrentWorkspaceID)
 }
 
 func (msm *Manager) runModule(request messages.ClientRequest) {

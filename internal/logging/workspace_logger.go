@@ -209,7 +209,7 @@ func (wl *WorkspaceLogger) GetLogs(request messages.ClientRequest) {
 			scan := bufio.NewScanner(file)
 			for scan.Scan() {
 				requested, _ := strconv.Atoi(request.Command[3])
-				if hlength >= 20 && count <= requested {
+				if hlength >= requested && count <= requested {
 					list = append(list, scan.Text())
 					count++
 				}
@@ -245,7 +245,7 @@ func (wl *WorkspaceLogger) GetLogs(request messages.ClientRequest) {
 			scan := bufio.NewScanner(file)
 			for scan.Scan() {
 				requested, _ := strconv.Atoi(request.Command[4])
-				if hlength >= 20 && count <= requested {
+				if hlength >= requested && count <= requested {
 					list = append(list, scan.Text())
 					count++
 				}
