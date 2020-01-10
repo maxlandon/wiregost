@@ -13,18 +13,20 @@ import (
 // Endpoint manages all connections and message passing between client shells
 // and the Wiregost components/managers.
 type Endpoint struct {
-	clients  []*Client
-	connect  chan net.Conn
-	requests chan messages.ClientRequest
+	IPAddress string
+	clients   []*Client
+	connect   chan net.Conn
+	requests  chan messages.ClientRequest
 }
 
 // NewEndpoint instantiates a new Endpoint object, which handles all requests
 // from clients and responses from managers.
 func NewEndpoint() *Endpoint {
 	e := &Endpoint{
-		clients:  make([]*Client, 0),
-		connect:  make(chan net.Conn),
-		requests: make(chan messages.ClientRequest),
+		IPAddress: getEndpointIP(),
+		clients:   make([]*Client, 0),
+		connect:   make(chan net.Conn),
+		requests:  make(chan messages.ClientRequest),
 	}
 
 	go e.listen()
@@ -33,6 +35,18 @@ func NewEndpoint() *Endpoint {
 	go e.forwardLogs()
 
 	return e
+}
+
+func getEndpointIP() string {
+	addrs, _ := net.InterfaceAddrs()
+	var ip string
+	for _, addr := range addrs {
+		network, ok := addr.(*net.IPNet)
+		if ok && !network.IP.IsLoopback() && network.IP.To4() != nil {
+			ip = network.IP.String()
+		}
+	}
+	return ip
 }
 
 func (e *Endpoint) authenticateConn(msg messages.ClientRequest, id int) {
@@ -90,6 +104,7 @@ func (e *Endpoint) listen() {
 			// Case clients is connecting and wants confirmation
 			case auth.Command[0] == "connect":
 				e.authenticateConn(msg, auth.UserID)
+				e.pushEndpointIP(auth)
 				e.pushLastWorkspace(auth)
 				// Client wants to modify its log level
 			case strings.Join(auth.Command[:2], " ") == "log level":
@@ -199,7 +214,17 @@ func (e *Endpoint) forwardNotifications() {
 					client.responses <- msg
 				}
 			}
-
+		case res.Type == "server":
+			for _, client := range e.clients {
+				if client.CurrentWorkspaceID == res.WorkspaceID && client.id != res.NotConcerned {
+					msg := messages.Message{
+						ClientID: client.id,
+						Type:     "notification",
+						Content:  res,
+					}
+					client.responses <- msg
+				}
+			}
 		}
 	}
 }
@@ -305,8 +330,68 @@ func (e *Endpoint) dispatchRequest(req messages.ClientRequest) {
 	}
 }
 
+func (e *Endpoint) pushEndpointIP(request messages.ClientRequest) {
+	// Craft notification
+	ipRes := messages.Notification{
+		Type:   "endpoint",
+		Action: e.IPAddress,
+	}
+	ipMsg := messages.Message{
+		ClientID: request.ClientID,
+		Type:     "notification",
+		Content:  ipRes,
+	}
+
+	for _, client := range e.clients {
+		if client.id == request.ClientID {
+			client.responses <- ipMsg
+		}
+	}
+}
+
 func (e *Endpoint) pushLastWorkspace(request messages.ClientRequest) {
 	switch {
+	case len(e.clients) == 1:
+		// Forward request to workspace
+		request.Command = []string{"workspace", "switch", "default"}
+		messages.FromEndpoint <- request
+		res := <-messages.ForwardEnpoint
+		wsRes := messages.Notification{
+			Type:        "workspace",
+			Action:      "switch",
+			WorkspaceID: res.WorkspaceID,
+			Workspace:   res.Workspace,
+		}
+		wsMsg := messages.Message{
+			ClientID: request.ClientID,
+			Type:     "notification",
+			Content:  wsRes,
+		}
+		messages.EndpointToServer <- request
+		sRes := <-messages.ForwardServer
+		// Craft server notification
+		servRes := messages.Notification{
+			Type:          "server",
+			ServerID:      sRes.ServerID,
+			ServerRunning: sRes.ServerRunning,
+		}
+		servMsg := messages.Message{
+			ClientID: request.ClientID,
+			Type:     "notification",
+			Content:  servRes,
+		}
+		for _, client := range e.clients {
+			if client.id == request.ClientID {
+				// Fill client with workspace info and send notification
+				client.CurrentWorkspaceID = wsRes.WorkspaceID
+				client.CurrentWorkspace = wsRes.Workspace
+				client.responses <- wsMsg
+				// Fill client with server info and send notification
+				client.CurrentServerID = servRes.ServerID
+				client.serverRunning = servRes.ServerRunning
+				client.responses <- servMsg
+			}
+		}
 	case len(e.clients) == 2:
 		if e.clients[0].UserID == request.UserID {
 			// Craft workspace notification

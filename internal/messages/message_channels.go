@@ -14,4 +14,8 @@ var (
 	ForwardLogger        = make(chan ClientRequest, 20)
 	ForwardAgents        = make(chan ClientRequest, 20)
 	AgentRequests        = make(chan AgentRequest, 20)
+	ForwardEnpoint       = make(chan WorkspaceResponse, 20)
+	ForwardServer        = make(chan ServerResponse, 20)
+	FromEndpoint         = make(chan ClientRequest, 20)
+	EndpointToServer     = make(chan ClientRequest, 20)
 )

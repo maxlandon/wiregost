@@ -38,6 +38,8 @@ func (s *Session) handleNotifications(notif messages.Notification) {
 				s.refresh()
 			}
 		}
+	case "endpoint":
+		s.endpointPublicIP = notif.Action
 	}
 
 }

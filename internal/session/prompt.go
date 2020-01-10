@@ -35,10 +35,10 @@ func newPrompt(s *Session) Prompt {
 	prompt := Prompt{
 		// Prompt strings
 		PromptVariable:  "$",
-		DefaultPrompt:   "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {server}",
-		ModulePrompt:    "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {server} {fw}=>{reset} post({y}{mod}{reset})",
-		AgentPrompt:     "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {server} {fw}=>{reset} agent[{bold}{db}{agent}{reset}]",
-		CompilerPrompt:  "{bddg}{fw}@{lb}{localip}{fw} {reset} {dim}in {b}{workspace} {server} {fw}=>{reset} [{bold}{y}Compiler{reset}]",
+		DefaultPrompt:   "{bddg}{fw}@{lb}{serverip}{fw} {reset} {dim}in {b}{workspace} {server}",
+		ModulePrompt:    "{bddg}{fw}@{lb}{serverip}{fw} {reset} {dim}in {b}{workspace} {server} {fw}=>{reset} post({y}{mod}{reset})",
+		AgentPrompt:     "{bddg}{fw}@{lb}{serverip}{fw} {reset} {dim}in {b}{workspace} {server} {fw}=>{reset} agent[{bold}{db}{agent}{reset}]",
+		CompilerPrompt:  "{bddg}{fw}@{lb}{serverip}{fw} {reset} {dim}in {b}{workspace} {server} {fw}=>{reset} [{bold}{y}Compiler{reset}]",
 		MultilinePrompt: "> ",
 		// Prompt variabes
 		CurrentWorkspace: &s.currentWorkspace,
@@ -93,6 +93,9 @@ func newPrompt(s *Session) Prompt {
 				}
 			}
 			return ip
+		},
+		"{serverip}": func() string {
+			return s.endpointPublicIP
 		},
 		// CurrentModule
 		"{mod}": func() string {

@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"strconv"
 
@@ -86,6 +87,14 @@ func (s *Session) connect() error {
 			}
 			dec := json.NewDecoder(s.reader)
 			if err := dec.Decode(&env); err != nil {
+				if err == io.EOF {
+					status := fmt.Sprintf("%s[!] Disconnected from %s@%s:%d \n"+
+						"    Please check Wiregost server is running.%s",
+						tui.RED, s.CurrentEndpoint.FQDN, s.CurrentEndpoint.IPAddress, s.CurrentEndpoint.Port, tui.RESET)
+					fmt.Println()
+					fmt.Println(status)
+					return
+				}
 				fmt.Println("Failed to decode raw message: " + err.Error())
 				break
 			}

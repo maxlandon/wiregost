@@ -38,6 +38,7 @@ func NewManager() *Manager {
 	// Handle requests
 	go manager.handleClientRequests()
 	go manager.handleWorkspaceRequests()
+	go manager.handleEndpointRequests()
 
 	return manager
 }
@@ -73,6 +74,24 @@ func (sm *Manager) handleClientRequests() {
 			sm.reloadServer(request)
 		case "generate_certificate":
 			sm.generateCertificate(request)
+		}
+	}
+}
+
+func (sm *Manager) handleEndpointRequests() {
+	for {
+		req := <-messages.EndpointToServer
+		switch req.Command[2] {
+		case "default":
+			for _, s := range sm.Servers {
+				if s.Workspace == "default" {
+					res := messages.ServerResponse{
+						ServerID:      s.ID,
+						ServerRunning: s.Running,
+					}
+					messages.ForwardServer <- res
+				}
+			}
 		}
 	}
 }
@@ -120,6 +139,15 @@ func (sm *Manager) startServer(request messages.ClientRequest) {
 		Content:  res,
 	}
 	messages.Responses <- msg
+	// Send notification
+	notif := messages.Notification{
+		Type:          "server",
+		WorkspaceID:   request.CurrentWorkspaceID,
+		NotConcerned:  request.ClientID,
+		ServerID:      s.ID,
+		ServerRunning: s.Running,
+	}
+	messages.Notifications <- notif
 }
 
 func (sm *Manager) stopServer(request messages.ClientRequest) {
@@ -155,6 +183,15 @@ func (sm *Manager) stopServer(request messages.ClientRequest) {
 		Content:  res,
 	}
 	messages.Responses <- msg
+	// Send notification
+	notif := messages.Notification{
+		Type:          "server",
+		WorkspaceID:   request.CurrentWorkspaceID,
+		NotConcerned:  request.ClientID,
+		ServerID:      server.ID,
+		ServerRunning: server.Running,
+	}
+	messages.Notifications <- notif
 }
 
 func (sm *Manager) listServers(request messages.ClientRequest) {

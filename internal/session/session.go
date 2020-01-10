@@ -37,9 +37,10 @@ type Session struct {
 	// Environmment variables
 	Env map[string]string
 	// Server connection parameters
-	SavedEndpoints  []Endpoint
-	CurrentEndpoint Endpoint
-	connected       bool
+	SavedEndpoints   []Endpoint
+	CurrentEndpoint  Endpoint
+	endpointPublicIP string
+	connected        bool
 	// Connection
 	connection *tls.Conn
 	reader     *bufio.Reader

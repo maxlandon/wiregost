@@ -70,7 +70,26 @@ func NewManager() *Manager {
 
 	go ws.handleRequests()
 	go ws.handleLogRequests()
+	go ws.handleEndpointRequests()
 	return ws
+}
+
+func (wm *Manager) handleEndpointRequests() {
+	for {
+		req := <-messages.FromEndpoint
+		switch req.Command[2] {
+		case "default":
+			for _, w := range wm.Workspaces {
+				if w.Name == "default" {
+					res := messages.WorkspaceResponse{
+						WorkspaceID: w.ID,
+						Workspace:   w.Name,
+					}
+					messages.ForwardEnpoint <- res
+				}
+			}
+		}
+	}
 }
 
 func (wm *Manager) handleLogRequests() {
@@ -331,7 +350,6 @@ func (wm *Manager) switchWorkspace(request messages.ClientRequest) {
 			ws.saveServer()
 		}
 	}
-
 }
 
 func (wm *Manager) loadWorkspaces() {
