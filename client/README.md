@@ -1,6 +1,6 @@
 ### Client
 
-The `client/` package contains the code necessary to run a client shell.
+The `client/` directory contains the code necessary to run a client shell.
 This code never imports any code from the `server/`.
 
 * `assets/`     - Static asset files and management code (ex: client config)
