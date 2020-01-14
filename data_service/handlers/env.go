@@ -16,9 +16,61 @@
 
 package handlers
 
-import "github.com/maxlandon/wiregost/data_service/models"
+import (
+	"io/ioutil"
+	"log"
 
-// Env is a an object meant to pass a DB connection pool to HTTP handlers.
+	"github.com/evilsocket/islazy/fs"
+	"github.com/evilsocket/islazy/tui"
+	"gopkg.in/yaml.v2"
+
+	"github.com/maxlandon/wiregost/data_service/models"
+)
+
+// Env contains all configuration options for DB access and data web service
+// It passes its DB connection pool HTTP handlers that need it
 type Env struct {
 	DB *models.DB
+	// Database
+	Database struct {
+		DbName     string `yaml:"db_name"`
+		DbUser     string `yaml:"db_user"`
+		DbPassword string `yaml:"db_password"`
+	}
+
+	// Web service
+	Service struct {
+		Address     string `yaml:"address"`
+		Port        int    `yaml:"port"`
+		URL         string `yaml:"url"`
+		Certificate string `yaml:"certificate"`
+		Key         string `yaml:"key"`
+	}
+}
+
+// Load instantiates an Env object and populates it with the config.yaml file
+func LoadEnv() *Env {
+	env := &Env{}
+
+	// Load config
+	file, _ := fs.Expand("config.yaml")
+
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		log.Fatal(tui.Red("[!] Error: failed to read config.yaml file."))
+	}
+
+	err = yaml.Unmarshal(data, &env)
+	if err != nil {
+		log.Fatal(tui.Red("[!] Error: failed to unmarshal config.yaml file."))
+	}
+
+	// Adjust for certificate and key file paths
+	env.Service.Certificate, err = fs.Expand(env.Service.Certificate)
+	env.Service.Key, err = fs.Expand(env.Service.Key)
+
+	// Connect to postgreSQL
+	env.DB = models.New(env.Database.DbName, env.Database.DbUser, env.Database.DbPassword)
+
+	return env
 }

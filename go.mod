@@ -41,5 +41,6 @@ require (
 	google.golang.org/grpc v1.25.1
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/square/go-jose.v2 v2.3.1
+	gopkg.in/yaml.v2 v2.2.7
 	mellium.im/sasl v0.2.1 // indirect
 )

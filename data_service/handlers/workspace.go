@@ -20,6 +20,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/maxlandon/wiregost/data_service/models"
 )
 
 const (
@@ -98,6 +100,24 @@ func (wh *WorkspaceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Update workspace
 	case r.Method == "PUT":
+		b, err := ioutil.ReadAll(r.Body)
+		defer r.Body.Close()
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
 
+		var workspace models.Workspace
+		err = json.Unmarshal(b, &workspace)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		err = wh.DB.UpdateWorkspace(workspace)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
 	}
 }

@@ -18,9 +18,11 @@ package models
 
 import (
 	"math/rand"
+	"time"
 )
 
-// Workspace is the exported object
+// Workspace is the exported object, needed for JSON marshalling in various
+// places of Wiregost.
 type Workspace struct {
 	ID             int          `json:"id"`
 	Name           string       `json:"name"`
@@ -32,14 +34,17 @@ type Workspace struct {
 	UpdatedAt      string       `json:"updated_at"`
 }
 
-func NewWorkspace(name string) *Workspace {
+// Instantiate a new workspace, with a unique ID. Only used by AddWorkspaces().
+func newWorkspace(name string) *Workspace {
 	w := &Workspace{
-		ID:   rand.Int(),
-		Name: name,
+		ID:        rand.Int(),
+		Name:      name,
+		CreatedAt: time.Now().Format("2006-01-02T15:04:05"),
 	}
 	return w
 }
 
+// Workspaces returns all workspaces in database
 func (db *DB) Workspaces() ([]*Workspace, error) {
 	var workspaces []*Workspace
 	err := db.Model(&workspaces).Select()
@@ -49,6 +54,7 @@ func (db *DB) Workspaces() ([]*Workspace, error) {
 	return workspaces, err
 }
 
+// FindWorkspace returns a workspace queried by its name
 func (db *DB) FindWorkspace(name string) (*Workspace, error) {
 	workspace := new(Workspace)
 	err := db.Model(workspace).Where("name = ?", name).Select()
@@ -58,9 +64,10 @@ func (db *DB) FindWorkspace(name string) (*Workspace, error) {
 	return workspace, err
 }
 
+// AddWorkspaces adds workspaces to database, using names supplied.
 func (db *DB) AddWorkspaces(names []string) error {
 	for _, name := range names {
-		workspace := NewWorkspace(name)
+		workspace := newWorkspace(name)
 		err := db.Insert(workspace)
 		if err != nil {
 			return err
@@ -69,6 +76,7 @@ func (db *DB) AddWorkspaces(names []string) error {
 	return nil
 }
 
+// DeleteWorkspaces adds workspaces to database, using ids supplied.
 func (db *DB) DeleteWorkspaces(ids []int) (rows int, err error) {
 	w := new(Workspace)
 	var deleted int
@@ -82,6 +90,12 @@ func (db *DB) DeleteWorkspaces(ids []int) (rows int, err error) {
 	return deleted, nil
 }
 
-func (db *DB) UpdateWorkspace(id int) error {
+// UpdateWorkspace updates a workspace, using the id supplied.
+func (db *DB) UpdateWorkspace(ws Workspace) error {
+	ws.UpdatedAt = time.Now().Format("2006-01-02T15:04:05")
+	err := db.Update(&ws)
+	if err != nil {
+		return err
+	}
 	return nil
 }

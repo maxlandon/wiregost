@@ -19,18 +19,16 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/maxlandon/wiregost/data_service/handlers"
-	"github.com/maxlandon/wiregost/data_service/models"
 )
 
 func main() {
 	// Setup DB and environment -------------------------------
-	// Setup DB
-	db := models.New("wiregost_db", "wiregost", "wiregost")
 
-	// Setup env for passing DB connection around
-	env := &handlers.Env{db}
+	// Load environment configuration: DB credentials and data_service parameters
+	env := handlers.LoadEnv()
 
 	// Instantiate ServerMultiplexer
 	mux := http.NewServeMux()
@@ -41,5 +39,6 @@ func main() {
 
 	// Start server --------------------------------------------
 	fmt.Println("Listening for requests...")
-	http.ListenAndServe(":8000", mux)
+	http.ListenAndServeTLS(env.Service.Address+":"+strconv.Itoa(env.Service.Port),
+		env.Service.Certificate, env.Service.Key, mux)
 }
