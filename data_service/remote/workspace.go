@@ -17,50 +17,56 @@
 package remote
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
-
 	"github.com/maxlandon/wiregost/data_service/models"
 )
 
 const (
-	// Temporary protocol string, should be pulled out of config
-	Protocol         = "http://localhost:8000"
 	WorkspaceApiPath = "/api/v1/workspaces/"
 )
 
 // Workspaces queries all workspaces to Data Service
 func Workspaces() ([]models.Workspace, error) {
-	resp, err := http.Get(Protocol + WorkspaceApiPath)
+	client := newClient()
+	req, err := client.newRequest("GET", WorkspaceApiPath, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
 	var workspaces []models.Workspace
-	err = json.Unmarshal(body, &workspaces)
+	err = client.do(req, &workspaces)
+
+	return workspaces, err
+}
+
+func AddWorkspaces(names []string) error {
+	client := newClient()
+	req, err := client.newRequest("POST", WorkspaceApiPath, names)
 	if err != nil {
-		return nil, err
+		return err
 	}
+	err = client.do(req, nil)
 
-	return workspaces, nil
+	return err
 }
 
-func FindWorkspace(name string) (models.Workspace, error) {
+func DeleteWorkspaces(ids []int) error {
+	client := newClient()
+	req, err := client.newRequest("DELETE", WorkspaceApiPath, ids)
+	if err != nil {
+		return err
+	}
+	err = client.do(req, nil)
 
+	return err
 }
 
-// func AddWorkspaces(names []string) error {
-//
-// }
-//
-// func DeleteWorkspaces(ids []int) error {
-//
-// }
-//
-// func UpdateWorkspace(ws models.Workspace) error {
-//
-// }
+func UpdateWorkspace(ws models.Workspace) error {
+	client := newClient()
+	req, err := client.newRequest("PUT", WorkspaceApiPath, ws)
+	if err != nil {
+		return err
+	}
+	err = client.do(req, nil)
+
+	return err
+}

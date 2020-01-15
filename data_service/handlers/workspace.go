@@ -18,6 +18,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -63,6 +64,7 @@ func (wh *WorkspaceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		var names []string
 		err = json.Unmarshal(b, &names)
 		if err != nil {
+			fmt.Println(names)
 			http.Error(w, err.Error(), 500)
 			return
 		}

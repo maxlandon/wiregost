@@ -16,13 +16,104 @@
 
 package remote
 
-import "net/http"
+import (
+	"bytes"
+	"crypto/tls"
+	"encoding/json"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"net/url"
+	"strconv"
 
+	"github.com/evilsocket/islazy/tui"
+
+	"github.com/maxlandon/wiregost/data_service/handlers"
+)
+
+// DbClient is a preconfigured HTTP client for query the data_service
 type DbClient struct {
 	*http.Client
 	// Config
-	Address     string
-	Port        int
-	URL         string
-	Certificate string
+	BaseUrl *url.URL
+}
+
+// NewClient instantiates a DbClient, loads Environment and configures the DbClient
+// with data_service parameters, including TLS transport security.
+func newClient() *DbClient {
+	env := handlers.LoadEnv()
+
+	client := &DbClient{
+		&http.Client{},
+		&url.URL{},
+	}
+
+	// Setup URL
+	client.BaseUrl.Scheme = "https"
+	client.BaseUrl.Host = env.Service.Address + ":" + strconv.Itoa(env.Service.Port)
+
+	// Setup client TLS transport
+	cert, err := tls.LoadX509KeyPair(env.Service.Certificate, env.Service.Key)
+	if err != nil {
+		log.Println(tui.Red("[!] Error loading X509 keypair: ") + err.Error())
+	}
+
+	conf := tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: true}
+
+	client.Transport = &http.Transport{TLSClientConfig: &conf}
+
+	return client
+}
+
+// newRequest is a standard request that takes care of URL settings, request headers and body encoding.
+func (c *DbClient) newRequest(method, path string, body interface{}) (*http.Request, error) {
+	rel := &url.URL{Path: path}
+	u := c.BaseUrl.ResolveReference(rel)
+
+	// Fill body
+	var buf io.ReadWriter
+	if body != nil {
+		buf = new(bytes.Buffer)
+		err := json.NewEncoder(buf).Encode(body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Forge request
+	req, err := http.NewRequest(method, u.String(), buf)
+	if err != nil {
+		return nil, err
+	}
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	req.Header.Set("Accept", "application/json")
+
+	return req, nil
+}
+
+// do is a wrapper around http.Client.Do(), that uses the above custom newRequest function.
+// It also unmarshals HTTP response's JSON body in the interface passed as a argument
+func (c *DbClient) do(req *http.Request, v interface{}) error {
+	resp, err := c.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Cannot parse response body")
+		return err
+	}
+
+	if v != nil {
+		err = json.Unmarshal(respBody, v)
+		return err
+	}
+
+	return err
 }
