@@ -10,5 +10,5 @@ maybe except from some configuration.
 * `models/`             - All entities that need persistence in Wiregost, and their DB methods.
 * `remote/`             - Methods used by client to make requests to data service
 * `handlers/`           - Server handlers, calling models and their methods.
-* `.config`             - Configuration file for database access and http service
+* `config.yaml`         - Configuration file for database access and http service
 * `data_service.go`     - Entry point for data service
