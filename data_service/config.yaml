@@ -1,0 +1,13 @@
+# Database credentials
+database:
+        db_name: "wiregost_db"
+        db_user: "wiregost"
+        db_password: "wiregost"
+
+# Data service information
+service:
+        address: "localhost"
+        port: 8001
+        url: "/"
+        certificate: "~/.wiregost/server/certificates/spectre_public.pem"
+        key: "~/.wiregost/server/certificates/spectre_private.pem"
