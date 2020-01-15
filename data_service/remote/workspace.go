@@ -21,13 +21,13 @@ import (
 )
 
 const (
-	WorkspaceApiPath = "/api/v1/workspaces/"
+	workspaceAPIPath = "/api/v1/workspaces/"
 )
 
 // Workspaces queries all workspaces to Data Service
 func Workspaces() ([]models.Workspace, error) {
 	client := newClient()
-	req, err := client.newRequest("GET", WorkspaceApiPath, nil)
+	req, err := client.newRequest("GET", workspaceAPIPath, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -38,9 +38,10 @@ func Workspaces() ([]models.Workspace, error) {
 	return workspaces, err
 }
 
+// AddWorkspaces is used by client and server to add one or more workspaces
 func AddWorkspaces(names []string) error {
 	client := newClient()
-	req, err := client.newRequest("POST", WorkspaceApiPath, names)
+	req, err := client.newRequest("POST", workspaceAPIPath, names)
 	if err != nil {
 		return err
 	}
@@ -49,9 +50,10 @@ func AddWorkspaces(names []string) error {
 	return err
 }
 
+// DeleteWorkspaces is used by client and server to delete one or more workspaces
 func DeleteWorkspaces(ids []int) error {
 	client := newClient()
-	req, err := client.newRequest("DELETE", WorkspaceApiPath, ids)
+	req, err := client.newRequest("DELETE", workspaceAPIPath, ids)
 	if err != nil {
 		return err
 	}
@@ -60,9 +62,10 @@ func DeleteWorkspaces(ids []int) error {
 	return err
 }
 
+// UpdateWorkspace is used by client and server to update a workspace
 func UpdateWorkspace(ws models.Workspace) error {
 	client := newClient()
-	req, err := client.newRequest("PUT", WorkspaceApiPath, ws)
+	req, err := client.newRequest("PUT", workspaceAPIPath, ws)
 	if err != nil {
 		return err
 	}

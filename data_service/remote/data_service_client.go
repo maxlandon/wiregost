@@ -37,7 +37,7 @@ import (
 type DbClient struct {
 	*http.Client
 	// Config
-	BaseUrl *url.URL
+	BaseURL *url.URL
 }
 
 // NewClient instantiates a DbClient, loads Environment and configures the DbClient
@@ -51,8 +51,8 @@ func newClient() *DbClient {
 	}
 
 	// Setup URL
-	client.BaseUrl.Scheme = "https"
-	client.BaseUrl.Host = env.Service.Address + ":" + strconv.Itoa(env.Service.Port)
+	client.BaseURL.Scheme = "https"
+	client.BaseURL.Host = env.Service.Address + ":" + strconv.Itoa(env.Service.Port)
 
 	// Setup client TLS transport
 	cert, err := tls.LoadX509KeyPair(env.Service.Certificate, env.Service.Key)
@@ -70,7 +70,7 @@ func newClient() *DbClient {
 // newRequest is a standard request that takes care of URL settings, request headers and body encoding.
 func (c *DbClient) newRequest(method, path string, body interface{}) (*http.Request, error) {
 	rel := &url.URL{Path: path}
-	u := c.BaseUrl.ResolveReference(rel)
+	u := c.BaseURL.ResolveReference(rel)
 
 	// Fill body
 	var buf io.ReadWriter

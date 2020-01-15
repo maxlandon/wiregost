@@ -48,7 +48,7 @@ type Env struct {
 	}
 }
 
-// Load instantiates an Env object and populates it with the config.yaml file
+// LoadEnv instantiates an Env object and populates it with the config.yaml file
 func LoadEnv() *Env {
 	env := &Env{}
 

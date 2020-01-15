@@ -35,7 +35,7 @@ func main() {
 
 	// Register handlers ---------------------------------------
 	wh := &handlers.WorkspaceHandler{env}
-	mux.Handle(handlers.WorkspaceApiPath, wh)
+	mux.Handle(handlers.WorkspaceAPIPath, wh)
 
 	// Start server --------------------------------------------
 	fmt.Println("Listening for requests...")

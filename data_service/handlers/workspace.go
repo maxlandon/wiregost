@@ -26,7 +26,8 @@ import (
 )
 
 const (
-	WorkspaceApiPath = "/api/v1/workspaces/"
+	// WorkspaceAPIPath is the API path to workspaces
+	WorkspaceAPIPath = "/api/v1/workspaces/"
 )
 
 // WorkspaceHandler handles all HTTP requests concerning workspace management.
