@@ -24,7 +24,7 @@ import (
 // Workspace is the exported object, needed for JSON marshalling in various
 // places of Wiregost.
 type Workspace struct {
-	ID             int          `json:"id"`
+	ID             int          `json:"workspace_id" sql:"workspace_id,pk"`
 	Name           string       `json:"name"`
 	Description    string       `json:"description"`
 	Boundary       string       `json:"boundary"`
@@ -36,8 +36,12 @@ type Workspace struct {
 
 // Instantiate a new workspace, with a unique ID. Only used by AddWorkspaces().
 func newWorkspace(name string) *Workspace {
+	// Get good random id
+	rand.Seed(time.Now().Unix())
+	id := rand.Int()
+
 	w := &Workspace{
-		ID:        rand.Int(),
+		ID:        id,
 		Name:      name,
 		CreatedAt: time.Now().Format("2006-01-02T15:04:05"),
 	}
@@ -81,7 +85,7 @@ func (db *DB) DeleteWorkspaces(ids []int) (rows int, err error) {
 	w := new(Workspace)
 	var deleted int
 	for _, id := range ids {
-		res, err := db.Model(w).Where("id = ?", id).Delete()
+		res, err := db.Model(w).Where("workspace_id = ?", id).Delete()
 		deleted = res.RowsAffected()
 		if err != nil {
 			return deleted, err
