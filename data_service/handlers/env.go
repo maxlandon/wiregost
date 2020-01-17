@@ -27,8 +27,8 @@ import (
 	"github.com/maxlandon/wiregost/data_service/models"
 )
 
-// Env contains all configuration options for DB access and data web service
-// It passes its DB connection pool HTTP handlers that need it
+// Env contains all configuration options for DB access and data web service. It passes its DB connection
+// pool to HTTP handlers that need it, and its HTTP service parameters to remote/ functions.
 type Env struct {
 	DB *models.DB
 	// Database

@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/data_service/handlers"
 )
 
@@ -30,12 +31,29 @@ func main() {
 	// Load environment configuration: DB credentials and data_service parameters
 	env := handlers.LoadEnv()
 
+	// Check if DB schema exists
+	if env.DB.SchemaIsUpdated() {
+		fmt.Println(tui.Green("[*] Database schema is up-to-date"))
+	} else {
+		fmt.Println(tui.Red("[!] Database schema is not up-to-date: run function for updating it"))
+		// return
+	}
+
+	// Create Schema
+	// err := env.DB.CreateSchema()
+	// if err != nil {
+	//         fmt.Println(err.Error())
+	// }
+
 	// Instantiate ServerMultiplexer
 	mux := http.NewServeMux()
 
 	// Register handlers ---------------------------------------
 	wh := &handlers.WorkspaceHandler{env}
 	mux.Handle(handlers.WorkspaceAPIPath, wh)
+
+	hh := &handlers.HostHandler{env}
+	mux.Handle(handlers.HostAPIPath, hh)
 
 	// Start server --------------------------------------------
 	fmt.Println("Listening for requests...")
