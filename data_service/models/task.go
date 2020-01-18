@@ -38,7 +38,7 @@ type TaskCredential struct {
 	*Task
 	ID           int `sql:"task_id,pk"`
 	CredentialID int `sql:"credential_id,notnull,on_delete:CASCADE"`
-	Credential   *CoreCredential
+	Credential   *Credential
 	CreatedAt    string
 	UpdatedAt    string
 }

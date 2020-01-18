@@ -19,7 +19,7 @@ package models
 type Login struct {
 	ID              int `sql:"login_id,pk"`
 	CoreID          int `sql:"credential_id,notnull,on_delete:CASCADE"`
-	Core            *CoreCredential
+	Core            *Credential
 	ServiceID       int `sql:"service_id,notnull,on_delete:CASCADE"`
 	Service         *Service
 	AccessLevel     string

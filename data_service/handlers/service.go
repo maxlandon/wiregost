@@ -39,7 +39,7 @@ type ServiceHandler struct {
 func (sh *ServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Check if id is provided in URL, will influence dispatch
-	id := strings.TrimPrefix(r.URL.Path, HostAPIPath)
+	id := strings.TrimPrefix(r.URL.Path, ServiceAPIPath)
 
 	switch {
 	// ID is not there, applies to a range

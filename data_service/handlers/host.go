@@ -57,7 +57,6 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 
 			json.NewEncoder(w).Encode(hosts)
-			return
 
 		// Add a Host
 		case r.Method == "POST":
@@ -152,8 +151,6 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), 500)
 				return
 			}
-
-			return
 
 		case r.Method == "POST":
 

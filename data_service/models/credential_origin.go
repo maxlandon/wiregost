@@ -17,8 +17,8 @@
 package models
 
 type OriginCrackedPassword struct {
-	ID        int `sql:"origin_id,notnull,on_delete:CASCADE"`
-	Core      *CoreCredential
+	ID        int `sql:"credential_origin_id,notnull,on_delete:CASCADE"`
+	Core      *Credential
 	FileName  string
 	TaskID    int
 	CreatedAt string
@@ -26,23 +26,23 @@ type OriginCrackedPassword struct {
 }
 
 type OriginImport struct {
-	ID        int `sql:"origin_id,notnull,on_delete:CASCADE"`
-	Core      *CoreCredential
+	ID        int `sql:"credential_origin_id,notnull,on_delete:CASCADE"`
+	Core      *Credential
 	TaskID    int
 	CreatedAt string
 	UpdatedAt string
 }
 
 type OriginManual struct {
-	ID        int `sql:"origin_id,notnull,on_delete:CASCADE"`
-	Core      *CoreCredential
+	ID        int `sql:"credential_origin_id,notnull,on_delete:CASCADE"`
+	Core      *Credential
 	CreatedAt string
 	UpdatedAt string
 }
 
 type OriginService struct {
-	ID             int `sql:"origin_id,notnull,on_delete:CASCADE"`
-	Core           *CoreCredential
+	ID             int `sql:"credential_origin_id,notnull,on_delete:CASCADE"`
+	Core           *Credential
 	ServiceID      int `sql:"service_id,notnull,on_delete:CASCADE"`
 	Service        *Service
 	ModuleFullName string
@@ -51,8 +51,8 @@ type OriginService struct {
 }
 
 type OriginAgent struct {
-	ID                int `sql:"origin_id,notnull,on_delete:CASCADE"`
-	Core              *CoreCredential
+	ID                int `sql:"credential_origin_id,notnull,on_delete:CASCADE"`
+	Core              *Credential
 	PostReferenceName string
 	AgentID           string
 	CreatedAt         string

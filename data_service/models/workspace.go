@@ -30,6 +30,7 @@ type Workspace struct {
 	Boundary       string       `json:"boundary"`
 	LimitToNetwork bool         `json:"limit_to_network"`
 	ModuleStack    *ModuleStack `json:"module_stack"`
+	IsDefault      bool         `json:"is_default"`
 	CreatedAt      string       `json:"created_at"`
 	UpdatedAt      string       `json:"updated_at"`
 }
