@@ -50,7 +50,6 @@ func (wh *WorkspaceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		json.NewEncoder(w).Encode(workspaces)
-		return
 
 	// Add workspaces
 	case r.Method == "POST":

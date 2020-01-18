@@ -26,17 +26,17 @@ import (
 )
 
 const (
-	// HostAPIPath is the API path to hosts
-	HostAPIPath = "/api/v1/hosts/"
+	// ServiceAPIPath is the API path to services
+	ServiceAPIPath = "/api/v1/services/"
 )
 
-type HostHandler struct {
+// ServiceHandler handles all HTTP requests concerning service management.
+type ServiceHandler struct {
 	// Env is needed to pass a DB connection pool
 	*Env
 }
 
-// ServeHTTP dispatches and process host requests
-func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (sh *ServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Check if id is provided in URL, will influence dispatch
 	id := strings.TrimPrefix(r.URL.Path, HostAPIPath)
@@ -44,22 +44,21 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	// ID is not there, applies to a range
 	case id == "":
+		// Get all Services in database
 		switch {
-		// Get all Hosts in database
 		case r.Method == "GET":
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
 
-			hosts, err := hh.DB.Hosts()
+			services, err := sh.DB.Services()
 			if err != nil {
 				http.Error(w, http.StatusText(500), 500)
 				return
 			}
 
-			json.NewEncoder(w).Encode(hosts)
-			return
+			json.NewEncoder(w).Encode(services)
 
-		// Add a Host
+		// Add a Service
 		case r.Method == "POST":
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
@@ -71,26 +70,26 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			var host *models.Host
-			err = json.Unmarshal(b, &host)
+			var service *models.Service
+			err = json.Unmarshal(b, &service)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
 			}
 
-			host, err = hh.DB.ReportHost(*host)
+			service, err = sh.DB.ReportService(*service)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
 			}
 
-			err = json.NewEncoder(w).Encode(host)
+			err = json.NewEncoder(w).Encode(service)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
 			}
 
-		// Delete several Hosts
+		// Delete several Services
 		case r.Method == "DELETE":
 			b, err := ioutil.ReadAll(r.Body)
 			defer r.Body.Close()
@@ -106,7 +105,7 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			deleted, err := hh.DB.DeleteHosts(ids)
+			deleted, err := sh.DB.DeleteServices(ids)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
@@ -116,13 +115,13 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Some ids are not valid", 500)
 			}
 
-		case r.Method == "PUT":
+		case r.Method == "POST":
 		}
 
-	// ID is there, a host is specified
+	// ID is there, a Service is specified
 	case id != "":
 		switch {
-		// Return a single host, based on ID
+		// Return a single Service, based on ID
 		case r.Method == "GET":
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
@@ -141,49 +140,22 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			host, err := hh.DB.GetHost(opts)
+			service, err := sh.DB.GetService(opts)
 			if err != nil {
 				http.Error(w, http.StatusText(500), 500)
 				return
 			}
 
-			json.NewEncoder(w).Encode(host)
+			json.NewEncoder(w).Encode(service)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
 			}
-
-			return
 
 		case r.Method == "POST":
-
-		// Delete a single Host
 		case r.Method == "DELETE":
-			b, err := ioutil.ReadAll(r.Body)
-			defer r.Body.Close()
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
 
-			var id int
-			err = json.Unmarshal(b, &id)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-
-			deleted, err := hh.DB.DeleteHost(id)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-
-			if deleted != 1 {
-				http.Error(w, "Some ids are not valid", 500)
-			}
-
-		// Update a Host
+		// Update a Service
 		case r.Method == "PUT":
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
@@ -195,25 +167,25 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			var host *models.Host
-			err = json.Unmarshal(b, &host)
+			var service *models.Service
+			err = json.Unmarshal(b, &service)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
 			}
 
-			host, err = hh.DB.UpdateHost(*host)
+			service, err = sh.DB.UpdateService(*service)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
 			}
 
-			err = json.NewEncoder(w).Encode(host)
+			err = json.NewEncoder(w).Encode(service)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
 			}
 		}
-	}
 
+	}
 }

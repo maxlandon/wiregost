@@ -58,8 +58,12 @@ type Host struct {
 // NewHost instantiates a new Host. Exported so that each Host instantiated elsewhere
 // in Wiregost will be immediately given an ID.
 func NewHost() *Host {
+	// Get good random id
+	rand.Seed(time.Now().Unix())
+	id := rand.Int()
+
 	host := &Host{
-		ID:        rand.Int(),
+		ID:        id,
 		CreatedAt: time.Now().Format("2006-01-02T15:04:05"),
 	}
 
