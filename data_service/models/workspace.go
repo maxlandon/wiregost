@@ -86,7 +86,7 @@ func (db *DB) DeleteWorkspaces(ids []int) (rows int, err error) {
 	var deleted int
 	for _, id := range ids {
 		res, err := db.Model(w).Where("workspace_id = ?", id).Delete()
-		deleted = res.RowsAffected()
+		deleted += res.RowsAffected()
 		if err != nil {
 			return deleted, err
 		}

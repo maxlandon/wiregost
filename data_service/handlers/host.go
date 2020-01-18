@@ -62,6 +62,9 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		// Add a Host
 		case r.Method == "POST":
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+
 			b, err := ioutil.ReadAll(r.Body)
 			defer r.Body.Close()
 			if err != nil {
@@ -89,14 +92,71 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
+		// Delete several Hosts
 		case r.Method == "DELETE":
+			b, err := ioutil.ReadAll(r.Body)
+			defer r.Body.Close()
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			var ids []int
+			err = json.Unmarshal(b, &ids)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			deleted, err := hh.DB.DeleteHosts(ids)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			if deleted != len(ids) {
+				http.Error(w, "Some ids are not valid", 500)
+			}
+
 		case r.Method == "PUT":
 		}
 
 	// ID is there, a host is specified
 	case id != "":
 		switch {
+		// Return a single host, based on ID
 		case r.Method == "GET":
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+
+			b, err := ioutil.ReadAll(r.Body)
+			defer r.Body.Close()
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			var opts map[string]string
+			err = json.Unmarshal(b, &opts)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			host, err := hh.DB.GetHost(opts)
+			if err != nil {
+				http.Error(w, http.StatusText(500), 500)
+				return
+			}
+
+			json.NewEncoder(w).Encode(host)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			return
+
 		case r.Method == "POST":
 
 		// Delete a single Host
@@ -127,6 +187,9 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		// Update a Host
 		case r.Method == "PUT":
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+
 			b, err := ioutil.ReadAll(r.Body)
 			defer r.Body.Close()
 			if err != nil {
