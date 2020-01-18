@@ -55,6 +55,12 @@ func main() {
 	hh := &handlers.HostHandler{env}
 	mux.Handle(handlers.HostAPIPath, hh)
 
+	sh := &handlers.ServiceHandler{env}
+	mux.Handle(handlers.ServiceAPIPath, sh)
+
+	ch := &handlers.CredentialHandler{env}
+	mux.Handle(handlers.CredentialAPIPath, ch)
+
 	// Start server --------------------------------------------
 	fmt.Println("Listening for requests...")
 	http.ListenAndServeTLS(env.Service.Address+":"+strconv.Itoa(env.Service.Port),
