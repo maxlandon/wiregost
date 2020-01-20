@@ -59,10 +59,12 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), 500)
 				return
 			}
+			// fmt.Println(len(b))
 
 			switch {
 			// No filter were provided
 			case len(b) == 0:
+				// fmt.Println(b)
 				hosts, err := hh.DB.Hosts(wsID, nil)
 				if err != nil {
 					http.Error(w, http.StatusText(500), 500)
@@ -72,6 +74,7 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				json.NewEncoder(w).Encode(hosts)
 				// Filters were provided, decode them
 			default:
+				// fmt.Println(len(b))
 				var opts map[string]interface{}
 				err = json.Unmarshal(b, &opts)
 				if err != nil {
