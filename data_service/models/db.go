@@ -17,22 +17,27 @@
 package models
 
 import (
-	"github.com/go-pg/pg"
+	"fmt"
+	"log"
+
+	"github.com/evilsocket/islazy/tui"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 // DB is the exported Database, against which are used entity methods
 type DB struct {
-	*pg.DB
+	*gorm.DB
 }
 
 // New represents and gives access to a PostgreSQL database
 func New(dbName string, user string, password string) *DB {
-	pgDB := pg.Connect(&pg.Options{
-		User:     user,
-		Database: dbName,
-		Password: password,
-	})
-	db := &DB{pgDB}
+	creds := fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=disable", "localhost", 5432, user, dbName, password)
+	gormDB, err := gorm.Open("postgres", creds)
+	if err != nil {
+		log.Fatal(tui.Red("Could not connect to PostgreSQL with provided parameters and credentials" + err.Error()))
+	}
+	db := &DB{gormDB}
 
 	return db
 }
