@@ -18,6 +18,7 @@ package remote
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -68,7 +69,7 @@ func newClient() *DbClient {
 }
 
 // newRequest is a standard request that takes care of URL settings, request headers and body encoding.
-func (c *DbClient) newRequest(method, path string, body interface{}) (*http.Request, error) {
+func (c *DbClient) newRequest(ctx context.Context, method, path string, body interface{}) (*http.Request, error) {
 	rel := &url.URL{Path: path}
 	u := c.BaseURL.ResolveReference(rel)
 
@@ -91,6 +92,16 @@ func (c *DbClient) newRequest(method, path string, body interface{}) (*http.Requ
 		req.Header.Set("Content-Type", "application/json")
 	}
 	req.Header.Set("Accept", "application/json")
+
+	// Set workspace context header
+	if ctx != nil {
+		ws := ctx.Value("workspace_id")
+		if ws != nil {
+			ws := ws.(int)
+			wsID := strconv.Itoa(ws)
+			req.Header.Set("workspace_id", wsID)
+		}
+	}
 
 	return req, nil
 }

@@ -16,123 +16,34 @@
 
 package models
 
-import (
-	"log"
-
-	"github.com/evilsocket/islazy/tui"
-	"github.com/go-pg/pg/orm"
-)
-
 func (db *DB) CreateSchema() error {
-	// Defining/importing models
-	tableModels := []interface{}{
-		&Workspace{},
-		// &User{},
 
-		// Hosts
-		&Host{},
+	// ------------------------- Defining/importing models ---------------------------- //
+	db.LogMode(true)
 
-		// Services
-		&Service{},
+	// Workspaces
+	db.AutoMigrate(&Workspace{})
 
-		// Web Clients
-		&Client{},
+	// Hosts
+	db.AutoMigrate(&Host{})
 
-		// Realms
-		&Realm{},
+	db.Model(&Host{}).AddForeignKey("workspace_id", "workspaces(id)", "CASCADE", "CASCADE")
 
-		// Credentials
-		&PublicCredential{},
-		&PrivateCredential{},
-		&Credential{},
+	db.Exec(`CREATE INDEX index_hosts_on_workspace_id ON "hosts"("workspace_id") WHERE (workspace_id IS NOT NULL)`)
 
-		// Logins
-		&Login{},
+	// IP addresses
+	db.AutoMigrate(&Address{})
 
-		// Tasks
-		&Task{},
-		&TaskHost{},
-		&TaskService{},
-		&TaskCredential{},
-		&TaskAgent{},
+	db.Model(&Address{}).AddForeignKey("host_id", "hosts(id)", "CASCADE", "CASCADE")
 
-		// Origins
-		&OriginCrackedPassword{},
-		&OriginImport{},
-		&OriginManual{},
-		&OriginService{},
-		&OriginAgent{},
-
-		// Listeners
-		&Listener{},
-	}
-
-	// Define table options
-	tableOptions := &orm.CreateTableOptions{
-		FKConstraints: true,
-	}
-
-	// Create tables for each model
-	for _, model := range tableModels {
-		err := db.CreateTable(model, tableOptions)
-		if err != nil {
-			log.Println(err.Error())
-		}
-	}
-
-	// Insert default fields/items if needed
-	db.AddWorkspaces([]string{"default"})
+	// ------------------------- Default fields/items --------------------------------- //
 	workspaces, _ := db.Workspaces()
-	workspaces[0].IsDefault = true
-	db.UpdateWorkspace(*workspaces[0])
+	if len(workspaces) == 0 {
+		db.AddWorkspaces([]string{"default"})
 
-	// Check tables
-
+		updated, _ := db.Workspaces()
+		updated[0].IsDefault = true
+		db.UpdateWorkspace(*updated[0])
+	}
 	return nil
-}
-
-func (db *DB) SchemaIsUpdated() bool {
-	// Use info as generic struct, used successively in this function
-	var info []struct {
-		ColumnName string
-		DataType   string
-	}
-
-	// Check for workspaces table
-	_, err := db.Query(&info, `
-                        SELECT column_name, data_type
-                        FROM information_schema.columns
-                        WHERE table_name = 'workspaces'
-                `)
-	if err != nil {
-		log.Printf("%s[!] Error: could not query DB for testing schema: %s\n", tui.RED, err.Error())
-		return false
-	}
-
-	// Break if info is empty
-	if len(info) == 0 {
-		return false
-	}
-
-	// Check for hosts table
-	_, err = db.Query(&info, `
-                        SELECT column_name, data_type
-                        FROM information_schema.columns
-                        WHERE table_name = 'hosts'
-                `)
-	if len(info) == 0 {
-		return false
-	}
-
-	// Check for credentials table
-	_, err = db.Query(&info, `
-                        SELECT column_name, data_type
-                        FROM information_schema.columns
-                        WHERE table_name = 'creds'
-                `)
-	if len(info) == 0 {
-		return false
-	}
-
-	return true
 }
