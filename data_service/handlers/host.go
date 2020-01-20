@@ -31,22 +31,24 @@ const (
 	HostAPIPath = "/api/v1/hosts/"
 )
 
+// HostHandler handles all HTTP requests for querying Hosts to the database
 type HostHandler struct {
 	*Env
 }
 
+// ServeHTTP processes requests, dispatch them and returns results
 func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Check if id is provided in URL, will influence dispatch
-	id := strings.TrimPrefix(r.URL.Path, HostAPIPath)
+	path := strings.TrimPrefix(r.URL.Path, HostAPIPath)
 
 	// Get workspace_id context in Header
 	ws, _ := strconv.ParseUint(r.Header.Get("Workspace_id"), 10, 32)
 	wsID := uint(ws)
 
 	switch {
-	// No ID, request applies to a Host range ------------------------//
-	case id == "":
+	// No path suffix, request applies to a Host range ------------------------//
+	case path == "":
 		switch {
 		// Get some or all hosts from workspace
 		case r.Method == "GET":
@@ -59,7 +61,6 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), 500)
 				return
 			}
-			// fmt.Println(len(b))
 
 			switch {
 			// No filter were provided
@@ -109,64 +110,95 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-	// ID, applies to a specific Host ---------------------------------//
-	case id != "":
-		// Delete a single Host
+	// Path is not nil, applies to a single host ---------------------------------//
+	case path != "":
 		switch {
-		case r.Method == "DELETE":
-			b, err := ioutil.ReadAll(r.Body)
-			defer r.Body.Close()
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
+		// Path is a search: applies to a single, non-identified host
+		case path == "search":
+			switch {
+			case r.Method == "POST":
+				b, err := ioutil.ReadAll(r.Body)
+				defer r.Body.Close()
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
+
+				var opts map[string]interface{}
+				err = json.Unmarshal(b, &opts)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
+
+				host, err := hh.DB.GetHost(wsID, opts)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
+
+				json.NewEncoder(w).Encode(host)
 			}
 
-			var opts map[string]interface{}
-			err = json.Unmarshal(b, &opts)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
+		// Path is not search, it must be a Host ID. Applies to a single host
+		default:
+			// Delete a single Host
+			switch {
+			case r.Method == "DELETE":
+				b, err := ioutil.ReadAll(r.Body)
+				defer r.Body.Close()
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
 
-			deleted, err := hh.DB.DeleteHost(wsID, opts)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
+				var opts map[string]interface{}
+				err = json.Unmarshal(b, &opts)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
 
-			if deleted != 1 {
-				http.Error(w, "Some ids are not valid", 500)
-			}
+				deleted, err := hh.DB.DeleteHost(wsID, opts)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
 
-		// Update a Host
-		case r.Method == "PUT":
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusCreated)
+				if deleted != 1 {
+					http.Error(w, "Some ids are not valid", 500)
+				}
 
-			b, err := ioutil.ReadAll(r.Body)
-			defer r.Body.Close()
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
+			// Update a Host
+			case r.Method == "PUT":
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusCreated)
 
-			var host *models.Host
-			err = json.Unmarshal(b, &host)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
+				b, err := ioutil.ReadAll(r.Body)
+				defer r.Body.Close()
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
 
-			host, err = hh.DB.UpdateHost(*host)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
+				var host *models.Host
+				err = json.Unmarshal(b, &host)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
 
-			err = json.NewEncoder(w).Encode(host)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
+				host, err = hh.DB.UpdateHost(*host)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
+
+				err = json.NewEncoder(w).Encode(host)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
 			}
 		}
 	}

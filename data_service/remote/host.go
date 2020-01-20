@@ -18,8 +18,6 @@ package remote
 
 import (
 	"context"
-	"errors"
-	"net/http"
 	"strconv"
 
 	"github.com/maxlandon/wiregost/data_service/models"
@@ -46,21 +44,9 @@ func Hosts(ctx context.Context, opts map[string]interface{}) ([]models.Host, err
 // GetHost returns a single host, based on various options passed as search filters.
 func GetHost(ctx context.Context, opts map[string]interface{}) (*models.Host, error) {
 	client := newClient()
-	var req *http.Request
-	var err error
 
-	// Check for ID (Currently only way to get a single host. No search
-	// based on other options is possible here, because of how the data_service
-	// dispatches requests)
-	id, found := opts["host_id"].(int)
-	if found {
-		hostID := strconv.Itoa(id)
-		req, err = client.newRequest(ctx, "GET", hostAPIPath+hostID, opts)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		err := errors.New("No HostID is specified")
+	req, err := client.newRequest(ctx, "POST", hostAPIPath+"search", opts)
+	if err != nil {
 		return nil, err
 	}
 

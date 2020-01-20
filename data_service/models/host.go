@@ -50,7 +50,10 @@ type Host struct {
 	Scope       string
 	VirtualHost string
 
-	// Nmap Attributes
+	// Network
+	Addresses []Address `xml:"address" gorm:"foreignkey:HostID"`
+
+	// Nmap Temporary Attributes
 	Distance      Distance      `xml:"distance"`
 	EndTime       Timestamp     `xml:"endtime,attr,omitempty"`
 	IPIDSequence  IPIDSequence  `xml:"ipidsequence" json:"ip_id_sequence"`
@@ -62,7 +65,6 @@ type Host struct {
 	Uptime        Uptime        `xml:"uptime"`
 	Comment       string        `xml:"comment,attr"`
 	StartTime     Timestamp     `xml:"starttime,attr,omitempty"`
-	Addresses     []Address     `xml:"address" gorm:"foreignkey:HostID"`
 	Status        Status        `xml:"status"`
 	ExtraPorts    []ExtraPort   `xml:"ports>extraports"`
 	Hostnames     []Hostname    `xml:"hostnames>hostname"`
@@ -86,6 +88,12 @@ func NewHost(workspaceID uint) *Host {
 // Hosts returns all Host entries in the database, with sequential chaining of options
 func (db *DB) Hosts(wsID uint, opts map[string]interface{}) ([]*Host, error) {
 	var hosts []*Host
+
+	// If ID is given, return corresponding host
+	id, found := opts["host_id"].(int)
+	if found {
+		return db.hostByID(id)
+	}
 
 	// Queries are always in a workspace context:
 	tx := db.Where("workspace_id = ?", wsID)
@@ -136,15 +144,11 @@ func (db *DB) GetHost(wsID uint, opts map[string]interface{}) (*Host, error) {
 	var host *Host
 
 	// If ID, no need to search with other arguments, immediatly return result
-	id, found := opts["host_id"].(int)
+	id, found := opts["host_id"].(float64)
 	if found {
-		hostID := uint(id)
-		if tx := db.Where(&Host{ID: hostID}).Find(&host); tx.Error != nil {
-			return nil, tx.Error
-		}
-		if err := db.Model(&host).Related(&host.Addresses); err.Error != nil {
-			return host, err.Error
-		}
+		hostID := int(id)
+		hosts, _ := db.hostByID(hostID)
+		host = hosts[0]
 		return host, nil
 	}
 
@@ -194,6 +198,20 @@ func (db *DB) UpdateHost(h Host) (*Host, error) {
 	db.Where(&Address{HostID: host.ID}).Find(&h)
 
 	return &h, nil
+}
+
+// GetHost returns a host based on options passed as argument
+func (db *DB) hostByID(ID int) ([]*Host, error) {
+	var hosts []*Host
+
+	hostID := uint(ID)
+	if tx := db.Where(&Host{ID: hostID}).Find(&hosts); tx.Error != nil {
+		return nil, tx.Error
+	}
+	if err := db.Model(&hosts[0]).Related(&hosts[0].Addresses); err.Error != nil {
+		return hosts, err.Error
+	}
+	return hosts, nil
 }
 
 // workspaceHosts queries all hosts in a workspace
@@ -277,8 +295,21 @@ func (db *DB) hostsByAddress(workspaceID uint, addrs interface{}, tx *gorm.DB) (
 
 // HasHost checks if a Host entry exists in the workspace passed as argument, that
 // matches the IP Address passed as argument
-// func (db *DB) HasHost(workspaceID int, address string) (bool, error) {
-// }
+func (db *DB) HasHost(workspaceID uint, address string) bool {
+
+	addrs := []string{address}
+	tx := db.Where("workspace_id = ?", workspaceID)
+
+	hosts, err := db.hostsByAddress(workspaceID, addrs, tx)
+	if err != nil {
+		return false
+	}
+	if hosts == nil {
+		return false
+	} else {
+		return true
+	}
+}
 
 // parseOptions extracts search options and construct and chain of query conditions
 // that is passed to functions needing it.
