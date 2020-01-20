@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/maxlandon/wiregost/data_service/models"
@@ -31,35 +32,24 @@ const (
 )
 
 type HostHandler struct {
-	// Env is needed to pass a DB connection pool
 	*Env
 }
 
-// ServeHTTP dispatches and process host requests
 func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Check if id is provided in URL, will influence dispatch
 	id := strings.TrimPrefix(r.URL.Path, HostAPIPath)
 
+	// Get workspace_id context in Header
+	ws, _ := strconv.ParseUint(r.Header.Get("Workspace_id"), 10, 32)
+	wsID := uint(ws)
+
 	switch {
-	// ID is not there, applies to a range
+	// No ID, request applies to a Host range ------------------------//
 	case id == "":
 		switch {
-		// Get all Hosts in database
+		// Get some or all hosts from workspace
 		case r.Method == "GET":
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusCreated)
-
-			hosts, err := hh.DB.Hosts()
-			if err != nil {
-				http.Error(w, http.StatusText(500), 500)
-				return
-			}
-
-			json.NewEncoder(w).Encode(hosts)
-
-		// Add a Host
-		case r.Method == "POST":
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
 
@@ -70,14 +60,40 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			var host *models.Host
-			err = json.Unmarshal(b, &host)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
+			switch {
+			// No filter were provided
+			case len(b) == 0:
+				hosts, err := hh.DB.Hosts(wsID, nil)
+				if err != nil {
+					http.Error(w, http.StatusText(500), 500)
+					return
+				}
+
+				json.NewEncoder(w).Encode(hosts)
+				// Filters were provided, decode them
+			default:
+				var opts map[string]interface{}
+				err = json.Unmarshal(b, &opts)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
+
+				hosts, err := hh.DB.Hosts(wsID, opts)
+				if err != nil {
+					http.Error(w, http.StatusText(500), 500)
+					return
+				}
+
+				json.NewEncoder(w).Encode(hosts)
 			}
 
-			host, err = hh.DB.ReportHost(*host)
+		// Report a Host
+		case r.Method == "POST":
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+
+			host, err := hh.DB.ReportHost(wsID)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
@@ -88,8 +104,12 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), 500)
 				return
 			}
+		}
 
-		// Delete several Hosts
+	// ID, applies to a specific Host ---------------------------------//
+	case id != "":
+		// Delete a single Host
+		switch {
 		case r.Method == "DELETE":
 			b, err := ioutil.ReadAll(r.Body)
 			defer r.Body.Close()
@@ -98,79 +118,14 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			var ids []int
-			err = json.Unmarshal(b, &ids)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-
-			deleted, err := hh.DB.DeleteHosts(ids)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-
-			if deleted != len(ids) {
-				http.Error(w, "Some ids are not valid", 500)
-			}
-
-		case r.Method == "PUT":
-		}
-
-	// ID is there, a host is specified
-	case id != "":
-		switch {
-		// Return a single host, based on ID
-		case r.Method == "GET":
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusCreated)
-
-			b, err := ioutil.ReadAll(r.Body)
-			defer r.Body.Close()
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-
-			var opts map[string]string
+			var opts map[string]interface{}
 			err = json.Unmarshal(b, &opts)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
 			}
 
-			host, err := hh.DB.GetHost(opts)
-			if err != nil {
-				http.Error(w, http.StatusText(500), 500)
-				return
-			}
-
-			json.NewEncoder(w).Encode(host)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-
-		case r.Method == "POST":
-
-		// Delete a single Host
-		case r.Method == "DELETE":
-			b, err := ioutil.ReadAll(r.Body)
-			defer r.Body.Close()
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-
-			var id int
-			err = json.Unmarshal(b, &id)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-
-			deleted, err := hh.DB.DeleteHost(id)
+			deleted, err := hh.DB.DeleteHost(wsID, opts)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
@@ -212,5 +167,4 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-
 }

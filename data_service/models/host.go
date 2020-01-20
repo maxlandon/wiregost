@@ -18,188 +18,139 @@ package models
 
 import (
 	"errors"
-	"math/rand"
-	"strconv"
 	"time"
 )
 
-// Host represents a computer system
+// Host represents a computer system. It holds all the information necessary
+// to all tools acting upon a Host entity.
 type Host struct {
-	ID                  int `json:"host_id" sql:"host_id,pk"`
-	Address             string
-	MAC                 string
-	Comm                string
-	Name                string
-	State               string
-	OSName              string
-	OSFlavor            string
-	OSSp                string
-	OSLang              string
-	OSFamily            string
-	Arch                string
-	DetectedArch        string
-	WorkspaceID         int `sql:"workspace_id,notnull,on_delete:CASCADE"`
-	Workspace           *Workspace
-	Purpose             string
-	Info                string
-	Comments            string
-	Scope               string
-	VirtualHost         string
-	NoteCount           int
-	VulnCount           int
-	ServiceCount        int
-	HostDetailCount     int
-	ExploitAttemptCount int
-	CredCount           int
-	CreatedAt           string
-	UpdatedAt           string
+	// Identification
+	ID          uint
+	WorkspaceID uint `gorm:"not null"`
+
+	// General
+	MAC  string
+	Comm string
+	Name string
+
+	// Operating system (filled by other tools when OS is determined)
+	OSName   string
+	OSFlavor string
+	OSSp     string
+	OSLang   string
+	OSFamily string
+	Arch     string
+
+	// Scope
+	Purpose     string
+	Info        string
+	Scope       string
+	VirtualHost string
+
+	// Nmap Attributes
+	Distance      Distance      `xml:"distance"`
+	EndTime       Timestamp     `xml:"endtime,attr,omitempty"`
+	IPIDSequence  IPIDSequence  `xml:"ipidsequence" json:"ip_id_sequence"`
+	OS            OS            `xml:"os"`
+	TCPSequence   TCPSequence   `xml:"tcpsequence"`
+	TCPTSSequence TCPTSSequence `xml:"tcptssequence" json:"tcp_ts_sequence"`
+	Times         Times         `xml:"times"`
+	Trace         Trace         `xml:"trace"`
+	Uptime        Uptime        `xml:"uptime"`
+	Comment       string        `xml:"comment,attr"`
+	StartTime     Timestamp     `xml:"starttime,attr,omitempty"`
+	Addresses     []Address     `xml:"address" gorm:"foreignkey:HostID"`
+	Status        Status        `xml:"status"`
+	ExtraPorts    []ExtraPort   `xml:"ports>extraports"`
+	Hostnames     []Hostname    `xml:"hostnames>hostname"`
+	HostScripts   []Script      `xml:"hostscript>script"`
+	Ports         []Port        `xml:"ports>port"`
+	Smurfs        []Smurf       `xml:"smurf"`
+
+	// Timestamp
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
-// NewHost instantiates a new Host. Exported so that each Host instantiated elsewhere
-// in Wiregost will be immediately given an ID.
-func NewHost() *Host {
-	// Get good random id
-	rand.Seed(time.Now().Unix())
-	id := rand.Int()
-
+// NewHost instantiates a Host and gives it an ID and a workspaceID
+func NewHost(workspaceID uint) *Host {
 	host := &Host{
-		ID:        id,
-		CreatedAt: time.Now().Format("2006-01-02T15:04:05"),
+		WorkspaceID: workspaceID,
 	}
 
 	return host
 }
 
 // Hosts returns all Host entries in the database
-func (db *DB) Hosts() ([]*Host, error) {
+func (db *DB) Hosts(wsID uint, opts map[string]interface{}) ([]*Host, error) {
 	var hosts []*Host
-	err := db.Model(&hosts).Select()
-	if err != nil {
+
+	// If ID, no need to search with other arguments
+	id, found := opts["host_id"].(int)
+	if found {
+		hostID := uint(id)
+		if err := db.Where(&Host{ID: hostID}).Find(&hosts).Error; err != nil {
+			return nil, err
+		}
+		return hosts, nil
+	}
+
+	// Load all hosts in workspace
+	if err := db.Where(&Host{WorkspaceID: wsID}).Find(&hosts).Error; err != nil {
 		return nil, err
 	}
-
-	return hosts, err
-}
-
-// FindOrCreateHost searches through the Database for a Host entry: reports one if none found.
-func (db *DB) FindOrCreateHost(opts map[string]string) (*Host, error) {
-	host, err := db.GetHost(opts)
-	// If not host is found, create one and fill values given
-	if host == nil {
-		h := NewHost()
-		ws, found := opts["workspace_id"]
-		if found {
-			h.WorkspaceID, _ = strconv.Atoi(ws)
-		}
-		addr, found := opts["address"]
-		if found {
-			h.Address = addr
-		}
-
-		return db.ReportHost(*h)
-	}
-
-	return host, err
-}
-
-// DeleteHost deletes a single host, based on the id passed as argument
-func (db *DB) DeleteHost(hostID int) (int, error) {
-	h := new(Host)
-	res, err := db.Model(h).Where("host_id = ?", hostID).Delete()
-	deleted := res.RowsAffected()
-	if err != nil {
-		return deleted, err
-	}
-	return deleted, nil
-}
-
-// DeleteHosts deletes Host entries based on the IDs passed as arguments
-func (db *DB) DeleteHosts(ids []int) (rows int, err error) {
-	h := new(Host)
-	var deleted int
-	for _, id := range ids {
-		res, err := db.Model(h).Where("host_id = ?", id).Delete()
-		deleted += res.RowsAffected()
+	// Load all adddresses for each host
+	for _, h := range hosts {
+		err := db.Where(&Address{HostID: h.ID}).Find(&h).Error
 		if err != nil {
-			return deleted, err
+			break
 		}
+
+	}
+	return hosts, nil
+}
+
+// ReportHost adds a Host to the database, and returns it with an ID
+func (db *DB) ReportHost(wsID uint) (*Host, error) {
+	host := NewHost(wsID)
+
+	if err := db.Create(&host).Select(&host).Error; err != nil {
+		return nil, err
+	} else {
+		// db.Last(&host)
+		return host, nil
+	}
+}
+
+// DeleteHost deletes a Host based on the ID passed in
+func (db *DB) DeleteHost(wsID uint, opts map[string]interface{}) (int64, error) {
+	h := new(Host)
+	var deleted int64
+
+	id, found := opts["host_id"].(int)
+	if found {
+		hostID := uint(id)
+		err := db.Model(h).Where("id = ?", hostID).Delete(h)
+		deleted += err.RowsAffected
+		if len(err.GetErrors()) != 0 {
+			return deleted, err.GetErrors()[0]
+		}
+	} else {
+		return 0, errors.New("Error: No Host ID provided")
 	}
 
 	return deleted, nil
 }
 
-// GetHost returns a host based on options passed as argument
-func (db *DB) GetHost(opts map[string]string) (*Host, error) {
-	h := new(Host)
-
-	// Find host by ID, and return it if found, return error otherwise.
-	id, found := opts["host_id"]
-	if found {
-		id, _ := strconv.Atoi(id)
-		err := db.Model(h).Where("host_id= ?", id).Select()
-		if err != nil {
-			return nil, err
-		}
-		return h, nil
-	}
-
-	// Workspace ID is required if no HostID is given, and needs to be cast
-	ws, found := opts["workspace_id"]
-	if !found {
-		return nil, errors.New("Workspace ID is required")
-	}
-	wsID, _ := strconv.Atoi(ws)
-
-	// Find host by address
-	addr, found := opts["address"]
-	if found {
-		err := db.Model(h).Where("workspace_id = ?", wsID).
-			Where("address = ?", addr).Select()
-		if err != nil {
-			return nil, err
-		}
-		return h, nil
-	}
-
-	return nil, nil
-}
-
-// UpdateHost updates a Host entry with the Host struct passed as argument.
+// UpdateHost updates a Host, using the Host object supplied
 func (db *DB) UpdateHost(h Host) (*Host, error) {
-	h.UpdatedAt = time.Now().Format("2006-01-02T15:04:05")
-	err := db.Update(&h)
-	if err != nil {
-		return nil, err
+	host := &Host{}
+	err := db.Save(&h).Select(&host)
+	if len(err.GetErrors()) != 0 {
+		return &h, err.GetErrors()[0]
 	}
+	// Load IP addresses
+	db.Where(&Address{HostID: host.ID}).Find(&h)
 
-	return &h, err
+	return host, nil
 }
-
-// HasHost checks if a Host entry exists in the workspace passed as argument, that
-// matches the IP Address passed as argument
-func (db *DB) HasHost(workspaceID int, address string) (bool, error) {
-	h := new(Host)
-	err := db.Model(&h).Where("workspace_id = ?", workspaceID).
-		Where("address", address).Select()
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
-}
-
-// ReportHost adds a Host entry to the database
-func (db *DB) ReportHost(h Host) (*Host, error) {
-	// Add Host (no need to set ID, already exists with NewHost())
-	err := db.Insert(&h)
-	if err != nil {
-		return nil, err
-	}
-
-	return &h, err
-}
-
-// HostStateChanged updates the state of a Host entry
-// func (db *DB) HostStateChanged(hostID int, ostate string) error {
-//
-// }

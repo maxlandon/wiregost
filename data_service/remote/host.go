@@ -17,6 +17,7 @@
 package remote
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strconv"
@@ -28,10 +29,10 @@ const (
 	hostAPIPath = "/api/v1/hosts/"
 )
 
-// Hosts queries all Hosts to Data Service
-func Hosts() ([]models.Host, error) {
+// Hosts queries all Hosts to Data Service, with optional search filters passed in a map
+func Hosts(ctx context.Context, opts map[string]interface{}) ([]models.Host, error) {
 	client := newClient()
-	req, err := client.newRequest("GET", hostAPIPath, nil)
+	req, err := client.newRequest(ctx, "GET", hostAPIPath, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +44,7 @@ func Hosts() ([]models.Host, error) {
 }
 
 // GetHost returns a single host, based on various options passed as search filters.
-func GetHost(opts map[string]string) (*models.Host, error) {
+func GetHost(ctx context.Context, opts map[string]interface{}) (*models.Host, error) {
 	client := newClient()
 	var req *http.Request
 	var err error
@@ -51,9 +52,10 @@ func GetHost(opts map[string]string) (*models.Host, error) {
 	// Check for ID (Currently only way to get a single host. No search
 	// based on other options is possible here, because of how the data_service
 	// dispatches requests)
-	id, found := opts["host_id"]
+	id, found := opts["host_id"].(int)
 	if found {
-		req, err = client.newRequest("GET", hostAPIPath+id, opts)
+		hostID := strconv.Itoa(id)
+		req, err = client.newRequest(ctx, "GET", hostAPIPath+hostID, opts)
 		if err != nil {
 			return nil, err
 		}
@@ -69,9 +71,9 @@ func GetHost(opts map[string]string) (*models.Host, error) {
 }
 
 // ReportHost adds a Host to the database
-func ReportHost(h *models.Host) (*models.Host, error) {
+func ReportHost(ctx context.Context) (*models.Host, error) {
 	client := newClient()
-	req, err := client.newRequest("POST", hostAPIPath, h)
+	req, err := client.newRequest(ctx, "POST", hostAPIPath, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -85,8 +87,8 @@ func ReportHost(h *models.Host) (*models.Host, error) {
 // UpdateHost updates a Host properties
 func UpdateHost(h *models.Host) (*models.Host, error) {
 	client := newClient()
-	hostID := strconv.Itoa(h.ID)
-	req, err := client.newRequest("PUT", hostAPIPath+hostID, h)
+	hostID := string(h.ID)
+	req, err := client.newRequest(nil, "PUT", hostAPIPath+hostID, h)
 	if err != nil {
 		return nil, err
 	}
@@ -98,10 +100,10 @@ func UpdateHost(h *models.Host) (*models.Host, error) {
 }
 
 // DeleteHost deletes a Host from the database
-func DeleteHost(id int) error {
+func DeleteHost(ctx context.Context, id int) error {
 	client := newClient()
 	hostID := strconv.Itoa(id)
-	req, err := client.newRequest("DELETE", hostAPIPath+hostID, id)
+	req, err := client.newRequest(ctx, "DELETE", hostAPIPath+hostID, id)
 	if err != nil {
 		return err
 	}
