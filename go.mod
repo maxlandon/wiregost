@@ -20,7 +20,7 @@ require (
 	github.com/golang/protobuf v1.3.2
 	github.com/google/gopacket v1.1.17 // indirect
 	github.com/google/uuid v1.1.1
-	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/gorm v1.9.12
 	github.com/lucas-clemente/quic-go v0.10.2
 	github.com/malfunkt/iprange v0.9.0 // indirect
 	github.com/mattn/go-shellwords v1.0.5
