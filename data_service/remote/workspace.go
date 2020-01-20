@@ -17,6 +17,8 @@
 package remote
 
 import (
+	"context"
+
 	"github.com/maxlandon/wiregost/data_service/models"
 )
 
@@ -25,9 +27,9 @@ const (
 )
 
 // Workspaces queries all workspaces to Data Service
-func Workspaces() ([]models.Workspace, error) {
+func Workspaces(ctx context.Context) ([]models.Workspace, error) {
 	client := newClient()
-	req, err := client.newRequest("GET", workspaceAPIPath, nil)
+	req, err := client.newRequest(ctx, "GET", workspaceAPIPath, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -39,9 +41,9 @@ func Workspaces() ([]models.Workspace, error) {
 }
 
 // AddWorkspaces is used by client and server to add one or more workspaces
-func AddWorkspaces(names []string) error {
+func AddWorkspaces(ctx context.Context, names []string) error {
 	client := newClient()
-	req, err := client.newRequest("POST", workspaceAPIPath, names)
+	req, err := client.newRequest(ctx, "POST", workspaceAPIPath, names)
 	if err != nil {
 		return err
 	}
@@ -51,9 +53,9 @@ func AddWorkspaces(names []string) error {
 }
 
 // DeleteWorkspaces is used by client and server to delete one or more workspaces
-func DeleteWorkspaces(ids []int) error {
+func DeleteWorkspaces(ctx context.Context, ids []uint) error {
 	client := newClient()
-	req, err := client.newRequest("DELETE", workspaceAPIPath, ids)
+	req, err := client.newRequest(ctx, "DELETE", workspaceAPIPath, ids)
 	if err != nil {
 		return err
 	}
@@ -63,9 +65,9 @@ func DeleteWorkspaces(ids []int) error {
 }
 
 // UpdateWorkspace is used by client and server to update a workspace
-func UpdateWorkspace(ws models.Workspace) error {
+func UpdateWorkspace(ctx context.Context, ws models.Workspace) error {
 	client := newClient()
-	req, err := client.newRequest("PUT", workspaceAPIPath, ws)
+	req, err := client.newRequest(ctx, "PUT", workspaceAPIPath, ws)
 	if err != nil {
 		return err
 	}

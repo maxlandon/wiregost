@@ -16,35 +16,24 @@
 
 package models
 
-import (
-	"math/rand"
-	"time"
-)
+import "time"
 
-// Workspace is the exported object, needed for JSON marshalling in various
-// places of Wiregost.
+// Workspace is the exported object
 type Workspace struct {
-	ID             int          `json:"workspace_id" sql:"workspace_id,pk"`
-	Name           string       `json:"name"`
-	Description    string       `json:"description"`
-	Boundary       string       `json:"boundary"`
-	LimitToNetwork bool         `json:"limit_to_network"`
-	ModuleStack    *ModuleStack `json:"module_stack"`
-	IsDefault      bool         `json:"is_default"`
-	CreatedAt      string       `json:"created_at"`
-	UpdatedAt      string       `json:"updated_at"`
+	ID             uint      `json:"id"`
+	Name           string    `json:"name"`
+	Description    string    `json:"description"`
+	Boundary       string    `json:"boundary"`
+	LimitToNetwork bool      `json:"limit_to_network"`
+	IsDefault      bool      `json:"is_default"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 // Instantiate a new workspace, with a unique ID. Only used by AddWorkspaces().
 func newWorkspace(name string) *Workspace {
-	// Get good random id
-	rand.Seed(time.Now().Unix())
-	id := rand.Int()
-
 	w := &Workspace{
-		ID:        id,
-		Name:      name,
-		CreatedAt: time.Now().Format("2006-01-02T15:04:05"),
+		Name: name,
 	}
 	return w
 }
@@ -52,55 +41,53 @@ func newWorkspace(name string) *Workspace {
 // Workspaces returns all workspaces in database
 func (db *DB) Workspaces() ([]*Workspace, error) {
 	var workspaces []*Workspace
-	err := db.Model(&workspaces).Select()
-	if err != nil {
-		return nil, err
-	}
-	return workspaces, err
-}
 
-// FindWorkspace returns a workspace queried by its name
-func (db *DB) FindWorkspace(name string) (*Workspace, error) {
-	workspace := new(Workspace)
-	err := db.Model(workspace).Where("name = ?", name).Select()
-	if err != nil {
-		return nil, err
+	err := db.Find(&workspaces)
+	if len(err.GetErrors()) != 0 {
+		return nil, err.GetErrors()[0]
 	}
-	return workspace, err
+
+	return workspaces, nil
 }
 
 // AddWorkspaces adds workspaces to database, using names supplied.
 func (db *DB) AddWorkspaces(names []string) error {
 	for _, name := range names {
 		workspace := newWorkspace(name)
-		err := db.Insert(workspace)
-		if err != nil {
-			return err
+
+		err := db.Create(workspace)
+		if len(err.GetErrors()) != 0 {
+			return err.GetErrors()[0]
 		}
 	}
+
 	return nil
 }
 
 // DeleteWorkspaces adds workspaces to database, using ids supplied.
-func (db *DB) DeleteWorkspaces(ids []int) (rows int, err error) {
+func (db *DB) DeleteWorkspaces(ids []uint) (rows int64, err error) {
 	w := new(Workspace)
-	var deleted int
+	var deleted int64
+
 	for _, id := range ids {
-		res, err := db.Model(w).Where("workspace_id = ?", id).Delete()
-		deleted += res.RowsAffected()
-		if err != nil {
-			return deleted, err
+
+		err := db.Model(w).Where("id = ?", id).Delete(w)
+		deleted += err.RowsAffected
+		if len(err.GetErrors()) != 0 {
+			return deleted, err.GetErrors()[0]
 		}
 	}
+
 	return deleted, nil
 }
 
 // UpdateWorkspace updates a workspace, using the id supplied.
 func (db *DB) UpdateWorkspace(ws Workspace) error {
-	ws.UpdatedAt = time.Now().Format("2006-01-02T15:04:05")
-	err := db.Update(&ws)
-	if err != nil {
-		return err
+
+	err := db.Save(&ws)
+	if len(err.GetErrors()) != 0 {
+		return err.GetErrors()[0]
 	}
+
 	return nil
 }

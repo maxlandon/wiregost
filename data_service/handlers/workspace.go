@@ -82,7 +82,7 @@ func (wh *WorkspaceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var ids []int
+		var ids []uint
 		err = json.Unmarshal(b, &ids)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
@@ -94,7 +94,7 @@ func (wh *WorkspaceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		if deleted != len(ids) {
+		if deleted != int64(len(ids)) {
 			http.Error(w, "Some ids are not valid", 500)
 		}
 
