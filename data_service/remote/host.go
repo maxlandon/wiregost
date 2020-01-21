@@ -28,21 +28,20 @@ const (
 )
 
 // Hosts queries all Hosts to Data Service, with optional search filters passed in a map
-func Hosts(ctx context.Context, opts map[string]interface{}) ([]models.Host, error) {
+func Hosts(ctx context.Context, opts map[string]interface{}) (hosts []models.Host, err error) {
 	client := newClient()
 	req, err := client.newRequest(ctx, "GET", hostAPIPath, opts)
 	if err != nil {
 		return nil, err
 	}
 
-	var hosts []models.Host
 	err = client.do(req, &hosts)
 
 	return hosts, err
 }
 
 // GetHost returns a single host, based on various options passed as search filters.
-func GetHost(ctx context.Context, opts map[string]interface{}) (*models.Host, error) {
+func GetHost(ctx context.Context, opts map[string]interface{}) (host *models.Host, err error) {
 	client := newClient()
 
 	req, err := client.newRequest(ctx, "POST", hostAPIPath+"search", opts)
@@ -50,28 +49,26 @@ func GetHost(ctx context.Context, opts map[string]interface{}) (*models.Host, er
 		return nil, err
 	}
 
-	var host *models.Host
 	err = client.do(req, &host)
 
 	return host, err
 }
 
 // ReportHost adds a Host to the database
-func ReportHost(ctx context.Context) (*models.Host, error) {
+func ReportHost(ctx context.Context, opts map[string]interface{}) (host *models.Host, err error) {
 	client := newClient()
-	req, err := client.newRequest(ctx, "POST", hostAPIPath, nil)
+	req, err := client.newRequest(ctx, "POST", hostAPIPath, opts)
 	if err != nil {
 		return nil, err
 	}
 
-	var host *models.Host
 	err = client.do(req, &host)
 
 	return host, err
 }
 
 // UpdateHost updates a Host properties
-func UpdateHost(h *models.Host) (*models.Host, error) {
+func UpdateHost(h *models.Host) (host *models.Host, err error) {
 	client := newClient()
 	hostID := string(h.ID)
 	req, err := client.newRequest(nil, "PUT", hostAPIPath+hostID, h)
@@ -79,7 +76,6 @@ func UpdateHost(h *models.Host) (*models.Host, error) {
 		return nil, err
 	}
 
-	var host *models.Host
 	err = client.do(req, &host)
 
 	return host, err

@@ -80,7 +80,6 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Host range functions
 func (hh *HostHandler) hosts(w http.ResponseWriter, r *http.Request) {
 
 	// Get workspace_id context in Header
@@ -135,7 +134,21 @@ func (hh *HostHandler) reportHost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	host, err := hh.DB.ReportHost(wsID)
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	var opts map[string]interface{}
+	err = json.Unmarshal(b, &opts)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	host, err := hh.DB.ReportHost(wsID, opts)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -151,7 +164,6 @@ func (hh *HostHandler) reportHost(w http.ResponseWriter, r *http.Request) {
 func (hh *HostHandler) deleteHosts(w http.ResponseWriter, r *http.Request) {
 }
 
-// Single host functions
 func (hh *HostHandler) getHost(w http.ResponseWriter, r *http.Request) {
 
 	// Get workspace_id context in Header

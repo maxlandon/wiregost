@@ -53,7 +53,7 @@ type Host struct {
 	// Network
 	Addresses []Address `xml:"address" gorm:"foreignkey:HostID"`
 
-	// Nmap Temporary Attributes
+	// Nmap non-persistent Attributes
 	Distance      Distance      `xml:"distance"`
 	EndTime       Timestamp     `xml:"endtime,attr,omitempty"`
 	IPIDSequence  IPIDSequence  `xml:"ipidsequence" json:"ip_id_sequence"`
@@ -155,13 +155,59 @@ func (db *DB) GetHost(wsID uint, opts map[string]interface{}) (*Host, error) {
 	return host, nil
 }
 
-// ReportHost adds a Host to the database, and returns it with an ID
-func (db *DB) ReportHost(wsID uint) (*Host, error) {
-	host := NewHost(wsID)
+// ReportHost adds a Host to the database, with options, and returns it with an ID.
+// If a host in database matches the IP address provided as option, it will return it.
+// This aims to stick with the fact that a workspace aims primarily to represent a subnet,
+// so that two hosts can have several addresses, but not the same ones.
+// * When reporting a host the workspace can be choosed, so that a nmap scan, for example,
+// * can choose to report its hosts in a different workspace than the one from which the scan
+// * is ran.
+func (db *DB) ReportHost(wsID uint, opts map[string]interface{}) (host *Host, err error) {
 
-	if err := db.Create(&host).Select(&host).Error; err != nil {
-		return nil, err
+	// Queries are always in a workspace context:
+	tx := db.Where("workspace_id = ?", wsID)
+
+	// Add options to query. If lots of options are given
+	// when creating host, it is beneficial because the likelyhood
+	// to create duplicate hosts goes down.
+	tx = parseOptions(opts, tx)
+
+	addrs, found := opts["addresses"]
+	if found {
+		hosts, err := db.hostsByAddress(wsID, addrs, tx)
+		if err != nil {
+			return nil, err
+		}
+		// Likely, the list will only have one host, because:
+		// * If lots of options are given, "entropy" increases
+		// * If the rule of "1 workspace = 1 subnet" is enforced,
+		//   one address will yield only one host for the workspace.
+		if len(hosts) != 0 {
+			return hosts[0], nil
+		}
+
+		// Delete addresses from opts, we don't need them anymore
+		delete(opts, "addresses")
+	}
+
+	// If no address was given, or none matched, no query was performed, because it is pointless:
+	// several hosts can have similar properties, such as OS. Maybe change this if we query for MAC address.
+	host = NewHost(wsID)
+
+	tx = parseOptions(opts, tx)
+	if tx = db.FirstOrCreate(&host, opts); tx.Error != nil {
+		return nil, tx.Error
 	} else {
+		// If addresses were given as options, add them to the new host
+		if found {
+			for _, a := range parseAddresses(addrs) {
+				a.HostID = host.ID
+				host.Addresses = append(host.Addresses, a)
+			}
+			// And update it, which records the addresses
+			db.Save(&host)
+		}
+		// Finally return host, with or without Addresses
 		return host, nil
 	}
 }
@@ -291,23 +337,25 @@ func (db *DB) hostsByAddress(workspaceID uint, addrs interface{}, tx *gorm.DB) (
 
 // FindOrCreateHost searches through the Database for a Host entry: reports one if none found.
 // func (db *DB) FindOrCreateHost(opts map[string]string) (*Host, error) {
+// test
+// comment
 // }
 
-// HasHost checks if a Host entry exists in the workspace passed as argument, that
+// hasHost checks if a Host entry exists in the workspace passed as argument, that
 // matches the IP Address passed as argument
-func (db *DB) HasHost(workspaceID uint, address string) bool {
+func (db *DB) hasHost(workspaceID uint, address string) (hostID uint, hasHost bool) {
 
 	addrs := []string{address}
 	tx := db.Where("workspace_id = ?", workspaceID)
 
 	hosts, err := db.hostsByAddress(workspaceID, addrs, tx)
 	if err != nil {
-		return false
+		return 0, false
 	}
 	if hosts == nil {
-		return false
+		return 0, false
 	} else {
-		return true
+		return hosts[0].ID, true
 	}
 }
 
@@ -337,4 +385,29 @@ func parseOptions(opts map[string]interface{}, tx *gorm.DB) *gorm.DB {
 	}
 
 	return tx
+}
+
+// parseAddresses processes addresses as options and returns Addresses structs
+func parseAddresses(addrs interface{}) (addresses []Address) {
+
+	s := reflect.ValueOf(addrs)
+	a := make([]interface{}, s.Len())
+	for i := 0; i < s.Len(); i++ {
+		a[i] = s.Index(i).Interface()
+	}
+	addrStr := make([]string, 0)
+	for _, item := range a {
+		addrStr = append(addrStr, item.(string))
+	}
+
+	// Load addresses
+	for _, addr := range addrStr {
+		a := Address{
+			Addr:     addr,
+			AddrType: "IPv4",
+		}
+		addresses = append(addresses, a)
+	}
+
+	return addresses
 }
