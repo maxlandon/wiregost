@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package core
+package console
 
 import (
 	// Standard
@@ -24,7 +24,6 @@ import (
 	"strings"
 
 	// 3rd party
-	"github.com/chzyer/readline"
 	"github.com/evilsocket/islazy/tui"
 )
 
@@ -47,19 +46,19 @@ type Prompt struct {
 	effects         map[string]string
 }
 
-func newPrompt(s *Session) Prompt {
+func newPrompt(c *Console) Prompt {
 	// These are here because if colors are disabled, we need the updated tui.* variable
 	prompt := Prompt{
 		// Prompt strings
-		base:      "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server}",
+		base:      "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server} > ",
 		module:    "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server} {fw}=>{reset} post({mod})",
 		agent:     "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server} {fw}=>{reset} agent[{db}{agent}]",
 		compiler:  "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server} {fw}=>{reset} [{bold}{y}Compiler{reset}]",
 		multiline: "> ",
 		// Prompt variabes
-		workspace:     &s.currentWorkspace.Name,
-		currentModule: &s.currentModule,
-		menu:          &s.menuContext,
+		workspace:     &c.currentWorkspace.Name,
+		currentModule: &c.currentModule,
+		menu:          &c.menuContext,
 	}
 	// Colors
 	prompt.effects = map[string]string{
@@ -111,7 +110,7 @@ func newPrompt(s *Session) Prompt {
 			return ip
 		},
 		"{serverip}": func() string {
-			return s.endpointPublicIP
+			return c.endpointPublicIP
 		},
 		// CurrentModule
 		"{mod}": func() string {
@@ -119,11 +118,11 @@ func newPrompt(s *Session) Prompt {
 		},
 		// Current agent
 		"{agent}": func() string {
-			return tui.Bold(s.currentAgentID.String()) + tui.RESET
+			return tui.Bold(c.currentAgentID.String()) + tui.RESET
 		},
 		// Server state
 		"{server}": func() string {
-			if s.serverRunning {
+			if c.serverRunning {
 				return fmt.Sprintf("%s(%son%s)", tui.RESET, tui.GREEN, tui.RESET)
 			} else {
 				return fmt.Sprintf("%s(%soff%s)", tui.RESET, tui.RED, tui.RESET)
@@ -134,7 +133,7 @@ func newPrompt(s *Session) Prompt {
 	return prompt
 }
 
-func (p Prompt) render() (first string, multi string) {
+func (p Prompt) render() (first string) {
 
 	var prompt string
 
@@ -169,14 +168,52 @@ func (p Prompt) render() (first string, multi string) {
 	if !strings.HasPrefix(prompt, tui.RESET) {
 		prompt += tui.RESET
 	}
-	return prompt, multiline
+	return prompt
 }
 
+// func (p Prompt) render() (first string, multi string) {
+//
+//         var prompt string
+//
+//         // Current module does not depend on context...
+//         if *p.currentModule != "" {
+//                 prompt = p.module
+//         } else {
+//                 prompt = p.base
+//         }
+//         // ... and is overidden by the context string if needed.
+//         if *p.menu == "compiler" {
+//                 prompt = p.compiler
+//         }
+//         // ... or overriden by the context agent if needed.
+//         if *p.menu == "agent" {
+//                 prompt = p.agent
+//         }
+//
+//         multiline := p.multiline
+//
+//         for tok, effect := range p.effects {
+//                 prompt = strings.Replace(prompt, tok, effect, -1)
+//                 multiline = strings.Replace(multiline, tok, effect, -1)
+//         }
+//
+//         for tok, cb := range p.promptCallbacks {
+//                 prompt = strings.Replace(prompt, tok, cb(), -1)
+//                 multiline = strings.Replace(multiline, tok, cb(), -1)
+//         }
+//
+//         // make sure an user error does not screw all terminal
+//         if !strings.HasPrefix(prompt, tui.RESET) {
+//                 prompt += tui.RESET
+//         }
+//         return prompt, multiline
+// }
+
 // Refresh prompt
-func refreshPrompt(prompt Prompt, input *readline.Instance) {
-	p, _ := prompt.render()
-	_, m := prompt.render()
-	fmt.Println()
-	fmt.Println(p)
-	input.SetPrompt(m)
-}
+// func refreshPrompt(prompt Prompt, input *readline.Instance) {
+//         p, _ := prompt.render()
+//         _, m := prompt.render()
+//         fmt.Println()
+//         fmt.Println(p)
+//         input.SetPrompt(m)
+// }

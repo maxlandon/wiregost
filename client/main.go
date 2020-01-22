@@ -6,9 +6,8 @@ import (
 
 	// 3rd party
 	"github.com/evilsocket/islazy/tui"
-
+	"github.com/maxlandon/wiregost/client/console"
 	// Wiregost
-	"github.com/maxlandon/wiregost/client/core"
 )
 
 func main() {
@@ -20,7 +19,8 @@ func main() {
 		"--------------------------------------------------------------------------------"))
 
 	// Launch session
-	_ = core.NewSession()
+	// _ = core.NewSession()
+	console.NewConsole()
 }
 
 var welcomeToGhost = `                                                                                                            ,,.,=++============+,               
