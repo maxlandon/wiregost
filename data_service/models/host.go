@@ -90,9 +90,10 @@ func (db *DB) Hosts(wsID uint, opts map[string]interface{}) ([]*Host, error) {
 	var hosts []*Host
 
 	// If ID is given, return corresponding host
-	id, found := opts["host_id"].(int)
+	id, found := opts["host_id"]
 	if found {
-		return db.hostByID(id)
+		hostID := uint(id.(float64))
+		return db.hostByID(hostID)
 	}
 
 	// Queries are always in a workspace context:
@@ -146,7 +147,7 @@ func (db *DB) GetHost(wsID uint, opts map[string]interface{}) (*Host, error) {
 	// If ID, no need to search with other arguments, immediatly return result
 	id, found := opts["host_id"].(float64)
 	if found {
-		hostID := int(id)
+		hostID := uint(id)
 		hosts, _ := db.hostByID(hostID)
 		host = hosts[0]
 		return host, nil
@@ -247,7 +248,7 @@ func (db *DB) UpdateHost(h Host) (*Host, error) {
 }
 
 // GetHost returns a host based on options passed as argument
-func (db *DB) hostByID(ID int) ([]*Host, error) {
+func (db *DB) hostByID(ID uint) ([]*Host, error) {
 	var hosts []*Host
 
 	hostID := uint(ID)
@@ -278,9 +279,7 @@ func (db *DB) hostsByWorkspace(tx *gorm.DB) ([]*Host, error) {
 
 // hostsByAddress is given a workspaceID, a list of addresses to process and a tx context (with possibly
 // other required search filters). It then refines a list based on these addresses, and returns results.
-func (db *DB) hostsByAddress(workspaceID uint, addrs interface{}, tx *gorm.DB) ([]*Host, error) {
-
-	var hosts []*Host
+func (db *DB) hostsByAddress(workspaceID uint, addrs interface{}, tx *gorm.DB) (hosts []*Host, err error) {
 
 	// Convert addrs to []string{}
 	s := reflect.ValueOf(addrs)
@@ -319,15 +318,12 @@ func (db *DB) hostsByAddress(workspaceID uint, addrs interface{}, tx *gorm.DB) (
 		}
 		// Filter hosts for redundant elements
 		found := map[uint]bool{}
-		for _, h := range unfiltered {
-			if found[h.ID] {
-				break
-			} else {
-				if h.WorkspaceID == workspaceID {
-					found[h.ID] = true
-					hosts = append(hosts, &h)
-				}
+		for i, _ := range unfiltered {
+			if found[unfiltered[i].ID] {
+				continue
 			}
+			hosts = append(hosts, &unfiltered[i])
+			found[unfiltered[i].ID] = true
 		}
 		return hosts, nil
 	} else {
