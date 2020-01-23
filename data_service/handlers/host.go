@@ -53,6 +53,10 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// Report a Host
 		case r.Method == "POST":
 			hh.reportHost(w, r)
+
+		// Delete a host
+		case r.Method == "DELETE":
+			hh.deleteHost(w, r)
 		}
 
 	// Path is not nil, applies to a single host ---------------------------//
@@ -162,6 +166,34 @@ func (hh *HostHandler) reportHost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (hh *HostHandler) deleteHosts(w http.ResponseWriter, r *http.Request) {
+
+	// Get workspace_id context in Header
+	ws, _ := strconv.ParseUint(r.Header.Get("Workspace_id"), 10, 32)
+	wsID := uint(ws)
+
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	var opts map[string]interface{}
+	err = json.Unmarshal(b, &opts)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	deleted, err := hh.DB.DeleteHost(wsID, opts)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	if deleted != 1 {
+		http.Error(w, "Some ids are not valid", 500)
+	}
 }
 
 func (hh *HostHandler) getHost(w http.ResponseWriter, r *http.Request) {

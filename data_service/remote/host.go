@@ -82,10 +82,15 @@ func UpdateHost(h *models.Host) (host *models.Host, err error) {
 }
 
 // DeleteHost deletes a Host from the database
-func DeleteHost(ctx context.Context, id int) error {
+func DeleteHost(ctx context.Context, opts map[string]interface{}) error {
+	id, found := opts["host_id"]
+	hostID := ""
+	if found {
+		iID := int(id.(uint))
+		hostID = strconv.Itoa(iID)
+	}
 	client := newClient()
-	hostID := strconv.Itoa(id)
-	req, err := client.newRequest(ctx, "DELETE", hostAPIPath+hostID, id)
+	req, err := client.newRequest(ctx, "DELETE", hostAPIPath+hostID, opts)
 	if err != nil {
 		return err
 	}

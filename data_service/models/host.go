@@ -218,10 +218,10 @@ func (db *DB) DeleteHost(wsID uint, opts map[string]interface{}) (int64, error) 
 	h := new(Host)
 	var deleted int64
 
-	id, found := opts["host_id"].(int)
+	id, found := opts["host_id"]
 	if found {
-		hostID := uint(id)
-		err := db.Model(h).Where("id = ?", hostID).Delete(h)
+		hostID := uint(id.(float64))
+		err := db.Model(h).Where("id = ?", hostID).Delete(&h)
 		deleted += err.RowsAffected
 		if len(err.GetErrors()) != 0 {
 			return deleted, err.GetErrors()[0]

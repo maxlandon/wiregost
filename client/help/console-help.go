@@ -42,9 +42,6 @@ var (
     update          %sUpdate the hosts instead of searching (need host_id)%s
     -u, --up        %sOnly show hosts which are up %s
     -S, --search    %sSearch string to filter by%s
-    -i, --info      %sChange the info of a host %s
-    -n, --name      %sChange the name of a host %s
-    -m, --comment   %sChange the comment of a host %s
 
 %s Filters:%s
     host_id     %sID of a host. Available when listing them, cannot use default%s
@@ -55,6 +52,9 @@ var (
     os_sp       %sOS Service Pack (windows) or kernel version (Unix/Apple) of a host%s
     arch        %sCPU architecture of a host%s
     addresses   %sOne or several IPv4/IPv6 Addresses, comma-separated (192.168.1.15,230.16.13.15)%s
+    info        %sInfo of a host %s
+    name        %sName of a host %s
+    comment     %sComment of a host %s
 
 %s Examples:%s
     hosts add --addresses 192.168.1.24 --os_family Windows          %sManually add a host with address and os_family%s
@@ -69,10 +69,10 @@ var (
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
-		tui.DIM, tui.RESET,
-		tui.DIM, tui.RESET,
-		tui.DIM, tui.RESET,
 		tui.YELLOW, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,

@@ -97,8 +97,9 @@ func (c *DbClient) newRequest(ctx context.Context, method, path string, body int
 	if ctx != nil {
 		ws := ctx.Value("workspace_id")
 		if ws != nil {
-			ws := ws.(int)
-			wsID := strconv.Itoa(ws)
+			ws := ws.(uint)
+			ws64 := uint64(ws)
+			wsID := strconv.FormatUint(ws64, 10)
 			req.Header.Set("workspace_id", wsID)
 		}
 	}
