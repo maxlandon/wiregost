@@ -72,7 +72,6 @@ func RegisterHostCommands(cctx *context.Context, app *grumble.App) {
 		Help: tui.Dim("Add a host manually"),
 		Flags: func(f *grumble.Flags) {
 			// Filters
-			f.UintL("host_id", 0, "ID of a host. Available when listing them, cannot use default")
 			f.StringL("addresses", "", "One or several IPv4/IPv6 Addresses, comma-separated (192.168.1.15,230.16.13.15)")
 			f.StringL("hostname", "", "One or several hostnames")
 			f.StringL("os_name", "", "OS name of a host (Windows 10/Linux)")

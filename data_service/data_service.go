@@ -17,7 +17,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -33,7 +33,8 @@ func main() {
 	// Migrate Schema
 	err := env.DB.CreateSchema()
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Printf("%s*%s Error: Could not migrate database schema: %s", err.Error())
+
 	}
 
 	// Instantiate ServerMultiplexer
@@ -53,7 +54,7 @@ func main() {
 	// mux.Handle(handlers.CredentialAPIPath, ch)
 	//
 	// Start server --------------------------------------------
-	fmt.Println("Listening for requests...")
+	log.Print("%s*%s Wiregost Data Service listening for requests...")
 	http.ListenAndServeTLS(env.Service.Address+":"+strconv.Itoa(env.Service.Port),
 		env.Service.Certificate, env.Service.Key, mux)
 }
