@@ -43,45 +43,30 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimPrefix(r.URL.Path, HostAPIPath)
 
 	switch {
-	// No path suffix, request applies to a Host range ---------------------//
+	// No path suffix, request applies to a Host range
 	case path == "":
 		switch {
-		// Get some or all hosts from workspace
 		case r.Method == "GET":
 			hh.hosts(w, r)
 
-		// Report a Host
 		case r.Method == "POST":
 			hh.reportHost(w, r)
 
-		// Delete one or more hosts
 		case r.Method == "DELETE":
 			hh.deleteHosts(w, r)
 		}
 
-	// Path is not nil, applies to a single host ---------------------------//
+	// Path is not nil, applies to a single host
 	case path != "":
 		switch {
-		// Path is a search: applies to a single, non-identified host
-		case path == "search":
-			switch {
-			}
-
-		// Path is a Host ID. Applies to a single host.
-		default:
-			// Delete a single Host
-			switch {
-			// Update a Host
-			case r.Method == "PUT":
-				hh.updateHost(w, r)
-			}
+		case r.Method == "PUT":
+			hh.updateHost(w, r)
 		}
 	}
 }
 
 func (hh *HostHandler) hosts(w http.ResponseWriter, r *http.Request) {
 
-	// Get workspace_id context in Header
 	ws, _ := strconv.ParseUint(r.Header.Get("Workspace_id"), 10, 32)
 	wsID := uint(ws)
 
@@ -105,7 +90,7 @@ func (hh *HostHandler) hosts(w http.ResponseWriter, r *http.Request) {
 		}
 
 		json.NewEncoder(w).Encode(hosts)
-		// Filters were provided, decode them
+	// Filters were provided, decode them
 	default:
 		var opts map[string]interface{}
 		err = json.Unmarshal(b, &opts)
@@ -126,7 +111,6 @@ func (hh *HostHandler) hosts(w http.ResponseWriter, r *http.Request) {
 
 func (hh *HostHandler) reportHost(w http.ResponseWriter, r *http.Request) {
 
-	// Get workspace_id context in Header
 	ws, _ := strconv.ParseUint(r.Header.Get("Workspace_id"), 10, 32)
 	wsID := uint(ws)
 
@@ -162,7 +146,6 @@ func (hh *HostHandler) reportHost(w http.ResponseWriter, r *http.Request) {
 
 func (hh *HostHandler) deleteHosts(w http.ResponseWriter, r *http.Request) {
 
-	// Get workspace_id context in Header
 	ws, _ := strconv.ParseUint(r.Header.Get("Workspace_id"), 10, 32)
 	wsID := uint(ws)
 

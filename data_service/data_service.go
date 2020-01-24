@@ -29,17 +29,16 @@ import (
 func main() {
 	// Setup DB and environment -------------------------------
 
-	// Load environment configuration: DB credentials and data_service parameters
+	// Load DB credentials and data_service parameters
 	env := handlers.LoadEnv()
 
-	// Migrate Schema
-	err := env.DB.CreateSchema()
+	// AutoMigrate Schema
+	err := env.DB.MigrateSchema()
 	if err != nil {
 		log.Printf("%s*%s Error: Could not migrate database schema: %s", tui.RED, tui.RESET, err.Error())
 
 	}
 
-	// Instantiate ServerMultiplexer
 	mux := http.NewServeMux()
 
 	// Register handlers ---------------------------------------

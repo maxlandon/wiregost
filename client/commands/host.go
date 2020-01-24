@@ -41,7 +41,6 @@ func RegisterHostCommands(cctx *context.Context, app *grumble.App) {
 		LongHelp: help.GetHelpFor(consts.HostsStr),
 
 		Flags: func(f *grumble.Flags) {
-			// Filters
 			f.StringL("host_id", "", "ID of a host. Available when listing them, cannot use default")
 			f.StringL("addresses", "", "One or several IPv4/IPv6 Addresses, comma-separated (192.168.1.15,230.16.13.15)")
 			f.StringL("hostnames", "", "One or several hostnames")
@@ -69,7 +68,6 @@ func RegisterHostCommands(cctx *context.Context, app *grumble.App) {
 		Name: "add",
 		Help: tui.Dim("Add a host manually"),
 		Flags: func(f *grumble.Flags) {
-			// Filters
 			f.StringL("addresses", "", "One or several IPv4/IPv6 Addresses, comma-separated (192.168.1.15,230.16.13.15)")
 			f.StringL("hostname", "", "One or several hostnames")
 			f.StringL("os_name", "", "OS name of a host (Windows 10/Linux)")
@@ -96,7 +94,6 @@ func RegisterHostCommands(cctx *context.Context, app *grumble.App) {
 		Name: "delete",
 		Help: tui.Dim("Delete one or more hosts manually"),
 		Flags: func(f *grumble.Flags) {
-			// Filters
 			f.StringL("host_id", "", "ID of a host. Available when listing them, cannot use default")
 			f.StringL("addresses", "", "One or several IPv4/IPv6 Addresses, comma-separated (192.168.1.15,230.16.13.15)")
 			f.StringL("hostname", "", "One or several hostnames")
@@ -147,7 +144,7 @@ func RegisterHostCommands(cctx *context.Context, app *grumble.App) {
 		HelpGroup: consts.DataServiceHelpGroup,
 	})
 
-	// Finally, register root command
+	// Register root host command
 	app.AddCommand(hostsCommand)
 }
 
@@ -221,8 +218,6 @@ func addHost(cctx *context.Context, gctx *grumble.Context) {
 	// Get existing host for comparing ReportHost() results
 	hosts, err := remote.Hosts(*cctx, nil)
 
-	// If an IP address has been given as option, and that it matches one
-	// of already existing hosts, it will report this existing host
 	host, err := remote.ReportHost(*cctx, opts)
 	if err != nil {
 		fmt.Printf("%s[!]%s Error: %s\n",
@@ -230,8 +225,6 @@ func addHost(cctx *context.Context, gctx *grumble.Context) {
 		return
 	}
 
-	// Check if the hosts that have been returned before reporting a host
-	// match with it. Means none has been created
 	for _, h := range hosts {
 		if h.ID == host.ID {
 			fmt.Printf("%s*%s Host already exists at: %s\n",
@@ -239,7 +232,7 @@ func addHost(cctx *context.Context, gctx *grumble.Context) {
 			return
 		}
 	}
-	// Else notify a new host has been created
+
 	fmt.Printf("%s*%s New host at: %s\n",
 		tui.BLUE, tui.RESET, host.Addresses)
 }
@@ -288,16 +281,15 @@ func updateHost(cctx *context.Context, gctx *grumble.Context) {
 
 	var host *models.Host
 
-	// Parse host_id
 	if gctx.Flags.String("host_id") != "" {
-		// Format list
 		ids := strings.Split(gctx.Flags.String("host_id"), ",")
 		var uIds []uint
+
 		for _, id := range ids {
 			uId, _ := strconv.Atoi(id)
 			uIds = append(uIds, uint(uId))
 		}
-		// Get DB hosts and compare with Uint ID list
+
 		hosts, _ := remote.Hosts(*cctx, nil)
 		for i, _ := range hosts {
 			for _, u := range uIds {
@@ -307,13 +299,12 @@ func updateHost(cctx *context.Context, gctx *grumble.Context) {
 			}
 		}
 	} else {
-		// If not, return and ask for one
 		fmt.Printf("%s[!]%s Provide a host ID (--host_id 2)\n",
 			tui.RED, tui.RESET)
 		return
 	}
 
-	// Parse options
+	// Populate host with filters
 	if gctx.Flags.String("os_name") != "" {
 		host.OSName = gctx.Flags.String("os_name")
 	}
@@ -348,9 +339,6 @@ func updateHost(cctx *context.Context, gctx *grumble.Context) {
 		}
 		host.Addresses = addrs
 	}
-	// if gctx.Flags.String("hostnames") != "" {
-	//         opts["hostnames"] = strings.Split(gctx.Flags.String("hostnames"), ",")
-	// }
 	if gctx.Flags.String("name") != "" {
 		host.Name = gctx.Flags.String("name")
 	}
@@ -366,6 +354,10 @@ func updateHost(cctx *context.Context, gctx *grumble.Context) {
 	if err != nil {
 		fmt.Printf("%s[!]%s Error: %s\n",
 			tui.RED, tui.RESET, err.Error())
+	}
+	if len(host.Addresses) == 0 {
+		fmt.Printf("%s*%s No new host parameters \n",
+			tui.YELLOW, tui.RESET)
 	} else {
 		fmt.Printf("%s*%s Updated host at: %s\n",
 			tui.BLUE, tui.RESET, host.Addresses)
@@ -385,10 +377,6 @@ func parseFilters(ctx *grumble.Context) (opts map[string]interface{}) {
 		}
 		opts["host_id"] = uIds
 	}
-	// if ctx.Flags.Uint("host_id") != 0 {
-	//         opts["host_id"] = ctx.Flags.Uint("host_id")
-	// }
-
 	if ctx.Flags.String("os_name") != "" {
 		opts["os_name"] = ctx.Flags.String("os_name")
 	}

@@ -88,7 +88,6 @@ func NewHost(workspaceID uint) *Host {
 // Hosts returns all Host entries in the database, with sequential chaining of options
 func (db *DB) Hosts(wsID uint, opts map[string]interface{}) (hosts []*Host, err error) {
 
-	// If ID is given, return corresponding host
 	ids, found := opts["host_id"]
 	if found {
 		switch idList := ids.(type) {
@@ -105,100 +104,65 @@ func (db *DB) Hosts(wsID uint, opts map[string]interface{}) (hosts []*Host, err 
 	// Queries are always in a workspace context:
 	tx := db.Where("workspace_id = ?", wsID)
 
-	// Parse search options and add them to methods chain.
-	// if none are provided, return all hosts in workspace
 	if opts == nil {
 		return db.hostsByWorkspace(tx)
 	} else {
-		tx = parseOptions(opts, tx)
+		tx = parseHostOptions(opts, tx)
 	}
 
-	// This section, once all options filters are coded, will not be useful, as
-	// each successive search below it will populate/refine the list of hosts.
-	// All of these successive searches should also, a priori, take care of populating
-	// Host struct fields, such as addresses, Hostnames, etc...
-	// -------------------------------------------------------------------------
-	// Perform query based on parsed options chained method.
-	// Returns a first batch of hosts, which can be refined after with other
-	// options such as IP addresses
+	// Returns a first batch of hosts, refined below with options such as IP addresses
 	if tx.Find(&hosts); tx.Error != nil {
 		return nil, tx.Error
 	}
-	// Load addresses into each host found
 	for _, h := range hosts {
 		if tx := db.Model(&h).Related(&h.Addresses); tx.Error != nil {
 			continue
 		}
 	}
-	// -------------------------------------------------------------------------
 
-	// Addresses: need to perform query here (because query logic
-	// involves going back and forth).
 	addrs, found := opts["addresses"]
 	if found {
 		hosts, _ = db.hostsByAddress(wsID, addrs, tx)
 		if hosts == nil {
-			// If no hosts have been returned, search is not sucessful.
 			return nil, nil
 		}
 	}
 
+	// TODO: REFINE BY HOST NAMES
+
 	return hosts, nil
 }
 
-// ReportHost adds a Host to the database, with options, and returns it with an ID.
-// If a host in database matches the IP address provided as option, it will return it.
-// This aims to stick with the fact that a workspace aims primarily to represent a subnet,
-// so that two hosts can have several addresses, but not the same ones.
-// * When reporting a host the workspace can be choosed, so that a nmap scan, for example,
-// * can choose to report its hosts in a different workspace than the one from which the scan
-// * is ran.
 func (db *DB) ReportHost(wsID uint, opts map[string]interface{}) (host *Host, err error) {
 
 	// Queries are always in a workspace context:
 	tx := db.Where("workspace_id = ?", wsID)
+	tx = parseHostOptions(opts, tx)
 
-	// Add options to query. If lots of options are given
-	// when creating host, it is beneficial because the likelyhood
-	// to create duplicate hosts goes down.
-	tx = parseOptions(opts, tx)
-
-	addrs, found := opts["addresses"]
-	if found {
+	addrs, addrFound := opts["addresses"]
+	if addrFound {
 		hosts, err := db.hostsByAddress(wsID, addrs, tx)
 		if err != nil {
 			return nil, err
 		}
-		// Likely, the list will only have one host, because:
-		// * If lots of options are given, "entropy" increases
-		// * If the rule of "1 workspace = 1 subnet" is enforced,
-		//   one address will yield only one host for the workspace.
 		if len(hosts) != 0 {
 			return hosts[0], nil
 		}
-
-		// Delete addresses from opts, we don't need them anymore
-		delete(opts, "addresses")
 	}
 
-	// If no address was given, or none matched, no query was performed, because it is pointless:
-	// several hosts can have similar properties, such as OS. Maybe change this if we query for MAC address.
+	// If no address was given, or none matched, no need to query
 	host = NewHost(wsID)
 
-	tx = parseOptions(opts, tx)
 	if tx = db.FirstOrCreate(&host, opts); tx.Error != nil {
 		return nil, tx.Error
 	} else {
-		// If addresses were given as options, add them to the new host
-		if found {
+		if addrFound {
 			for _, a := range parseAddresses(addrs) {
 				a.HostID = host.ID
 				host.Addresses = append(host.Addresses, a)
 			}
-			// And update it, which records the addresses
 			db.Save(&host)
 		}
-		// Finally return host, with or without Addresses
 		return host, nil
 	}
 }
@@ -208,7 +172,6 @@ func (db *DB) DeleteHosts(wsID uint, opts map[string]interface{}) (int64, error)
 	h := new(Host)
 	var deleted int64
 
-	// If ID is given, return corresponding host
 	ids, found := opts["host_id"]
 	if found {
 		switch idList := ids.(type) {
@@ -218,7 +181,7 @@ func (db *DB) DeleteHosts(wsID uint, opts map[string]interface{}) (int64, error)
 				if tx := db.Model(h).Where("id = ?", hostID).Delete(&h); tx.Error != nil {
 					continue
 				}
-				deleted += 1 // Host ID can only touch one row
+				deleted += 1
 			}
 		}
 	} else {
@@ -235,7 +198,6 @@ func (db *DB) UpdateHost(h Host) (*Host, error) {
 		return &h, err.Error
 	}
 
-	// Update and load IP addresses
 	db.Model(&h).Association("Addresses").Replace(h.Addresses)
 	db.Where(&Address{HostID: host.ID}).Find(&h)
 
@@ -261,7 +223,7 @@ func (db *DB) hostsByWorkspace(tx *gorm.DB) ([]*Host, error) {
 	if tx = tx.Find(&hosts); tx.Error != nil {
 		return nil, tx.Error
 	}
-	// Load all adddresses for each host
+
 	for _, h := range hosts {
 		err := db.Model(&h).Related(&h.Addresses).Error
 		if err != nil {
@@ -271,8 +233,7 @@ func (db *DB) hostsByWorkspace(tx *gorm.DB) ([]*Host, error) {
 	return hosts, nil
 }
 
-// hostsByAddress is given a workspaceID, a list of addresses to process and a tx context (with possibly
-// other required search filters). It then refines a list based on these addresses, and returns results.
+// hostsByAddress is given a workspaceID, a list of addresses to process and a tx context carrying  possibly other required search filters).
 func (db *DB) hostsByAddress(workspaceID uint, addrs interface{}, tx *gorm.DB) (hosts []*Host, err error) {
 
 	// Convert addrs to []string{}
@@ -325,14 +286,7 @@ func (db *DB) hostsByAddress(workspaceID uint, addrs interface{}, tx *gorm.DB) (
 	}
 }
 
-// FindOrCreateHost searches through the Database for a Host entry: reports one if none found.
-// func (db *DB) FindOrCreateHost(opts map[string]string) (*Host, error) {
-// test
-// comment
-// }
-
-// hasHost checks if a Host entry exists in the workspace passed as argument, that
-// matches the IP Address passed as argument
+// hasHost checks if a Host entry exists in the workspace, with the address passed as argument
 func (db *DB) hasHost(workspaceID uint, address string) (hostID uint, hasHost bool) {
 
 	addrs := []string{address}
@@ -349,26 +303,21 @@ func (db *DB) hasHost(workspaceID uint, address string) (hostID uint, hasHost bo
 	}
 }
 
-// parseOptions extracts search options and construct and chain of query conditions
-// that is passed to functions needing it.
-func parseOptions(opts map[string]interface{}, tx *gorm.DB) *gorm.DB {
+// parseHostOptions extracts search options and construct and chain of query conditions
+func parseHostOptions(opts map[string]interface{}, tx *gorm.DB) *gorm.DB {
 
-	// OS Name
 	osName, found := opts["os_name"].(string)
 	if found {
 		tx = tx.Where("os_name ILIKE (?)", osName)
 	}
-	// OS Flavor
 	osFlav, found := opts["os_flavor"].(string)
 	if found {
 		tx = tx.Where("os_flavor ILIKE (?)", osFlav)
 	}
-	// OS Family
 	osFam, found := opts["os_family"].(string)
 	if found {
 		tx = tx.Where("os_family ILIKE (?)", osFam)
 	}
-	// Architecture
 	arch, found := opts["arch"].(string)
 	if found {
 		tx = tx.Where("arch ILIKE (?)", arch)
@@ -385,12 +334,12 @@ func parseAddresses(addrs interface{}) (addresses []Address) {
 	for i := 0; i < s.Len(); i++ {
 		a[i] = s.Index(i).Interface()
 	}
+
 	addrStr := make([]string, 0)
 	for _, item := range a {
 		addrStr = append(addrStr, item.(string))
 	}
 
-	// Load addresses
 	for _, addr := range addrStr {
 		a := Address{
 			Addr:     addr,
