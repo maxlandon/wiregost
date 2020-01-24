@@ -18,7 +18,6 @@ package remote
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/maxlandon/wiregost/data_service/models"
 )
@@ -38,20 +37,6 @@ func Hosts(ctx context.Context, opts map[string]interface{}) (hosts []models.Hos
 	err = client.do(req, &hosts)
 
 	return hosts, err
-}
-
-// GetHost returns a single host, based on various options passed as search filters.
-func GetHost(ctx context.Context, opts map[string]interface{}) (host *models.Host, err error) {
-	client := newClient()
-
-	req, err := client.newRequest(ctx, "POST", hostAPIPath+"search", opts)
-	if err != nil {
-		return nil, err
-	}
-
-	err = client.do(req, &host)
-
-	return host, err
 }
 
 // ReportHost adds a Host to the database
@@ -82,15 +67,9 @@ func UpdateHost(h *models.Host) (host *models.Host, err error) {
 }
 
 // DeleteHost deletes a Host from the database
-func DeleteHost(ctx context.Context, opts map[string]interface{}) error {
-	id, found := opts["host_id"]
-	hostID := ""
-	if found {
-		iID := int(id.(uint))
-		hostID = strconv.Itoa(iID)
-	}
+func DeleteHosts(ctx context.Context, opts map[string]interface{}) error {
 	client := newClient()
-	req, err := client.newRequest(ctx, "DELETE", hostAPIPath+hostID, opts)
+	req, err := client.newRequest(ctx, "DELETE", hostAPIPath, opts)
 	if err != nil {
 		return err
 	}

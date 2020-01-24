@@ -54,9 +54,9 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case r.Method == "POST":
 			hh.reportHost(w, r)
 
-		// Delete a host
+		// Delete one or more hosts
 		case r.Method == "DELETE":
-			hh.deleteHost(w, r)
+			hh.deleteHosts(w, r)
 		}
 
 	// Path is not nil, applies to a single host ---------------------------//
@@ -65,17 +65,12 @@ func (hh *HostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// Path is a search: applies to a single, non-identified host
 		case path == "search":
 			switch {
-			case r.Method == "POST":
-				hh.getHost(w, r)
 			}
 
 		// Path is a Host ID. Applies to a single host.
 		default:
 			// Delete a single Host
 			switch {
-			case r.Method == "DELETE":
-				hh.deleteHost(w, r)
-
 			// Update a Host
 			case r.Method == "PUT":
 				hh.updateHost(w, r)
@@ -185,7 +180,7 @@ func (hh *HostHandler) deleteHosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deleted, err := hh.DB.DeleteHost(wsID, opts)
+	deleted, err := hh.DB.DeleteHosts(wsID, opts)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -194,38 +189,6 @@ func (hh *HostHandler) deleteHosts(w http.ResponseWriter, r *http.Request) {
 	if deleted != 1 {
 		http.Error(w, "Some ids are not valid", 500)
 	}
-}
-
-func (hh *HostHandler) getHost(w http.ResponseWriter, r *http.Request) {
-
-	// Get workspace_id context in Header
-	ws, _ := strconv.ParseUint(r.Header.Get("Workspace_id"), 10, 32)
-	wsID := uint(ws)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	b, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	var opts map[string]interface{}
-	err = json.Unmarshal(b, &opts)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	host, err := hh.DB.GetHost(wsID, opts)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	json.NewEncoder(w).Encode(host)
 }
 
 func (hh *HostHandler) updateHost(w http.ResponseWriter, r *http.Request) {
@@ -257,36 +220,5 @@ func (hh *HostHandler) updateHost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
-	}
-}
-
-func (hh *HostHandler) deleteHost(w http.ResponseWriter, r *http.Request) {
-
-	// Get workspace_id context in Header
-	ws, _ := strconv.ParseUint(r.Header.Get("Workspace_id"), 10, 32)
-	wsID := uint(ws)
-
-	b, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	var opts map[string]interface{}
-	err = json.Unmarshal(b, &opts)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	deleted, err := hh.DB.DeleteHost(wsID, opts)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	if deleted != 1 {
-		http.Error(w, "Some ids are not valid", 500)
 	}
 }

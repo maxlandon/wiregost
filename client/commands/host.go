@@ -33,8 +33,6 @@ import (
 	"github.com/maxlandon/wiregost/data_service/remote"
 )
 
-var ()
-
 func RegisterHostCommands(cctx *context.Context, app *grumble.App) {
 
 	hostsCommand := &grumble.Command{
@@ -44,7 +42,7 @@ func RegisterHostCommands(cctx *context.Context, app *grumble.App) {
 
 		Flags: func(f *grumble.Flags) {
 			// Filters
-			f.UintL("host_id", 0, "ID of a host. Available when listing them, cannot use default")
+			f.StringL("host_id", "", "ID of a host. Available when listing them, cannot use default")
 			f.StringL("addresses", "", "One or several IPv4/IPv6 Addresses, comma-separated (192.168.1.15,230.16.13.15)")
 			f.StringL("hostnames", "", "One or several hostnames")
 			f.StringL("os_name", "", "OS name of a host (Windows 10/Linux)")
@@ -99,7 +97,7 @@ func RegisterHostCommands(cctx *context.Context, app *grumble.App) {
 		Help: tui.Dim("Delete one or more hosts manually"),
 		Flags: func(f *grumble.Flags) {
 			// Filters
-			f.UintL("host_id", 0, "ID of a host. Available when listing them, cannot use default")
+			f.StringL("host_id", "", "ID of a host. Available when listing them, cannot use default")
 			f.StringL("addresses", "", "One or several IPv4/IPv6 Addresses, comma-separated (192.168.1.15,230.16.13.15)")
 			f.StringL("hostname", "", "One or several hostnames")
 			f.StringL("os_name", "", "OS name of a host (Windows 10/Linux)")
@@ -127,7 +125,7 @@ func RegisterHostCommands(cctx *context.Context, app *grumble.App) {
 		Help: tui.Dim("Update a host manually"),
 		Flags: func(f *grumble.Flags) {
 			// Filters
-			f.UintL("host_id", 0, "ID of a host. Available when listing them, cannot use default")
+			f.StringL("host_id", "", "ID of a host. Available when listing them, cannot use default")
 			f.StringL("addresses", "", "One or several IPv4/IPv6 Addresses, comma-separated (192.168.1.15,230.16.13.15)")
 			f.StringL("hostname", "", "One or several hostnames")
 			f.StringL("os_name", "", "OS name of a host (Windows 10/Linux)")
@@ -248,9 +246,6 @@ func addHost(cctx *context.Context, gctx *grumble.Context) {
 
 func deleteHosts(cctx *context.Context, gctx *grumble.Context) {
 
-	var hosts []models.Host
-	var err error
-
 	opts := parseFilters(gctx)
 
 	// Get a list of hosts matching filters given
@@ -259,6 +254,9 @@ func deleteHosts(cctx *context.Context, gctx *grumble.Context) {
 		fmt.Printf("%s[!]%s Provide filters for host selection \n",
 			tui.RED, tui.RESET)
 	default:
+		var hosts []models.Host
+		var err error
+
 		hosts, err = remote.Hosts(*cctx, opts)
 		if err != nil {
 			fmt.Printf("%s[!]%s Error: %s\n",
@@ -272,8 +270,8 @@ func deleteHosts(cctx *context.Context, gctx *grumble.Context) {
 		}
 
 		for i, _ := range hosts {
-			opts["host_id"] = hosts[i].ID
-			err = remote.DeleteHost(*cctx, opts)
+			opts["host_id"] = []uint{hosts[i].ID}
+			err = remote.DeleteHosts(*cctx, opts)
 			if err != nil {
 				fmt.Printf("%s[!]%s Error: %s\n",
 					tui.RED, tui.RESET, err.Error())
@@ -291,11 +289,21 @@ func updateHost(cctx *context.Context, gctx *grumble.Context) {
 	var host *models.Host
 
 	// Parse host_id
-	if gctx.Flags.Uint("host_id") != 0 {
+	if gctx.Flags.String("host_id") != "" {
+		// Format list
+		ids := strings.Split(gctx.Flags.String("host_id"), ",")
+		var uIds []uint
+		for _, id := range ids {
+			uId, _ := strconv.Atoi(id)
+			uIds = append(uIds, uint(uId))
+		}
+		// Get DB hosts and compare with Uint ID list
 		hosts, _ := remote.Hosts(*cctx, nil)
 		for i, _ := range hosts {
-			if hosts[i].ID == gctx.Flags.Uint("host_id") {
-				host = &hosts[i]
+			for _, u := range uIds {
+				if hosts[i].ID == u {
+					host = &hosts[i]
+				}
 			}
 		}
 	} else {
@@ -368,9 +376,19 @@ func updateHost(cctx *context.Context, gctx *grumble.Context) {
 func parseFilters(ctx *grumble.Context) (opts map[string]interface{}) {
 	opts = make(map[string]interface{}, 0)
 
-	if ctx.Flags.Uint("host_id") != 0 {
-		opts["host_id"] = ctx.Flags.Uint("host_id")
+	if ctx.Flags.String("host_id") != "" {
+		ids := strings.Split(ctx.Flags.String("host_id"), ",")
+		var uIds []uint
+		for _, id := range ids {
+			uId, _ := strconv.Atoi(id)
+			uIds = append(uIds, uint(uId))
+		}
+		opts["host_id"] = uIds
 	}
+	// if ctx.Flags.Uint("host_id") != 0 {
+	//         opts["host_id"] = ctx.Flags.Uint("host_id")
+	// }
+
 	if ctx.Flags.String("os_name") != "" {
 		opts["os_name"] = ctx.Flags.String("os_name")
 	}

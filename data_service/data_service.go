@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/evilsocket/islazy/tui"
+
 	"github.com/maxlandon/wiregost/data_service/handlers"
 )
 
@@ -33,7 +35,7 @@ func main() {
 	// Migrate Schema
 	err := env.DB.CreateSchema()
 	if err != nil {
-		log.Printf("%s*%s Error: Could not migrate database schema: %s", err.Error())
+		log.Printf("%s*%s Error: Could not migrate database schema: %s", tui.RED, tui.RESET, err.Error())
 
 	}
 

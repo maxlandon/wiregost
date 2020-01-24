@@ -86,14 +86,20 @@ func NewHost(workspaceID uint) *Host {
 }
 
 // Hosts returns all Host entries in the database, with sequential chaining of options
-func (db *DB) Hosts(wsID uint, opts map[string]interface{}) ([]*Host, error) {
-	var hosts []*Host
+func (db *DB) Hosts(wsID uint, opts map[string]interface{}) (hosts []*Host, err error) {
 
 	// If ID is given, return corresponding host
-	id, found := opts["host_id"]
+	ids, found := opts["host_id"]
 	if found {
-		hostID := uint(id.(float64))
-		return db.hostByID(hostID)
+		switch idList := ids.(type) {
+		case []float64:
+			for i, _ := range idList {
+				hostID := uint(idList[i])
+				host, _ := db.hostByID(hostID)
+				hosts = append(hosts, host)
+			}
+			return hosts, nil
+		}
 	}
 
 	// Queries are always in a workspace context:
@@ -138,22 +144,6 @@ func (db *DB) Hosts(wsID uint, opts map[string]interface{}) ([]*Host, error) {
 	}
 
 	return hosts, nil
-}
-
-// GetHost returns a host based on options passed as argument
-func (db *DB) GetHost(wsID uint, opts map[string]interface{}) (*Host, error) {
-	var host *Host
-
-	// If ID, no need to search with other arguments, immediatly return result
-	id, found := opts["host_id"].(float64)
-	if found {
-		hostID := uint(id)
-		hosts, _ := db.hostByID(hostID)
-		host = hosts[0]
-		return host, nil
-	}
-
-	return host, nil
 }
 
 // ReportHost adds a Host to the database, with options, and returns it with an ID.
@@ -214,17 +204,22 @@ func (db *DB) ReportHost(wsID uint, opts map[string]interface{}) (host *Host, er
 }
 
 // DeleteHost deletes a Host based on the ID passed in
-func (db *DB) DeleteHost(wsID uint, opts map[string]interface{}) (int64, error) {
+func (db *DB) DeleteHosts(wsID uint, opts map[string]interface{}) (int64, error) {
 	h := new(Host)
 	var deleted int64
 
-	id, found := opts["host_id"]
+	// If ID is given, return corresponding host
+	ids, found := opts["host_id"]
 	if found {
-		hostID := uint(id.(float64))
-		err := db.Model(h).Where("id = ?", hostID).Delete(&h)
-		deleted += err.RowsAffected
-		if len(err.GetErrors()) != 0 {
-			return deleted, err.GetErrors()[0]
+		switch idList := ids.(type) {
+		case []float64:
+			for i, _ := range idList {
+				hostID := uint(idList[i])
+				if tx := db.Model(h).Where("id = ?", hostID).Delete(&h); tx.Error != nil {
+					continue
+				}
+				deleted += 1 // Host ID can only touch one row
+			}
 		}
 	} else {
 		return 0, errors.New("Error: No Host ID provided")
@@ -247,18 +242,17 @@ func (db *DB) UpdateHost(h Host) (*Host, error) {
 	return &h, nil
 }
 
-// GetHost returns a host based on options passed as argument
-func (db *DB) hostByID(ID uint) ([]*Host, error) {
-	var hosts []*Host
+// hostByID returns a host based on its id
+func (db *DB) hostByID(ID uint) (host *Host, err error) {
 
 	hostID := uint(ID)
-	if tx := db.Where(&Host{ID: hostID}).Find(&hosts); tx.Error != nil {
+	if tx := db.Where(&Host{ID: hostID}).Find(&host); tx.Error != nil {
 		return nil, tx.Error
 	}
-	if err := db.Model(&hosts[0]).Related(&hosts[0].Addresses); err.Error != nil {
-		return hosts, err.Error
+	if err := db.Model(&host).Related(&host.Addresses); err.Error != nil {
+		return host, err.Error
 	}
-	return hosts, nil
+	return host, nil
 }
 
 // workspaceHosts queries all hosts in a workspace
