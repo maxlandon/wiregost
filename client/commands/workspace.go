@@ -133,7 +133,7 @@ func RegisterWorkspaceCommands(workspace *models.Workspace, cctx *context.Contex
 		HelpGroup: consts.DataServiceHelpGroup,
 	})
 
-	// Finally register workspace command
+	// Register root workspace command
 	app.AddCommand(workspaceCommand)
 }
 
@@ -234,7 +234,6 @@ func updateWorkspace(gctx *grumble.Context) {
 
 	var workspace *models.Workspace
 
-	// Parse workspace name
 	if gctx.Flags.String("name") != "" {
 		workspaces, _ := remote.Workspaces(nil)
 		for i, _ := range workspaces {
@@ -243,13 +242,11 @@ func updateWorkspace(gctx *grumble.Context) {
 			}
 		}
 	} else {
-		// If not, return and ask for one
 		fmt.Printf("%s[!]%s Provide a workspace name (--name 'workspace')\n",
 			tui.RED, tui.RESET)
 		return
 	}
 
-	// Parse options
 	if gctx.Flags.String("description") != "" {
 		workspace.Description = gctx.Flags.String("description")
 	}
@@ -260,7 +257,6 @@ func updateWorkspace(gctx *grumble.Context) {
 		workspace.LimitToNetwork = gctx.Flags.Bool("limit_to_network")
 	}
 
-	// Update workspace
 	err := remote.UpdateWorkspace(nil, *workspace)
 	if err != nil {
 		fmt.Println(err.Error())

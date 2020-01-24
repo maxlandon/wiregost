@@ -31,14 +31,12 @@ const (
 
 // WorkspaceHandler handles all HTTP requests concerning workspace management.
 type WorkspaceHandler struct {
-	// Env is needed to pass a DB connection pool
 	*Env
 }
 
 // ServeHTTP dispatches and process workspace requests
 func (wh *WorkspaceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
-	// List workspaces
 	case r.Method == "GET":
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
@@ -51,7 +49,6 @@ func (wh *WorkspaceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		json.NewEncoder(w).Encode(workspaces)
 
-	// Add workspaces
 	case r.Method == "POST":
 		b, err := ioutil.ReadAll(r.Body)
 		defer r.Body.Close()
@@ -73,7 +70,6 @@ func (wh *WorkspaceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-	// Delete workspace
 	case r.Method == "DELETE":
 		b, err := ioutil.ReadAll(r.Body)
 		defer r.Body.Close()
@@ -98,7 +94,6 @@ func (wh *WorkspaceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Some ids are not valid", 500)
 		}
 
-	// Update workspace
 	case r.Method == "PUT":
 		b, err := ioutil.ReadAll(r.Body)
 		defer r.Body.Close()
