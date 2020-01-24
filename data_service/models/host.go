@@ -122,7 +122,7 @@ func (db *DB) Hosts(wsID uint, opts map[string]interface{}) (hosts []*Host, err 
 
 	addrs, found := opts["addresses"]
 	if found {
-		hosts, _ = db.hostsByAddress(wsID, addrs, tx)
+		hosts, _ = db.hostsByAddress(wsID, addrs)
 		if hosts == nil {
 			return nil, nil
 		}
@@ -141,17 +141,19 @@ func (db *DB) ReportHost(wsID uint, opts map[string]interface{}) (host *Host, er
 
 	addrs, addrFound := opts["addresses"]
 	if addrFound {
-		hosts, err := db.hostsByAddress(wsID, addrs, tx)
+		hosts, err := db.hostsByAddress(wsID, addrs)
 		if err != nil {
 			return nil, err
 		}
 		if len(hosts) != 0 {
 			return hosts[0], nil
 		}
+		delete(opts, "addresses")
 	}
 
 	// If no address was given, or none matched, no need to query
 	host = NewHost(wsID)
+	tx = parseHostOptions(opts, tx)
 
 	if tx = db.FirstOrCreate(&host, opts); tx.Error != nil {
 		return nil, tx.Error
@@ -234,7 +236,7 @@ func (db *DB) hostsByWorkspace(tx *gorm.DB) ([]*Host, error) {
 }
 
 // hostsByAddress is given a workspaceID, a list of addresses to process and a tx context carrying  possibly other required search filters).
-func (db *DB) hostsByAddress(workspaceID uint, addrs interface{}, tx *gorm.DB) (hosts []*Host, err error) {
+func (db *DB) hostsByAddress(workspaceID uint, addrs interface{}) (hosts []*Host, err error) {
 
 	// Convert addrs to []string{}
 	s := reflect.ValueOf(addrs)
@@ -262,7 +264,7 @@ func (db *DB) hostsByAddress(workspaceID uint, addrs interface{}, tx *gorm.DB) (
 	if len(addresses) != 0 {
 		for _, addr := range addresses {
 			h := Host{}
-			if tx.Model(&addr).Related(&h).RecordNotFound() {
+			if db.Where("workspace_id = ?", workspaceID).Model(&addr).Related(&h).RecordNotFound() {
 				continue
 			} else {
 				if tx := db.Model(&h).Related(&h.Addresses); tx.Error != nil {
@@ -290,9 +292,8 @@ func (db *DB) hostsByAddress(workspaceID uint, addrs interface{}, tx *gorm.DB) (
 func (db *DB) hasHost(workspaceID uint, address string) (hostID uint, hasHost bool) {
 
 	addrs := []string{address}
-	tx := db.Where("workspace_id = ?", workspaceID)
 
-	hosts, err := db.hostsByAddress(workspaceID, addrs, tx)
+	hosts, err := db.hostsByAddress(workspaceID, addrs)
 	if err != nil {
 		return 0, false
 	}
@@ -329,24 +330,15 @@ func parseHostOptions(opts map[string]interface{}, tx *gorm.DB) *gorm.DB {
 // parseAddresses processes addresses as options and returns Addresses structs
 func parseAddresses(addrs interface{}) (addresses []Address) {
 
-	s := reflect.ValueOf(addrs)
-	a := make([]interface{}, s.Len())
-	for i := 0; i < s.Len(); i++ {
-		a[i] = s.Index(i).Interface()
-	}
-
-	addrStr := make([]string, 0)
-	for _, item := range a {
-		addrStr = append(addrStr, item.(string))
-	}
-
-	for _, addr := range addrStr {
-		a := Address{
-			Addr:     addr,
-			AddrType: "IPv4",
+	switch addrList := addrs.(type) {
+	case []string:
+		for _, addr := range addrList {
+			a := Address{
+				Addr:     addr,
+				AddrType: "IPv4",
+			}
+			addresses = append(addresses, a)
 		}
-		addresses = append(addresses, a)
 	}
-
 	return addresses
 }
