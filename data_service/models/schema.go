@@ -16,7 +16,7 @@
 
 package models
 
-func (db *DB) CreateSchema() error {
+func (db *DB) MigrateSchema() error {
 
 	// ------------------------- Defining/importing models ---------------------------- //
 	db.LogMode(true)
@@ -29,12 +29,23 @@ func (db *DB) CreateSchema() error {
 
 	db.Model(&Host{}).AddForeignKey("workspace_id", "workspaces(id)", "CASCADE", "CASCADE")
 
-	db.Exec(`CREATE INDEX index_hosts_on_workspace_id ON "hosts"("workspace_id") WHERE (workspace_id IS NOT NULL)`)
+	db.Model(&Host{}).Where("workspace_id IS NOT NULL").AddUniqueIndex("index_hosts_on_workspace_id", "workspace_id")
 
 	// IP addresses
 	db.AutoMigrate(&Address{})
 
 	db.Model(&Address{}).AddForeignKey("host_id", "hosts(id)", "CASCADE", "CASCADE")
+
+	// Ports/Services
+	db.AutoMigrate(&Service{})
+	db.AutoMigrate(&Port{})
+	db.AutoMigrate(&State{})
+	db.AutoMigrate(&Script{})
+
+	db.Model(&Port{}).AddForeignKey("host_id", "hosts(id)", "CASCADE", "CASCADE")
+	db.Model(&Service{}).AddForeignKey("port_id", "ports(id)", "CASCADE", "CASCADE")
+	db.Model(&State{}).AddForeignKey("port_id", "ports(id)", "CASCADE", "CASCADE")
+	db.Model(&Script{}).AddForeignKey("port_id", "ports(id)", "CASCADE", "CASCADE")
 
 	// ------------------------- Default fields/items --------------------------------- //
 	workspaces, _ := db.Workspaces()
