@@ -83,7 +83,7 @@ func (hh *HostHandler) hosts(w http.ResponseWriter, r *http.Request) {
 	switch {
 	// No filter were provided
 	case len(b) == 0:
-		hosts, err := hh.DB.Hosts(wsID, nil)
+		hosts, err := hh.DB.Hosts(&wsID, nil)
 		if err != nil {
 			http.Error(w, http.StatusText(500), 500)
 			return
@@ -99,7 +99,7 @@ func (hh *HostHandler) hosts(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		hosts, err := hh.DB.Hosts(wsID, opts)
+		hosts, err := hh.DB.Hosts(&wsID, opts)
 		if err != nil {
 			http.Error(w, http.StatusText(500), 500)
 			return

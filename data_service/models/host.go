@@ -86,16 +86,16 @@ func NewHost(workspaceID uint) *Host {
 }
 
 // Hosts returns all Host entries in the database, with sequential chaining of options
-func (db *DB) Hosts(wsID uint, opts map[string]interface{}) (hosts []*Host, err error) {
+func (db *DB) Hosts(wsID *uint, opts map[string]interface{}) (hosts []*Host, err error) {
 
 	ids, found := opts["host_id"]
 	if found {
 		switch idList := ids.(type) {
-		case []float64:
-			for i, _ := range idList {
-				hostID := uint(idList[i])
+		case []interface{}:
+			for _, id := range idList {
+				hostID := uint(id.(float64))
 				host, _ := db.hostByID(hostID)
-				hosts = append(hosts, host)
+				hosts = append(hosts, &host)
 			}
 			return hosts, nil
 		}
@@ -122,10 +122,19 @@ func (db *DB) Hosts(wsID uint, opts map[string]interface{}) (hosts []*Host, err 
 
 	addrs, found := opts["addresses"]
 	if found {
-		hosts, _ = db.hostsByAddress(wsID, addrs)
-		if hosts == nil {
+		var filtered []*Host
+		ipHosts, _ := db.hostsByAddress(*wsID, addrs)
+		for _, ih := range ipHosts {
+			for _, h := range hosts {
+				if h.ID == ih.ID {
+					filtered = append(filtered, ih)
+				}
+			}
+		}
+		if len(ipHosts) == 0 {
 			return nil, nil
 		}
+		hosts = filtered
 	}
 
 	// TODO: REFINE BY HOST NAMES
@@ -169,17 +178,16 @@ func (db *DB) ReportHost(wsID uint, opts map[string]interface{}) (host *Host, er
 	}
 }
 
-// DeleteHost deletes a Host based on the ID passed in
-func (db *DB) DeleteHosts(wsID uint, opts map[string]interface{}) (int64, error) {
+// DeleteHost deletes one or more Hosts based on the IDs passed as argument
+func (db *DB) DeleteHosts(wsID uint, opts map[string]interface{}) (deleted int64, err error) {
 	h := new(Host)
-	var deleted int64
 
 	ids, found := opts["host_id"]
 	if found {
 		switch idList := ids.(type) {
-		case []float64:
-			for i, _ := range idList {
-				hostID := uint(idList[i])
+		case []interface{}:
+			for _, id := range idList {
+				hostID := uint(id.(float64))
 				if tx := db.Model(h).Where("id = ?", hostID).Delete(&h); tx.Error != nil {
 					continue
 				}
@@ -194,24 +202,23 @@ func (db *DB) DeleteHosts(wsID uint, opts map[string]interface{}) (int64, error)
 }
 
 // UpdateHost updates a Host, using the Host object supplied
-func (db *DB) UpdateHost(h Host) (*Host, error) {
-	host := &Host{}
-	if err := db.Save(&h).Select(&host); err.Error != nil {
+func (db *DB) UpdateHost(h Host) (host *Host, err error) {
+
+	db.Model(&Address{}).Where("host_id = ?", h.ID).Delete(&Address{})
+
+	if err := db.Save(&h).Select(&h); err.Error != nil {
 		return &h, err.Error
 	}
-
-	db.Model(&h).Association("Addresses").Replace(h.Addresses)
-	db.Where(&Address{HostID: host.ID}).Find(&h)
 
 	return &h, nil
 }
 
 // hostByID returns a host based on its id
-func (db *DB) hostByID(ID uint) (host *Host, err error) {
+func (db *DB) hostByID(ID uint) (host Host, err error) {
 
-	hostID := uint(ID)
-	if tx := db.Where(&Host{ID: hostID}).Find(&host); tx.Error != nil {
-		return nil, tx.Error
+	hostID := ID
+	if tx := db.Where(Host{ID: hostID}).Find(&host); tx.Error != nil {
+		return host, tx.Error
 	}
 	if err := db.Model(&host).Related(&host.Addresses); err.Error != nil {
 		return host, err.Error
@@ -331,10 +338,10 @@ func parseHostOptions(opts map[string]interface{}, tx *gorm.DB) *gorm.DB {
 func parseAddresses(addrs interface{}) (addresses []Address) {
 
 	switch addrList := addrs.(type) {
-	case []string:
+	case []interface{}:
 		for _, addr := range addrList {
 			a := Address{
-				Addr:     addr,
+				Addr:     addr.(string),
 				AddrType: "IPv4",
 			}
 			addresses = append(addresses, a)

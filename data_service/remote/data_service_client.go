@@ -93,7 +93,7 @@ func (c *DbClient) newRequest(ctx context.Context, method, path string, body int
 	}
 	req.Header.Set("Accept", "application/json")
 
-	// Set workspace context header
+	// Set workspace or host context header
 	if ctx != nil {
 		ws := ctx.Value("workspace_id")
 		if ws != nil {
@@ -101,6 +101,15 @@ func (c *DbClient) newRequest(ctx context.Context, method, path string, body int
 			ws64 := uint64(ws)
 			wsID := strconv.FormatUint(ws64, 10)
 			req.Header.Set("workspace_id", wsID)
+			fmt.Println(req.Header.Get("Workspace_id"))
+		}
+		hs := ctx.Value("host_id")
+		if hs != nil {
+			hs := hs.(uint)
+			hs64 := uint64(hs)
+			hsID := strconv.FormatUint(hs64, 10)
+			req.Header.Set("host_id", hsID)
+			fmt.Println(req.Header.Get("Host_id"))
 		}
 	}
 
