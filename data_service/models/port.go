@@ -16,14 +16,25 @@
 
 package models
 
+import "time"
+
 // Port contains all the information about a scanned port.
 type Port struct {
-	ID       uint16   `xml:"portid,attr"`
+	// General
+	ID     uint
+	Number uint16 `xml:"portid,attr"` // Nmap names this portid, but we call it number
+	HostID uint   `gorm:"not null"`
+
+	// Nmap attributes
 	Protocol string   `xml:"protocol,attr"`
 	Owner    Owner    `xml:"owner"`
-	Service  Service  `xml:"service"`
-	State    State    `xml:"state"`
-	Scripts  []Script `xml:"script"`
+	Service  Service  `xml:"service" gorm:"foreignkey:PortID"`
+	State    State    `xml:"state" gorm:"foreignkey:PortID"`
+	Scripts  []Script `xml:"script" gorm:"foreignkey:PortID"`
+
+	// Timestamp
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // ExtraPort contains the information about the closed and filtered ports.
@@ -59,10 +70,18 @@ func (p Port) Status() PortStatus {
 // State contains information about a given port's status.
 // State will be open, closed, etc.
 type State struct {
+	// General
+	PortID uint16 `gorm:"not null"`
+
+	// Nmap
 	State     string  `xml:"state,attr"`
 	Reason    string  `xml:"reason,attr"`
 	ReasonIP  string  `xml:"reason_ip,attr"`
 	ReasonTTL float32 `xml:"reason_ttl,attr"`
+
+	// Timestamp
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (s State) String() string {

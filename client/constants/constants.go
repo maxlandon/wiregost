@@ -18,9 +18,22 @@ package constants
 
 // Commands
 const (
-	// Database
+	// Data Service ------------------------------//
+
+	// Workspace
 	WorkspaceStr = "workspace"
-	HostsStr     = "hosts"
+
+	// Hosts
+	HostsStr    = "hosts"
+	HostsAdd    = "hosts add"
+	HostsDelete = "hosts delete"
+	HostsUpdate = "hosts update"
+
+	// Services
+	ServicesStr    = "services"
+	ServicesAdd    = "services add"
+	ServicesDelete = "services delete"
+	ServicesUpdate = "services update"
 
 	// Groups
 	DataServiceHelpGroup = "Data Service:"

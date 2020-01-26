@@ -82,6 +82,7 @@ func newPrompt(c *Console) Prompt {
 		"{lb}":    "\033[38;5;117m",
 		"{db}":    "\033[38;5;24m",
 		"{bddg}":  "\033[48;5;237m",
+		"{ly}":    "\033[38;5;187m",
 	}
 	// Callbacks
 	prompt.promptCallbacks = map[string]func() string{

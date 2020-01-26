@@ -32,5 +32,6 @@ func RegisterCommands(workspace *models.Workspace, cctx *context.Context, app *g
 	// Data Service
 	RegisterHostCommands(cctx, app)
 	RegisterWorkspaceCommands(workspace, cctx, app)
+	RegisterServiceCommands(cctx, app)
 
 }

@@ -36,27 +36,44 @@ func RegisterHelpCommands(app *grumble.App) {
 
 	// Workspace Commands
 	helpCategoriesCommand.AddCommand(&grumble.Command{
-		Name: "workspace",
-		Help: tui.Dim("Manage Wiregost workspaces"),
+		Name:      "workspace",
+		Help:      tui.Dim("Manage Wiregost workspaces"),
+		HelpGroup: consts.DataServiceHelpGroup,
+
 		Run: func(ctx *grumble.Context) error {
 			fmt.Println()
 			fmt.Println(help.GetHelpFor(consts.WorkspaceStr))
 			fmt.Println()
 			return nil
 		},
-		HelpGroup: consts.DataServiceHelpGroup,
 	})
+
 	// Hosts Commands
 	helpCategoriesCommand.AddCommand(&grumble.Command{
-		Name: "hosts",
-		Help: tui.Dim("Manage database hosts"),
+		Name:      "hosts",
+		Help:      tui.Dim("Manage database hosts"),
+		HelpGroup: consts.DataServiceHelpGroup,
+
 		Run: func(ctx *grumble.Context) error {
 			fmt.Println()
 			fmt.Println(help.GetHelpFor(consts.HostsStr))
 			fmt.Println()
 			return nil
 		},
+	})
+
+	// Service Commands
+	helpCategoriesCommand.AddCommand(&grumble.Command{
+		Name:      "services",
+		Help:      tui.Dim("Manage database services"),
 		HelpGroup: consts.DataServiceHelpGroup,
+
+		Run: func(ctx *grumble.Context) error {
+			fmt.Println()
+			fmt.Println(help.GetHelpFor(consts.ServicesStr))
+			fmt.Println()
+			return nil
+		},
 	})
 
 	// Finally register commands
