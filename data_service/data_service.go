@@ -48,8 +48,8 @@ func main() {
 	hh := &handlers.HostHandler{env}
 	mux.Handle(handlers.HostAPIPath, hh)
 
-	// sh := &handlers.ServiceHandler{env}
-	// mux.Handle(handlers.ServiceAPIPath, sh)
+	sh := &handlers.ServiceHandler{env}
+	mux.Handle(handlers.ServiceAPIPath, sh)
 	//
 	// ch := &handlers.CredentialHandler{env}
 	// mux.Handle(handlers.CredentialAPIPath, ch)
