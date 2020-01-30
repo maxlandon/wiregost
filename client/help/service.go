@@ -29,13 +29,13 @@ var (
         (Type 'services add', 'services delete' or 'services update' for further command-specific examples)
 
 %s Options:%s
+    search          %sSearch services with filters%s
     add             %sAdd services instead of searching%s
     delete          %sDelete services instead of searching%s
     update          %sUpdate a service instead of searching (need host_id)%s
-    -S, --search    %sSearch string to filter by%s
 
 %s Filters:%s
-    service_id  %sID of a service. Available when listing them%s
+    service-id  %sID of a service. Available when listing them%s
     addresses   %sOne or several IPv4/IPv6 Addresses, comma-separated (192.168.1.15,230.16.13.15)%s
     port        %sPort on which the service listens%s
     proto       %sTransport protocol used (tcp/udp,...)%s
@@ -44,10 +44,10 @@ var (
     info        %sExtra information about the service (usually its banner)%s
 
 %s Examples:%s
-    services add --addresses 192.168.1.24 --state open          %sManually add a service with host address and port state%s
-    services --addresses 220.188.2.15 --name https              %sList all HTTPS services on host 220.188.2.15%s
-    services --addresses 220.188.2.15,192.168.0.12              %sList services that match one of these addresses%s
-    services update --service_id 23 --addresses 192.34.23.1     %sUpdate a service by changing its host(address) %s`,
+    services add addresses=192.168.1.24 state=open              %sManually add a service with host address and port state%s
+    services search addresses=220.188.2.15 name=https           %sList all HTTPS services on host 220.188.2.15%s
+    services search addresses=220.188.2.15,192.168.0.12         %sList services that match one of these addresses%s
+    services update service-id 23 addresses=192.34.23.1         %sUpdate a service by changing its host(address) %s`,
 		tui.BLUE, tui.BOLD, tui.FOREWHITE, tui.RESET,
 		tui.YELLOW, tui.RESET,
 		tui.YELLOW, tui.RESET,
@@ -73,10 +73,10 @@ var (
 
     // %sMandatory arguments%s: port, addresses 
 
-    services add --addresses 192.168.1.24 --port 443 --name https       %sAdd a service on a host address, with port and name%s
-    services add --addresses 220.188.2.15,220.188.1.1 --name dns        %sAdd a DNS service on two different hosts%s
-    hosts add --addresses 220.188.2.15 --port 8080 --state filtered     %sAdd a service on address:port and with proto. 
-                                                                        (If the address:port is already used, it will not create the service)%s`,
+    services add addresses=192.168.1.24 port=443 name=https         %sAdd a service on a host address, with port and name%s
+    services add addresses=220.188.2.15,220.188.1.1 name=dns        %sAdd a DNS service on two different hosts%s
+    hosts add addresses=220.188.2.15 port=8080 state=filtered       %sAdd a service on address:port and with proto. 
+                                                                    (If the address:port is already used, it will not create the service)%s`,
 		tui.BLUE, tui.BOLD, tui.FOREWHITE, tui.RESET,
 		tui.BOLD, tui.RESET,
 		tui.DIM, tui.RESET,
@@ -85,9 +85,9 @@ var (
 
 	servicesDelete = fmt.Sprintf(`%s%s Usage %s%s
 
-    services delete --addresses 192.168.1.24 --port 443 --name https       %sDelete service on this address, with port and name%s
-    services delete --addresses 220.188.2.15,220.188.1.1 --name dns        %sDelete all DNS services on these two addresses%s
-    hosts delete --service_id 3                                            %sDelete service with ID 3%s`,
+    services delete addresses=192.168.1.24 port=443 name=https      %sDelete service on this address, with port and name%s
+    services delete addresses=220.188.2.15,220.188.1.1 name=dns     %sDelete all DNS services on these two addresses%s
+    hosts delete service-id=3                                       %sDelete service with ID 3%s`,
 		tui.BLUE, tui.BOLD, tui.FOREWHITE, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
@@ -95,10 +95,10 @@ var (
 
 	servicesUpdate = fmt.Sprintf(`%s%s Usage %s%s
 
-    // %sMandatory arguments%s: service_id
+    // %sMandatory arguments%s: service-id
 
-    services update --service_id 3 --addresses 192.168.1.24 --port 443      %sChange a service  address and port%s
-    hosts update --service_id 4 --addresses 220.188.2.15 --proto tcp        %sChange a service address and protocol%s`,
+    services update service-id=3 addresses=192.168.1.24 port=443      %sChange a service  address and port%s
+    hosts update service-id=4 addresses=220.188.2.15 proto=tcp        %sChange a service address and protocol%s`,
 		tui.BLUE, tui.BOLD, tui.FOREWHITE, tui.RESET,
 		tui.BOLD, tui.RESET,
 		tui.DIM, tui.RESET,

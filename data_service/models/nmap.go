@@ -183,10 +183,18 @@ func (t *Timestamp) UnmarshalXMLAttr(attr xml.Attr) (err error) {
 // Script represents an Nmap Scripting Engine script.
 // The inner elements can be an arbitrary collection of Tables and Elements. Both of them can also be empty.
 type Script struct {
+	// General
+	PortID uint16 `gorm:"not null"`
+
+	// Nmap attributes
 	ID       string    `xml:"id,attr" json:"id"`
 	Output   string    `xml:"output,attr" json:"output"`
 	Elements []Element `xml:"elem,omitempty" json:"elements,omitempty"`
 	Tables   []Table   `xml:"table,omitempty" json:"tables,omitempty"`
+
+	// Timestamp
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // Table is an arbitrary collection of (sub-)Tables and Elements. All its fields can be empty.

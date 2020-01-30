@@ -19,12 +19,18 @@ package commands
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/desertbit/grumble"
 	"github.com/evilsocket/islazy/tui"
+	"github.com/olekukonko/tablewriter"
 
 	consts "github.com/maxlandon/wiregost/client/constants"
 	"github.com/maxlandon/wiregost/client/help"
+	"github.com/maxlandon/wiregost/client/util"
+	"github.com/maxlandon/wiregost/data_service/models"
+	"github.com/maxlandon/wiregost/data_service/remote"
 )
 
 func RegisterServiceCommands(cctx *context.Context, app *grumble.App) {
@@ -45,7 +51,7 @@ func RegisterServiceCommands(cctx *context.Context, app *grumble.App) {
 		},
 		Run: func(gctx *grumble.Context) error {
 			fmt.Println()
-			// hosts(cctx, gctx)
+			services(cctx, gctx)
 			fmt.Println()
 			return nil
 		},
@@ -68,7 +74,8 @@ func RegisterServiceCommands(cctx *context.Context, app *grumble.App) {
 		},
 		Run: func(gctx *grumble.Context) error {
 			fmt.Println()
-			// hosts(cctx, gctx)
+			newApp(app, cctx, gctx)
+			// addService(cctx, gctx)
 			fmt.Println()
 			return nil
 		},
@@ -122,4 +129,114 @@ func RegisterServiceCommands(cctx *context.Context, app *grumble.App) {
 
 	// Register root service command
 	app.AddCommand(servicesCommand)
+}
+
+func services(cctx *context.Context, gctx *grumble.Context) {
+
+	// Get Services
+	var services []models.Port
+	var err error
+	opts := serviceFilters(gctx)
+	if len(opts) == 0 {
+		services, err = remote.Services(*cctx, nil)
+		if err != nil {
+			fmt.Printf("%s[!]%s Error: %s\n",
+				tui.RED, tui.RESET, err.Error())
+			return
+		}
+	} else {
+		services, err = remote.Services(*cctx, opts)
+		if err != nil {
+			fmt.Printf("%s[!]%s Error: %s\n",
+				tui.RED, tui.RESET, err.Error())
+			return
+		}
+	}
+
+	// Print table
+	servicesTable(cctx, &services)
+}
+
+func addService(cctx *context.Context, gctx *grumble.Context) {
+}
+
+func deleteServices(cctx *context.Context, gctx *grumble.Context) {
+}
+
+func updateService(cctx *context.Context, gctx *grumble.Context) {
+}
+
+func serviceFilters(ctx *grumble.Context) (opts map[string]interface{}) {
+	opts = make(map[string]interface{}, 0)
+
+	return opts
+}
+
+func servicesTable(cctx *context.Context, services *[]models.Port) {
+	// Get host addresses for services
+	hopts := make(map[string]interface{}, 0)
+	keys := make(map[uint]bool)
+	list := []uint{}
+	for _, s := range *services {
+		if _, value := keys[s.HostID]; !value {
+			keys[s.HostID] = true
+			list = append(list, s.HostID)
+		}
+	}
+	hopts["host_id"] = list
+
+	hosts, err := remote.Hosts(*cctx, hopts)
+	if err != nil {
+		fmt.Printf("%s[!]%s Error: %s\n",
+			tui.RED, tui.RESET, err.Error())
+	}
+	ips := make(map[uint][]string)
+	for _, h := range hosts {
+		addrs := []string{}
+		for _, a := range h.Addresses {
+			addrs = append(addrs, a.Addr)
+		}
+		ips[h.ID] = addrs
+	}
+
+	// Table
+	table := util.Table()
+	table.SetHeader([]string{"ID", "Address", "Port", "Proto", "Name", "State", "Info"})
+	table.SetColWidth(80)
+	table.SetColMinWidth(6, 80)
+	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+	)
+	table.SetAutoFormatHeaders(true)
+
+	data := [][]string{}
+	for _, s := range *services {
+		servID := uint64(s.ID)
+		port := uint64(s.Number)
+		row := []string{strconv.FormatUint(servID, 10), strings.Join(ips[s.HostID], " "),
+			strconv.FormatUint(port, 10), s.Protocol, s.Service.Name, s.State.State, s.Service.ExtraInfo}
+		data = append(data, row)
+	}
+
+	table.AppendBulk(data)
+	table.Render()
+
+}
+
+func newApp(app *grumble.App, cctx *context.Context, gctx *grumble.Context) {
+	app = grumble.New(&grumble.Config{
+		Name:        "Wiregost",
+		Description: tui.Blue(tui.Bold("Wiregost Client")),
+		// HistoryFile:     home + "/.wiregost/client/.history",
+		HistoryLimit:    5000,
+		Prompt:          "newContext >",
+		HelpSubCommands: true,
+	})
+	// RegisterCommands(nil, cctx, app)
+	app.Run()
 }
