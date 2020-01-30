@@ -129,7 +129,7 @@ func addHost(cctx *context.Context, args []string) {
 
 	opts := hostFilters(args)
 	if len(opts) == 0 {
-		fmt.Println(help.GetHelpFor(constants.HostsAdd))
+		fmt.Printf(help.GetHelpFor(constants.HostsAdd))
 		return
 	}
 
@@ -158,7 +158,7 @@ func addHost(cctx *context.Context, args []string) {
 func deleteHosts(cctx *context.Context, args []string) {
 	opts := hostFilters(args)
 	if len(opts) == 0 {
-		fmt.Println(help.GetHelpFor(constants.HostsDelete))
+		fmt.Printf(help.GetHelpFor(constants.HostsDelete))
 		return
 	}
 
@@ -203,7 +203,7 @@ func updateHost(cctx *context.Context, args []string) {
 	var host *models.Host
 	opts := hostFilters(args)
 	if len(opts) == 0 {
-		fmt.Println(help.GetHelpFor(constants.HostsUpdate))
+		fmt.Printf(help.GetHelpFor(constants.HostsUpdate))
 		return
 	}
 

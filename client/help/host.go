@@ -29,11 +29,10 @@ var (
         (Type 'hosts add', 'hosts delete' or 'hosts update' for further command-specific examples)
 
 %s Options:%s
+    search          %sSearch hosts with filters%s
     add             %sAdd the hosts instead of searching%s
     delete          %sDelete the hosts instead of searching%s
     update          %sUpdate the hosts instead of searching (need host_id)%s
-    -u, --up        %sOnly show hosts which are up %s
-    -S, --search    %sSearch string to filter by%s
 
 %s Filters:%s
     host_id     %sID of a host. Available when listing them%s
@@ -47,12 +46,13 @@ var (
     info        %sInfo of a host %s
     name        %sName of a host %s
     comment     %sComment of a host %s
+    up          %sOnly show hosts which are up %s
 
 %s Examples:%s
-    hosts add --addresses 192.168.1.24 --os_family Windows          %sManually add a host with address and os_family%s
-    hosts --addresses 220.188.2.15 --arch 64                        %sList hosts that match address and arch%s
-    hosts --addresses 220.188.2.15,192.168.0.12                     %sList hosts that match one of these addresses%s
-    hosts update --host_id 23 --addresses 192.34.23.1 --arch x86    %sUpdate a host by changing its addresses and its CPU arch%s`,
+    hosts add addresses=192.168.1.24 os-family=Windows          %sManually add a host with address and os_family%s
+    hosts search addresses=220.188.2.15 arch=64                 %sList hosts that match address and arch%s
+    hosts search addresses=220.188.2.15,192.168.0.12            %sList hosts that match one of these addresses%s
+    hosts update host-id=23 addresses=192.34.23.1 arch=x86      %sUpdate a host by changing its addresses and its CPU arch%s`,
 		tui.BLUE, tui.BOLD, tui.FOREWHITE, tui.RESET,
 		tui.YELLOW, tui.RESET,
 		tui.YELLOW, tui.RESET,
@@ -60,8 +60,8 @@ var (
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
-		tui.DIM, tui.RESET,
 		tui.YELLOW, tui.RESET,
+		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
@@ -81,10 +81,10 @@ var (
 
 	hostsAdd = fmt.Sprintf(`%s%s Usage %s%s
 
-    hosts add --addresses 192.168.1.24 --os_family Windows                      %sadd a host with address and os_family%s
-    hosts add --addresses 220.188.2.15 --arch 64                                %sAdd a host with address and arch%s
-    hosts add --addresses 220.188.2.15,192.168.0.12 --comment "A Comment"       %sAdd a host with these 2 addresses and a comment
-                                                                                (If any of these addresses is already used, it will not create the host)%s`,
+    hosts add addresses=192.168.1.24 os-family=Windows                      %sadd a host with address and os_family%s
+    hosts add addresses=220.188.2.15 arch=64                                %sAdd a host with address and arch%s
+    hosts add addresses=220.188.2.15,192.168.0.12 comment="A Comment"       %sAdd a host with these 2 addresses and a comment
+                                                                            (If any of these addresses is already used, it will not create the host)%s`,
 		tui.BLUE, tui.BOLD, tui.FOREWHITE, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
@@ -92,9 +92,9 @@ var (
 
 	hostsDelete = fmt.Sprintf(`%s%s Usage %s%s
 
-    hosts delete --addresses 192.168.1.24 --os_family Windows       %sDelete hosts matching both address and os_family%s
-    hosts delete --addresses 220.188.2.15 --arch 64                 %sDelete hosts matching both address and arch%s
-    hosts delete --host_id 2 "                                      %sDelete host with ID 2%s`,
+    hosts delete addresses=192.168.1.24 os-family=Windows       %sDelete hosts matching both address and os_family%s
+    hosts delete addresses=220.188.2.15 arch=64                 %sDelete hosts matching both address and arch%s
+    hosts delete host-id=2 "                                    %sDelete host with ID 2%s`,
 		tui.BLUE, tui.BOLD, tui.FOREWHITE, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
@@ -102,11 +102,11 @@ var (
 
 	hostsUpdate = fmt.Sprintf(`%s%s Usage %s%s
 
-    // %sMandatory arguments%s: --host_id
+    // %sMandatory arguments%s: host-id
 
-    hosts update --host_id 2 --os_family Windows                    %sUpdate host with ID 2, and change its OS family%s
-    hosts update --host_id 3 --addresses 220.188.2.15 --arch 64     %sUpdate a host's addresses (will overwrite existing ones) and CPU arch%s
-    hosts update --host_id 2 --comment "Updated manually"           %sDelete host with ID 2%s`,
+    hosts update host-id=2 os-family=Windows                    %sUpdate host with ID 2, and change its OS family%s
+    hosts update host-id=3 addresses=220.188.2.15 arch=64       %sUpdate a host's addresses (will overwrite existing ones) and CPU arch%s
+    hosts update host-id=2 comment="Updated manually"           %sUpdate host with ID 2 and change its comment%s`,
 		tui.BLUE, tui.BOLD, tui.FOREWHITE, tui.RESET,
 		tui.BOLD, tui.RESET,
 		tui.DIM, tui.RESET,

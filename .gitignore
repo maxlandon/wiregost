@@ -1,0 +1,10 @@
+# Binaries
+
+wiregost-console
+
+data_service/data_service
+
+
+# Test files
+data_service/test_data_service.go
+
