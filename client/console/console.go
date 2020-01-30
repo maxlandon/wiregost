@@ -19,31 +19,33 @@ package console
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
-	"github.com/desertbit/grumble"
+	"github.com/chzyer/readline"
 	"github.com/evilsocket/islazy/tui"
 	"github.com/google/uuid"
 
 	"github.com/maxlandon/wiregost/client/commands"
+	"github.com/maxlandon/wiregost/client/completers"
 	"github.com/maxlandon/wiregost/data_service/models"
 	"github.com/maxlandon/wiregost/data_service/remote"
 )
 
+var home, _ = os.UserHomeDir()
+
 type Console struct {
-	app    *grumble.App
-	prompt Prompt
+	// Shell
+	Shell   *readline.Instance
+	prompt  Prompt
+	vimMode string
 
-	// Environmment variables
-	Env map[string]string
-
-	// Context (temporary, check if we can get rid of this with grumble)
-	context       context.Context
-	menuContext   string
-	currentModule string
-
-	currentWorkspace   models.Workspace
-	currentWorkspaceID *uint
+	// Context
+	context          context.Context
+	menuContext      string
+	currentModule    string
+	currentWorkspace *models.Workspace
 
 	currentAgentID uuid.UUID
 	// Server state
@@ -57,58 +59,135 @@ type Console struct {
 }
 
 func NewConsole() *Console {
-	home, _ := os.UserHomeDir()
 
-	console := &Console{}
-
-	// Set console prompt
-	prompt := newPrompt(console)
-
-	// Set console app
-	console.app = grumble.New(&grumble.Config{
-		Name:            "Wiregost",
-		Description:     tui.Blue(tui.Bold("Wiregost Client")),
-		HistoryFile:     home + "/.wiregost/client/.history",
-		HistoryLimit:    5000,
-		Prompt:          prompt.render(),
-		HelpSubCommands: true,
+	shell, _ := readline.NewEx(&readline.Config{
+		HistoryFile:       home + "/.wiregost/client/.history",
+		InterruptPrompt:   "^C",
+		EOFPrompt:         "exit",
+		HistoryLimit:      5000,
+		HistorySearchFold: true,
+		VimMode:           true,
 	})
 
-	// Get default workspace
+	console := &Console{
+		Shell:       shell,
+		menuContext: "main",
+	}
+	console.initContext()
+	console.prompt = newPrompt(console)
+
+	// Setup Autocompleter
+	completer := &completers.AutoCompleter{
+		MenuContext: &console.menuContext,
+		Context:     &console.context,
+	}
+	console.Shell.Config.AutoComplete = completer
+
+	// Set Vim mode
+	console.vimMode = "insert"
+	console.Shell.Config.FuncFilterInputRune = console.filterInput
+
+	// Register all commands into their respective menus
+	commands.RegisterCommands()
+
+	// Launch
+	console.Start()
+
+	return console
+}
+
+func (c *Console) Start() {
+
+	// Eventually close
+	defer c.Shell.Close()
+
+	// Command loop
+	for {
+		c.vimMode = "insert"
+		c.refresh()
+
+		line, err := c.Shell.Readline()
+		if err == readline.ErrInterrupt {
+			continue
+		} else if err == io.EOF {
+			break
+		}
+
+		line = strings.TrimSpace(line)
+		if len(line) < 1 {
+			continue
+		}
+
+		unfiltered := strings.Split(line, " ")
+
+		var args []string
+		for _, arg := range unfiltered {
+			if arg != "" {
+				args = append(args, arg)
+			}
+		}
+
+		if err = ExecCmd(args, c.menuContext, &c.context, c.currentWorkspace, c.currentModule); err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+func (c *Console) initContext() {
+	// Set workspace
 	workspaces, err := remote.Workspaces(nil)
 	if err != nil {
 		fmt.Println(tui.Red("Failed to fetch workspaces"))
 	}
 	for i, _ := range workspaces {
 		if workspaces[i].IsDefault {
-			console.currentWorkspace = workspaces[i]
-			console.currentWorkspaceID = &workspaces[i].ID
-			console.app.SetPrompt(prompt.render())
-			commands.CurrentWorkspace.SetCurrentWorkspace(workspaces[i])
+			c.currentWorkspace = &workspaces[i]
 		}
 	}
-	// Set workspace refresher
-	commands.CurrentWorkspace.AddObserver(func() {
-		console.app.SetPrompt(prompt.render())
-	})
 
-	// Set console context
+	// Set context object passed to commands
 	rootCtx := context.Background()
-	console.context = context.WithValue(rootCtx, "workspace_id", &commands.CurrentWorkspace.Workspace.ID)
-
-	// Register Commands
-	commands.RegisterCommands(&console.currentWorkspace, &console.context, console.app)
-
-	// Start console
-	console.Start()
-
-	return console
+	c.context = context.WithValue(rootCtx, "workspace_id", c.currentWorkspace.ID)
 }
 
-func (c *Console) Start() error {
+func (c *Console) refresh() {
+	refreshPrompt(c.prompt, c.Shell)
+	c.Shell.Refresh()
+}
 
-	// Run console
-	c.app.Run()
+func (c *Console) filterInput(r rune) (rune, bool) {
 
-	return nil
+	switch c.vimMode {
+	case "insert":
+		switch r {
+		case readline.CharEsc:
+			c.vimMode = "normal"
+			_, m := c.prompt.render()
+			c.Shell.SetPrompt(m)
+			c.Shell.Refresh()
+			return r, true
+
+		case readline.CharCtrlL:
+			readline.ClearScreen(c.Shell)
+			c.Shell.Refresh()
+			c.refresh()
+			return r, false
+		}
+	case "normal":
+		switch r {
+		case 'i', 'I', 'a', 'A', 's', 'S', 'c':
+			c.vimMode = "insert"
+			_, p := c.prompt.render()
+			c.Shell.SetPrompt(p)
+			c.Shell.Refresh()
+			return r, true
+
+		case readline.CharCtrlL:
+			readline.ClearScreen(c.Shell)
+			c.Shell.Refresh()
+			c.refresh()
+			return r, true
+		}
+	}
+	return r, true
 }
