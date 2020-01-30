@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	// 3rd party
+	"github.com/chzyer/readline"
 	"github.com/evilsocket/islazy/tui"
 )
 
@@ -50,11 +51,11 @@ func newPrompt(c *Console) Prompt {
 	// These are here because if colors are disabled, we need the updated tui.* variable
 	prompt := Prompt{
 		// Prompt strings
-		base:      "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server} > ",
+		base:      "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server}",
 		module:    "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server} {fw}=>{reset} post({mod})",
 		agent:     "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server} {fw}=>{reset} agent[{db}{agent}]",
 		compiler:  "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server} {fw}=>{reset} [{bold}{y}Compiler{reset}]",
-		multiline: "> ",
+		multiline: "{vim} > {ly}",
 		// Prompt variabes
 		workspace:     &c.currentWorkspace.Name,
 		currentModule: &c.currentModule,
@@ -86,6 +87,18 @@ func newPrompt(c *Console) Prompt {
 	}
 	// Callbacks
 	prompt.promptCallbacks = map[string]func() string{
+		// Vim mode
+		"{vim}": func() string {
+			switch c.vimMode {
+			case "insert":
+				return tui.Yellow("[I]")
+			case "normal":
+				return tui.Blue("[N]")
+			}
+			return ""
+		},
+
+		// Interface
 		"{iface}": func() string {
 			return "192.168.1.0/24"
 		},
@@ -134,7 +147,7 @@ func newPrompt(c *Console) Prompt {
 	return prompt
 }
 
-func (p Prompt) render() (first string) {
+func (p Prompt) render() (first string, multi string) {
 
 	var prompt string
 
@@ -169,52 +182,14 @@ func (p Prompt) render() (first string) {
 	if !strings.HasPrefix(prompt, tui.RESET) {
 		prompt += tui.RESET
 	}
-	return prompt
+	return prompt, multiline
 }
 
-// func (p Prompt) render() (first string, multi string) {
-//
-//         var prompt string
-//
-//         // Current module does not depend on context...
-//         if *p.currentModule != "" {
-//                 prompt = p.module
-//         } else {
-//                 prompt = p.base
-//         }
-//         // ... and is overidden by the context string if needed.
-//         if *p.menu == "compiler" {
-//                 prompt = p.compiler
-//         }
-//         // ... or overriden by the context agent if needed.
-//         if *p.menu == "agent" {
-//                 prompt = p.agent
-//         }
-//
-//         multiline := p.multiline
-//
-//         for tok, effect := range p.effects {
-//                 prompt = strings.Replace(prompt, tok, effect, -1)
-//                 multiline = strings.Replace(multiline, tok, effect, -1)
-//         }
-//
-//         for tok, cb := range p.promptCallbacks {
-//                 prompt = strings.Replace(prompt, tok, cb(), -1)
-//                 multiline = strings.Replace(multiline, tok, cb(), -1)
-//         }
-//
-//         // make sure an user error does not screw all terminal
-//         if !strings.HasPrefix(prompt, tui.RESET) {
-//                 prompt += tui.RESET
-//         }
-//         return prompt, multiline
-// }
-
 // Refresh prompt
-// func refreshPrompt(prompt Prompt, input *readline.Instance) {
-//         p, _ := prompt.render()
-//         _, m := prompt.render()
-//         fmt.Println()
-//         fmt.Println(p)
-//         input.SetPrompt(m)
-// }
+func refreshPrompt(prompt Prompt, input *readline.Instance) {
+	p, _ := prompt.render()
+	_, m := prompt.render()
+	fmt.Println()
+	fmt.Println(p)
+	input.SetPrompt(m)
+}
