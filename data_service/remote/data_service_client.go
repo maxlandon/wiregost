@@ -21,7 +21,6 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -101,7 +100,6 @@ func (c *DbClient) newRequest(ctx context.Context, method, path string, body int
 			ws64 := uint64(ws)
 			wsID := strconv.FormatUint(ws64, 10)
 			req.Header.Set("workspace_id", wsID)
-			fmt.Println(req.Header.Get("Workspace_id"))
 		}
 		hs := ctx.Value("host_id")
 		if hs != nil {
@@ -109,7 +107,6 @@ func (c *DbClient) newRequest(ctx context.Context, method, path string, body int
 			hs64 := uint64(hs)
 			hsID := strconv.FormatUint(hs64, 10)
 			req.Header.Set("host_id", hsID)
-			fmt.Println(req.Header.Get("Host_id"))
 		}
 	}
 
@@ -127,7 +124,6 @@ func (c *DbClient) do(req *http.Request, v interface{}) error {
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Cannot parse response body")
 		return err
 	}
 

@@ -19,6 +19,7 @@ package models
 import (
 	"errors"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -314,21 +315,44 @@ func (db *DB) hasHost(workspaceID uint, address string) (hostID uint, hasHost bo
 // parseHostOptions extracts search options and construct and chain of query conditions
 func parseHostOptions(opts map[string]interface{}, tx *gorm.DB) *gorm.DB {
 
-	osName, found := opts["os_name"].(string)
+	osName, found := opts["os_name"]
 	if found {
-		tx = tx.Where("os_name ILIKE (?)", osName)
+		os := strings.Split(osName.(string), ",")
+		osNames := []string{}
+		for _, o := range os {
+			osNames = append(osNames, "%"+o+"%")
+		}
+		tx = tx.Where("os_name ILIKE ANY(ARRAY[?])", osNames)
 	}
-	osFlav, found := opts["os_flavor"].(string)
+
+	osFlav, found := opts["os_flavor"]
 	if found {
-		tx = tx.Where("os_flavor ILIKE (?)", osFlav)
+		os := strings.Split(osFlav.(string), ",")
+		osFlavors := []string{}
+		for _, o := range os {
+			osFlavors = append(osFlavors, "%"+o+"%")
+		}
+		tx = tx.Where("os_flavor ILIKE ANY(ARRAY[?])", osFlavors)
 	}
-	osFam, found := opts["os_family"].(string)
+
+	osFam, found := opts["os_family"]
 	if found {
-		tx = tx.Where("os_family ILIKE (?)", osFam)
+		os := strings.Split(osFam.(string), ",")
+		osFams := []string{}
+		for _, o := range os {
+			osFams = append(osFams, "%"+o+"%")
+		}
+		tx = tx.Where("os_family ILIKE ANY(ARRAY[?])", osFams)
 	}
-	arch, found := opts["arch"].(string)
+
+	arch, found := opts["arch"]
 	if found {
-		tx = tx.Where("arch ILIKE (?)", arch)
+		os := strings.Split(arch.(string), ",")
+		archs := []string{}
+		for _, o := range os {
+			archs = append(archs, "%"+o+"%")
+		}
+		tx = tx.Where("arch ILIKE ANY(ARRAY[?])", archs)
 	}
 
 	return tx
