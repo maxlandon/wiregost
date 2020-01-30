@@ -16,22 +16,12 @@
 
 package commands
 
-import (
-	"context"
-
-	"github.com/desertbit/grumble"
-	"github.com/maxlandon/wiregost/data_service/models"
-)
-
-// RegisterCommands registers all commmands, available in Wiregost, to the console
-func RegisterCommands(workspace *models.Workspace, cctx *context.Context, app *grumble.App) {
-
-	// Help
-	RegisterHelpCommands(app)
+// RegisterCommands register all commands in Wiregost and maps them
+// to their respective contexts
+func RegisterCommands() {
 
 	// Data Service
-	RegisterHostCommands(cctx, app)
-	RegisterWorkspaceCommands(workspace, cctx, app)
-	RegisterServiceCommands(cctx, app)
+	RegisterWorkspaceCommands()
+	RegisterHostCommands()
 
 }

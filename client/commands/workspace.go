@@ -19,125 +19,83 @@ package commands
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
+	"strings"
 
-	"github.com/desertbit/grumble"
 	"github.com/evilsocket/islazy/tui"
 	"github.com/olekukonko/tablewriter"
 
-	"github.com/maxlandon/wiregost/client/completers"
-	consts "github.com/maxlandon/wiregost/client/constants"
 	"github.com/maxlandon/wiregost/client/help"
 	"github.com/maxlandon/wiregost/client/util"
 	"github.com/maxlandon/wiregost/data_service/models"
 	"github.com/maxlandon/wiregost/data_service/remote"
 )
 
-type currentWorkspace struct {
-	Workspace *models.Workspace
-	observers []observer
-}
+func RegisterWorkspaceCommands() {
 
-var CurrentWorkspace = &currentWorkspace{
-	observers: []observer{},
-}
+	// Declare all commands, subcommands and arguments
+	workspace := &Command{
+		Name: "workspace",
+		Help: help.GetHelpFor("workspace"),
+		SubCommands: []string{
+			"switch",
+			"add",
+			"delete",
+			"update",
+		},
+		Args: []*CommandArg{
+			&CommandArg{Name: "name", Type: "string", Required: true},
+			&CommandArg{Name: "limit-to-network", Type: "boolean", Required: false},
+			&CommandArg{Name: "boundary", Type: "string", Required: false},
+			&CommandArg{Name: "description", Type: "string", Required: false},
+		},
+		Handle: func(r *Request) error {
+			switch length := len(r.Args); {
+			// No arguments: Print workspaces
+			case length == 0:
+				fmt.Println()
+				workspaces(r.currentWorkspace)
+				fmt.Println()
+			// Arguments: commands entered
+			case length >= 1:
+				switch r.Args[0] {
+				case "switch":
+					fmt.Println()
+					if len(r.Args) == 2 {
+						switchWorkspace(r.Args[1], r.currentWorkspace, r.context)
+					} else {
+						fmt.Printf("%s[!]%s Provide a workspace name",
+							tui.RED, tui.RESET)
+					}
+					fmt.Println()
+				case "add":
+					fmt.Println()
+					addWorkspaces(r.Args[1:])
+					fmt.Println()
+				case "delete":
+					fmt.Println()
+					deleteWorkspaces(r.Args[1:])
+					fmt.Println()
+				case "update":
+					fmt.Println()
+					updateWorkspace(r.Args[1:])
+					fmt.Println()
+				}
+			}
 
-func RegisterWorkspaceCommands(workspace *models.Workspace, cctx *context.Context, app *grumble.App) {
-
-	// Base command, list workspaces
-	workspaceCommand := &grumble.Command{
-		Name:     consts.WorkspaceStr,
-		Help:     tui.Dim("Manage Wiregost workspaces"),
-		LongHelp: help.GetHelpFor(consts.WorkspaceStr),
-		Run: func(gctx *grumble.Context) error {
-			fmt.Println()
-			workspaces(gctx)
-			fmt.Println()
 			return nil
 		},
-		HelpGroup: consts.DataServiceHelpGroup,
 	}
 
-	// Switch workspace
-	workspaceCommand.AddCommand(&grumble.Command{
-		Name:      "switch",
-		Help:      tui.Dim("Switch to workspace"),
-		LongHelp:  help.GetHelpFor(consts.WorkspaceStr),
-		AllowArgs: true,
-		Run: func(gctx *grumble.Context) error {
-			fmt.Println()
-			switchWorkspace(gctx.Args[0], workspace, cctx, gctx)
-			fmt.Println()
-			return nil
-		},
-		Completer: completers.CompleteWorkspaces(),
-		HelpGroup: consts.DataServiceHelpGroup,
-	})
-
-	// Add workspaces
-	workspaceCommand.AddCommand(&grumble.Command{
-		Name:      "add",
-		Help:      tui.Dim("Add one or more workspaces"),
-		LongHelp:  help.GetHelpFor(consts.WorkspaceStr),
-		AllowArgs: true,
-		Run: func(gctx *grumble.Context) error {
-			fmt.Println()
-			addWorkspaces(gctx)
-			fmt.Println()
-			return nil
-		},
-		Flags: func(f *grumble.Flags) {
-			f.StringL("name", "", "Name of workspace to add")
-			f.StringL("description", "", "A description for the workspace")
-			f.StringL("boundary", "", "One or several IPv4/IPv6 Addresses/Ranges, comma-separated (ex: 192.168.1.15,230.16.13.15)")
-			f.BoolL("limit_to_network", false, "Limit tools activities (exploits, scanners, etc) to the workspace's boundary")
-		},
-		HelpGroup: consts.DataServiceHelpGroup,
-	})
-
-	// Delete workspaces
-	workspaceCommand.AddCommand(&grumble.Command{
-		Name:      "delete",
-		Help:      tui.Dim("Delete one or more workspaces"),
-		LongHelp:  help.GetHelpFor(consts.WorkspaceStr),
-		AllowArgs: true,
-		Run: func(gctx *grumble.Context) error {
-			fmt.Println()
-			deleteWorkspaces(gctx)
-			fmt.Println()
-			return nil
-		},
-		Completer: completers.CompleteWorkspaces(),
-		HelpGroup: consts.DataServiceHelpGroup,
-	})
-
-	// Update workspace
-	workspaceCommand.AddCommand(&grumble.Command{
-		Name:      "update",
-		Help:      tui.Dim("Update a workspace with provided options"),
-		LongHelp:  help.GetHelpFor(consts.WorkspaceStr),
-		AllowArgs: true,
-		Run: func(gctx *grumble.Context) error {
-			fmt.Println()
-			updateWorkspace(gctx)
-			fmt.Println()
-			return nil
-		},
-		Flags: func(f *grumble.Flags) {
-			f.StringL("name", "", "Workspace to update")
-			f.StringL("description", "", "A description for the workspace")
-			f.StringL("boundary", "", "One or several IPv4/IPv6 Addresses/Ranges, comma-separated (ex: 192.168.1.15,230.16.13.15)")
-			f.BoolL("limit_to_network", false, "Limit tools activities (exploits, scanners, etc) to the workspace's boundary")
-		},
-		// Completer: completers.CompleteWorkspacesAndFlags(),
-		HelpGroup: consts.DataServiceHelpGroup,
-	})
-
-	// Register root workspace command
-	app.AddCommand(workspaceCommand)
+	// Add commands for each context
+	AddCommand("main", workspace)
+	AddCommand("module", workspace)
+	AddCommand("ghost", workspace)
+	AddCommand("compiler", workspace)
 }
 
-func workspaces(gctx *grumble.Context) {
+func workspaces(currentWorkspace *models.Workspace) {
 	workspaces, err := remote.Workspaces(nil)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -153,7 +111,7 @@ func workspaces(gctx *grumble.Context) {
 		}
 		// Current
 		name := ""
-		if w.Name == CurrentWorkspace.Workspace.Name {
+		if w.Name == currentWorkspace.Name {
 			name = tui.Bold(tui.Blue(w.Name))
 		} else {
 			name = w.Name
@@ -162,6 +120,60 @@ func workspaces(gctx *grumble.Context) {
 			strconv.FormatBool(w.LimitToNetwork), w.UpdatedAt.Format("2006-01-02T15:04:05")})
 	}
 
+	printWorkspaceTable(data)
+}
+
+func switchWorkspace(name string, workspace *models.Workspace, ctx *context.Context) {
+	workspaces, err := remote.Workspaces(nil)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for i, _ := range workspaces {
+		if workspaces[i].Name == name {
+			*workspace = workspaces[i]
+			*ctx = context.WithValue(*ctx, "workspace_id", workspaces[i].ID)
+			workspace = &workspaces[i]
+			fmt.Printf("%s*%s Switched to workspace %s",
+				tui.BLUE, tui.RESET, workspaces[i].Name)
+		}
+	}
+}
+
+func addWorkspaces(names []string) {
+	err := remote.AddWorkspaces(nil, names)
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		for _, n := range names {
+			fmt.Printf("%s*%s Created workspace %s",
+				tui.BLUE, tui.RESET, n)
+		}
+	}
+}
+
+func deleteWorkspaces(names []string) {
+	var ids []uint
+	workspaces, _ := remote.Workspaces(nil)
+	for _, w := range workspaces {
+		for _, name := range names {
+			if name == w.Name {
+				ids = append(ids, w.ID)
+			}
+		}
+	}
+
+	err := remote.DeleteWorkspaces(nil, ids)
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		for _, n := range names {
+			fmt.Printf("%s*%s Deleted workspace %s",
+				tui.BLUE, tui.RESET, n)
+		}
+	}
+}
+
+func printWorkspaceTable(data [][]string) {
 	table := util.Table()
 	table.SetColWidth(70)
 	table.SetHeader([]string{"Name", "Description", "Default", "Boundary", "Limit", "Updated At"})
@@ -178,101 +190,87 @@ func workspaces(gctx *grumble.Context) {
 	table.Render()
 }
 
-func switchWorkspace(name string, workspace *models.Workspace, cctx *context.Context, gctx *grumble.Context) {
-	workspaces, err := remote.Workspaces(nil)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	for i, _ := range workspaces {
-		if workspaces[i].Name == name {
-			*workspace = workspaces[i]
-			*cctx = context.WithValue(*cctx, "workspace_id", workspaces[i].ID)
-			CurrentWorkspace.SetCurrentWorkspace(workspaces[i])
-			fmt.Printf("%s*%s Switched to workspace %s\n",
-				tui.BLUE, tui.RESET, workspaces[i].Name)
-		}
-	}
-}
+func updateWorkspace(args []string) {
 
-func addWorkspaces(gctx *grumble.Context) {
-	names := gctx.Args
-	err := remote.AddWorkspaces(nil, names)
-	if err != nil {
-		fmt.Println(err.Error())
-	} else {
-		for _, n := range names {
-			fmt.Printf("%s*%s Created workspace %s\n",
-				tui.BLUE, tui.RESET, n)
-		}
-	}
-}
+	opts := parseOptions(args)
 
-func deleteWorkspaces(gctx *grumble.Context) {
-	names := gctx.Args
-	var ids []uint
-	workspaces, _ := remote.Workspaces(nil)
-	for _, w := range workspaces {
-		for _, name := range names {
-			if name == w.Name {
-				ids = append(ids, w.ID)
-			}
-		}
-	}
+	var w *models.Workspace
 
-	err := remote.DeleteWorkspaces(nil, ids)
-	if err != nil {
-		fmt.Println(err.Error())
-	} else {
-		for _, n := range names {
-			fmt.Printf("%s*%s Deleted workspace %s\n",
-				tui.BLUE, tui.RESET, n)
-		}
-	}
-}
-
-func updateWorkspace(gctx *grumble.Context) {
-
-	var workspace *models.Workspace
-
-	if gctx.Flags.String("name") != "" {
+	// Check options
+	name, found := opts["workspace_id"]
+	if found {
 		workspaces, _ := remote.Workspaces(nil)
 		for i, _ := range workspaces {
-			if workspaces[i].Name == gctx.Flags.String("name") {
-				workspace = &workspaces[i]
+			if workspaces[i].ID == name.(uint) {
+				w = &workspaces[i]
 			}
 		}
 	} else {
-		fmt.Printf("%s[!]%s Provide a workspace name (--name 'workspace')\n",
+		fmt.Printf("%s[!]%s Provide a workspace name (name='workspace')",
 			tui.RED, tui.RESET)
 		return
 	}
+	desc, found := opts["description"]
+	if found {
+		w.Description = desc.(string)
+	}
+	boundary, found := opts["boundary"]
+	if found {
+		w.Boundary = boundary.(string)
+	}
+	limit, found := opts["limit-to-network"]
+	if found {
+		w.LimitToNetwork = limit.(bool)
+	}
 
-	if gctx.Flags.String("description") != "" {
-		workspace.Description = gctx.Flags.String("description")
-	}
-	if gctx.Flags.String("boundary") != "" {
-		workspace.Boundary = gctx.Flags.String("boundary")
-	}
-	if gctx.Flags.Bool("limit_to_network") {
-		workspace.LimitToNetwork = gctx.Flags.Bool("limit_to_network")
-	}
-
-	err := remote.UpdateWorkspace(nil, *workspace)
+	// Update workspace
+	err := remote.UpdateWorkspace(nil, *w)
 	if err != nil {
 		fmt.Println(err.Error())
 	} else {
-		fmt.Printf("%s*%s Update workspace %s\n",
-			tui.BLUE, tui.RESET, workspace.Name)
+		fmt.Printf("%s*%s Updated workspace %s",
+			tui.BLUE, tui.RESET, w.Name)
 	}
 }
 
-func (cw *currentWorkspace) AddObserver(fn observer) {
-	cw.observers = append(cw.observers, fn)
-}
+func parseOptions(args []string) (opts map[string]interface{}) {
 
-func (cw *currentWorkspace) SetCurrentWorkspace(workspace models.Workspace) {
-	cw.Workspace = &workspace
-	for _, fn := range cw.observers {
-		fn()
+	opts = make(map[string]interface{}, 0)
+
+	for _, arg := range args {
+
+		// LimitToNetwork
+		if strings.Contains(arg, "limit-to-network") {
+			vals := strings.Split(arg, "=")
+			opts["limit-to-network"], _ = strconv.ParseBool(vals[1])
+		}
+
+		// Network boundary
+		if strings.Contains(arg, "boundary") {
+			vals := strings.Split(arg, "=")
+			opts["boundary"] = vals[1]
+		}
+
+		// Workspace name
+		if strings.Contains(arg, "name") {
+			vals := strings.Split(arg, "=")
+			workspaces, err := remote.Workspaces(nil)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			for _, w := range workspaces {
+				if w.Name == vals[1] {
+					opts["workspace_id"] = w.ID
+				}
+			}
+		}
+		// Description
+		if strings.Contains(arg, "description") {
+			desc := regexp.MustCompile(`\b(description){1}.*"`)
+			result := desc.FindStringSubmatch(strings.Join(args, " "))
+			opts["description"] = strings.Trim(strings.TrimPrefix(result[0], "description="), "\"")
+		}
 	}
+
+	return opts
 }
