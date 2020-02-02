@@ -20,6 +20,8 @@ require (
 	github.com/go-playground/errors v3.3.0+incompatible // indirect
 	github.com/go-playground/log v6.3.0+incompatible // indirect
 	github.com/gofrs/flock v0.7.1 // indirect
+	github.com/gogo/protobuf v1.1.1
+	github.com/golang/protobuf v1.3.2
 	github.com/google/gopacket v1.1.17 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.1.1

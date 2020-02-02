@@ -117,11 +117,11 @@ message Shell {
 
 message RouteReq {
         string Type = 1;            // Proxy might only support some protocols
-        optional string LHost = 2;  // If we want to specify proxy listener options
-        optional int32 LPort = 3;   // Same here
+        string LHost = 2;  // Optional: If we want to specify proxy listener options
+        int32 LPort = 3;   // Optional 
 
         string Subnet = 4;
-        optional string Mask = 5;
+        string Mask = 5;  // Optional
         
         uint32 GhostID = 9; 
 }
@@ -245,7 +245,7 @@ message Download {
 message UploadReq {
         string Path = 1;
         string Encoder = 2;
-        bytes Data = 9;
+        bytes Data = 3;
         uint32 GhostID = 9;
 }
 
