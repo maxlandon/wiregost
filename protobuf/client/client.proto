@@ -1,0 +1,359 @@
+// Wiregost - Golang Exploitation Framework
+// Copyright © 2020 Para
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package clientpb;
+
+
+// [ Generic ] ----------------------------------------------------------//
+
+message File {
+        string Name = 1;
+        bytes Data = 2;
+}
+
+message Process {
+        int32 pid = 1;
+        int32 ppid = 2;
+        string executable = 3;
+        string owner = 4;
+}
+
+
+// [ Jobs ] ---------------------------------------------------------------//
+
+message Job {
+        int32 ID = 1;
+        string Name = 2;
+        string Description = 3;
+        string Protocol = 4;
+        int32 Port = 5;
+}
+
+message JobKillReq { int32 ID = 1; }
+
+message JobKill {
+        int32 ID = 1;
+        bool Success = 2;
+        string Err = 3;
+}
+
+message Jobs { repeated Job Active = 1; }
+
+
+// [ Listeners ] ----------------------------------------------------------//
+
+message MTLSReq {
+        string Server = 1;
+        int32 LPort = 2;
+}
+
+message MTLS { int32 JobID = 1; }
+
+message TCPReq {
+        string Server = 1;
+        int32 LPort = 2;
+}
+
+message TCP { int32 JobID = 1; }
+
+message DNSReq {
+        repeated string Domains = 1;
+        bool Canaries = 2;
+}
+
+message DNS { int32 JobID = 1; }
+
+message HTTPReq {
+        string Domain = 1;
+        string Iface = 2;
+        int32 LPort = 3;
+        bool Secure = 4; // Enable HTTPS
+        string Website = 5;
+        bytes Cert = 6;
+        bytes Key = 7;
+        bool ACME = 8;
+}
+
+message HTTP { int32 JobID = 1; }
+
+// [ Proxy ] --------------------------------------------------------------//
+
+// Server-side proxy, used for proxying tools like nmap 
+message ProxyReq {
+        string Type = 1;
+        string LHost = 2;
+        int32 LPort = 3;        
+}
+
+message Proxy { int32 JobID = 1; }
+
+
+// [ Scans ] --------------------------------------------------------------//
+
+message ScanReq {
+        repeated string Args = 1;
+        string Scanner = 2;
+        string WorkspaceID = 3; // Choose workspace for results
+}
+
+message Scan { int32 ScanID = 1; }
+
+
+// [ Agents ] -------------------------------------------------------------//
+
+// This Ghost data structure is used for actively connected ghosts.
+// GhostBuild is a backup of an already built Ghost.
+message Ghost {
+        uint32 ID = 1;
+        string Name = 2;
+        string Hostname = 3;
+        string Username = 4;
+        string UID = 5;
+        string GID = 6;
+        string OS = 7;
+        string Arch = 8;
+        string Transport = 9;
+        string RemoteAddress = 10;
+        int32 PID = 11;
+        string Filename = 12; // Argv[0]
+        string LastCheckin = 13;
+        string ActiveC2 = 14;
+        string Version = 15;
+
+        // Added
+        uint32 WorkspaceID = 18;
+        uint32 HostID = 17;
+}
+
+message GhostC2 {
+        uint32 Priority = 1;
+        string URL = 2;
+        string Options = 3; // Protocol-specific options
+}
+
+// When an implant is compiled and needs to reach back to the server via a pivot,
+// this message is used to tell which implant to reach first. Then, by giving it
+// the ultimate server address, the proxy will redirect to it.
+message GhostProxy {
+        string URL = 2;
+        string Options = 3; // Protocol-specific options
+}
+
+// [ Compiler ] -------------------------------------------------------------//
+
+message GhostConfig {
+        string GOOS = 1;
+        string GOARCH = 2; 
+        string Name = 3;
+        string CACert = 4;
+        string Cert = 5;
+        string Key = 6;
+        bool Debug = 7;
+        bool ObfuscateSymbols = 30;
+
+        uint32 ReconnectInterval = 8;
+        uint32 MaxConnectionErrors = 9;
+
+        // C2
+        repeated GhostC2 C2 = 10;
+        repeated string CanaryDomains = 11;
+
+        bool LimitDomainJoined = 20;
+        string LimitDatetime = 21;
+        string LimitHostname = 22;
+        string LimitUsername = 23;
+
+        enum OutputFormat {
+                SHARED_LIB = 0;
+                SHELLCODE = 1;
+                EXECUTABLE = 2;
+        }
+        OutputFormat Format = 25;
+        bool IsSharedLib = 26;
+        string Filename = 27;
+
+        // Added
+        uint32 WorkspaceID = 28; // When registering, assigned to a workspace
+
+        repeated GhostProxy Proxy = 29;        
+}
+
+// Configs of previously built ghosts
+message GhostBuilds {
+        map<string, GhostConfig> Configs = 1;
+}
+
+// DNSCanary - Single canary and metadata
+message DNSCanary {
+        string GhostName = 1;
+        string Domain = 2;
+        bool Triggered = 3;
+        string FirstTriggered = 4;
+        string LatestTrigger = 5;
+        uint32 Count = 6;
+}
+
+message Canaries { repeated DNSCanary Canaries = 1; }
+
+message Profile {
+        string Name = 1;
+        GhostConfig Config = 2;
+}
+
+message Profiles { repeated Profile List = 1; }
+
+message Regenerate {
+        string GhostName = 1;
+        File File = 2;
+}
+
+
+// [ Commands ] -------------------------------------------------------------//
+
+message Sessions { repeated Ghost Ghosts = 1; }
+
+message GenerateReq { GhostConfig Config = 1; }
+
+message Generate { File File = 1; }
+
+message MSFReq {
+        string Payload = 1;
+        string LHost = 2;
+        int32 LPort = 3;
+        string Encoder = 4;
+        int32 Iterations = 5;
+
+        uint32 GhostID = 9;
+}
+
+message MSFInjectReq {
+        string Payload = 1;
+        string LHost = 2;
+        int32 LPort = 3;
+        string Encoder = 4;
+        int32 Iterations = 5;
+
+        int32 PID = 8;
+        uint32 GhostID = 9;
+}
+
+message TaskReq {
+        bytes Data = 1;
+        bool RwxPages = 2;
+        uint32 Pid = 3;
+        uint32 GhostID = 9;
+}
+
+message MigrateReq {
+        uint32 Pid = 1;
+        GhostConfig Config = 2;
+        uint32 GhostID = 3;
+}
+
+message GetSystemReq {
+        GhostConfig Config = 1;
+        string HostingProcess = 2;
+        uint32 GhostID = 9;
+}
+
+message EggConfig {
+        enum EggProtocol {
+                TCP = 0;
+                HTTP = 1;
+                HTTPS = 2;
+        }
+        EggProtocol Protocol = 1;
+        string Host = 2;
+        uint32 Port = 3;
+        string Arch = 4;
+        string Format = 5;
+}
+
+message EggRequest {
+        GhostConfig Config = 1;
+        EggConfig Config = 2;
+}
+
+message Egg {
+        bytes Data = 1;
+        string Filename = 2;
+        int32 JobID = 3;
+}
+
+message SideloadReq {
+        bytes Data = 1;
+        string ProcName = 2;
+        string Args = 3;
+        string EntryPoint = 4;
+        uint32 GhostID = 5;
+}
+
+
+// [ Tunnels ] -------------------------------------------------------------//
+
+message TunnelCreateReq { uint32 GhostID = 1; }
+
+message TunnelCreate {
+        uint32 GhostID = 1;
+        uint64 TunnelID = 9;
+}
+
+message TunnelCloseReq {uint64 TunnelID = 9;}
+
+
+// [ Events ] -------------------------------------------------------------//
+
+message Client {
+        int32 ID = 1;
+        string User = 2;
+}
+
+message Event {
+        string EventType = 1;
+        Ghost Ghost = 2;
+        Job Job = 3;
+        Client Client = 4;
+        bytes Data = 5;
+
+        string Err = 9;
+}
+
+message Players { repeated Player Players = 1; }
+
+message Player {
+        string User = 1;
+        bool Online = 2;
+}
+
+
+// [ Websites ] -------------------------------------------------------------//
+
+message WebContent {
+        string Path = 1;
+        string ContentType = 2;
+        uint64 Size = 3;
+
+        bytes Content = 9;
+}
+
+message Website {
+        string Name = 1;
+        map<string, WebContent> Content = 2;
+}
+
+message Websites { repeated Website Sites = 1; }
