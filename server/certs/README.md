@@ -1,8 +1,6 @@
-### Certs
-----
+## Certs
 
 X.509 certificate generation and management code. 
-
 4 separate certificate chains are used (4 CAs):
 
 * `GhostCA`     - Used to encrypt and authenticate client-side C2 channels between the Server and the Ghosts.
@@ -21,9 +19,9 @@ Certificates are all stored CA-specific Badger databases managed by the db packa
 The package can also interact with Let's Encrypt (ACME) services to generate certificates that are trusted in the browser
 (alternative to HTTPSCA). These certificates are used with the HTTPS servers/listeners, but not used to encrypt any C2.
 
-
-### Package Structure 
 ----
+
+## Package Structure 
 
 * `ca.go`           - Manage Certificate Authorities (generate/get/save)
 * `certs.go`        - CertificateKeyPair objects, with its generic functions (save/get/remove/generate).

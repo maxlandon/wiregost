@@ -1,5 +1,4 @@
-### Protobuf
-----
+## Protobuf
 
 The `protobuf/` directory contains all protobuf message definitions and gRPC
 stubs needed in Wiregost.
