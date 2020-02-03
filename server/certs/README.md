@@ -5,7 +5,7 @@ X.509 certificate generation and management code.
 
 * `GhostCA`     - Used to encrypt and authenticate client-side C2 channels between the Server and the Ghosts.
                   Uses both ECC and RSA certificates, depending on the use case.
-* `OperatorCA`  - Used to sign certs that authenticate and encrypt the mutual TLS connection between an operator and the server.
+* `UserCA`      - Used to sign certs that authenticate and encrypt the mutual TLS connection between a user and the server.
 * `ServerCA`    - Used to secure server-side C2, the ServerCA public key is embedded into the Ghost binaries.
 * `HTTPSCA`     - Used to generate self-signed HTTPS certificates (that are not used to encrypt C2 data).
 
@@ -24,11 +24,11 @@ The package can also interact with Let's Encrypt (ACME) services to generate cer
 
 ## Package Structure 
 
-* `ca.go`           - Manage Certificate Authorities (generate/get/save)
 * `certs.go`        - CertificateKeyPair objects, with its generic functions (save/get/remove/generate).
 * `certs_test.go`   - Testing for generic CertificateKeyPair objects.
-* `acme.go`         - Helper functions for ACME certs.
+* `ca.go`           - Manage Certificate Authorities (generate/get/save)
 * `https.go`        - Generate HTTPS certs.
-* `operators.go`    - Manage operator/client certificates (generate/get/save/list).
+* `users.go`        - Manage user/client certificates (generate/get/save/list).
 * `servers.go`      - Generate Server certs.
 * `ghosts.go`       - Generate Ghost certs. 
+* `acme.go`         - Helper functions for ACME certs.
