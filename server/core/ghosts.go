@@ -24,6 +24,7 @@ import (
 	"github.com/maxlandon/wiregost/data_service/models"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -59,6 +60,9 @@ type Ghost struct {
 	// Added
 	WorkspaceID uint
 	Host        *models.Host
+
+	// Logging
+	Logger *logrus.Entry
 }
 
 // ToProtobuf - Returns the protobuf version of a Ghost object

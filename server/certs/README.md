@@ -9,6 +9,7 @@ X.509 certificate generation and management code.
 * `ServerCA`    - Used to secure server-side C2, the ServerCA public key is embedded into the Ghost binaries.
 * `HTTPSCA`     - Used to generate self-signed HTTPS certificates (that are not used to encrypt C2 data).
 
+----
 Certificates are all stored CA-specific Badger databases managed by the db package.
 * Key:      Common Name of the certificate
 * Value:    JSON object (CertificateKeyPair) containing key type (RSA or ECC), certificate and private key
