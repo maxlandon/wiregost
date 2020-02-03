@@ -1,4 +1,5 @@
 ### Server
+----
 
 The `server/` directory contains the Wiregost server implementation.
 
