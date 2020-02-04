@@ -16,9 +16,39 @@
 
 package constants
 
-// Commands
+// [ Meta ] -----------------------------------------------------------------//
 const (
-	// Data Service ------------------------------//
+	KeepAliveStr = "keepalive"
+)
+
+// [ Events ] ---------------------------------------------------------------//
+const (
+	EventStr = "event"
+
+	ServerErrorStr = "server"
+
+	// ConnectedEvent - Ghost Connected
+	ConnectedEvent = "connected"
+	// DisconnectedEvent - Ghost disconnected
+	DisconnectedEvent = "disconnected"
+
+	// JoinedEvent - User joined server
+	JoinedEvent = "joined"
+	// LeftEvent - Player disconnected from server
+	LeftEvent = "left"
+
+	// CanaryEvent - A DNS canary was triggered
+	CanaryEvent = "canary"
+
+	// StartedEvent - Job was started
+	StartedEvent = "started"
+	// StoppedEvent - Job was stopped
+	StoppedEvent = "stopped"
+)
+
+// [ Commands ] -----------------------------------------------------------//
+const (
+	// Data Service --------------------------
 
 	// Workspace
 	WorkspaceStr = "workspace"
