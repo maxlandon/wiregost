@@ -124,7 +124,7 @@ func newPrompt(c *Console) Prompt {
 			return ip
 		},
 		"{serverip}": func() string {
-			return c.endpointPublicIP
+			return c.serverPublicIP
 		},
 		// CurrentModule
 		"{mod}": func() string {

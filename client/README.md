@@ -1,4 +1,4 @@
-### Client
+## Client
 
 The `client/` directory contains the code necessary to run a client shell.
 This code never imports any code from the `server/`.

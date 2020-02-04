@@ -27,8 +27,11 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	"github.com/google/uuid"
 
+	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/completers"
+	"github.com/maxlandon/wiregost/client/core"
+	"github.com/maxlandon/wiregost/client/transport"
 	"github.com/maxlandon/wiregost/data_service/models"
 	"github.com/maxlandon/wiregost/data_service/remote"
 )
@@ -49,13 +52,14 @@ type Console struct {
 
 	currentAgentID uuid.UUID
 	// Server state
+	currentServer  *assets.ClientConfig
+	serverPublicIP string
+
 	currentServerID uuid.UUID
 	serverRunning   bool
 	// Server connection parameters
 	// SavedEndpoints   []Endpoint
-	// CurrentEndpoint  Endpoint
-	endpointPublicIP string
-	connected        bool
+	connected bool
 }
 
 func NewConsole() *Console {
@@ -90,13 +94,16 @@ func NewConsole() *Console {
 	// Register all commands into their respective menus
 	commands.RegisterCommands()
 
-	// Launch
-	console.Start()
-
 	return console
 }
 
-func (c *Console) Start() {
+func Start() {
+
+	// Instantiate console
+	c := NewConsole()
+
+	// Connect to server
+	c.Connect()
 
 	// Eventually close
 	defer c.Shell.Close()
@@ -149,6 +156,48 @@ func (c *Console) initContext() {
 	rootCtx := context.Background()
 	c.context = context.WithValue(rootCtx, "workspace_id", c.currentWorkspace.ID)
 }
+
+// [ Connection functions ] --------------------------------------------------------------------//
+
+func (c *Console) Connect() error {
+
+	// Find configs and use default
+	configs := assets.GetConfigs()
+	if len(configs) == 0 {
+		fmt.Printf("%s[!] No config files found at %s or -config\n", tui.YELLOW, assets.GetConfigDir())
+		return nil
+	}
+
+	var config *assets.ClientConfig
+	for _, conf := range configs {
+		if conf.IsDefault {
+			config = conf
+		}
+	}
+
+	// Initiate connection
+	fmt.Printf("%s[*]%s Connecting to %s:%d ...\n", tui.BLUE, tui.RESET, config.LHost, config.LPort)
+	send, recv, err := transport.MTLSConnect(config)
+	if err != nil {
+		fmt.Printf("%s[!] Connection to server failed: %v", tui.RED, err)
+		return nil
+	} else {
+		fmt.Printf("%s[*]%s Connected to Wiregost server at %s:%d, as user %s%s%s",
+			tui.GREEN, tui.RESET, config.LHost, config.LPort, tui.YELLOW, config.User, tui.RESET)
+		fmt.Println()
+
+		// Register server information to console
+		c.currentServer = config
+	}
+
+	// Bind connection to server object in console
+	wiregostServer := core.BindWiregostServer(send, recv)
+	go wiregostServer.ResponseMapper()
+
+	return nil
+}
+
+// [ Generic console functions ] ---------------------------------------------------------------//
 
 func (c *Console) refresh() {
 	refreshPrompt(c.prompt, c.Shell)
