@@ -33,32 +33,32 @@ const (
 	serverNamespace = "server"
 )
 
-// OperatorClientGenerateCertificate - Generate a certificate signed with a given CA
-func OperatorClientGenerateCertificate(user string) ([]byte, []byte, error) {
+// UserClientGenerateCertificate - Generate a certificate signed with a given CA
+func UserClientGenerateCertificate(user string) ([]byte, []byte, error) {
 	cert, key := GenerateECCCertificate(UserCA, user, false, true)
 	err := SaveCertificate(UserCA, ECCKey, fmt.Sprintf("%s.%s", clientNamespace, user), cert, key)
 	return cert, key, err
 }
 
-// OperatorClientGetCertificate - Helper function to fetch a client cert
-func OperatorClientGetCertificate(user string) ([]byte, []byte, error) {
+// UserClientGetCertificate - Helper function to fetch a client cert
+func UserClientGetCertificate(user string) ([]byte, []byte, error) {
 	return GetCertificate(UserCA, ECCKey, fmt.Sprintf("%s.%s", clientNamespace, user))
 }
 
-// OperatorServerGetCertificate - Helper function to fetch a client cert
-func OperatorServerGetCertificate(user string) ([]byte, []byte, error) {
+// UserServerGetCertificate - Helper function to fetch a client cert
+func UserServerGetCertificate(user string) ([]byte, []byte, error) {
 	return GetCertificate(UserCA, ECCKey, fmt.Sprintf("%s.%s", serverNamespace, user))
 }
 
-// OperatorServerGenerateCertificate - Generate a certificate signed with a given CA
-func OperatorServerGenerateCertificate(hostname string) ([]byte, []byte, error) {
+// UserServerGenerateCertificate - Generate a certificate signed with a given CA
+func UserServerGenerateCertificate(hostname string) ([]byte, []byte, error) {
 	cert, key := GenerateECCCertificate(UserCA, hostname, false, false)
 	err := SaveCertificate(UserCA, ECCKey, fmt.Sprintf("%s.%s", serverNamespace, hostname), cert, key)
 	return cert, key, err
 }
 
-// OperatorClientListCertificates - Get all client certificates
-func OperatorClientListCertificates() []*x509.Certificate {
+// UserClientListCertificates - Get all client certificates
+func UserClientListCertificates() []*x509.Certificate {
 	bucket, err := db.GetBucket(UserCA)
 	if err != nil {
 		return []*x509.Certificate{}
@@ -74,7 +74,7 @@ func OperatorClientListCertificates() []*x509.Certificate {
 	certs := []*x509.Certificate{}
 	for _, user := range users {
 
-		certsLog.Infof("Operator = %v", user)
+		certsLog.Infof("User = %v", user)
 		keypairRaw, err := bucket.Get(user)
 		if err != nil {
 			certsLog.Warnf("Failed to fetch user keypair %v", err)
