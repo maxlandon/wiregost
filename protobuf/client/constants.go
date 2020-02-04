@@ -31,6 +31,13 @@ const (
 	// MsgDns - DNS message
 	MsgDns
 
+	// USERS ------------------------------------------------------------------//
+
+	// MsgUserReq - Add a user and create its config
+	MsgUserReq
+	// MsgUser - Success/failure of user creation request
+	MsgUser
+
 	// MODULES ----------------------------------------------------------------//
 
 	// MsgModuleReq loads a module (server-side) so client can use it

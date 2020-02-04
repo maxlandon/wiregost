@@ -33,6 +33,19 @@ message Process {
         string owner = 4;
 }
 
+// [ Users ] --------------------------------------------------------------//
+
+message UserReq {
+        string User = 1;
+        string LHost = 2;
+        uint32 LPort = 3;
+        bool Default = 4;
+}
+
+message User {
+        bool Success = 1;
+        string Err = 2;
+}
 
 // [ Jobs ] ---------------------------------------------------------------//
 
