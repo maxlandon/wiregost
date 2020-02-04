@@ -1,26 +1,68 @@
 package main
 
 import (
-	// Standard
+	"flag"
 	"fmt"
+	"log"
+	"os"
+	"path"
 
-	// 3rd party
 	"github.com/evilsocket/islazy/tui"
+
+	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/console"
-	// Wiregost
+	"github.com/maxlandon/wiregost/client/version"
+)
+
+const (
+	logFileName = "sliver-client.log"
 )
 
 func main() {
 	// Print welcome picture
 	fmt.Println(tui.Dim("----------------------------------------------------------------" +
 		"--------------------------------------------------------------------------------"))
-	fmt.Printf(welcomeToGhost)
+	fmt.Printf(tui.Dim(welcomeToGhost))
 	fmt.Println(tui.Dim("----------------------------------------------------------------" +
 		"--------------------------------------------------------------------------------"))
 
+	displayVersion := flag.Bool("version", false, "print version number")
+	config := flag.String("config", "", "config file")
+	flag.Parse()
+
+	if *displayVersion {
+		fmt.Printf("v%s\n", version.ClientVersion)
+		os.Exit(0)
+	}
+
+	// Check configs
+	if *config != "" {
+		conf, err := assets.ReadConfig(*config)
+		if err != nil {
+			fmt.Printf("Error %s\n", err)
+			os.Exit(3)
+		}
+		assets.SaveConfig(conf)
+	}
+
+	// Initialize console logging
+	appDir := assets.GetRootAppDir()
+	logFile := initLogging(appDir)
+	defer logFile.Close()
+
 	// Launch session
-	// _ = core.NewSession()
-	console.NewConsole()
+	console.Start()
+}
+
+// Initialize logging
+func initLogging(appDir string) *os.File {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	logFile, err := os.OpenFile(path.Join(appDir, logFileName), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		panic(fmt.Sprintf("Error opening file: %s", err))
+	}
+	log.SetOutput(logFile)
+	return logFile
 }
 
 var welcomeToGhost = `                                                                                                            ,,.,=++============+,               
