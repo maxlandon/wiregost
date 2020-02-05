@@ -48,6 +48,14 @@ const (
 
 // [ Commands ] -----------------------------------------------------------//
 const (
+	// Core ----------------------------------
+
+	Help     = "help"
+	Core     = "core"
+	Shell    = "!"
+	Cd       = "cd"
+	Resource = "resource"
+
 	// Data Service --------------------------
 
 	// Workspace

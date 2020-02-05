@@ -22,7 +22,15 @@ import (
 
 var (
 	cmdHelp = map[string]string{
-		// Data Service --------------------//
+		// [ Core ] ---------------------------------------------//
+
+		consts.Help:     helpHelp,
+		consts.Core:     coreHelp,
+		consts.Shell:    shellHelp,
+		consts.Cd:       cdHelp,
+		consts.Resource: resourceHelp,
+
+		// [ Data Service ] -------------------------------------//
 
 		// Workspace
 		consts.WorkspaceStr: workspaceHelp,

@@ -14,18 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package commands
+package util
 
-// RegisterCommands register all commands in Wiregost and maps them
-// to their respective contexts
-func RegisterCommands() {
+import (
+	"os/exec"
+	"strings"
 
-	// Core
-	RegisterCoreCommands()
-	RegisterHelpCommands()
+	"github.com/evilsocket/islazy/str"
+)
 
-	// Data Service
-	RegisterWorkspaceCommands()
-	RegisterHostCommands()
+func Shell(args []string) (string, error) {
+	cmd := strings.Join(args, " ")
+	return Exec("/bin/sh", []string{"-c", cmd})
+}
 
+func Exec(executable string, args []string) (string, error) {
+	path, err := exec.LookPath(executable)
+	if err != nil {
+		return "", err
+	}
+
+	raw, err := exec.Command(path, args...).CombinedOutput()
+	if err != nil {
+		return "", err
+	} else {
+		return str.Trim(string(raw)), nil
+	}
 }

@@ -18,7 +18,9 @@ package console
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/data_service/models"
 )
@@ -32,6 +34,9 @@ func ExecCmd(args []string, menu string, ctx *context.Context, ws *models.Worksp
 	command := commands.FindCommand(menu, args[0])
 	if command != nil {
 		return command.Handle(commands.NewRequest(command, args[1:], ctx, ws, mod))
+	} else {
+		fmt.Println()
+		fmt.Printf("%sError:%s %s%s%s is not a valid command. \n", tui.RED, tui.RESET, tui.YELLOW, args[0], tui.RESET)
 	}
 
 	return nil

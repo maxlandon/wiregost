@@ -17,6 +17,7 @@
 package console
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"io"
@@ -50,22 +51,18 @@ type Console struct {
 	currentModule    string
 	currentWorkspace *models.Workspace
 
-	currentAgentID uuid.UUID
 	// Server state
 	currentServer  *assets.ClientConfig
 	serverPublicIP string
 
-	currentServerID uuid.UUID
-	serverRunning   bool
-	// Server connection parameters
-	// SavedEndpoints   []Endpoint
-	connected bool
+	// Keep for prompt, until not needed anymore
+	currentAgentID uuid.UUID
 }
 
 func NewConsole() *Console {
 
 	shell, _ := readline.NewEx(&readline.Config{
-		HistoryFile:       home + "/.wiregost/client/.history",
+		HistoryFile:       assets.GetRootAppDir() + "/.history",
 		InterruptPrompt:   "^C",
 		EOFPrompt:         "exit",
 		HistoryLimit:      5000,
@@ -110,6 +107,7 @@ func Start() {
 
 	// Command loop
 	for {
+		// Refresh Vim mode each time is needed here
 		c.vimMode = "insert"
 		c.refresh()
 
@@ -117,7 +115,11 @@ func Start() {
 		if err == readline.ErrInterrupt {
 			continue
 		} else if err == io.EOF {
-			break
+			ex := c.exit()
+			if ex {
+				break
+			}
+			continue
 		}
 
 		line = strings.TrimSpace(line)
@@ -126,6 +128,15 @@ func Start() {
 		}
 
 		unfiltered := strings.Split(line, " ")
+
+		// Handle exits
+		if unfiltered[0] == "exit" {
+			ex := c.exit()
+			if ex {
+				break
+			}
+			continue
+		}
 
 		var args []string
 		for _, arg := range unfiltered {
@@ -239,4 +250,19 @@ func (c *Console) filterInput(r rune) (rune, bool) {
 		}
 	}
 	return r, true
+}
+
+func (c *Console) exit() bool {
+
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Confirm exit (Y/y): ")
+	text, _ := reader.ReadString('\n')
+	answer := strings.TrimSpace(text)
+
+	if (answer == "Y") || (answer == "y") {
+		c.Shell.Close()
+		return true
+	} else {
+		return false
+	}
 }
