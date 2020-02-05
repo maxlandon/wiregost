@@ -25,16 +25,12 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
-	"github.com/evilsocket/islazy/tui"
 	"github.com/google/uuid"
 
 	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/completers"
-	"github.com/maxlandon/wiregost/client/core"
-	"github.com/maxlandon/wiregost/client/transport"
 	"github.com/maxlandon/wiregost/data_service/models"
-	"github.com/maxlandon/wiregost/data_service/remote"
 )
 
 var home, _ = os.UserHomeDir()
@@ -55,8 +51,16 @@ type Console struct {
 	currentServer  *assets.ClientConfig
 	serverPublicIP string
 
+	// Jobs
+	listeners int
+
+	// Agents
+	ghosts int
 	// Keep for prompt, until not needed anymore
 	currentAgentID uuid.UUID
+
+	// CommandShellContext
+	shellContext *commands.ShellContext
 }
 
 func NewConsole() *Console {
@@ -100,7 +104,7 @@ func Start() {
 	c := NewConsole()
 
 	// Connect to server
-	c.Connect()
+	c.connect()
 
 	// Eventually close
 	defer c.Shell.Close()
@@ -145,67 +149,10 @@ func Start() {
 			}
 		}
 
-		if err = ExecCmd(args, c.menuContext, &c.context, c.currentWorkspace, c.currentModule); err != nil {
+		if err = ExecCmd(args, c.menuContext, c.shellContext); err != nil {
 			fmt.Println(err)
 		}
 	}
-}
-
-func (c *Console) initContext() {
-	// Set workspace
-	workspaces, err := remote.Workspaces(nil)
-	if err != nil {
-		fmt.Println(tui.Red("Failed to fetch workspaces"))
-	}
-	for i, _ := range workspaces {
-		if workspaces[i].IsDefault {
-			c.currentWorkspace = &workspaces[i]
-		}
-	}
-
-	// Set context object passed to commands
-	rootCtx := context.Background()
-	c.context = context.WithValue(rootCtx, "workspace_id", c.currentWorkspace.ID)
-}
-
-// [ Connection functions ] --------------------------------------------------------------------//
-
-func (c *Console) Connect() error {
-
-	// Find configs and use default
-	configs := assets.GetConfigs()
-	if len(configs) == 0 {
-		fmt.Printf("%s[!] No config files found at %s or -config\n", tui.YELLOW, assets.GetConfigDir())
-		return nil
-	}
-
-	var config *assets.ClientConfig
-	for _, conf := range configs {
-		if conf.IsDefault {
-			config = conf
-		}
-	}
-
-	// Initiate connection
-	fmt.Printf("%s[*]%s Connecting to %s:%d ...\n", tui.BLUE, tui.RESET, config.LHost, config.LPort)
-	send, recv, err := transport.MTLSConnect(config)
-	if err != nil {
-		fmt.Printf("%s[!] Connection to server failed: %v", tui.RED, err)
-		return nil
-	} else {
-		fmt.Printf("%s[*]%s Connected to Wiregost server at %s:%d, as user %s%s%s",
-			tui.GREEN, tui.RESET, config.LHost, config.LPort, tui.YELLOW, config.User, tui.RESET)
-		fmt.Println()
-
-		// Register server information to console
-		c.currentServer = config
-	}
-
-	// Bind connection to server object in console
-	wiregostServer := core.BindWiregostServer(send, recv)
-	go wiregostServer.ResponseMapper()
-
-	return nil
 }
 
 // [ Generic console functions ] ---------------------------------------------------------------//
