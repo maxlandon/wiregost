@@ -19,63 +19,42 @@ package commands
 import (
 	"fmt"
 
-	"github.com/desertbit/grumble"
-	"github.com/evilsocket/islazy/tui"
-
-	consts "github.com/maxlandon/wiregost/client/constants"
 	"github.com/maxlandon/wiregost/client/help"
 )
 
-func RegisterHelpCommands(app *grumble.App) {
+func RegisterHelpCommands() {
 
 	// Command categories
-	helpCategoriesCommand := &grumble.Command{
+	help := &Command{
 		Name: "help",
-		Help: tui.Blue(tui.Bold("  Command Categories")),
+		// Needed for completion
+		SubCommands: []string{
+			"core",
+			"workspace",
+			"hosts",
+		},
+		Args: []*CommandArg{
+			&CommandArg{Name: "core"},
+			&CommandArg{Name: "workspace"},
+			&CommandArg{Name: "hosts"},
+		},
+		Handle: func(r *Request) error {
+			switch length := len(r.Args); {
+			case length == 0:
+				fmt.Println()
+				fmt.Printf(help.GetHelpFor("help"))
+				fmt.Println()
+			default:
+				fmt.Println()
+				fmt.Println(help.GetHelpFor(r.Args[0]))
+			}
+			return nil
+		},
 	}
 
-	// Workspace Commands
-	helpCategoriesCommand.AddCommand(&grumble.Command{
-		Name:      "workspace",
-		Help:      tui.Dim("Manage Wiregost workspaces"),
-		HelpGroup: consts.DataServiceHelpGroup,
-
-		Run: func(ctx *grumble.Context) error {
-			fmt.Println()
-			fmt.Println(help.GetHelpFor(consts.WorkspaceStr))
-			fmt.Println()
-			return nil
-		},
-	})
-
-	// Hosts Commands
-	helpCategoriesCommand.AddCommand(&grumble.Command{
-		Name:      "hosts",
-		Help:      tui.Dim("Manage database hosts"),
-		HelpGroup: consts.DataServiceHelpGroup,
-
-		Run: func(ctx *grumble.Context) error {
-			fmt.Println()
-			fmt.Println(help.GetHelpFor(consts.HostsStr))
-			fmt.Println()
-			return nil
-		},
-	})
-
-	// Service Commands
-	helpCategoriesCommand.AddCommand(&grumble.Command{
-		Name:      "services",
-		Help:      tui.Dim("Manage database services"),
-		HelpGroup: consts.DataServiceHelpGroup,
-
-		Run: func(ctx *grumble.Context) error {
-			fmt.Println()
-			fmt.Println(help.GetHelpFor(consts.ServicesStr))
-			fmt.Println()
-			return nil
-		},
-	})
-
 	// Finally register commands
-	app.AddCommand(helpCategoriesCommand)
+	AddCommand("main", help)
+	AddCommand("module", help)
+	// AddCommand("ghost", help)
+	// AddCommand("compiler", help)
 }

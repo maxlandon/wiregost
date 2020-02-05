@@ -21,17 +21,33 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"path/filepath"
 )
 
 const (
 	// WiregostClientDirName - Directory storing all of the client configs/logs
 	WiregostClientDirName = ".wiregost-client"
+
+	ResourceDirName = "resource"
 )
 
-// GetRootAppDir - Get the Sliver app dir ~/.sliver-client/
+// GetRootAppDir - Get the Wiregost client app dir ~/.wiregost-client/
 func GetRootAppDir() string {
 	user, _ := user.Current()
 	dir := path.Join(user.HomeDir, WiregostClientDirName)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	return dir
+}
+
+// GetConfigDir - Returns the path to the config dir
+func GetResourceDir() string {
+	rootDir, _ := filepath.Abs(GetRootAppDir())
+	dir := path.Join(rootDir, ResourceDirName)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.MkdirAll(dir, os.ModePerm)
 		if err != nil {

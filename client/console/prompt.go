@@ -51,10 +51,10 @@ func newPrompt(c *Console) Prompt {
 	// These are here because if colors are disabled, we need the updated tui.* variable
 	prompt := Prompt{
 		// Prompt strings
-		base:      "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server}",
-		module:    "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server} {fw}=>{reset} post({mod})",
-		agent:     "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server} {fw}=>{reset} agent[{db}{agent}]",
-		compiler:  "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {server} {fw}=>{reset} [{bold}{y}Compiler{reset}]",
+		base:      "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} ",
+		module:    "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {fw}=>{reset} post({mod})",
+		agent:     "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {fw}=>{reset} agent[{db}{agent}]",
+		compiler:  "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {fw}=>{reset} [{bold}{y}Compiler{reset}]",
 		multiline: "{vim} > {ly}",
 		// Prompt variabes
 		workspace:     &c.currentWorkspace.Name,
@@ -133,14 +133,6 @@ func newPrompt(c *Console) Prompt {
 		// Current agent
 		"{agent}": func() string {
 			return tui.Bold(c.currentAgentID.String()) + tui.RESET
-		},
-		// Server state
-		"{server}": func() string {
-			if c.serverRunning {
-				return fmt.Sprintf("%s(%son%s)", tui.RESET, tui.GREEN, tui.RESET)
-			} else {
-				return fmt.Sprintf("%s(%soff%s)", tui.RESET, tui.RED, tui.RESET)
-			}
 		},
 	}
 
