@@ -64,29 +64,29 @@ func RegisterHostCommands() {
 			// No arguments: Print hosts
 			case length == 0:
 				fmt.Println()
-				hosts(r.context, nil)
+				hosts(&r.context.Context, nil)
 			// Arguments: commands entered
 			case length >= 1:
 				switch r.Args[0] {
 				case "search":
 					fmt.Println()
-					hosts(r.context, r.Args[1:])
+					hosts(&r.context.Context, r.Args[1:])
 				case "add":
 					fmt.Println()
-					addHost(r.context, r.Args[1:])
+					addHost(&r.context.Context, r.Args[1:])
 					fmt.Println()
 				case "delete":
 					fmt.Println()
-					deleteHosts(r.context, r.Args[1:])
+					deleteHosts(&r.context.Context, r.Args[1:])
 					fmt.Println()
 				case "update":
 					fmt.Println()
-					updateHost(r.context, r.Args[1:])
+					updateHost(&r.context.Context, r.Args[1:])
 					fmt.Println()
 				// No actions were asked for, list hosts with filters
 				default:
 					fmt.Println()
-					hosts(r.context, r.Args)
+					hosts(&r.context.Context, r.Args)
 				}
 
 			}

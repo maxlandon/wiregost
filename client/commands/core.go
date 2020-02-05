@@ -209,7 +209,7 @@ func RegisterCoreCommands() {
 						cmds := strings.Split(lign, " ")
 						command := FindCommand("main", cmds[0])
 						if command != nil {
-							command.Handle(NewRequest(command, cmds[1:], r.context, r.currentWorkspace, r.currentModule))
+							command.Handle(NewRequest(command, cmds[1:], r.context))
 							fmt.Println(tui.Dim(tui.Blue("------------------------------------------------------")))
 						} else {
 							fmt.Println()

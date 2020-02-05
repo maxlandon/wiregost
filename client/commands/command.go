@@ -16,12 +16,6 @@
 
 package commands
 
-import (
-	"context"
-
-	"github.com/maxlandon/wiregost/data_service/models"
-)
-
 // Command is a set of commands dedicated to a single function (workspace, agents, etc)
 type Command struct {
 	Name        string
@@ -51,19 +45,15 @@ type Request struct {
 	Args    []string
 
 	// Shell context
-	context          *context.Context
-	currentWorkspace *models.Workspace
-	currentModule    string
+	context *ShellContext
 }
 
 // NewRequest creates a request, with the shell context
-func NewRequest(cmd *Command, args []string, ctx *context.Context, ws *models.Workspace, mod string) *Request {
+func NewRequest(cmd *Command, args []string, shellContext *ShellContext) *Request {
 	return &Request{
-		Command:          cmd,
-		Args:             args,
-		context:          ctx,
-		currentWorkspace: ws,
-		currentModule:    mod,
+		Command: cmd,
+		Args:    args,
+		context: shellContext,
 	}
 }
 

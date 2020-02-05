@@ -55,7 +55,7 @@ func RegisterWorkspaceCommands() {
 			// No arguments: Print workspaces
 			case length == 0:
 				fmt.Println()
-				workspaces(r.currentWorkspace)
+				workspaces(r.context.CurrentWorkspace)
 				fmt.Println()
 			// Arguments: commands entered
 			case length >= 1:
@@ -63,7 +63,7 @@ func RegisterWorkspaceCommands() {
 				case "switch":
 					fmt.Println()
 					if len(r.Args) == 2 {
-						switchWorkspace(r.Args[1], r.currentWorkspace, r.context)
+						switchWorkspace(r.Args[1], r.context.CurrentWorkspace, &r.context.Context)
 					} else {
 						fmt.Printf("%s[!]%s Provide a workspace name",
 							tui.RED, tui.RESET)
