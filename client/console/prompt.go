@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 
 	// 3rd party
@@ -51,10 +52,10 @@ func newPrompt(c *Console) Prompt {
 	// These are here because if colors are disabled, we need the updated tui.* variable
 	prompt := Prompt{
 		// Prompt strings
-		base:      "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} ",
-		module:    "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {fw}=>{reset} post({mod})",
-		agent:     "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {fw}=>{reset} agent[{db}{agent}]",
-		compiler:  "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {fw}=>{reset} [{bold}{y}Compiler{reset}]",
+		base:      "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
+		module:    "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw}) =>{reset} post({mod})",
+		agent:     "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw}) =>{reset} agent[{db}{agent}]",
+		compiler:  "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw}) =>{reset} [{bold}{y}Compiler{reset}]",
 		multiline: "{vim} > {ly}",
 		// Prompt variabes
 		workspace:     &c.currentWorkspace.Name,
@@ -126,13 +127,23 @@ func newPrompt(c *Console) Prompt {
 		"{serverip}": func() string {
 			return c.serverPublicIP
 		},
+		// Listeners
+		"{listeners}": func() string {
+			listeners := strconv.Itoa(c.listeners)
+			return listeners
+		},
+		// Agents
+		"{agents}": func() string {
+			agents := strconv.Itoa(c.ghosts)
+			return agents
+		},
 		// CurrentModule
 		"{mod}": func() string {
 			return tui.Yellow(*prompt.currentModule) + tui.RESET
 		},
 		// Current agent
 		"{agent}": func() string {
-			return tui.Bold(c.currentAgentID.String()) + tui.RESET
+			return tui.Bold(c.currentAgent.String()) + tui.RESET
 		},
 	}
 

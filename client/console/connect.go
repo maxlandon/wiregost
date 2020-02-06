@@ -54,6 +54,7 @@ func (c *Console) connect() error {
 
 		// Register server information to console
 		c.currentServer = config
+		c.serverPublicIP = c.currentServer.LHost
 	}
 
 	// Bind connection to server object in console

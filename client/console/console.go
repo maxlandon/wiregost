@@ -25,12 +25,12 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
-	"github.com/google/uuid"
 
 	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/completers"
 	"github.com/maxlandon/wiregost/data_service/models"
+	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
 
 var home, _ = os.UserHomeDir()
@@ -57,7 +57,7 @@ type Console struct {
 	// Agents
 	ghosts int
 	// Keep for prompt, until not needed anymore
-	currentAgentID uuid.UUID
+	currentAgent *clientpb.Ghost
 
 	// CommandShellContext
 	shellContext *commands.ShellContext
@@ -149,6 +149,7 @@ func Start() {
 			}
 		}
 
+		// Exec command
 		if err = ExecCmd(args, c.menuContext, c.shellContext); err != nil {
 			fmt.Println(err)
 		}

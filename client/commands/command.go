@@ -16,6 +16,15 @@
 
 package commands
 
+import (
+	"time"
+
+	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
+)
+
+// RPCServer - Function used to send/recv envelopes
+type RPCServer func(*ghostpb.Envelope, time.Duration) chan *ghostpb.Envelope
+
 // Command is a set of commands dedicated to a single function (workspace, agents, etc)
 type Command struct {
 	Name        string

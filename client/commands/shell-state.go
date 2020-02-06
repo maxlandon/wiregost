@@ -19,9 +19,9 @@ package commands
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/data_service/models"
+	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
 
 // ShellContext - Passes client shell variable pointers to command for read/write access
@@ -42,5 +42,5 @@ type ShellContext struct {
 	// Agents
 	Ghosts *int
 	// Keep for prompt, until not needed anymore
-	CurrentAgentID *uuid.UUID
+	CurrentAgent *clientpb.Ghost
 }
