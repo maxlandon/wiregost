@@ -9,16 +9,19 @@ require (
 	github.com/bettercap/bettercap v2.24.1+incompatible // indirect
 	github.com/bettercap/gatt v0.0.0-20191018133023-569d3d9372bb // indirect
 	github.com/bettercap/readline v0.0.0-20180208083827-9cec905dd291 // indirect
+	github.com/bishopfox/sliver v0.0.6-alpha
 	github.com/briandowns/spinner v1.8.0 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/cretz/gopaque v0.0.0-20190206211514-8180617f489f
 	github.com/desertbit/closer/v3 v3.1.1 // indirect
 	github.com/desertbit/grumble v1.0.3
+	github.com/dgraph-io/badger v1.6.0
 	github.com/evilsocket/islazy v1.10.6
 	github.com/fatih/color v1.9.0
 	github.com/go-pg/pg v8.0.6+incompatible
 	github.com/go-playground/errors v3.3.0+incompatible // indirect
 	github.com/go-playground/log v6.3.0+incompatible // indirect
+	github.com/gobuffalo/packr v1.30.1
 	github.com/gofrs/flock v0.7.1 // indirect
 	github.com/gogo/protobuf v1.1.1
 	github.com/golang/protobuf v1.3.2
@@ -32,12 +35,11 @@ require (
 	github.com/mattn/go-shellwords v1.0.5
 	github.com/mdlayher/dhcp6 v0.0.0-20190311162359-2a67805d7d0b // indirect
 	github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab // indirect
-	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/onsi/ginkgo v1.10.3 // indirect
 	github.com/onsi/gomega v1.7.1 // indirect
 	github.com/satori/go.uuid v1.2.0
-	github.com/sirupsen/logrus v1.2.0
+	github.com/sirupsen/logrus v1.4.2
 	github.com/tjarratt/babble v0.0.0-20191209142150-eecdf8c2339d
 	go.dedis.ch/kyber v0.0.0-20190125094535-ffb719103651
 	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413

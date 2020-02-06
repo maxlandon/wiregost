@@ -1,175 +1,98 @@
-# !!!MAKE SURE YOUR GOPATH ENVIRONMENT VARIABLE IS SET FIRST!!!
+#
+# Makefile for Sliver
+#
 
-# Merlin Server & Agent version number
-VERSION=$(shell cat internal/wiregost.go |grep "const Version ="|cut -d"\"" -f2)
+GO ?= go
+ENV = CGO_ENABLED=0
+TAGS = -tags netgo
+LDFLAGS = -ldflags '-s -w'
 
-MSERVER=merlinServer
-MAGENT=wiregostAgent
-PASSWORD=merlin
-BUILD=$(shell git rev-parse HEAD)
-DIR=data/temp/v${VERSION}/${BUILD}
-BIN=data/bin/
-XBUILD=-X main.build=${BUILD} -X github.com/maxlandon/wiregost/internal/agent.build=${BUILD}
-URL ?= https://127.0.0.1:443
-XURL=-X main.url=${URL}
-PSK ?= merlin
-XPSK=-X main.psk=${PSK}
-PROXY ?=
-XPROXY =-X main.proxy=$(PROXY)
-HOST ?=
-XHOST =-X main.host=$(HOST)
-PROTO ?= h2
-XPROTO =-X main.protocol=$(PROTO)
-LDFLAGS=-ldflags "-s -w ${XBUILD} ${XPROTO} ${XURL} ${XHOST} ${XPSK} ${XPROXY} -buildid="
-WINAGENTLDFLAGS=-ldflags "-s -w ${XBUILD} ${XPROTO} ${XURL} ${XHOST} ${XPSK} ${XPROXY} -H=windowsgui -buildid="
-# TODO Update when Go1.13 is released https://stackoverflow.com/questions/45279385/remove-file-paths-from-text-directives-in-go-binaries
-GCFLAGS=-gcflags=all=-trimpath=$(GOPATH)
-ASMFLAGS=-asmflags=all=-trimpath=$(GOPATH)# -asmflags=-trimpath=$(GOPATH)
-PACKAGE=7za a -p${PASSWORD} -mhe -mx=9
-F=README.MD LICENSE data/modules docs data/README.MD data/agents/README.MD data/db/ data/log/README.MD data/x509 data/src data/bin data/html
-F2=LICENSE
-W=Windows-x64
-L=Linux-x64
-A=Linux-arm
-M=Linux-mips
-D=Darwin-x64
-export GO111MODULE=on
+# https://stackoverflow.com/questions/5618615/check-if-a-program-exists-from-a-makefile
+EXECUTABLES = protoc protoc-gen-go packr sed git zip go
+K := $(foreach exec,$(EXECUTABLES),\
+        $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH")))
 
-# Make Directory to store executables
-$(shell mkdir -p ${DIR})
+GIT_DIRTY = $(shell git diff --quiet|| echo 'Dirty')
+GIT_VERSION = $(shell git rev-parse HEAD)
 
-# Change default to just make for the host OS and add MAKE ALL to do this
-default: server-windows agent-windows server-linux agent-linux server-darwin agent-darwin agent-dll agent-javascript prism-windows prism-linux prism-darwin
+SED_INPLACE := sed -i
 
-all: default
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	SED_INPLACE := sed -i ''
+endif
 
-# Compile Windows binaries
-windows: server-windows agent-windows agent-dll
 
-# Compile Linux binaries
-linux: server-linux agent-linux
+.PHONY: macos
+macos: clean version pb
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-server ./server
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-client ./client
 
-# Compile Arm binaries
-arm: agent-arm
+.PHONY: linux
+linux: clean version pb
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-server ./server
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-client ./client
 
-# Compile mips binaries
-mips: agent-mips
+.PHONY: windows
+windows: clean version pb
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-server.exe ./server
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-client.exe ./client
 
-# Compile Darwin binaries
-darwin: server-darwin agent-darwin
 
-# Compile Server - Windows x64
-server-windows:
-	export GOOS=windows;export GOARCH=amd64;go build ${LDFLAGS} -o ${DIR}/${MSERVER}-${W}.exe cmd/merlinserver/main.go
+#
+# Static builds were we bundle everything together
+#
+.PHONY: static-macos
+static-macos: clean version pb packr
+	packr
+	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
+	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-server ./server
 
-# Compile Agent - Windows x64
-agent-windows:
-	export GOOS=windows GOARCH=amd64;go build ${WINAGENTLDFLAGS} ${GCFLAGS} ${ASMFLAGS} -o ${DIR}/${MAGENT}-${W}.exe cmd/wiregostagent/main.go
+.PHONY: static-windows
+static-windows: clean version pb packr
+	packr
+	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
+	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-server.exe ./server
 
-# Compile Agent - Windows x64 DLL - main() - Console
-agent-dll:
-	export GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ CGO_ENABLED=1; \
-	go build ${LDFLAGS} ${GCFLAGS} ${ASMFLAGS} -buildmode=c-archive -o ${DIR}/main.a cmd/merlinagentdll/main.go; \
-	cp data/bin/dll/merlin.c ${DIR}; \
-	x86_64-w64-mingw32-gcc -shared -pthread -o ${DIR}/merlin.dll ${DIR}/merlin.c ${DIR}/main.a -lwinmm -lntdll -lws2_32
+.PHONY: static-linux
+static-linux: clean version pb packr
+	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
+	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-server ./server
 
-# Compile PRISM - Windows x64
-prism-windows:
-	export GOOS=windows GOARCH=amd64;go build ${LDFLAGS} -o ${DIR}/PRISM-${W}.exe cmd/prism/main.go
+.PHONY: pb
+pb:
+	protoc -I protobuf/ protobuf/sliver/sliver.proto --go_out=protobuf/
+	protoc -I protobuf/ protobuf/client/client.proto --go_out=protobuf/
 
-# Compile Server - Linux x64
-server-linux:
-	export GOOS=linux;export GOARCH=amd64;go build ${LDFLAGS} -o ${DIR}/${MSERVER}-${L} cmd/merlinserver/main.go
+.PHONY: version
+version:
+	printf "package version\n\nconst GitVersion = \"%s\"\n" $(GIT_VERSION) > ./client/version/version.go
+	printf "const GitDirty = \"%s\"\n" $(GIT_DIRTY) >> ./client/version/version.go
 
-# Compile Agent - Linux mips
-agent-mips:
-	export GOOS=linux;export GOARCH=mips;go build ${LDFLAGS} ${GCFLAGS} ${ASMFLAGS} -o ${DIR}/${MAGENT}-${M} cmd/merlinagent/main.go
+.PHONY: packr
+packr:
+	cd ./server/
+	packr
+	cd ..
 
-# Compile Agent - Linux arm
-agent-arm:
-	export GOOS=linux;export GOARCH=arm;export GOARM=7;go build ${LDFLAGS} ${GCFLAGS} ${ASMFLAGS} -o ${DIR}/${MAGENT}-${A} cmd/merlinagent/main.go
+.PHONY: clean-version
+clean-version:
+	printf "package version\n\nconst GitVersion = \"\"\n" > ./client/version/version.go
 
-# Compile Agent - Linux x64
-agent-linux:
-	export GOOS=linux;export GOARCH=amd64;go build ${LDFLAGS} ${GCFLAGS} ${ASMFLAGS} -o ${DIR}/${MAGENT}-${L} cmd/merlinagent/main.go
+.PHONY: clean-all
+clean-all: clean clean-version
+	rm -f ./assets/darwin/go.zip
+	rm -f ./assets/windows/go.zip
+	rm -f ./assets/linux/go.zip
+	rm -f ./assets/*.zip
 
-# Compile PRISM - Linux x64
-prism-linux:
-	export GOOS=linux;export GOARCH=amd64;go build ${LDFLAGS} -o ${DIR}/PRISM-${L} cmd/prism/main.go
+.PHONY: clean
+clean: clean-version
+	packr clean
+	rm -f ./protobuf/client/*.pb.go
+	rm -f ./protobuf/sliver/*.pb.go
+	rm -f sliver-client sliver-server *.exe
 
-# Compile Server - Darwin x64
-server-darwin:
-	export GOOS=darwin;export GOARCH=amd64;go build ${LDFLAGS} -o ${DIR}/${MSERVER}-${D} cmd/merlinserver/main.go
-
-# Compile Agent - Darwin x64
-agent-darwin:
-	export GOOS=darwin;export GOARCH=amd64;go build ${LDFLAGS} ${GCFLAGS} ${ASMFLAGS} -o ${DIR}/${MAGENT}-${D} cmd/merlinagent/main.go
-
-# Compile PRISM - Darwin x64
-prism-darwin:
-	export GOOS=darwin;export GOARCH=amd64;go build ${LDFLAGS} -o ${DIR}/PRISM-${D} cmd/prism/main.go
-
-# Update JavaScript Information
-agent-javascript:
-	sed -i 's/var build = ".*"/var build = "${BUILD}"/' data/html/scripts/merlin.js
-	sed -i 's/var version = ".*"/var version = "${VERSION}"/' data/html/scripts/merlin.js
-	sed -i 's|var url = ".*"|var url = "${URL}"|' data/html/scripts/merlin.js
-
-# Make directory 'data' and then agents, db, log, x509; Copy src folder, README, and requirements
-package-server-windows:
-	${PACKAGE} ${DIR}/${MSERVER}-${W}-v${VERSION}.7z ${F}
-	cd ${DIR};${PACKAGE} ${MSERVER}-${W}-v${VERSION}.7z ${MSERVER}-${W}.exe
-
-package-server-linux:
-	${PACKAGE} ${DIR}/${MSERVER}-${L}-v${VERSION}.7z ${F}
-	cd ${DIR};${PACKAGE} ${MSERVER}-${L}-v${VERSION}.7z ${MSERVER}-${L}
-
-package-server-darwin:
-	${PACKAGE} ${DIR}/${MSERVER}-${D}-v${VERSION}.7z ${F}
-	cd ${DIR};${PACKAGE} ${MSERVER}-${D}-v${VERSION}.7z ${MSERVER}-${D}
-
-package-agent-windows:
-	${PACKAGE} ${DIR}/${MAGENT}-${W}-v${VERSION}.7z ${F2}
-	cd ${DIR};${PACKAGE} ${MAGENT}-${W}-v${VERSION}.7z ${MAGENT}-${W}.exe
-	mkdir -p ${BIN}windows
-	cp ${DIR}/${MAGENT}-${W}.exe ${BIN}windows/
-
-package-agent-linux:
-	${PACKAGE} ${DIR}/${MAGENT}-${L}-v${VERSION}.7z ${F2}
-	cd ${DIR};${PACKAGE} ${MAGENT}-${L}-v${VERSION}.7z ${MAGENT}-${L}
-	mkdir -p ${BIN}linux
-	cp ${DIR}/${MAGENT}-${L} ${BIN}linux/
-	
-package-agent-darwin:
-	${PACKAGE} ${DIR}/${MAGENT}-${D}-v${VERSION}.7z ${F2}
-	cd ${DIR};${PACKAGE} ${MAGENT}-${D}-v${VERSION}.7z ${MAGENT}-${D}
-	mkdir -p ${BIN}darwin/
-	cp ${DIR}/${MAGENT}-${D} ${BIN}darwin/
-
-package-agent-dll:
-	${PACKAGE} ${DIR}/${MAGENT}-DLL-v${VERSION}.7z ${F2}
-	cd ${DIR};${PACKAGE} ${MAGENT}-DLL-v${VERSION}.7z merlin.dll
-	cp ${DIR}/merlin.dll ${BIN}dll
-
-package-prism-windows:
-	${PACKAGE} ${DIR}/PRISM-${W}-v${VERSION}.7z ${F2}
-	cd ${DIR};${PACKAGE} PRISM-${W}-v${VERSION}.7z PRISM-${W}.exe
-	cp ${DIR}/PRISM-${W}.exe ${BIN}windows/
-
-package-prism-linux:
-	${PACKAGE} ${DIR}/PRISM-${L}-v${VERSION}.7z ${F2}
-	cd ${DIR};${PACKAGE} PRISM-${L}-v${VERSION}.7z PRISM-${L}
-	cp ${DIR}/PRISM-${L} ${BIN}linux/
-
-package-prism-darwin:
-	${PACKAGE} ${DIR}/PRISM-${D}-v${VERSION}.7z ${F2}
-	cd ${DIR};${PACKAGE} PRISM-${D}-v${VERSION}.7z PRISM-${D}
-	cp ${DIR}/PRISM-${D} ${BIN}darwin/
-
-package-all: package-agent-windows package-agent-dll package-agent-linux package-agent-darwin package-prism-windows package-server-windows package-server-linux package-server-darwin
-
-clean:
-	rm -rf ${DIR}*
-
-#Build all files for release distribution
-distro: clean all package-all
