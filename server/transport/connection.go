@@ -112,12 +112,7 @@ func handleClientConnection(conn net.Conn) {
 		})
 	}
 
-	go func() {
-		defer once.Do(cleanup)
-		for {
-
-		}
-	}()
+	// Handle RPC requests/responses
 	go func() {
 		defer once.Do(cleanup)
 		rpcHandlers := rpc.GetRPCHandlers()
@@ -168,6 +163,8 @@ func handleClientConnection(conn net.Conn) {
 			}
 		}
 	}()
+
+	// Handle events send/receive
 	events := core.EventBroker.Subscribe()
 	defer core.EventBroker.Unsubscribe(events)
 	go socketEventLoop(conn, events)
