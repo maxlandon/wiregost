@@ -13,6 +13,7 @@ The `server/` directory contains the Wiregost server implementation.
 * `gogo/`           - Go wrappers around the Go compiler toolchain
 * `handlers/`       - Methods invokable by agents without user interaction
 * `log/`            - Wrappers around Logrus logging
+* `module/`         - Agents' functionality is used through modules. Their functionning is defined here.
 * `msf/`            - Metasploit helper functions
 * `rpc/`            - RPC functions and logic, called by clients to control agents
 * `transport/`      - Contains server-side code for handling communication with clients
