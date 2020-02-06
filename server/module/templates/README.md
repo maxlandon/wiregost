@@ -1,16 +1,13 @@
-## Module
+## Templates
 
-The `module` package contains the implementation of modules in Wiregost, as well
-as templates for each module type. The goal is obviously to provide maximum reusability
-and modularity to Wiregost's components and agents.
+The `templates` directory contains a template bundled module for each type of module available in Wiregost
+The core structure of all modules is the same, however each module may only use a subset of this structure.
 
-Go in the `templates/` directory for further information on each bundled module type.
+The following are modules types in Wiregost:
 
-----
-## Package Structure
-
-* `module.go`       - Implementation of module interfaces, (defining their usage in Wiregost)
-* `templates/`      - Containing directory templates for each type of bundled module (exploit, post, auxiliary)
+* `exploit`         - Includes all exploits, as well as listeners generation module
+* `post`            - Includes all modules that can be run on a Ghost agent (privesc, recon, persistence, etc...)
+* `auxiliary`       - All modules that do not trigger any vulnerability (scanners, proxies, etc...)
 
 ----
 ## Bundled Module
@@ -29,6 +26,5 @@ a subset of the available bundle structure (ie payloads, scanners, listeners)
 ----
 ### Notes
 
-* The `module.go` file (in the templates directory, not the one in this precise directory) should always have this name, 
-  as Wiregost will look for it when loading/using the module.
+* The `module.go` file in each template directory should always have this name, as Wiregost will look for it when loading/using the module
 * This same file is a template, with core function signatures, that the user just needs to fill with module-specific logic.
