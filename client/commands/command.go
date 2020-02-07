@@ -22,6 +22,8 @@ import (
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
+var defaultTimeout = 30 * time.Second
+
 // RPCServer - Function used to send/recv envelopes
 type RPCServer func(*ghostpb.Envelope, time.Duration) chan *ghostpb.Envelope
 

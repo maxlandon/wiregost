@@ -15,19 +15,3 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package commands
-
-// RegisterCommands register all commands in Wiregost and maps them
-// to their respective contexts
-func RegisterCommands() {
-
-	// Core
-	RegisterCoreCommands()
-	RegisterHelpCommands()
-
-	// Data Service
-	RegisterWorkspaceCommands()
-	RegisterHostCommands()
-
-	// Stack
-	RegisterStackCommands()
-}
