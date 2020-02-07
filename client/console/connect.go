@@ -58,8 +58,11 @@ func (c *Console) connect() error {
 	}
 
 	// Bind connection to server object in console
-	wiregostServer := core.BindWiregostServer(send, recv)
-	go wiregostServer.ResponseMapper()
+	c.server = core.BindWiregostServer(send, recv)
+	go c.server.ResponseMapper()
+
+	// Actualize shell context with server
+	c.shellContext.Server = c.server
 
 	return nil
 }

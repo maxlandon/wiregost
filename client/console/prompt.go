@@ -53,7 +53,7 @@ func newPrompt(c *Console) Prompt {
 	prompt := Prompt{
 		// Prompt strings
 		base:      "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
-		module:    "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw}) =>{reset} post({mod})",
+		module:    "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw}) =>{reset} {type}({mod})",
 		agent:     "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw}) =>{reset} agent[{db}{agent}]",
 		compiler:  "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw}) =>{reset} [{bold}{y}Compiler{reset}]",
 		multiline: "{vim} > {ly}",
@@ -137,9 +137,25 @@ func newPrompt(c *Console) Prompt {
 			agents := strconv.Itoa(c.ghosts)
 			return agents
 		},
+		// Current Module type
+		"{type}": func() string {
+			switch strings.Split(c.currentModule, "/")[0] {
+			case "post":
+				return "post"
+			case "exploit":
+				return "exploit"
+			case "auxiliary":
+				return "auxiliary"
+			case "payload":
+				return "payload"
+			}
+			return ""
+		},
 		// CurrentModule
 		"{mod}": func() string {
-			return tui.Yellow(*prompt.currentModule) + tui.RESET
+			mod := strings.Join(strings.Split(*prompt.currentModule, "/")[1:], "/")
+			return tui.Red(tui.Bold(mod)) + tui.RESET
+			// return tui.Yellow(*prompt.currentModule) + tui.RESET
 		},
 		// Current agent
 		"{agent}": func() string {

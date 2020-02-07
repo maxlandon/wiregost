@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/maxlandon/wiregost/client/assets"
+	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/data_service/models"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
@@ -35,6 +36,7 @@ type ShellContext struct {
 	// Server state
 	CurrentServer  *assets.ClientConfig
 	ServerPublicIP *string
+	Server         *core.WiregostServer
 
 	// Jobs
 	Listeners *int

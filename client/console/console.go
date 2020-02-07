@@ -29,6 +29,7 @@ import (
 	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/completers"
+	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/data_service/models"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
@@ -47,9 +48,10 @@ type Console struct {
 	currentModule    string
 	currentWorkspace *models.Workspace
 
-	// Server state
+	// Server
 	currentServer  *assets.ClientConfig
 	serverPublicIP string
+	server         *core.WiregostServer
 
 	// Jobs
 	listeners int
@@ -105,6 +107,8 @@ func Start() {
 
 	// Connect to server
 	c.connect()
+
+	go c.eventLoop(c.server)
 
 	// Eventually close
 	defer c.Shell.Close()

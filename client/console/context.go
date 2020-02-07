@@ -52,6 +52,7 @@ func (c *Console) initContext() {
 		// Server state
 		CurrentServer:  c.currentServer,
 		ServerPublicIP: &c.serverPublicIP,
+		Server:         c.server,
 
 		// Jobs
 		Listeners: &c.listeners,
