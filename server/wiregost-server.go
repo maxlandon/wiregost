@@ -27,6 +27,7 @@ import (
 	"github.com/maxlandon/wiregost/client/version"
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/certs"
+	"github.com/maxlandon/wiregost/server/module"
 	"github.com/maxlandon/wiregost/server/transport"
 	"github.com/maxlandon/wiregost/server/users"
 )
@@ -56,6 +57,10 @@ func main() {
 	if err != nil {
 		log.Println(err.Error())
 	}
+
+	// Initialize Module Stacks
+	module.LoadModules()
+	module.InitStacks()
 
 	// Start client listener
 	listener, err := transport.StartClientListener("localhost", 1708)
