@@ -28,20 +28,20 @@ import (
 )
 
 // metadataFile - Full path to module metadata
-var metadataFile = filepath.Join(assets.GetModulesDir(), "exploit/path/to/metadata.json")
+var metadataFile = filepath.Join(assets.GetModulesDir(), "payload/path/to/metadata.json")
 
 // Change the ModuleTypeName to the same name as your Module name above
-type ExploitModule struct {
+type PayloadModule struct {
 	templates.Module
 }
 
 // Instantiates a base module - Do not modify
-func New() *ExploitModule {
-	return &ExploitModule{templates.Module{}}
+func New() *PayloadModule {
+	return &PayloadModule{templates.Module{}}
 }
 
 // Init - Module initialization, loads metadata. ** DO NOT ERASE **
-func (s *ExploitModule) Init() error {
+func (s *PayloadModule) Init() error {
 	file, err := os.Open(metadataFile)
 	if err != nil {
 		return err
@@ -61,7 +61,7 @@ func (s *ExploitModule) Init() error {
 }
 
 // Run - Module entrypoint. ** DO NOT ERASE **
-func (s *ExploitModule) Run() error {
+func (s *PayloadModule) Run() error {
 
 	return nil
 }

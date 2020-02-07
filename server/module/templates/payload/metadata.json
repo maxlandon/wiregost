@@ -1,8 +1,8 @@
 {
         "base": {
                 "name": "",
-                "type": "exploit",
-                "path": ["exploit", "path", "to", "module"],
+                "type": "payload",
+                "path": ["payload", "path", "to", "module"],
 
                 "author": ["Author1", "Author2"],
                 "credits": ["Author1", "Author2"],

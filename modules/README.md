@@ -1,6 +1,6 @@
 ## Modules 
 
-The `modules` contains all modules available in Wiregost 
+The `modules` directory contains all modules available in Wiregost 
 
 The following are available modules types:
 
