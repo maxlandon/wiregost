@@ -72,6 +72,12 @@ func GetRootAppDir() string {
 	return dir
 }
 
+// GetModulesDir - Returns the full path to the modules directory
+func GetModulesDir() string {
+	dir := path.Join(GetRootAppDir(), "modules")
+	return dir
+}
+
 // GetDataDir - Returns the full path to the data directory
 func GetDataDir() string {
 	dir := path.Join(GetRootAppDir(), dataDirName)

@@ -20,6 +20,7 @@ import (
 	"sync"
 
 	pb "github.com/maxlandon/wiregost/protobuf/client"
+	"github.com/maxlandon/wiregost/server/module"
 )
 
 var (
@@ -29,6 +30,8 @@ var (
 	}
 
 	jobID = new(int)
+
+	test = module.Modules
 )
 
 // Job - Is a background Job object
