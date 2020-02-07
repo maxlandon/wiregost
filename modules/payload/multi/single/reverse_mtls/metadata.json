@@ -1,0 +1,27 @@
+{
+        "base": {
+                "type": "payload",
+                "name": "",
+                "path": ["payload", "reverse_mtls"],
+
+                "author": ["BishopFox"],
+                "credits": ["BishopFox"],
+
+                "description": "A reverse MTLS implant",
+                "notes": "",
+                "references": [],
+
+                "plaftorm": "multi",
+                "targets": ["multi"],
+                "arch": "multi",
+                "lang": "Go",
+                "privileged": false,
+
+                "options": {
+                        "option1_name": {"name": "option_name", "value": "option_value", "required": false, "description": "Option description"},
+                        "option2_name": {"name": "option_name", "value": "option_value", "required": false, "description": "Option description"},
+                        "option3_name": {"name": "option_name", "value": "option_value", "required": false, "description": "Option description"},
+                        "option4_name": {"name": "option_name", "value": "option_value", "required": false, "description": "Option description"}
+                }
+        }
+}
