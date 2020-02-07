@@ -40,10 +40,22 @@ const (
 
 	// MODULES ----------------------------------------------------------------//
 
-	// MsgModuleReq loads a module (server-side) so client can use it
+	// MsgStackReq loads a module (server-side) so client can use it
+	MsgStackUse
+	// MsgStackPop pops one or all modules from a stack
+	MsgStackPop
+	// MsgStackList request a list of modules loaded onto a stack
+	MsgStackList
+
+	// MsgModuleReq - Performs an action on a module
 	MsgModuleReq
-	// MsgModule sends back necessary module information to the client
+	// MsgModule - Success/failure of MsgModuleReq
 	MsgModule
+
+	// MsgOptionReq - Set a module option
+	MsgOptionReq
+	// MsgOption - Success/failure of option request
+	MsgOption
 
 	// NON-LISTENER JOBS ------------------------------------------------------//
 
