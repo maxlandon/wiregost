@@ -18,11 +18,9 @@
 package main
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 
+	pb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/module/templates"
 )
@@ -30,38 +28,37 @@ import (
 // metadataFile - Full path to module metadata
 var metadataFile = filepath.Join(assets.GetModulesDir(), "post/path/to/metadata.json")
 
-// Change the ModuleTypeName to the same name as your Module name above
-type PostModule struct {
-	templates.Module
+// [ Base Methods ] ------------------------------------------------------------------------//
+
+// Post - A single stage MTLS implant
+type Post struct {
+	Base *templates.Module
 }
 
-// Instantiates a base module - Do not modify
-func New() *PostModule {
-	return &PostModule{templates.Module{}}
+// New - Instantiates a reverse MTLS module, empty.
+func New() *Post {
+	return &Post{Base: &templates.Module{}}
 }
 
 // Init - Module initialization, loads metadata. ** DO NOT ERASE **
-func (s *PostModule) Init() error {
-	file, err := os.Open(metadataFile)
-	if err != nil {
-		return err
-	}
-
-	metadata, err := ioutil.ReadAll(file)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(metadata, s)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (s *Post) Init() error {
+	return s.Base.Init(metadataFile)
 }
 
-// Run - Module entrypoint. ** DO NOT ERASE **
-func (s *PostModule) Run() error {
+// ToProtobuf - Returns protobuf version of module
+func (s *Post) ToProtobuf() *pb.Module {
+	return s.Base.ToProtobuf()
+}
 
-	return nil
+// SetOption - Sets a module option through its base object.
+func (s *Post) SetOption(option, name string) {
+	s.Base.SetOption(option, name)
+}
+
+// [ Module Methods ] ------------------------------------------------------------------------//
+
+// Run - Module entrypoint. ** DO NOT ERASE **
+func (s *Post) Run(command string) (result string, err error) {
+
+	return "ReverseMTLS listener started", nil
 }

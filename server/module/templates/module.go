@@ -17,6 +17,11 @@
 package templates
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
+
 	pb "github.com/maxlandon/wiregost/protobuf/client"
 )
 
@@ -36,7 +41,7 @@ type Module struct {
 	Lang        string   `json:"lang"`        // Programming language in which the module is written
 	Priviledged bool     `json:"priviledged"` // Does the module requires administrator privileges
 
-	Options map[string]Option
+	Options map[string]*Option
 }
 
 // Option - Module option
@@ -81,4 +86,62 @@ func (o *Option) ToProtobuf() *pb.Option {
 		Required:    o.Required,
 		Description: o.Description,
 	}
+}
+
+// Init - Module initialization, loads metadata.
+func (m *Module) Init(metadataFile string) error {
+
+	file, err := os.Open(metadataFile)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	metadata, err := ioutil.ReadAll(file)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	err = json.Unmarshal(metadata, m)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	fmt.Println(m)
+
+	return nil
+}
+
+// ToProtobuf - Returns the protobuf version of a module
+func (m *Module) ParseProto(pbmod *pb.Module) {
+	m.Name = pbmod.Name
+	m.Type = pbmod.Type
+	m.Path = pbmod.Path
+	m.Description = pbmod.Description
+	m.Notes = pbmod.Notes
+	m.References = pbmod.References
+	m.Author = pbmod.Author
+	m.Credits = pbmod.Credits
+	m.Platform = pbmod.Platform
+	m.Targets = pbmod.Targets
+	m.Arch = pbmod.Arch
+	m.Lang = pbmod.Lang
+	m.Priviledged = pbmod.Priviledged
+	m.Options = map[string]*Option{}
+
+	for name, opt := range pbmod.Options {
+		option := Option{}
+		option.Name = opt.Name
+		option.Value = opt.Value
+		option.Required = opt.Required
+		option.Description = opt.Description
+		m.Options[name] = &option
+	}
+}
+
+func (m *Module) SetOption(option, value string) {
+	opt := m.Options[option]
+	opt.Value = value
 }

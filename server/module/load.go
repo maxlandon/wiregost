@@ -31,7 +31,8 @@ import (
 func LoadModules() {
 
 	// Payload -------------------------------------------------------------//
-	(*Modules.Loaded)["payload/multi/single/reverse_mtls"] = reverse_mtls.New()
+	testmod := reverse_mtls.New()
+	(*Modules.Loaded)["payload/multi/single/reverse_mtls"] = testmod
 
 	// Exploit -------------------------------------------------------------//
 

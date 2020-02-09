@@ -37,9 +37,11 @@ type modules struct {
 }
 
 // Module - Represents a module, providing access to its methods
+// All Wiregost modules must implement this interface
 type Module interface {
 	Init() error
-	Run(string) error
+	Run(string) (string, error)
+	SetOption(string, string)
 	ToProtobuf() *pb.Module
 }
 
