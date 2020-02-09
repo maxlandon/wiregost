@@ -110,8 +110,9 @@ message ModuleActionReq {
 
 message ModuleAction {
         bool Sucess = 1;
-        string Err = 2;
-        int32 JobID = 3;
+        string Result = 2;
+        string Err = 3;
+        int32 JobID = 4;
 }
 
 // Module Option requests & responses
