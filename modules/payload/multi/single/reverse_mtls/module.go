@@ -18,11 +18,9 @@
 package reverse_mtls
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 
+	pb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/module/templates"
 )
@@ -30,39 +28,37 @@ import (
 // metadataFile - Full path to module metadata
 var metadataFile = filepath.Join(assets.GetModulesDir(), "payload/multi/single/reverse_mtls/metadata.json")
 
+// [ Base Methods ] ------------------------------------------------------------------------//
+
 // ReverseMTLS - A single stage MTLS implant
 type ReverseMTLS struct {
-	templates.Module
+	Base *templates.Module
 }
 
 // New - Instantiates a reverse MTLS module, empty.
 func New() *ReverseMTLS {
-	return &ReverseMTLS{templates.Module{}}
+	return &ReverseMTLS{Base: &templates.Module{}}
 }
 
 // Init - Module initialization, loads metadata. ** DO NOT ERASE **
 func (s *ReverseMTLS) Init() error {
-
-	file, err := os.Open(metadataFile)
-	if err != nil {
-		return err
-	}
-
-	metadata, err := ioutil.ReadAll(file)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(metadata, s)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return s.Base.Init(metadataFile)
 }
 
-// Run - Module entrypoint. ** DO NOT ERASE **
-func (s *ReverseMTLS) Run(command string) error {
+// ToProtobuf - Returns protobuf version of module
+func (s *ReverseMTLS) ToProtobuf() *pb.Module {
+	return s.Base.ToProtobuf()
+}
 
-	return nil
+// SetOption - Sets a module option through its base object.
+func (s *ReverseMTLS) SetOption(option, name string) {
+	s.Base.SetOption(option, name)
+}
+
+// [ Module Methods ] ------------------------------------------------------------------------//
+
+// Run - Module entrypoint. ** DO NOT ERASE **
+func (s *ReverseMTLS) Run(command string) (result string, err error) {
+
+	return "ReverseMTLS listener started", nil
 }

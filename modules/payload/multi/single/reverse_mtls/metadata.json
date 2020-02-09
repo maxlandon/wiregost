@@ -1,27 +1,35 @@
 {
-        "base": {
-                "type": "payload",
-                "name": "",
-                "path": ["payload", "reverse_mtls"],
+        "type": "payload",
+        "name": "Reverse MTLS implant",
+        "path": ["payload", "multi","single", "reverse_mtls"],
 
-                "author": ["BishopFox"],
-                "credits": ["BishopFox"],
+        "author": ["BishopFox"],
+        "credits": ["BishopFox"],
 
-                "description": "A reverse MTLS implant",
-                "notes": "",
-                "references": [],
+        "description": "A reverse Mutal TLS implant/listener generation stub",
+        "notes": "",
+        "references": [],
 
-                "plaftorm": "multi",
-                "targets": ["multi"],
-                "arch": "multi",
-                "lang": "Go",
-                "privileged": false,
+        "plaftorm": "multi",
+        "targets": ["multi"],
+        "arch": "multi",
+        "lang": "Go",
+        "privileged": false,
 
-                "options": {
-                        "option1_name": {"name": "option_name", "value": "option_value", "required": false, "description": "Option description"},
-                        "option2_name": {"name": "option_name", "value": "option_value", "required": false, "description": "Option description"},
-                        "option3_name": {"name": "option_name", "value": "option_value", "required": false, "description": "Option description"},
-                        "option4_name": {"name": "option_name", "value": "option_value", "required": false, "description": "Option description"}
-                }
+        "options": {
+                "LHost": {"name": "LHost", "value": "192.168.1.1", "required": true, "description": "Host address to call back"},
+                "LPort": {"name": "LPort", "value": "8443", "required": true, "description": "Host port to call back"},
+                "Arch": {"name": "Arch", "value": "x64", "required": false, "description": "CPU architecture of target"},
+                "OS": {"name": "OS", "value": "windows", "required": false, "description": "Target's operating system"},
+                "Format": {"name": "Format", "value": "exe", "required": false, "description": "File format extension of the implant"},
+                "MaxErrors": {"name": "MaxErrors", "value": "1000", "required": false, "description": "Max number of connection errors"},
+                "Save": {"name": "Save", "value": ".", "required": false, "description": "Directory to save the implant"},
+                "SkipSymbols": {"name": "SkipSymbols", "value": "false", "required": false, "description": "Set to to true to skip symbol obfuscation"},
+                "Canaries": {"name": "Canaries", "value": "", "required": false, "description": "Canary DNS domains"},
+                "Debug": {"name": "Debug", "value": "false", "required": false, "description": "Enable debug features"},
+                "LimitHostname": {"name": "LimitHostname", "value": "", "required": false, "description": "Limit execution to specified hostname"},
+                "LimitUsername": {"name": "LimitUsername", "value": "", "required": false, "description": "Limit execution to specified username"},
+                "LimitDatetime": {"name": "LimitDatetime", "value": "", "required": false, "description": "Limit execution to before datetime"},
+                "LimitDomainJoined": {"name": "LimitDomainJoined", "value": "false", "required": false, "description": "Limit execution to domain joined machines"}
         }
 }
