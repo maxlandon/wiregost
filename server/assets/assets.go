@@ -41,6 +41,7 @@ const (
 	versionFileName = "version"
 	dataDirName     = "data"
 	envVarName      = "SLIVER_ROOT_DIR"
+	moduleDirPath   = "modules"
 )
 
 var (
@@ -74,7 +75,8 @@ func GetRootAppDir() string {
 
 // GetModulesDir - Returns the full path to the modules directory
 func GetModulesDir() string {
-	dir := path.Join(GetRootAppDir(), "modules")
+	cwd, _ := os.Getwd()
+	dir := path.Join(cwd, "modules")
 	return dir
 }
 

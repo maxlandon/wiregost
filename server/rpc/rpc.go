@@ -41,10 +41,14 @@ type TunnelHandler func(*core.Client, []byte, RPCResponse)
 var (
 	rpcHandlers = &map[uint32]RPCHandler{
 
-		// Modules
+		// Stack
 		clientpb.MsgStackUse:  rpcStackUse,
 		clientpb.MsgStackPop:  rpcStackPop,
 		clientpb.MsgStackList: rpcStackList,
+
+		// Module
+		clientpb.MsgOptionReq: rpcModuleSetOption,
+		clientpb.MsgModuleReq: rpcModuleRun,
 	}
 
 	tunnelHandlers = &map[uint32]TunnelHandler{

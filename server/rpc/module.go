@@ -26,64 +26,52 @@ import (
 	"github.com/maxlandon/wiregost/server/module"
 )
 
-func rpcStackUse(data []byte, timeout time.Duration, resp RPCResponse) {
-	stackReq := &clientpb.StackReq{}
-	err := proto.Unmarshal(data, stackReq)
+func rpcModuleSetOption(data []byte, timeout time.Duration, resp RPCResponse) {
+	optionReq := &clientpb.SetOptionReq{}
+	err := proto.Unmarshal(data, optionReq)
 	if err != nil {
 		resp(data, err)
 	}
 
 	// Find module
-	path := strings.Join(stackReq.Path, "/")
-
-	// Load it on the workspace stack
-	wsID := uint(stackReq.WorkspaceID)
+	path := strings.Join(optionReq.Path, "/")
+	wsID := uint(optionReq.WorkspaceID)
 	stack := (*module.Stacks)[wsID]
-	err = stack.LoadModule(path)
-
-	// If errors, send status
-	if err != nil {
-		stackErr := &clientpb.Stack{
-			Path: stackReq.Path,
-			Err:  err.Error(),
-		}
-
-		data, err = proto.Marshal(stackErr)
-		resp(data, err)
-		return
-	}
-
-	// If no errors, send module
 	mod := (*stack.Loaded)[path]
-	module := []*clientpb.Module{mod.ToProtobuf()}
-	stackUse := &clientpb.Stack{
-		Path:    stackReq.Path,
-		Modules: module,
+	mod.SetOption(optionReq.Name, optionReq.Value)
+
+	option := &clientpb.SetOption{
+		Success: true,
 		Err:     "",
 	}
-
-	data, err = proto.Marshal(stackUse)
+	data, err = proto.Marshal(option)
 	resp(data, err)
 }
 
-func rpcStackPop(data []byte, timeout time.Duration, resp RPCResponse) {
-	stackReq := &clientpb.StackReq{}
-	err := proto.Unmarshal(data, stackReq)
+func rpcModuleRun(data []byte, timeout time.Duration, resp RPCResponse) {
+	modReq := &clientpb.ModuleActionReq{}
+	err := proto.Unmarshal(data, modReq)
 	if err != nil {
 		resp(data, err)
 	}
 
-	// data, err := proto.Marshal()
-	resp(data, err)
-}
+	// Find module
+	path := strings.Join(modReq.Path, "/")
+	wsID := uint(modReq.WorkspaceID)
+	stack := (*module.Stacks)[wsID]
+	mod := (*stack.Loaded)[path]
 
-func rpcStackList(data []byte, timeout time.Duration, resp RPCResponse) {
-	stackReq := &clientpb.StackReq{}
-	err := proto.Unmarshal(data, stackReq)
+	res, err := mod.Run(modReq.Action)
+
+	modRun := &clientpb.ModuleAction{}
 	if err != nil {
-		resp(data, err)
+		modRun.Sucess = false
+		modRun.Err = err.Error()
+	} else {
+		modRun.Sucess = true
+		modRun.Result = res
 	}
 
-	// data, err := proto.Marshal()
+	data, err = proto.Marshal(modRun)
 	resp(data, err)
 }
