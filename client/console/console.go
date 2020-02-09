@@ -89,7 +89,7 @@ func NewConsole() *Console {
 	// Setup Autocompleter
 	completer := &completers.AutoCompleter{
 		MenuContext: &console.menuContext,
-		Context:     &console.context,
+		Context:     console.shellContext,
 	}
 	console.Shell.Config.AutoComplete = completer
 

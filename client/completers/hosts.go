@@ -32,7 +32,7 @@ type HostCompleter struct {
 }
 
 // Do is the completion function triggered at each line
-func (hc *HostCompleter) Do(ctx *context.Context, line []rune, pos int) (options [][]rune, offset int) {
+func (hc *HostCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 
 	// Complete command args
 	splitLine := strings.Split(string(line), " ")
@@ -40,13 +40,13 @@ func (hc *HostCompleter) Do(ctx *context.Context, line []rune, pos int) (options
 
 	switch splitLine[0] {
 	case "delete":
-		return hc.yieldHostValues(ctx, line, pos)
+		return hc.yieldHostValues(&ctx.Context, line, pos)
 	case "add":
-		return hc.yieldHostValues(ctx, line, pos)
+		return hc.yieldHostValues(&ctx.Context, line, pos)
 	case "update":
-		return hc.yieldHostValues(ctx, line, pos)
+		return hc.yieldHostValues(&ctx.Context, line, pos)
 	case "search":
-		return hc.yieldHostValues(ctx, line, pos)
+		return hc.yieldHostValues(&ctx.Context, line, pos)
 	}
 
 	return options, offset

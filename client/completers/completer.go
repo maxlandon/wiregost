@@ -17,7 +17,6 @@
 package completers
 
 import (
-	"context"
 	"sort"
 	"unicode"
 
@@ -27,7 +26,7 @@ import (
 // AutoCompleter is the autocompletion engine, which uses the shell context
 type AutoCompleter struct {
 	MenuContext *string
-	Context     *context.Context
+	Context     *commands.ShellContext
 }
 
 // Do is the completion function triggered at each line
@@ -61,6 +60,12 @@ func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int)
 	if len(verbFound) == 0 {
 		return
 	}
+	switch verbFound {
+	case "set":
+		options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
+	case "use":
+		options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
+	}
 
 	// Autocomplete subcommands
 	var subFound string
@@ -77,7 +82,7 @@ func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int)
 		}
 	}
 
-	if len(subFound) == 0 {
+	if (len(subFound) == 0) && verbFound != "set" {
 		return
 	}
 
@@ -98,7 +103,7 @@ func buildCommandMap(ctx string) (commandMap map[string]*commands.Command) {
 }
 
 // yieldCommandCompletions determines the type of command used and redirects to its completer
-func yieldCommandCompletions(ctx *context.Context, cmd *commands.Command, line []rune, pos int) (options [][]rune, offset int) {
+func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, line []rune, pos int) (options [][]rune, offset int) {
 
 	switch cmd.Name {
 	case "workspace":
@@ -106,6 +111,12 @@ func yieldCommandCompletions(ctx *context.Context, cmd *commands.Command, line [
 		options, offset = comp.Do(ctx, line, pos)
 	case "hosts":
 		comp := &HostCompleter{Command: cmd}
+		options, offset = comp.Do(ctx, line, pos)
+	case "set":
+		comp := &OptionCompleter{Command: cmd}
+		options, offset = comp.Do(ctx, line, pos)
+	case "use":
+		comp := &ModuleCompleter{Command: cmd}
 		options, offset = comp.Do(ctx, line, pos)
 	}
 

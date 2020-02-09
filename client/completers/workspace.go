@@ -17,7 +17,6 @@
 package completers
 
 import (
-	"context"
 	"strings"
 
 	"github.com/maxlandon/wiregost/client/commands"
@@ -30,7 +29,7 @@ type WorkspaceCompleter struct {
 }
 
 // Do is the completion function triggered at each line
-func (wc *WorkspaceCompleter) Do(ctx *context.Context, line []rune, pos int) (options [][]rune, offset int) {
+func (wc *WorkspaceCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 
 	// Complete command args
 	splitLine := strings.Split(string(line), " ")
