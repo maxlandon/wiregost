@@ -50,10 +50,9 @@ func RegisterStackCommands() {
 						fmt.Println()
 						fmt.Printf("%s[!]%s Provide a module path name",
 							tui.RED, tui.RESET)
-					} else {
 						fmt.Println()
-						stackUse(r.context.CurrentWorkspace.ID, r.Args[1],
-							r.context.CurrentModule, r.context.Server.RPC)
+					} else {
+						stackUse(*r.context, r.Args[1], r.context.Server.RPC)
 					}
 				case "pop":
 					if len(r.Args) == 1 {
@@ -87,11 +86,11 @@ func RegisterStackCommands() {
 	AddCommand("ghost", stack)
 }
 
-func stackUse(workspaceID uint, module string, current *string, rpc RPCServer) {
+func stackUse(ctx ShellContext, module string, rpc RPCServer) {
 	mod, _ := proto.Marshal(&clientpb.StackReq{
 		Path:        strings.Split(module, "/"),
 		Action:      "use",
-		WorkspaceID: uint32(workspaceID),
+		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
 	})
 
 	resp := <-rpc(&ghostpb.Envelope{
@@ -106,7 +105,16 @@ func stackUse(workspaceID uint, module string, current *string, rpc RPCServer) {
 
 	stack := &clientpb.Stack{}
 	proto.Unmarshal(resp.Data, stack)
-	*current = strings.Join(stack.Path, "/")
+	if stack.Err != "" {
+		fmt.Println()
+		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, stack.Err)
+		fmt.Println()
+		return
+	}
+
+	currentMod := stack.Modules[0]
+	*ctx.CurrentModule = strings.Join(currentMod.Path, "/")
+	ctx.Module.ParseProto(currentMod)
 }
 
 func stackList(workspaceID uint) {

@@ -30,4 +30,7 @@ func RegisterCommands() {
 
 	// Stack
 	RegisterStackCommands()
+
+	// Module
+	RegisterModuleCommands()
 }

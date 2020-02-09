@@ -23,6 +23,7 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/data_service/remote"
+	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
 func (c *Console) initContext() {
@@ -41,12 +42,17 @@ func (c *Console) initContext() {
 	rootCtx := context.Background()
 	c.context = context.WithValue(rootCtx, "workspace_id", c.currentWorkspace.ID)
 
+	// Set current module to nil
+	c.currentModule = ""
+	c.module = &templates.Module{}
+
 	// Set ShellContext struct, passed to all commands
 	c.shellContext = &commands.ShellContext{
 		// Context
 		Context:          c.context,
 		MenuContext:      &c.menuContext,
 		CurrentModule:    &c.currentModule,
+		Module:           c.module,
 		CurrentWorkspace: c.currentWorkspace,
 
 		// Server state

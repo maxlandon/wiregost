@@ -32,6 +32,7 @@ import (
 	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/data_service/models"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
+	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
 var home, _ = os.UserHomeDir()
@@ -43,9 +44,11 @@ type Console struct {
 	vimMode string
 
 	// Context
-	context          context.Context
-	menuContext      string
+	context     context.Context
+	menuContext string
+
 	currentModule    string
+	module           *templates.Module
 	currentWorkspace *models.Workspace
 
 	// Server
@@ -157,6 +160,7 @@ func Start() {
 		if err = ExecCmd(args, c.menuContext, c.shellContext); err != nil {
 			fmt.Println(err)
 		}
+
 	}
 }
 
@@ -164,7 +168,18 @@ func Start() {
 
 func (c *Console) refresh() {
 	refreshPrompt(c.prompt, c.Shell)
+	c.refreshContext()
 	c.Shell.Refresh()
+}
+
+func (c *Console) refreshContext() {
+	// Menu context
+	if c.currentModule != "" {
+		c.menuContext = "module"
+	} else {
+		c.menuContext = "main"
+	}
+
 }
 
 func (c *Console) filterInput(r rune) (rune, bool) {
