@@ -139,6 +139,7 @@ func printJobs(jobs map[int32]*clientpb.Job) {
 
 	table := util.Table()
 	table.SetHeader([]string{"ID", "Name", "Protocol", "Port", "Description"})
+	table.SetColWidth(80)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
