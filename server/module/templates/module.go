@@ -91,6 +91,8 @@ func (o *Option) ToProtobuf() *pb.Option {
 // Init - Module initialization, loads metadata.
 func (m *Module) Init(metadataFile string) error {
 
+	m.Options = make(map[string]*Option)
+
 	file, err := os.Open(metadataFile)
 	if err != nil {
 		fmt.Println(err)
@@ -103,13 +105,11 @@ func (m *Module) Init(metadataFile string) error {
 		return err
 	}
 
-	err = json.Unmarshal(metadata, m)
+	err = json.Unmarshal(metadata, &m)
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-
-	fmt.Println(m)
 
 	return nil
 }
