@@ -18,10 +18,16 @@
 package reverse_mtls
 
 import (
+	"fmt"
 	"path/filepath"
+	"strconv"
 
+	consts "github.com/maxlandon/wiregost/client/constants"
 	pb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/assets"
+	c2 "github.com/maxlandon/wiregost/server/c2"
+	"github.com/maxlandon/wiregost/server/core"
+	"github.com/maxlandon/wiregost/server/log"
 	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
@@ -57,8 +63,50 @@ func (s *ReverseMTLS) SetOption(option, name string) {
 
 // [ Module Methods ] ------------------------------------------------------------------------//
 
+var rpcLog = log.ServerLogger("rpc", "server")
+
 // Run - Module entrypoint. ** DO NOT ERASE **
 func (s *ReverseMTLS) Run(command string) (result string, err error) {
+
+	switch command {
+
+	case "to_listener":
+
+		host := s.Base.Options["LHost"].Value
+		portUint, _ := strconv.Atoi(s.Base.Options["LPort"].Value)
+		port := uint16(portUint)
+
+		ln, err := c2.StartMutualTLSListener(host, port)
+		if err != nil {
+			return "", err
+		}
+
+		job := &core.Job{
+			ID:          core.GetJobID(),
+			Name:        "mTLS",
+			Description: "Mutual TLS listener",
+			Protocol:    "tcp",
+			Port:        port,
+			JobCtrl:     make(chan bool),
+		}
+
+		go func() {
+			<-job.JobCtrl
+			rpcLog.Infof("Stopping mTLS listener (%d) ...", job.ID)
+			ln.Close() // Kills listener GoRoutines in startMutualTLSListener() but NOT connections
+
+			core.Jobs.RemoveJob(job)
+
+			core.EventBroker.Publish(core.Event{
+				Job:       job,
+				EventType: consts.StoppedEvent,
+			})
+		}()
+
+		core.Jobs.AddJob(job)
+
+		return fmt.Sprintf("ReverseMTLS listener started at %s:%d", host, port), nil
+	}
 
 	return "ReverseMTLS listener started", nil
 }

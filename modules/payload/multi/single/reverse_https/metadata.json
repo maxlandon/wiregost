@@ -1,0 +1,40 @@
+{
+        "type": "payload",
+        "name": "Reverse HTTPS implant",
+        "path": ["payload", "multi","single", "reverse_https"],
+
+        "author": ["BishopFox"],
+        "credits": ["BishopFox"],
+
+        "description": "A reverse HTTPS implant/listener generation stub",
+        "notes": "",
+        "references": [],
+
+        "plaftorm": "multi",
+        "targets": ["multi"],
+        "arch": "multi",
+        "lang": "Go",
+        "privileged": false,
+
+        "options": {
+                "LHost": {"name": "LHost", "value": "192.168.1.1", "required": true, "description": "Host address to call back"},
+                "LPort": {"name": "LPort", "value": "8443", "required": true, "description": "Host port to call back"},
+                "Domain": {"name": "Domain", "value": "", "required": false, "description": "Limit responses to a specific domain"},
+                "LetsEncrypt": {"name": "LetsEncrypt", "value": "false", "required": true, "description": "Attempt to provision a Let's Encrypt certificate"},
+                "Website": {"name": "Website", "value": "", "required": false, "description": "Website name (placed in front of listener, takes care of snoopers)"},
+                "Certificate": {"name": "Certificate", "value": "", "required": false, "description": "PEM encoded certificate file"},
+                "Key": {"name": "Key", "value": "", "required": false, "description": "PEM encoded private key file"},
+                "Arch": {"name": "Arch", "value": "x64", "required": false, "description": "CPU architecture of target"},
+                "OS": {"name": "OS", "value": "windows", "required": false, "description": "Target's operating system"},
+                "Format": {"name": "Format", "value": "exe", "required": false, "description": "File format extension of the implant"},
+                "MaxErrors": {"name": "MaxErrors", "value": "1000", "required": false, "description": "Max number of connection errors"},
+                "Save": {"name": "Save", "value": ".", "required": false, "description": "Directory to save the implant"},
+                "SkipSymbols": {"name": "SkipSymbols", "value": "false", "required": false, "description": "Set to to true to skip symbol obfuscation"},
+                "Canaries": {"name": "Canaries", "value": "", "required": false, "description": "Canary DNS domains"},
+                "Debug": {"name": "Debug", "value": "false", "required": false, "description": "Enable debug features"},
+                "LimitHostname": {"name": "LimitHostname", "value": "", "required": false, "description": "Limit execution to specified hostname"},
+                "LimitUsername": {"name": "LimitUsername", "value": "", "required": false, "description": "Limit execution to specified username"},
+                "LimitDatetime": {"name": "LimitDatetime", "value": "", "required": false, "description": "Limit execution to before datetime"},
+                "LimitDomainJoined": {"name": "LimitDomainJoined", "value": "false", "required": false, "description": "Limit execution to domain joined machines"}
+        }
+}
