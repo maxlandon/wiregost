@@ -17,6 +17,7 @@
 package console
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/evilsocket/islazy/tui"
@@ -46,7 +47,7 @@ func (c *Console) connect() error {
 	send, recv, err := transport.MTLSConnect(config)
 	if err != nil {
 		fmt.Printf("%s[!] Connection to server failed: %v", tui.RED, err)
-		return nil
+		return errors.New("Connection to server failed")
 	} else {
 		fmt.Printf("%s[*]%s Connected to Wiregost server at %s:%d, as user %s%s%s",
 			tui.GREEN, tui.RESET, config.LHost, config.LPort, tui.YELLOW, config.User, tui.RESET)

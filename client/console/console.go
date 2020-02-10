@@ -109,9 +109,12 @@ func Start() {
 	c := NewConsole()
 
 	// Connect to server
-	c.connect()
-
-	go c.eventLoop(c.server)
+	err := c.connect()
+	if err != nil {
+		fmt.Println()
+	} else {
+		go c.eventLoop(c.server)
+	}
 
 	// Eventually close
 	defer c.Shell.Close()
