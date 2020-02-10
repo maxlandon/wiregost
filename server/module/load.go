@@ -24,6 +24,7 @@ package module
 // The import path to the module has to be added to the imports as well.
 
 import (
+	"github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_https"
 	"github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_mtls"
 )
 
@@ -31,8 +32,8 @@ import (
 func LoadModules() {
 
 	// Payload -------------------------------------------------------------//
-	testmod := reverse_mtls.New()
-	(*Modules.Loaded)["payload/multi/single/reverse_mtls"] = testmod
+	(*Modules.Loaded)["payload/multi/single/reverse_mtls"] = reverse_mtls.New()
+	(*Modules.Loaded)["payload/multi/single/reverse_https"] = reverse_https.New()
 
 	// Exploit -------------------------------------------------------------//
 
