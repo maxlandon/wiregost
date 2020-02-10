@@ -38,7 +38,7 @@ message Register {
         string Gid = 5;
         string Os = 6;
         string Arch = 7;
-        string Pid = 8;
+        int32 Pid = 8;
         string Filename = 9;
         string ActiveC2 = 10;
         string Version = 11;

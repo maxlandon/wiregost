@@ -49,6 +49,10 @@ var (
 		// Module
 		clientpb.MsgOptionReq: rpcModuleSetOption,
 		clientpb.MsgModuleReq: rpcModuleRun,
+
+		// Jobs
+		clientpb.MsgJobs:    rpcJobs,
+		clientpb.MsgJobKill: rpcJobKill,
 	}
 
 	tunnelHandlers = &map[uint32]TunnelHandler{

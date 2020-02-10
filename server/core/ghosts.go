@@ -156,6 +156,13 @@ func (gw *GhostWire) AddGhost(ghost *Ghost) {
 	(*gw.Ghosts)[ghost.ID] = ghost
 }
 
+// RemoveSliver - Add a sliver to the hive (atomically)
+func (gw *GhostWire) RemoveGhost(ghost *Ghost) {
+	gw.mutex.Lock()
+	defer gw.mutex.Unlock()
+	delete((*gw.Ghosts), ghost.ID)
+}
+
 // GetGhostWireID - Returns an incremental nonce as an ID
 func GetGhostWireID() uint32 {
 	newID := (*wireID) + 1
