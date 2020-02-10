@@ -33,4 +33,7 @@ func RegisterCommands() {
 
 	// Module
 	RegisterModuleCommands()
+
+	// Jobs
+	RegisterJobCommands()
 }

@@ -170,8 +170,8 @@ func Start() {
 // [ Generic console functions ] ---------------------------------------------------------------//
 
 func (c *Console) refresh() {
-	refreshPrompt(c.prompt, c.Shell)
 	c.refreshContext()
+	refreshPrompt(c.prompt, c.Shell)
 	c.Shell.Refresh()
 }
 
@@ -183,6 +183,9 @@ func (c *Console) refreshContext() {
 		c.menuContext = "main"
 	}
 
+	// Jobs
+	jobs := commands.GetJobs(c.shellContext.Server.RPC)
+	c.listeners = len(jobs.Active)
 }
 
 func (c *Console) filterInput(r rune) (rune, bool) {

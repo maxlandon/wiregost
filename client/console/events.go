@@ -52,7 +52,7 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 
 		case consts.StoppedEvent:
 			job := event.Job
-			fmt.Printf("%s[*]%s Job #%d stopped (%s/%s) \n\n", tui.BLUE, tui.RESET, job.ID, job.Protocol, job.Name)
+			fmt.Printf("%s[*]%s Job #%d stopped (%s/%s) \n", tui.BLUE, tui.RESET, job.ID, job.Protocol, job.Name)
 
 		case consts.ConnectedEvent:
 			ghost := event.Ghost

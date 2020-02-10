@@ -72,6 +72,21 @@ func SortOptionKeys(opts map[string]*templates.Option) (keys []string) {
 	if k, v := opts["LPort"]; v {
 		keys = append(keys, k.Name)
 	}
+	if k, v := opts["Domain"]; v {
+		keys = append(keys, k.Name)
+	}
+	if k, v := opts["LetsEncrypt"]; v {
+		keys = append(keys, k.Name)
+	}
+	if k, v := opts["Website"]; v {
+		keys = append(keys, k.Name)
+	}
+	if k, v := opts["Certificate"]; v {
+		keys = append(keys, k.Name)
+	}
+	if k, v := opts["Key"]; v {
+		keys = append(keys, k.Name)
+	}
 	if k, v := opts["OS"]; v {
 		keys = append(keys, k.Name)
 	}

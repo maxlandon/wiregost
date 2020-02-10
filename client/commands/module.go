@@ -142,7 +142,7 @@ func setOption(args []string, ctx ShellContext, rpc RPCServer) {
 	})
 
 	resp := <-rpc(&ghostpb.Envelope{
-		Type: clientpb.MsgStackUse,
+		Type: clientpb.MsgOptionReq,
 		Data: opt,
 	}, defaultTimeout)
 
