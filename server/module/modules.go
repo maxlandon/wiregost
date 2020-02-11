@@ -57,3 +57,12 @@ func GetModule(path string) (Module, error) {
 		return mod, nil
 	}
 }
+
+func AddModule(path string, mod Module) error {
+
+	Modules.mutex.Lock()
+	defer Modules.mutex.Unlock()
+
+	(*Modules.Loaded)[path] = mod
+	return nil
+}
