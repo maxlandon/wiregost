@@ -1,0 +1,47 @@
+{
+        "type": "payload",
+        "name": "Reverse multi-protocol implant",
+        "path": ["payload", "multi","single", "reverse_multi_protocol"],
+
+        "author": ["BishopFox"],
+        "credits": ["BishopFox"],
+
+        "description": "A reverse multi-protocol implant/listener generation stub. This module allows to specify different communication protocols, along with their hosts/domains, that the implant will use for C2 callback. These protocols are used in a certain order, only if the preceding protocol used resulted in an error",
+        "notes": "",
+        "references": [],
+
+        "plaftorm": "multi",
+        "targets": ["multi"],
+        "arch": "multi",
+        "lang": "Go",
+        "privileged": false,
+
+        "options": {
+                "MTLSLHost": {"name": "LHost (mTLS)", "value": "", "required": true, "description": "Host address to call back"},
+                "MTLSLPort": {"name": "LPort (mTLS)", "value": "", "required": true, "description": "Host port to call back"},
+                "HTTPLHost": {"name": "LHost (HTTP)", "value": "", "required": true, "description": "Host address to call back"},
+                "HTTPLPort": {"name": "LPort (HTTP)", "value": "", "required": true, "description": "Host port to call back"},
+                "LimitResponseDomain": {"name": "HTTP Domain", "value": "", "required": false, "description": "Limit HTTP responses to a specific domain"},
+                "DomainsDNS": {"name": "Domains (DNS)", "value": "", "required": true, "description": "DNS C2 domain connection strings for implant (Use FQDN) (Comma-separated list)"},
+                "DomainsHTTP": {"name": "Domains (HTTP)", "value": "", "required": true, "description": "HTTP connection strings for the implant to callback (Use FQDN) (Comma-separated list)"},
+                "DomainsMTLS": {"name": "Domains (mTLS)", "value": "", "required": true, "description": "MTLS domains/addresses for the implant to callback (Use FDQN) (Comma-separated list)"},
+                "LetsEncrypt": {"name": "LetsEncrypt", "value": "false", "required": true, "description": "Attempt to provision a Let's Encrypt certificate"},
+                "Website": {"name": "Website", "value": "", "required": false, "description": "Website name (placed in front of listener, takes care of snoopers)"},
+                "Certificate": {"name": "Certificate", "value": "", "required": false, "description": "PEM encoded certificate file (HTTPS listener)"},
+                "Key": {"name": "Key", "value": "", "required": false, "description": "PEM encoded private key file (HTTPS listener)"},
+                "Arch": {"name": "Arch", "value": "x64", "required": false, "description": "CPU architecture of target"},
+                "OS": {"name": "OS", "value": "windows", "required": false, "description": "Target's operating system"},
+                "Format": {"name": "Format", "value": "exe", "required": false, "description": "File format extension of the implant"},
+                "MaxErrors": {"name": "MaxErrors", "value": "1000", "required": false, "description": "Max number of connection errors"},
+                "Save": {"name": "Save", "value": ".", "required": false, "description": "Directory to save the implant"},
+                "SkipSymbols": {"name": "SkipSymbols", "value": "false", "required": true, "description": "Set to to true to skip symbol obfuscation"},
+                "DomainsDNSListener": {"name": "DNS listener domains", "value": "", "required": false, "description": "Canary DNS domains for the listener, which can handle multiple implants (Comma-separated list)"},
+                "DisableCanaries": {"name": "DisableCanaries", "value": "false", "required": true, "description": "Disable Canary detection for listener"},
+                "Canaries": {"name": "Canaries", "value": "", "required": false, "description": "Canary DNS domains (make sure you have/will have a DNS listener running) (Comma-separated list)"},
+                "Debug": {"name": "Debug", "value": "false", "required": false, "description": "Enable debug features"},
+                "LimitHostname": {"name": "LimitHostname", "value": "", "required": false, "description": "Limit execution to specified hostname"},
+                "LimitUsername": {"name": "LimitUsername", "value": "", "required": false, "description": "Limit execution to specified username"},
+                "LimitDatetime": {"name": "LimitDatetime", "value": "", "required": false, "description": "Limit execution to before datetime"},
+                "LimitDomainJoined": {"name": "LimitDomainJoined", "value": "false", "required": false, "description": "Limit execution to domain joined machines"}
+        }
+}
