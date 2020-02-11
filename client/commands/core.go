@@ -114,7 +114,6 @@ func RegisterCoreCommands() {
 			case length == 0:
 				fmt.Println()
 				fmt.Printf(help.GetHelpFor("resource"))
-				fmt.Println()
 
 			// Arguments: commands entered
 			case length >= 1:

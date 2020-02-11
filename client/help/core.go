@@ -44,12 +44,14 @@ var (
 %s About:%s Core shell commands.
 
 %s Commands:%s
-    exit            %sExit console%s
-    ! <args>        %sExecute a shell command through the console (bin/sh is used)%s
-    cd              %sChange the shell's current working directory%s`,
+    exit                        %sExit console%s
+    ! <args>                    %sExecute a shell command through the console (bin/sh is used)%s
+    cd                          %sChange the shell's current working directory%s
+    resource make|load <file>   %sMake a resource file with commands, or load and execute one%s`,
 		tui.BLUE, tui.BOLD, tui.RESET,
 		tui.YELLOW, tui.RESET,
 		tui.YELLOW, tui.RESET,
+		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
