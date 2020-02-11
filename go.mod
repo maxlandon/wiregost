@@ -36,6 +36,7 @@ require (
 	github.com/mattn/go-shellwords v1.0.5
 	github.com/mdlayher/dhcp6 v0.0.0-20190311162359-2a67805d7d0b // indirect
 	github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab // indirect
+	github.com/miekg/dns v1.1.27
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/onsi/ginkgo v1.10.3 // indirect
 	github.com/onsi/gomega v1.7.1 // indirect
@@ -43,9 +44,9 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/tjarratt/babble v0.0.0-20191209142150-eecdf8c2339d
 	go.dedis.ch/kyber v0.0.0-20190125094535-ffb719103651
-	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
-	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
-	golang.org/x/sys v0.0.0-20200121082415-34d275377bf9
+	golang.org/x/crypto v0.0.0-20200210222208-86ce3cb69678
+	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
+	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5
 	google.golang.org/genproto v0.0.0-20191206224255-0243a4be9c8f // indirect
 	google.golang.org/grpc v1.25.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect

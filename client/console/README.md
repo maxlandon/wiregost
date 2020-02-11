@@ -7,3 +7,4 @@ The `console` package contains the code for the console 'per se'.
 * `exec.go`         - Dispatch and execution of commands.
 * `connect.go`      - Function for connecting to server and binding commands/events.
 * `context.go`      - Initialize shell context/variables and makes them available to commands.
+* `events.go`       - Handles events coming from the server.

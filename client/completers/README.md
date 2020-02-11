@@ -10,3 +10,6 @@ the root completer calls specialized functions contained in their appropriate so
 * `completer.go`        - Main console completer, calling other specialized completer functions
 * `workspace.go`        - Workspace subcommands and objects
 * `hosts.go`            - Hosts subcommands and objects
+* `module.go`           - Completes paths for all modules
+* `stack.go`            - Completes module paths for stack-loaded modules
+* `option.go`           - Completes module options

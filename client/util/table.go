@@ -102,10 +102,13 @@ func SortOptionKeys(opts map[string]*templates.Option) (keys []string) {
 	if k, v := opts["Save"]; v {
 		keys = append(keys, k.Name)
 	}
-	if k, v := opts["Save"]; v {
+	if k, v := opts["SkipSymbols"]; v {
 		keys = append(keys, k.Name)
 	}
-	if k, v := opts["SkipSymbols"]; v {
+	if k, v := opts["ListenerDomains"]; v {
+		keys = append(keys, k.Name)
+	}
+	if k, v := opts["DisableCanaries"]; v {
 		keys = append(keys, k.Name)
 	}
 	if k, v := opts["Canaries"]; v {
