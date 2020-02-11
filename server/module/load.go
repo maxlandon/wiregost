@@ -27,18 +27,17 @@ import (
 	dns "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_dns"
 	https "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_https"
 	mtls "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_mtls"
+	multi "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_multi_protocol"
 )
 
 // LoadAllModules - Load all modules in the modules directory.
 func LoadModules() {
 
 	// Payload -------------------------------------------------------------//
-	// AddModule("payload/multi/single/reverse_dns", dns.New())
-	// AddModule("payload/multi/single/reverse_mtls", mtls.New())
-	// AddModule("payload/multi/single/reverse_https", https.New())
-	(*Modules.Loaded)["payload/multi/single/reverse_dns"] = dns.New()
-	(*Modules.Loaded)["payload/multi/single/reverse_mtls"] = mtls.New()
-	(*Modules.Loaded)["payload/multi/single/reverse_https"] = https.New()
+	AddModule("payload/multi/single/reverse_dns", dns.New())
+	AddModule("payload/multi/single/reverse_mtls", mtls.New())
+	AddModule("payload/multi/single/reverse_https", https.New())
+	AddModule("payload/multi/single/reverse_multi_protocol", multi.New())
 
 	// Exploit -------------------------------------------------------------//
 

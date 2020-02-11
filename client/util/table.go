@@ -64,27 +64,18 @@ func Wrap(text string, lineWidth int) (wrapped string) {
 
 // SortOptionKeys - Golang prints maps in an ever-changing order, so try at least
 // to give an order for the most important options
-func SortOptionKeys(opts map[string]*templates.Option) (keys []string) {
+func SortGenerateOptionKeys(opts map[string]*templates.Option) (keys []string) {
 
-	if k, v := opts["LHost"]; v {
-		keys = append(keys, k.Name)
+	if _, v := opts["DomainsHTTP"]; v {
+		keys = append(keys, "DomainsHTTP")
 	}
-	if k, v := opts["LPort"]; v {
-		keys = append(keys, k.Name)
+	if _, v := opts["DomainsMTLS"]; v {
+		keys = append(keys, "DomainsMTLS")
 	}
-	if k, v := opts["Domain"]; v {
-		keys = append(keys, k.Name)
+	if _, v := opts["DomainsDNS"]; v {
+		keys = append(keys, "DomainsDNS")
 	}
 	if k, v := opts["LetsEncrypt"]; v {
-		keys = append(keys, k.Name)
-	}
-	if k, v := opts["Website"]; v {
-		keys = append(keys, k.Name)
-	}
-	if k, v := opts["Certificate"]; v {
-		keys = append(keys, k.Name)
-	}
-	if k, v := opts["Key"]; v {
 		keys = append(keys, k.Name)
 	}
 	if k, v := opts["OS"]; v {
@@ -108,9 +99,6 @@ func SortOptionKeys(opts map[string]*templates.Option) (keys []string) {
 	if k, v := opts["ListenerDomains"]; v {
 		keys = append(keys, k.Name)
 	}
-	if k, v := opts["DisableCanaries"]; v {
-		keys = append(keys, k.Name)
-	}
 	if k, v := opts["Canaries"]; v {
 		keys = append(keys, k.Name)
 	}
@@ -127,6 +115,48 @@ func SortOptionKeys(opts map[string]*templates.Option) (keys []string) {
 		keys = append(keys, k.Name)
 	}
 	if k, v := opts["LimitDomainJoined"]; v {
+		keys = append(keys, k.Name)
+	}
+
+	return keys
+}
+
+func SortListenerOptionKeys(opts map[string]*templates.Option) (keys []string) {
+
+	if _, v := opts["LHost"]; v {
+		keys = append(keys, "LHost")
+	}
+	if _, v := opts["LHost"]; v {
+		keys = append(keys, "LPort")
+	}
+	if _, v := opts["MTLSLHost"]; v {
+		keys = append(keys, "MTLSLHost")
+	}
+	if _, v := opts["MTLSLPort"]; v {
+		keys = append(keys, "MTLSLPort")
+	}
+	if _, v := opts["HTTPLHost"]; v {
+		keys = append(keys, "HTTPLHost")
+	}
+	if _, v := opts["HTTPLPort"]; v {
+		keys = append(keys, "HTTPLPort")
+	}
+	if k, v := opts["Certificate"]; v {
+		keys = append(keys, k.Name)
+	}
+	if k, v := opts["Key"]; v {
+		keys = append(keys, k.Name)
+	}
+	if _, v := opts["LimitResponseDomain"]; v {
+		keys = append(keys, "LimitResponseDomain")
+	}
+	if k, v := opts["Website"]; v {
+		keys = append(keys, k.Name)
+	}
+	if _, v := opts["DomainsDNSListener"]; v {
+		keys = append(keys, "DomainsDNSListener")
+	}
+	if k, v := opts["DisableCanaries"]; v {
 		keys = append(keys, k.Name)
 	}
 

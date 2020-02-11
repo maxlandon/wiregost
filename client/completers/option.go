@@ -31,7 +31,16 @@ func (oc *OptionCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) 
 
 	switch *ctx.MenuContext {
 	case "module":
-		for _, v := range util.SortOptionKeys(ctx.Module.Options) {
+		for _, v := range util.SortListenerOptionKeys(ctx.Module.Options) {
+			search := v
+			if !hasPrefix(line, []rune(search)) {
+				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+				options = append(options, sLine...)
+				offset = sOffset
+			}
+		}
+
+		for _, v := range util.SortGenerateOptionKeys(ctx.Module.Options) {
 			search := v
 			if !hasPrefix(line, []rune(search)) {
 				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))

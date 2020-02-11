@@ -181,16 +181,33 @@ func showInfo(ctx ShellContext) {
 	fmt.Println(tui.Dim(util.Wrap(m.Description, 140)))
 	fmt.Println()
 
-	// Options
+	// Listener Options
+	fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
 	table := util.Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	table.SetColWidth(80)
+	table.SetColWidth(90)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 	)
-	for _, v := range util.SortOptionKeys(m.Options) {
+	for _, v := range util.SortListenerOptionKeys(m.Options) {
+		table.Append([]string{m.Options[v].Name, m.Options[v].Value, strconv.FormatBool(m.Options[v].Required), m.Options[v].Description})
+	}
+	table.Render()
+
+	// Generate Options
+	fmt.Println()
+	fmt.Println(tui.Bold(tui.Blue(" Generate Options")))
+	table = util.Table()
+	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
+	table.SetColWidth(90)
+	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+	)
+	for _, v := range util.SortGenerateOptionKeys(m.Options) {
 		table.Append([]string{m.Options[v].Name, m.Options[v].Value, strconv.FormatBool(m.Options[v].Required), m.Options[v].Description})
 	}
 	table.Render()
@@ -206,6 +223,8 @@ func showInfo(ctx ShellContext) {
 func showOptions(ctx ShellContext) {
 	m := ctx.Module
 
+	// Listener Options
+	fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
 	table := util.Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
 	table.SetColWidth(80)
@@ -214,7 +233,23 @@ func showOptions(ctx ShellContext) {
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 	)
-	for _, v := range util.SortOptionKeys(m.Options) {
+	for _, v := range util.SortListenerOptionKeys(m.Options) {
+		table.Append([]string{m.Options[v].Name, m.Options[v].Value, strconv.FormatBool(m.Options[v].Required), m.Options[v].Description})
+	}
+	table.Render()
+
+	// Generate Options
+	fmt.Println()
+	fmt.Println(tui.Bold(tui.Blue(" Generate Options")))
+	table = util.Table()
+	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
+	table.SetColWidth(80)
+	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+	)
+	for _, v := range util.SortGenerateOptionKeys(m.Options) {
 		table.Append([]string{m.Options[v].Name, m.Options[v].Value, strconv.FormatBool(m.Options[v].Required), m.Options[v].Description})
 	}
 	table.Render()
