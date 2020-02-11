@@ -21,8 +21,10 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/pem"
+	insecureRand "math/rand"
 	"net"
 	"strings"
+	"time"
 )
 
 func fingerprintSHA256(block *pem.Block) string {
@@ -39,4 +41,15 @@ func randomIP() net.IP {
 
 	// Ensure non-zeros with various bitmasks
 	return net.IPv4(randBuf[0]|0x10, randBuf[1]|0x10, randBuf[2]|0x1, randBuf[3]|0x10)
+}
+
+// Unique IDs, no need for secure random
+func generateBlockID() string {
+	insecureRand.Seed(time.Now().UnixNano())
+	blockID := []rune{}
+	for i := 0; i < blockIDSize; i++ {
+		index := insecureRand.Intn(len(dnsCharSet))
+		blockID = append(blockID, dnsCharSet[index])
+	}
+	return string(blockID)
 }
