@@ -19,7 +19,8 @@
         "options": {
                 "LHost": {"name": "LHost", "value": "192.168.1.1", "required": true, "description": "Host address to call back"},
                 "LPort": {"name": "LPort", "value": "8443", "required": true, "description": "Host port to call back"},
-                "Domain": {"name": "Domain", "value": "", "required": false, "description": "Limit responses to a specific domain"},
+                "DomainsHTTP": {"name": "Domains (http)", "value": "", "required": false, "description": "HTTP connection strings for the implant to callback"},
+                "LimitResponseDomain": {"name": "HTTP Domain", "value": "", "required": false, "description": "Limit responses to a specific domain"},
                 "LetsEncrypt": {"name": "LetsEncrypt", "value": "false", "required": true, "description": "Attempt to provision a Let's Encrypt certificate"},
                 "Website": {"name": "Website", "value": "", "required": false, "description": "Website name (placed in front of listener, takes care of snoopers)"},
                 "Certificate": {"name": "Certificate", "value": "", "required": false, "description": "PEM encoded certificate file"},

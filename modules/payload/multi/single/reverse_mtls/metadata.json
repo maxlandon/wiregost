@@ -17,8 +17,9 @@
         "privileged": false,
 
         "options": {
-                "LHost": {"name": "LHost", "value": "192.168.1.1", "required": true, "description": "Host address to call back"},
-                "LPort": {"name": "LPort", "value": "8443", "required": true, "description": "Host port to call back"},
+                "LHost": {"name": "LHost", "value": "192.168.1.1", "required": true, "description": "Host address to start listener on"},
+                "LPort": {"name": "LPort", "value": "8443", "required": true, "description": "Host port to start listener on"},
+                "DomainsMTLS": {"name": "Domains", "value": "", "required": true, "description": "MTLS domains/addresses for the implant to callback (if not set, default to LHost:LPort)"},
                 "Arch": {"name": "Arch", "value": "x64", "required": false, "description": "CPU architecture of target"},
                 "OS": {"name": "OS", "value": "windows", "required": false, "description": "Target's operating system"},
                 "Format": {"name": "Format", "value": "exe", "required": false, "description": "File format extension of the implant"},

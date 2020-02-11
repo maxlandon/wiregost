@@ -105,7 +105,7 @@ func (s *ReverseMTLS) Run(command string) (result string, err error) {
 
 		core.Jobs.AddJob(job)
 
-		return fmt.Sprintf("ReverseMTLS listener started at %s:%d", host, port), nil
+		return fmt.Sprintf("Reverse Mutual TLS listener started at %s:%d", host, port), nil
 	}
 
 	return "ReverseMTLS listener started", nil
