@@ -46,8 +46,8 @@ type prompt struct {
 	Effects   map[string]string
 }
 
-// newPrompt - Initializes the Prompt object
-func newPrompt(c *console) {
+// SetPrompt - Initializes the Prompt object
+func (c *console) SetPrompt() {
 
 	Prompt = prompt{} // Initialize
 	setCallbacks(Prompt)

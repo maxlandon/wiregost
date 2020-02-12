@@ -22,15 +22,7 @@ option go_package = "clientpb";
 
 import "db/user.proto";
 import "db/workspace.proto";
-import "client/console-config.proto";
-
-// Client - A client console connected to the Wiregost server
-message Client {
-        int64 ID = 1;
-        string Token = 2;
-        db.User User = 3;
-}
-
+import "client/console_config.proto";
 
 // ConnectionRPC - All requests to connect a client and send information to it.
 service ConnectionRPC {
@@ -40,6 +32,14 @@ service ConnectionRPC {
         rpc GetConnectionInfo(ConnectionInfoRequest) returns (ConnectionInfo);
         // Version information.
         rpc GetVersion(Empty) returns (Version);
+}
+
+
+// Client - A client console connected to the Wiregost server
+message Client {
+        int64 ID = 1;
+        string Token = 2;
+        db.User User = 3;
 }
 
 // AuthenticationRequest - Send user name & password
@@ -69,9 +69,6 @@ message ConnectionInfo{
         int32 Ghosts = 6;
         int32 Jobs = 7;
 }
-
-// Empty - Used for requests which not need data
-message Empty {}
 
 // Version - Version information
 message Version {

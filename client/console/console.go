@@ -23,7 +23,9 @@ import (
 	"github.com/lmorg/readline"
 
 	"github.com/maxlandon/wiregost/client/assets"
+	"github.com/maxlandon/wiregost/client/completers"
 	"github.com/maxlandon/wiregost/client/connection"
+	"github.com/maxlandon/wiregost/client/console/util"
 	client "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
@@ -78,11 +80,11 @@ func (c *console) Connect() (err error) {
 	// Print banner, user and client/server version information
 	c.PrintBanner()
 
-	// Register all gRPC clients to connection
+	// Register all gRPC clients with the connection
 	connection.RegisterRPCClients(conn)
 
 	// Listen for incoming server/implant events
-	c.StartEventListener()
+	c.StartEventListener(conn)
 
 	return nil
 }
@@ -91,14 +93,20 @@ func (c *console) Connect() (err error) {
 func (c *console) Setup() {
 
 	// Console configuration (from server first, ~/.wiregost second)
+	c.Config = assets.LoadConsoleConfig()
 
 	// Prompt
+	c.SetPrompt()
 
 	// Completion, Hints & Syntax
-
-	// Commands
+	c.Shell.TabCompleter = completers.TabCompleter
+	c.Shell.HintText = completers.HintCompleter
+	c.Shell.SyntaxHighlighter = completers.SyntaxHighlighter
 
 	// Env
+	util.LoadClientEnv()
+
+	// Commands
 
 	// Share context
 }

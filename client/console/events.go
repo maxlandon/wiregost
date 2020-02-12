@@ -16,8 +16,10 @@
 
 package console
 
+import "google.golang.org/grpc"
+
 // StartEventListener - Listens for events coming from the server/ghosts.
-func (c *console) StartEventListener() {
+func (c *console) StartEventListener(conn *grpc.ClientConn) {
 
 	// Listen for RPC events
 
