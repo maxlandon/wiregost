@@ -53,6 +53,9 @@ var (
 		// Jobs
 		clientpb.MsgJobs:    rpcJobs,
 		clientpb.MsgJobKill: rpcJobKill,
+
+		// Profiles
+		clientpb.MsgProfiles: rpcListProfiles,
 	}
 
 	tunnelHandlers = &map[uint32]TunnelHandler{

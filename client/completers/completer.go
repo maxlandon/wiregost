@@ -65,6 +65,8 @@ func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int)
 		options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
 	case "use":
 		options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
+	case "parse_profile":
+		options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
 	}
 
 	// Autocomplete subcommands
@@ -120,6 +122,9 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 		options, offset = comp.Do(ctx, line, pos)
 	case "stack":
 		comp := &StackCompleter{Command: cmd}
+		options, offset = comp.Do(ctx, line, pos)
+	case "parse_profile":
+		comp := &ProfileCompleter{Command: cmd}
 		options, offset = comp.Do(ctx, line, pos)
 	}
 

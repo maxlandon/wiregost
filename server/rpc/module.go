@@ -61,16 +61,26 @@ func rpcModuleRun(data []byte, timeout time.Duration, resp RPCResponse) {
 	stack := (*module.Stacks)[wsID]
 	mod := (*stack.Loaded)[path]
 
-	res, err := mod.Run(modReq.Action)
+	var res string
+	var modErr error
+	if modReq.Profile != "" {
+		action := modReq.Action + " " + modReq.Profile
+		res, modErr = mod.Run(action)
+	} else {
+		res, modErr = mod.Run(modReq.Action)
+	}
 
 	modRun := &clientpb.ModuleAction{}
-	if err != nil {
-		modRun.Sucess = false
-		modRun.Err = err.Error()
+	if modErr != nil {
+		modRun.Success = false
+		modRun.Err = modErr.Error()
 	} else {
-		modRun.Sucess = true
+		modRun.Success = true
 		modRun.Result = res
 	}
+
+	// Send updated module
+	modRun.Updated = mod.ToProtobuf()
 
 	data, err = proto.Marshal(modRun)
 	resp(data, err)

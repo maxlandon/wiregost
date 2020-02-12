@@ -14,29 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package commands
+package rpc
 
-// RegisterCommands register all commands in Wiregost and maps them
-// to their respective contexts
-func RegisterCommands() {
+import (
+	"time"
 
-	// Core
-	RegisterCoreCommands()
-	RegisterHelpCommands()
+	"github.com/gogo/protobuf/proto"
+	clientpb "github.com/maxlandon/wiregost/protobuf/client"
+	"github.com/maxlandon/wiregost/server/generate"
+)
 
-	// Data Service
-	RegisterWorkspaceCommands()
-	RegisterHostCommands()
-
-	// Stack
-	RegisterStackCommands()
-
-	// Module
-	RegisterModuleCommands()
-
-	// Jobs
-	RegisterJobCommands()
-
-	// Profiles
-	RegisterProfileCommands()
+func rpcListProfiles(data []byte, timeout time.Duration, resp RPCResponse) {
+	profiles := &clientpb.Profiles{List: []*clientpb.Profile{}}
+	for name, config := range generate.Profiles() {
+		profiles.List = append(profiles.List, &clientpb.Profile{
+			Name:   name,
+			Config: config.ToProtobuf(),
+		})
+	}
+	data, err := proto.Marshal(profiles)
+	resp(data, err)
 }

@@ -106,13 +106,16 @@ message ModuleActionReq {
         uint32 WorkspaceID = 1;
         repeated string Path = 2;
         string Action = 3;
+        string Profile = 4;
 }
 
 message ModuleAction {
-        bool Sucess = 1;
+        bool Success = 1;
         string Result = 2;
         string Err = 3;
         int32 JobID = 4;
+        // Used when parsing profiles
+        Module Updated = 5;
 }
 
 // Module Option requests & responses
@@ -266,7 +269,7 @@ message GhostConfig {
         }
         OutputFormat Format = 25;
         bool IsSharedLib = 26;
-        string Filename = 27;
+        string FileName = 27;
 
         // Added
         uint32 WorkspaceID = 28; // When registering, assigned to a workspace
