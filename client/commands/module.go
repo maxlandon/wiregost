@@ -127,6 +127,43 @@ func RegisterModuleCommands() {
 	}
 
 	AddCommand("module", back)
+
+	parseProfile := &Command{
+		Name: "parse_profile",
+		Help: help.GetHelpFor("parse_profile"),
+		Handle: func(r *Request) error {
+			fmt.Println()
+			if len(r.Args) == 0 {
+				fmt.Printf("%s[!]%s Provide a Ghost profile name",
+					tui.RED, tui.RESET)
+				return nil
+			}
+			parseProfile(r.Args[0], *r.context, r.context.Server.RPC)
+			fmt.Println()
+			return nil
+		},
+	}
+
+	AddCommand("module", parseProfile)
+
+	toProfile := &Command{
+		Name: "to_profile",
+		Help: help.GetHelpFor("to_profile"),
+		Handle: func(r *Request) error {
+			fmt.Println()
+			if len(r.Args) == 0 {
+				fmt.Printf("%s[!]%s Provide a profile name (to_profile <name>)",
+					tui.RED, tui.RESET)
+				fmt.Println()
+				return nil
+			}
+			toProfile(r.Args[0], *r.context, r.context.Server.RPC)
+			fmt.Println()
+			return nil
+		},
+	}
+
+	AddCommand("module", toProfile)
 }
 
 func setOption(args []string, ctx ShellContext, rpc RPCServer) {
@@ -238,7 +275,7 @@ func showOptions(ctx ShellContext) {
 	fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
 	table := util.Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	table.SetColWidth(80)
+	table.SetColWidth(90)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -254,7 +291,7 @@ func showOptions(ctx ShellContext) {
 	fmt.Println(tui.Bold(tui.Blue(" Generate Options")))
 	table = util.Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	table.SetColWidth(80)
+	table.SetColWidth(90)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -288,12 +325,73 @@ func runModule(action string, ctx ShellContext, rpc RPCServer) {
 	result := &clientpb.ModuleAction{}
 	proto.Unmarshal(resp.Data, result)
 
-	if result.Sucess == false {
+	if result.Success == false {
 		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, result.Err)
 	} else {
 		fmt.Printf("%s[*]%s %s", tui.GREEN, tui.RESET, result.Result)
 	}
 
+}
+
+func parseProfile(profile string, ctx ShellContext, rpc RPCServer) {
+	m := ctx.Module
+
+	run, _ := proto.Marshal(&clientpb.ModuleActionReq{
+		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		Path:        m.Path,
+		Action:      "parse_profile",
+		Profile:     profile,
+	})
+
+	resp := <-rpc(&ghostpb.Envelope{
+		Type: clientpb.MsgModuleReq,
+		Data: run,
+	}, defaultTimeout)
+
+	if resp.Err != "" {
+		fmt.Printf("%s[!] RPC error:%s %s", tui.RED, tui.RESET, resp.Err)
+		return
+	}
+
+	result := &clientpb.ModuleAction{}
+	proto.Unmarshal(resp.Data, result)
+
+	if result.Success == false {
+		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, result.Err)
+	} else {
+		m.ParseProto(result.Updated)
+		fmt.Printf("%s[*]%s %s", tui.BLUE, tui.RESET, result.Result)
+	}
+}
+
+func toProfile(profile string, ctx ShellContext, rpc RPCServer) {
+	m := ctx.Module
+
+	run, _ := proto.Marshal(&clientpb.ModuleActionReq{
+		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		Path:        m.Path,
+		Action:      "to_profile",
+		Profile:     profile,
+	})
+
+	resp := <-rpc(&ghostpb.Envelope{
+		Type: clientpb.MsgModuleReq,
+		Data: run,
+	}, defaultTimeout)
+
+	if resp.Err != "" {
+		fmt.Printf("%s[!] RPC error:%s %s", tui.RED, tui.RESET, resp.Err)
+		return
+	}
+
+	result := &clientpb.ModuleAction{}
+	proto.Unmarshal(resp.Data, result)
+
+	if result.Success == false {
+		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, result.Err)
+	} else {
+		fmt.Printf("%s[*]%s %s", tui.BLUE, tui.RESET, result.Result)
+	}
 }
 
 func backToMainMenu(ctx ShellContext) {
