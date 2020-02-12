@@ -46,7 +46,6 @@ func RegisterStackCommands() {
 			case length == 0:
 				fmt.Println()
 				stackList(*r.context, r.context.Server.RPC)
-				fmt.Println()
 			case length >= 1:
 				switch r.Args[0] {
 				case "use":
