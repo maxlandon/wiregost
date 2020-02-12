@@ -75,9 +75,6 @@ func SortGenerateOptionKeys(opts map[string]*templates.Option) (keys []string) {
 	if _, v := opts["DomainsDNS"]; v {
 		keys = append(keys, "DomainsDNS")
 	}
-	if k, v := opts["LetsEncrypt"]; v {
-		keys = append(keys, k.Name)
-	}
 	if k, v := opts["OS"]; v {
 		keys = append(keys, k.Name)
 	}
@@ -90,10 +87,13 @@ func SortGenerateOptionKeys(opts map[string]*templates.Option) (keys []string) {
 	if k, v := opts["MaxErrors"]; v {
 		keys = append(keys, k.Name)
 	}
+	if k, v := opts["ReconnectInterval"]; v {
+		keys = append(keys, k.Name)
+	}
 	if k, v := opts["Save"]; v {
 		keys = append(keys, k.Name)
 	}
-	if k, v := opts["SkipSymbols"]; v {
+	if k, v := opts["ObfuscateSymbols"]; v {
 		keys = append(keys, k.Name)
 	}
 	if k, v := opts["ListenerDomains"]; v {
@@ -145,6 +145,9 @@ func SortListenerOptionKeys(opts map[string]*templates.Option) (keys []string) {
 		keys = append(keys, k.Name)
 	}
 	if k, v := opts["Key"]; v {
+		keys = append(keys, k.Name)
+	}
+	if k, v := opts["LetsEncrypt"]; v {
 		keys = append(keys, k.Name)
 	}
 	if _, v := opts["LimitResponseDomain"]; v {

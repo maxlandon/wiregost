@@ -18,16 +18,12 @@
 package reverse_https
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net"
-	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
-	"time"
 
 	"github.com/evilsocket/islazy/fs"
 
@@ -36,6 +32,7 @@ import (
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/c2"
 	"github.com/maxlandon/wiregost/server/core"
+	"github.com/maxlandon/wiregost/server/generate"
 	"github.com/maxlandon/wiregost/server/log"
 	"github.com/maxlandon/wiregost/server/module/templates"
 )
@@ -77,151 +74,228 @@ var rpcLog = log.ServerLogger("rpc", "server")
 // Run - Module entrypoint. ** DO NOT ERASE **
 func (s *ReverseHTTPS) Run(command string) (result string, err error) {
 
-	switch command {
+	action := strings.Split(command, " ")[0]
 
+	switch action {
 	case "to_listener":
+		return s.toListener()
+	case "parse_profile":
+		return s.parseProfile(command)
+	case "to_profile":
+		return s.generateProfile(command)
+	}
 
-		host := s.Base.Options["LHost"].Value
-		portUint, _ := strconv.Atoi(s.Base.Options["LPort"].Value)
-		port := uint16(portUint)
-		addr := fmt.Sprintf("%s:%d", host, port)
-		domain := s.Base.Options["Domain"].Value
-		website := s.Base.Options["Website"].Value
-		letsEncrypt := false
-		if s.Base.Options["LetsEncrypt"].Value == "true" {
-			letsEncrypt = true
+	return "", nil
+}
+
+func (s *ReverseHTTPS) toListener() (result string, err error) {
+	host := s.Base.Options["LHost"].Value
+	portUint, _ := strconv.Atoi(s.Base.Options["LPort"].Value)
+	port := uint16(portUint)
+	addr := fmt.Sprintf("%s:%d", host, port)
+	domain := s.Base.Options["Domain"].Value
+	website := s.Base.Options["Website"].Value
+	letsEncrypt := false
+	if s.Base.Options["LetsEncrypt"].Value == "true" {
+		letsEncrypt = true
+	}
+
+	certFile, _ := fs.Expand(s.Base.Options["Certificate"].Value)
+	keyFile, _ := fs.Expand(s.Base.Options["Key"].Value)
+	cert, key, err := getLocalCertificatePair(certFile, keyFile)
+	if err != nil {
+		return "", errors.New(fmt.Sprintf("Failed to load local certificate %v", err))
+	}
+
+	conf := &c2.HTTPServerConfig{
+		Addr:    addr,
+		LPort:   port,
+		Secure:  true,
+		Domain:  domain,
+		Website: website,
+		Cert:    cert,
+		Key:     key,
+		ACME:    letsEncrypt,
+	}
+
+	server := c2.StartHTTPSListener(conf)
+	if server == nil {
+		return "", errors.New("HTTP Server instantiation failed")
+	}
+
+	job := &core.Job{
+		ID:          core.GetJobID(),
+		Name:        "https",
+		Description: fmt.Sprintf("HTTPS C2 server (https for domain %s)", conf.Domain),
+		Protocol:    "tcp",
+		Port:        port,
+		JobCtrl:     make(chan bool),
+	}
+
+	core.Jobs.AddJob(job)
+	cleanup := func(err error) {
+		server.Cleanup()
+		core.Jobs.RemoveJob(job)
+		core.EventBroker.Publish(core.Event{
+			Job:       job,
+			EventType: consts.StoppedEvent,
+			Err:       err,
+		})
+	}
+	once := &sync.Once{}
+
+	go func() {
+		var err error
+		if server.Conf.ACME {
+			err = server.HTTPServer.ListenAndServeTLS("", "") // ACME manager pulls the certs under the hood
+		} else {
+			err = listenAndServeTLS(server.HTTPServer, conf.Cert, conf.Key)
 		}
-
-		certFile, _ := fs.Expand(s.Base.Options["Certificate"].Value)
-		keyFile, _ := fs.Expand(s.Base.Options["Key"].Value)
-		cert, key, err := getLocalCertificatePair(certFile, keyFile)
 		if err != nil {
-			return "", errors.New(fmt.Sprintf("Failed to load local certificate %v", err))
+			rpcLog.Errorf("HTTPS listener error %v", err)
+			once.Do(func() { cleanup(err) })
+			job.JobCtrl <- true // Cleanup other goroutine
 		}
 
-		conf := &c2.HTTPServerConfig{
-			Addr:    addr,
-			LPort:   port,
-			Secure:  true,
-			Domain:  domain,
-			Website: website,
-			Cert:    cert,
-			Key:     key,
-			ACME:    letsEncrypt,
-		}
+	}()
 
-		server := c2.StartHTTPSListener(conf)
-		if server == nil {
-			return "", errors.New("HTTP Server instantiation failed")
-		}
+	go func() {
+		<-job.JobCtrl
+		once.Do(func() { cleanup(nil) })
+	}()
 
-		job := &core.Job{
-			ID:          core.GetJobID(),
-			Name:        "https",
-			Description: fmt.Sprintf("HTTPS C2 server (https for domain %s)", conf.Domain),
-			Protocol:    "tcp",
-			Port:        port,
-			JobCtrl:     make(chan bool),
-		}
+	return fmt.Sprintf("Reverse HTTPS listener started at %s:%d", host, port), nil
+}
 
-		core.Jobs.AddJob(job)
-		cleanup := func(err error) {
-			server.Cleanup()
-			core.Jobs.RemoveJob(job)
-			core.EventBroker.Publish(core.Event{
-				Job:       job,
-				EventType: consts.StoppedEvent,
-				Err:       err,
-			})
-		}
-		once := &sync.Once{}
+func (s *ReverseHTTPS) parseProfile(name string) (result string, err error) {
+	profileName := strings.Split(name, " ")[1]
 
-		go func() {
-			var err error
-			if server.Conf.ACME {
-				err = server.HTTPServer.ListenAndServeTLS("", "") // ACME manager pulls the certs under the hood
-			} else {
-				err = listenAndServeTLS(server.HTTPServer, conf.Cert, conf.Key)
+	profile, err := generate.ProfileByName(profileName)
+	if err != nil {
+		return "", err
+	}
+
+	// C2
+	if profile.HTTPc2Enabled {
+		urls := []string{}
+		for _, d := range profile.C2 {
+			if strings.HasPrefix(d.URL, "https") {
+				url := strings.TrimPrefix(d.URL, "https://")
+				urls = append(urls, url)
 			}
-			if err != nil {
-				rpcLog.Errorf("HTTPS listener error %v", err)
-				once.Do(func() { cleanup(err) })
-				job.JobCtrl <- true // Cleanup other goroutine
-			}
-
-		}()
-
-		go func() {
-			<-job.JobCtrl
-			once.Do(func() { cleanup(nil) })
-		}()
-
-		return fmt.Sprintf("Reverse HTTPS listener started at %s:%d", host, port), nil
+		}
+		s.Base.Options["DomainsHTTP"].Value = strings.Join(urls, ",")
 	}
 
-	return "Reverse HTTPS listener started", nil
+	// Canaries
+	if len(profile.CanaryDomains) != 1 {
+		domains := []string{}
+		for _, d := range profile.CanaryDomains {
+			domains = append(domains, d)
+		}
+		s.Base.Options["Canaries"].Value = strings.Join(domains, ",")
+	}
+
+	// Format
+	switch profile.Format {
+	case 0:
+		s.Base.Options["Format"].Value = "shared"
+	case 1:
+		s.Base.Options["Format"].Value = "shellcode"
+	case 2:
+		s.Base.Options["Format"].Value = "exe"
+	}
+
+	// Other fields
+	s.Base.Options["Arch"].Value = profile.GOARCH
+	s.Base.Options["OS"].Value = profile.GOOS
+	s.Base.Options["MaxErrors"].Value = strconv.Itoa(profile.MaxConnectionErrors)
+	s.Base.Options["ObfuscateSymbols"].Value = strconv.FormatBool(profile.ObfuscateSymbols)
+	s.Base.Options["Debug"].Value = strconv.FormatBool(profile.Debug)
+	s.Base.Options["LimitHostname"].Value = profile.LimitHostname
+	s.Base.Options["LimitUsername"].Value = profile.LimitUsername
+	s.Base.Options["LimitDatetime"].Value = profile.LimitDatetime
+	s.Base.Options["LimitDomainJoined"].Value = strconv.FormatBool(profile.LimitDomainJoined)
+	s.Base.Options["ReconnectInterval"].Value = strconv.Itoa(profile.ReconnectInterval)
+
+	return fmt.Sprintf("Profile %s parsed", profile.Name), nil
 }
 
-func getLocalCertificatePair(certFile, keyFile string) ([]byte, []byte, error) {
-	if certFile == "" && keyFile == "" {
-		return nil, nil, nil
-	}
-	cert, err := ioutil.ReadFile(certFile)
-	if err != nil {
-		return nil, nil, err
-	}
-	key, err := ioutil.ReadFile(keyFile)
-	if err != nil {
-		return nil, nil, err
-	}
-	return cert, key, nil
-}
+func (s *ReverseHTTPS) generateProfile(name string) (result string, err error) {
+	profileName := strings.Split(name, " ")[1]
 
-// Fuck'in Go - https://stackoverflow.com/questions/30815244/golang-https-server-passing-certfile-and-kyefile-in-terms-of-byte-array
-// basically the same as server.ListenAndServerTLS() but we can pass in byte slices instead of file paths
-func listenAndServeTLS(srv *http.Server, certPEMBlock, keyPEMBlock []byte) error {
-	addr := srv.Addr
-	if addr == "" {
-		addr = ":https"
+	c := &generate.GhostConfig{}
+
+	// OS
+	targetOS := s.Base.Options["OS"].Value
+	if targetOS == "mac" || targetOS == "macos" || targetOS == "m" || targetOS == "osx" {
+		targetOS = "darwin"
 	}
-	config := &tls.Config{}
-	if srv.TLSConfig != nil {
-		*config = *srv.TLSConfig
+	if targetOS == "win" || targetOS == "w" || targetOS == "shit" {
+		targetOS = "windows"
 	}
-	if config.NextProtos == nil {
-		config.NextProtos = []string{"http/1.1"}
+	if targetOS == "unix" || targetOS == "l" {
+		targetOS = "linux"
 	}
 
-	var err error
-	config.Certificates = make([]tls.Certificate, 1)
-	config.Certificates[0], err = tls.X509KeyPair(certPEMBlock, keyPEMBlock)
-	if err != nil {
-		return err
+	// Arch
+	arch := s.Base.Options["Arch"].Value
+	if arch == "x64" || strings.HasPrefix(arch, "64") {
+		arch = "amd64"
+	}
+	if arch == "x86" || strings.HasPrefix(arch, "32") {
+		arch = "386"
 	}
 
-	ln, err := net.Listen("tcp", addr)
-	if err != nil {
-		return err
+	// Format
+	var outputFormat pb.GhostConfig_OutputFormat
+	format := s.Base.Options["Format"].Value
+	switch format {
+	case "shared":
+		outputFormat = pb.GhostConfig_SHARED_LIB
+		c.IsSharedLib = true
+	case "shellcode":
+		outputFormat = pb.GhostConfig_SHELLCODE
+		c.IsSharedLib = true
+	case "exe":
+		outputFormat = pb.GhostConfig_EXECUTABLE
+		c.IsSharedLib = false
+	default:
+		outputFormat = pb.GhostConfig_EXECUTABLE
+		c.IsSharedLib = false
 	}
 
-	tlsListener := tls.NewListener(tcpKeepAliveListener{ln.(*net.TCPListener)}, config)
-	return srv.Serve(tlsListener)
-}
-
-// tcpKeepAliveListener sets TCP keep-alive timeouts on accepted
-// connections. It's used by ListenAndServe and ListenAndServeTLS so
-// dead TCP connections (e.g. closing laptop mid-download) eventually
-// go away.
-type tcpKeepAliveListener struct {
-	*net.TCPListener
-}
-
-func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
-	tc, err := ln.AcceptTCP()
-	if err != nil {
-		return
+	// HTTP C2
+	c2s := generate.ParseHTTPc2ToStruct(s.Base.Options["DomainsHTTP"].Value)
+	if len(c2s) == 0 {
+		return "", errors.New("You must specify at least one HTTPS C2 endpoint")
 	}
-	tc.SetKeepAlive(true)
-	tc.SetKeepAlivePeriod(3 * time.Minute)
-	return tc, nil
+
+	// Populate fields
+	c.Name = profileName
+	c.GOOS = targetOS
+	c.GOARCH = arch
+	c.Format = outputFormat
+	c.C2 = c2s
+	c.HTTPc2Enabled = true
+	c.Debug, _ = strconv.ParseBool(s.Base.Options["Debug"].Value)
+	c.ObfuscateSymbols, _ = strconv.ParseBool(s.Base.Options["ObfuscateSymbols"].Value)
+	c.MaxConnectionErrors, _ = strconv.Atoi(s.Base.Options["MaxErrors"].Value)
+	c.ReconnectInterval, _ = strconv.Atoi(s.Base.Options["ReconnectInterval"].Value)
+	c.CanaryDomains = strings.Split(s.Base.Options["Canaries"].Value, ",")
+	c.LimitDomainJoined, _ = strconv.ParseBool(s.Base.Options["LimitDomainJoined"].Value)
+	c.LimitHostname = s.Base.Options["LimitHostname"].Value
+	c.LimitUsername = s.Base.Options["LimitUsername"].Value
+	c.LimitDatetime = s.Base.Options["LimitDatetime"].Value
+
+	// Save profile
+	if 0 < len(c.Name) && c.Name != "." {
+		rpcLog.Infof("Saving new profile with name %#v", c.Name)
+		err = generate.ProfileSave(c.Name, c)
+	} else {
+		err = errors.New("Invalid profile name")
+		return "", err
+	}
+
+	return fmt.Sprintf("Saved reverse DNS implant profile with name %#v", c.Name), nil
 }

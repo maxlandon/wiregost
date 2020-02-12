@@ -17,13 +17,14 @@
         "privileged": false,
 
         "options": {
-                "Domain": {"name": "Domain (DNS)", "value": "", "required": true, "description": "DNS C2 domain connection strings (Use FQDN) (Comma-separated list)"},
+                "DomainsDNS": {"name": "Domains", "value": "", "required": true, "description": "DNS C2 domain connection strings (Use FQDN) (Comma-separated list)"},
                 "Arch": {"name": "Arch", "value": "x64", "required": false, "description": "CPU architecture of target"},
                 "OS": {"name": "OS", "value": "windows", "required": false, "description": "Target's operating system"},
-                "Format": {"name": "Format", "value": "exe", "required": false, "description": "File format extension of the implant"},
+                "Format": {"name": "Format", "value": "exe", "required": false, "description": "File format extension of the implant (exe, shared, shellcode)"},
                 "MaxErrors": {"name": "MaxErrors", "value": "1000", "required": false, "description": "Max number of connection errors"},
+                "ReconnectInterval": {"name": "ReconnectInterval", "value": "60", "required": true, "description": "Attempt to reconnect every n second(s)"},
                 "Save": {"name": "Save", "value": "", "required": false, "description": "Directory to save the implant"},
-                "SkipSymbols": {"name": "SkipSymbols", "value": "false", "required": true, "description": "Set to to true to skip symbol obfuscation"},
+                "ObfuscateSymbols": {"name": "ObfuscateSymbols", "value": "true", "required": true, "description": "Set to to true to skip symbol obfuscation"},
                 "DomainsDNSListener": {"name": "Parent domains", "value": "", "required": false, "description": "Canary DNS domains for the listener, which can handle multiple implants (Comma-separated list)"},
                 "DisableCanaries": {"name": "DisableCanaries", "value": "false", "required": true, "description": "Disable Canary detection for listener"},
                 "Canaries": {"name": "Canaries", "value": "", "required": false, "description": "Canary DNS domains (make sure you have/will have a DNS listener running) (Comma-separated list)"},
