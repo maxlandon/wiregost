@@ -63,7 +63,7 @@ func RegisterWorkspaceCommands() {
 				case "switch":
 					fmt.Println()
 					if len(r.Args) == 2 {
-						switchWorkspace(r.Args[1], r.context.CurrentWorkspace, &r.context.Context)
+						switchWorkspace(r.Args[1], r.context.CurrentWorkspace, &r.context.Context, *r.context)
 					} else {
 						fmt.Printf("%s[!]%s Provide a workspace name",
 							tui.RED, tui.RESET)
@@ -123,7 +123,7 @@ func workspaces(currentWorkspace *models.Workspace) {
 	printWorkspaceTable(data)
 }
 
-func switchWorkspace(name string, workspace *models.Workspace, ctx *context.Context) {
+func switchWorkspace(name string, workspace *models.Workspace, ctx *context.Context, sctx ShellContext) {
 	workspaces, err := remote.Workspaces(nil)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -135,6 +135,9 @@ func switchWorkspace(name string, workspace *models.Workspace, ctx *context.Cont
 			workspace = &workspaces[i]
 			fmt.Printf("%s*%s Switched to workspace %s",
 				tui.BLUE, tui.RESET, workspaces[i].Name)
+			// Reset currentModule
+			*sctx.CurrentModule = ""
+
 		}
 	}
 }

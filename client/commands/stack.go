@@ -18,14 +18,18 @@ package commands
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
+	"github.com/olekukonko/tablewriter"
 
 	"github.com/maxlandon/wiregost/client/help"
+	"github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
+	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
 func RegisterStackCommands() {
@@ -41,7 +45,7 @@ func RegisterStackCommands() {
 			switch length := len(r.Args); {
 			case length == 0:
 				fmt.Println()
-				stackList(r.context.CurrentWorkspace.ID)
+				stackList(*r.context, r.context.Server.RPC)
 				fmt.Println()
 			case length >= 1:
 				switch r.Args[0] {
@@ -56,21 +60,16 @@ func RegisterStackCommands() {
 					}
 				case "pop":
 					if len(r.Args) == 1 {
-						fmt.Println()
-						stackPop(r.context.CurrentWorkspace.ID,
-							*r.context.CurrentModule, false, r.context.CurrentModule)
-						fmt.Println()
+						stackPop(*r.context, *r.context.CurrentModule, false, r.context.Server.RPC)
 					}
 					if len(r.Args) >= 2 {
 						switch r.Args[1] {
 						case "all":
-							fmt.Println()
-							stackPop(r.context.CurrentWorkspace.ID, "", true, r.context.CurrentModule)
-							fmt.Println()
+							stackPop(*r.context, "", true, r.context.Server.RPC)
 						default:
-							fmt.Println()
-							stackPop(r.context.CurrentWorkspace.ID, r.Args[1], false, r.context.CurrentModule)
-							fmt.Println()
+							for _, arg := range r.Args[1:] {
+								stackPop(*r.context, arg, false, r.context.Server.RPC)
+							}
 						}
 					}
 
@@ -99,7 +98,7 @@ func stackUse(ctx ShellContext, module string, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
 		return
 	}
 
@@ -117,10 +116,104 @@ func stackUse(ctx ShellContext, module string, rpc RPCServer) {
 	ctx.Module.ParseProto(currentMod)
 }
 
-func stackList(workspaceID uint) {
+func stackList(ctx ShellContext, rpc RPCServer) {
+	stack, _ := proto.Marshal(&clientpb.StackReq{
+		Action:      "list",
+		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+	})
 
+	resp := <-rpc(&ghostpb.Envelope{
+		Type: clientpb.MsgStackList,
+		Data: stack,
+	}, defaultTimeout)
+
+	if resp.Err != "" {
+		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
+		return
+	}
+
+	stackList := &clientpb.Stack{}
+	proto.Unmarshal(resp.Data, stackList)
+	if stackList.Err != "" {
+		fmt.Println()
+		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, stackList.Err)
+		fmt.Println()
+		return
+	}
+
+	table := util.Table()
+	table.SetHeader([]string{"Type", "Path", "Description"})
+	table.SetColWidth(80)
+	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+	)
+
+	list := []string{}
+	for _, m := range stackList.Modules {
+		list = append(list, strings.Join(m.Path, "/"))
+	}
+	list = sort.StringSlice(list)
+
+	for _, p := range list {
+		for _, m := range stackList.Modules {
+			if strings.Join(m.Path, "/") == p {
+				if strings.Join(m.Path, "/") == *ctx.CurrentModule {
+					table.Rich([]string{m.Type, strings.Join(m.Path[1:], "/"), m.Description},
+						[]tablewriter.Colors{tablewriter.Colors{tablewriter.Normal, tablewriter.FgBlueColor},
+							tablewriter.Colors{tablewriter.Normal, tablewriter.FgBlueColor},
+							tablewriter.Colors{tablewriter.Normal, tablewriter.Normal},
+						})
+				} else {
+					table.Append([]string{m.Type, strings.Join(m.Path[1:], "/"), m.Description})
+				}
+			}
+		}
+	}
+	table.Render()
 }
 
-func stackPop(workspaceID uint, module string, all bool, current *string) {
+func stackPop(ctx ShellContext, module string, all bool, rpc RPCServer) {
 
+	mod, _ := proto.Marshal(&clientpb.StackReq{
+		Path:        strings.Split(module, "/"),
+		All:         all,
+		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+	})
+
+	resp := <-rpc(&ghostpb.Envelope{
+		Type: clientpb.MsgStackPop,
+		Data: mod,
+	}, defaultTimeout)
+
+	if resp.Err != "" {
+		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
+		return
+	}
+
+	stack := &clientpb.Stack{}
+	proto.Unmarshal(resp.Data, stack)
+	if stack.Err != "" {
+		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, stack.Err)
+		return
+	}
+
+	if all {
+		*ctx.CurrentModule = ""
+		ctx.Module = nil
+		return
+	}
+
+	if (stack.Path != nil) && (len(stack.Path) != 0) {
+		*ctx.CurrentModule = strings.Join(stack.Path, "/")
+		newMod := &templates.Module{}
+		newMod.ParseProto(stack.Modules[0])
+		ctx.Module = newMod
+		return
+	}
+
+	if len(stack.Path) == 0 {
+		*ctx.CurrentModule = ""
+		ctx.Module = nil
+	}
 }

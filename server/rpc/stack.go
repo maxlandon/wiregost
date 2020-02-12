@@ -33,37 +33,48 @@ func rpcStackUse(data []byte, timeout time.Duration, resp RPCResponse) {
 		resp(data, err)
 	}
 
-	// Find module
-	path := strings.Join(stackReq.Path, "/")
-
-	// Load it on the workspace stack
+	// Find the workspace stack
 	wsID := uint(stackReq.WorkspaceID)
 	stack := (*module.Stacks)[wsID]
-	err = stack.LoadModule(path)
 
-	// If errors, send status
-	if err != nil {
-		stackErr := &clientpb.Stack{
-			Path: stackReq.Path,
-			Err:  err.Error(),
+	path := strings.Join(stackReq.Path, "/")
+
+	if mod, found := (*stack.Loaded)[path]; !found {
+		// If module not found, load it and send it
+		err = stack.LoadModule(path)
+		if err != nil {
+			stackErr := &clientpb.Stack{
+				Path: stackReq.Path,
+				Err:  err.Error(),
+			}
+
+			data, err = proto.Marshal(stackErr)
+			resp(data, err)
+			return
+		}
+		mod = (*stack.Loaded)[path]
+		module := []*clientpb.Module{mod.ToProtobuf()}
+		stackUse := &clientpb.Stack{
+			Path:    stackReq.Path,
+			Modules: module,
+			Err:     "",
 		}
 
-		data, err = proto.Marshal(stackErr)
+		data, err = proto.Marshal(stackUse)
 		resp(data, err)
-		return
-	}
+		// If found, send it
+	} else {
+		mod = (*stack.Loaded)[path]
+		module := []*clientpb.Module{mod.ToProtobuf()}
+		stackUse := &clientpb.Stack{
+			Path:    stackReq.Path,
+			Modules: module,
+			Err:     "",
+		}
 
-	// If no errors, send module
-	mod := (*stack.Loaded)[path]
-	module := []*clientpb.Module{mod.ToProtobuf()}
-	stackUse := &clientpb.Stack{
-		Path:    stackReq.Path,
-		Modules: module,
-		Err:     "",
+		data, err = proto.Marshal(stackUse)
+		resp(data, err)
 	}
-
-	data, err = proto.Marshal(stackUse)
-	resp(data, err)
 }
 
 func rpcStackPop(data []byte, timeout time.Duration, resp RPCResponse) {
@@ -73,7 +84,37 @@ func rpcStackPop(data []byte, timeout time.Duration, resp RPCResponse) {
 		resp(data, err)
 	}
 
-	// data, err := proto.Marshal()
+	// Find workspace stack
+	wsID := uint(stackReq.WorkspaceID)
+	stack := (*module.Stacks)[wsID]
+
+	if stackReq.All {
+		for k, _ := range *stack.Loaded {
+			stack.PopModule(k)
+		}
+	} else {
+		stack.PopModule(strings.Join(stackReq.Path, "/"))
+	}
+
+	// Get next module on top of stack
+	modules := []*clientpb.Module{}
+	for _, v := range *stack.Loaded {
+		modules = append(modules, v.ToProtobuf())
+	}
+	next := []string{}
+	if len(modules) != 0 {
+		next = modules[0].Path
+		modules = []*clientpb.Module{modules[0]}
+	}
+
+	// Send it back
+	stackPop := &clientpb.Stack{
+		Path:    next,
+		Modules: modules,
+		Err:     "",
+	}
+
+	data, err = proto.Marshal(stackPop)
 	resp(data, err)
 }
 
@@ -84,6 +125,22 @@ func rpcStackList(data []byte, timeout time.Duration, resp RPCResponse) {
 		resp(data, err)
 	}
 
-	// data, err := proto.Marshal()
+	// Find workspace stack
+	wsID := uint(stackReq.WorkspaceID)
+	stack := (*module.Stacks)[wsID]
+
+	modules := []*clientpb.Module{}
+
+	for _, v := range *stack.Loaded {
+		modules = append(modules, v.ToProtobuf())
+	}
+
+	stackList := &clientpb.Stack{
+		Path:    stackReq.Path,
+		Modules: modules,
+		Err:     "",
+	}
+
+	data, err = proto.Marshal(stackList)
 	resp(data, err)
 }

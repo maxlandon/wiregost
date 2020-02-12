@@ -116,6 +116,17 @@ func RegisterModuleCommands() {
 	}
 
 	AddCommand("module", listener)
+
+	back := &Command{
+		Name: "back",
+		Help: help.GetHelpFor("back"),
+		Handle: func(r *Request) error {
+			backToMainMenu(*r.context)
+			return nil
+		},
+	}
+
+	AddCommand("module", back)
 }
 
 func setOption(args []string, ctx ShellContext, rpc RPCServer) {
@@ -147,7 +158,7 @@ func setOption(args []string, ctx ShellContext, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
 		return
 	}
 
@@ -283,4 +294,9 @@ func runModule(action string, ctx ShellContext, rpc RPCServer) {
 		fmt.Printf("%s[*]%s %s", tui.GREEN, tui.RESET, result.Result)
 	}
 
+}
+
+func backToMainMenu(ctx ShellContext) {
+	*ctx.CurrentModule = ""
+	ctx.Module = nil
 }
