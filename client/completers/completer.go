@@ -118,6 +118,9 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 	case "use":
 		comp := &ModuleCompleter{Command: cmd}
 		options, offset = comp.Do(ctx, line, pos)
+	case "stack":
+		comp := &StackCompleter{Command: cmd}
+		options, offset = comp.Do(ctx, line, pos)
 	}
 
 	return options, offset

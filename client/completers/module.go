@@ -17,7 +17,8 @@
 package completers
 
 import (
-	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/maxlandon/wiregost/client/commands"
@@ -35,33 +36,86 @@ func (mc *ModuleCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) 
 	splitLine := strings.Split(string(line), " ")
 	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
 
-	types := []string{"exploit", "post", "auxiliary", "payload"}
+	// types := []string{"exploit", "post", "auxiliary", "payload"}
 
-	for _, dir := range types {
-		search := dir
-		if !hasPrefix(line, []rune(search)) {
-			sLine, sOffset := doInternal(line, pos, len(line), []rune(search+"/"))
-			options = append(options, sLine...)
-			offset = sOffset
-		} else {
-			words := strings.Split(string(line), "/")
-			argInput := lastString(words)
-
-			// For some arguments, the split results in a last empty item.
-			if words[len(words)-1] == "" {
-				argInput = words[0]
+	dirs := []string{}
+	err := filepath.Walk(assets.GetModulesDir(),
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
 			}
-
-			dirs, _ := ioutil.ReadDir(assets.GetModulesDir() + "/" + string(line))
-			for _, dir := range dirs {
-				search := dir.Name()
-				if !hasPrefix(line, []rune(search)) {
-					options = append(options, []rune(search+"/"))
-					offset = len(argInput)
+			if info.IsDir() {
+				if !strings.HasSuffix(path, "/docs") {
+					path = strings.TrimPrefix(path, assets.GetModulesDir())
+					path = strings.TrimPrefix(path, "/")
+					dirs = append(dirs, path)
 				}
 			}
-			return
+			return nil
+		})
+	if err != nil {
+		return
+	}
+
+	for _, dir := range dirs {
+		search := dir
+		if !hasPrefix(line, []rune(search)) {
+			sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+			options = append(options, sLine...)
+			offset = sOffset
 		}
 	}
+	// for _, dir := range types {
+	//         search := dir
+	//         if !hasPrefix(line, []rune(search)) {
+	//                 sLine, sOffset := doInternal(line, pos, len(line), []rune(search+"/"))
+	//                 options = append(options, sLine...)
+	//                 offset = sOffset
+	//         } else {
+	//                 dirs := []string{}
+	//                 err := filepath.Walk(assets.GetModulesDir(),
+	//                         func(path string, info os.FileInfo, err error) error {
+	//                                 if err != nil {
+	//                                         return err
+	//                                 }
+	//                                 if info.IsDir() {
+	//                                         if !strings.HasSuffix(path, "/docs") {
+	//                                                 path = strings.TrimPrefix(path, assets.GetModulesDir())
+	//                                                 if strings.HasPrefix(path, "/"+search) {
+	//                                                         path = strings.TrimPrefix(path, "/"+search)
+	//                                                         dirs = append(dirs, path)
+	//                                                 }
+	//                                         }
+	//                                 }
+	//                                 return nil
+	//                         })
+	//                 if err != nil {
+	//                         return
+	//                 }
+
+	// splitLine := strings.Split(string(line), " ")
+	// line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+
+	// words := strings.Split(string(line), "/")
+	// argInput := lastString(words)
+
+	// For some arguments, the split results in a last empty item.
+	// if words[len(words)-1] == "" {
+	//         argInput = words[0]
+	// }
+
+	// dirs, _ := ioutil.ReadDir(assets.GetModulesDir() + "/" + string(line))
+	// for _, dir := range dirs {
+	//         search := dir
+	//         if !hasPrefix(line, []rune(search)) {
+	//                 sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+	//                 options = append(options, sLine...)
+	//                 offset = sOffset
+	//                 // options = append(options, []rune(search+"/"))
+	//                 // offset = len(search)
+	//         }
+	// }
+	// }
+	// }
 	return options, offset
 }
