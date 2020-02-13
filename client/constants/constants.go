@@ -56,6 +56,12 @@ const (
 	Cd       = "cd"
 	Resource = "resource"
 
+	// Server --------------------------------
+	Server = "server"
+
+	// User --------------------------------
+	User = "user"
+
 	// Data Service --------------------------
 
 	// Workspace
@@ -75,4 +81,17 @@ const (
 
 	// Groups
 	DataServiceHelpGroup = "Data Service:"
+
+	// Stack & Modules -----------------------
+	Stack              = "stack"
+	ModuleUse          = "use"
+	ModuleToListener   = "to_listener"
+	ModuleParseProfile = "parse_profile"
+	ModuleToProfile    = "to_profile"
+
+	// Jobs ----------------------------------
+	Jobs = "jobs"
+
+	// Profiles ------------------------------
+	Profiles = "profiles"
 )

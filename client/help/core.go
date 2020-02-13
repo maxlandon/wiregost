@@ -30,10 +30,22 @@ var (
 %s Categories:%s
     core            %sCore shell commands%s
     workspace       %sManage Wiregost workspaces%s
-    hosts           %sManage database hosts%s`,
+    hosts           %sManage database hosts%s
+    server          %sList/Connect to Wiregost servers%s
+    user            %sList and add users to a Wiregost server%s
+    stack           %sManage modules loaded on the workspace stack%s
+    module          %sHelp about modules, their types and appropriate commands%s
+    jobs            %sList and manage jobs%s
+    profiles        %sHelp about profiles, and how to use them%s`,
 		tui.BLUE, tui.BOLD, tui.RESET,
 		tui.YELLOW, tui.RESET,
 		tui.YELLOW, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,

@@ -32,11 +32,23 @@ func RegisterHelpCommands() {
 			"core",
 			"workspace",
 			"hosts",
+			"server",
+			"user",
+			"profiles",
+			"jobs",
+			"module",
+			"stack",
 		},
 		Args: []*CommandArg{
 			&CommandArg{Name: "core"},
 			&CommandArg{Name: "workspace"},
 			&CommandArg{Name: "hosts"},
+			&CommandArg{Name: "server"},
+			&CommandArg{Name: "user"},
+			&CommandArg{Name: "profiles"},
+			&CommandArg{Name: "jobs"},
+			&CommandArg{Name: "module"},
+			&CommandArg{Name: "stack"},
 		},
 		Handle: func(r *Request) error {
 			switch length := len(r.Args); {

@@ -22,7 +22,7 @@ import (
 
 var (
 	cmdHelp = map[string]string{
-		// [ Core ] ---------------------------------------------//
+		// [ Core ]
 
 		consts.Help:     helpHelp,
 		consts.Core:     coreHelp,
@@ -30,7 +30,13 @@ var (
 		consts.Cd:       cdHelp,
 		consts.Resource: resourceHelp,
 
-		// [ Data Service ] -------------------------------------//
+		// [ Server ]
+		consts.Server: serverHelp,
+
+		// [ User ]
+		consts.User: userHelp,
+
+		// [ Data Service ]
 
 		// Workspace
 		consts.WorkspaceStr: workspaceHelp,
@@ -46,6 +52,16 @@ var (
 		consts.ServicesAdd:    servicesAdd,
 		consts.ServicesDelete: servicesDelete,
 		consts.ServicesUpdate: servicesUpdate,
+
+		// [ Stack & Modules ]
+		// consts.Stack:  stackHelp,
+		// consts.Module: moduleHelp,
+
+		// [ Jobs ]
+		// consts.Jobs: jobsHelp,
+
+		// [ Profiles ]
+		// consts.Profiles: profilesHelp,
 	}
 )
 
