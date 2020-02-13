@@ -52,9 +52,7 @@ type Console struct {
 	currentWorkspace *models.Workspace
 
 	// Server
-	currentServer  *assets.ClientConfig
-	serverPublicIP string
-	server         *core.WiregostServer
+	server *core.WiregostServer
 
 	// Jobs
 	listeners int
@@ -109,9 +107,13 @@ func Start() {
 	c := NewConsole()
 
 	// Connect to server
-	err := c.connect()
+	config := getDefaultServerConfig()
+	err := c.connect(config)
+
 	if err != nil {
+		fmt.Println(err.Error())
 		fmt.Println()
+		os.Exit(1)
 	} else {
 		go c.eventLoop(c.server)
 	}

@@ -17,12 +17,17 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/client/assets"
+	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/client/help"
+	"github.com/maxlandon/wiregost/client/transport"
 	"github.com/maxlandon/wiregost/client/util"
 	"github.com/olekukonko/tablewriter"
 )
@@ -43,6 +48,8 @@ func RegisterServerCommands() {
 			case length >= 1:
 				switch r.Args[0] {
 				case "connect":
+					fmt.Println()
+					connectServer(r.Args[1:], *r.context)
 				}
 			}
 			return nil
@@ -79,11 +86,54 @@ func listServers(ctx ShellContext) {
 		port := strconv.Itoa(c.LPort)
 
 		connected := ""
-		if c.LHost == ctx.CurrentServer.LHost && c.LPort == ctx.CurrentServer.LPort {
+		if c.LHost == ctx.Server.Config.LHost && c.LPort == ctx.Server.Config.LPort {
 			connected = fmt.Sprintf("%sconnected%s", tui.GREEN, tui.RESET)
 		}
 
 		table.Append([]string{c.User, c.LHost, port, def, connected})
 	}
 	table.Render()
+}
+
+func connectServer(args []string, ctx ShellContext) error {
+	if len(args) == 0 {
+		fmt.Println()
+		fmt.Printf("%s[!]%s Provide a server address \n", tui.RED, tui.RESET, assets.GetConfigDir())
+		return nil
+	}
+
+	lhost := strings.Split(args[0], ":")[0]
+	port := strings.Split(args[0], ":")[1]
+	lport, _ := strconv.Atoi(port)
+	user := args[2]
+
+	configs := assets.GetConfigs()
+	var config *assets.ClientConfig
+	for _, conf := range configs {
+		if (lhost == conf.LHost) && (lport == conf.LPort) && (user == conf.User) {
+			config = conf
+		}
+	}
+
+	fmt.Printf("%s[*]%s Disconnecting from current server %s:%d \n...\n", tui.YELLOW, tui.RESET, ctx.Server.Config.LHost, ctx.Server.Config.LPort)
+
+	fmt.Printf("%s[*]%s Connecting to %s:%d ...\n", tui.BLUE, tui.RESET, config.LHost, config.LPort)
+	send, recv, err := transport.MTLSConnect(config)
+	if err != nil {
+		errString := fmt.Sprintf("%s[!] Connection to server failed: %v", tui.RED, err)
+		return errors.New(errString)
+	} else {
+		fmt.Printf("%s[*]%s Connected to Wiregost server at %s:%d, as user %s%s%s",
+			tui.GREEN, tui.RESET, config.LHost, config.LPort, tui.YELLOW, config.User, tui.RESET)
+		fmt.Println()
+	}
+
+	// Bind connection to server object in console
+	ctx.Server = core.BindWiregostServer(send, recv)
+	ctx.Server.Config = config
+	go ctx.Server.ResponseMapper()
+
+	time.Sleep(time.Millisecond * 50)
+
+	return nil
 }

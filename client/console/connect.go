@@ -26,9 +26,7 @@ import (
 	"github.com/maxlandon/wiregost/client/transport"
 )
 
-func (c *Console) connect() error {
-
-	// Find configs and use default
+func getDefaultServerConfig() *assets.ClientConfig {
 	configs := assets.GetConfigs()
 	if len(configs) == 0 {
 		fmt.Printf("%s[!] No config files found at %s or -config\n", tui.YELLOW, assets.GetConfigDir())
@@ -42,20 +40,21 @@ func (c *Console) connect() error {
 		}
 	}
 
+	return config
+}
+
+func (c *Console) connect(config *assets.ClientConfig) error {
+
 	// Initiate connection
 	fmt.Printf("%s[*]%s Connecting to %s:%d ...\n", tui.BLUE, tui.RESET, config.LHost, config.LPort)
 	send, recv, err := transport.MTLSConnect(config)
 	if err != nil {
-		fmt.Printf("%s[!] Connection to server failed: %v", tui.RED, err)
-		return errors.New("Connection to server failed")
+		errString := fmt.Sprintf("%s[!] Connection to server failed: %v", tui.RED, err)
+		return errors.New(errString)
 	} else {
 		fmt.Printf("%s[*]%s Connected to Wiregost server at %s:%d, as user %s%s%s",
 			tui.GREEN, tui.RESET, config.LHost, config.LPort, tui.YELLOW, config.User, tui.RESET)
 		fmt.Println()
-
-		// Register server information to console
-		c.currentServer = config
-		c.serverPublicIP = c.currentServer.LHost
 	}
 
 	// Bind connection to server object in console
@@ -64,7 +63,7 @@ func (c *Console) connect() error {
 
 	// Actualize shell context with server
 	c.shellContext.Server = c.server
-	c.shellContext.CurrentServer = c.currentServer
+	c.shellContext.Server.Config = config
 
 	return nil
 }

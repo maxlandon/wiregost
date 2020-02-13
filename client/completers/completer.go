@@ -129,6 +129,9 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 	case "user":
 		comp := &UserCompleter{Command: cmd}
 		options, offset = comp.Do(ctx, line, pos)
+	case "server":
+		comp := &ServerCompleter{Command: cmd}
+		options, offset = comp.Do(ctx, line, pos)
 	}
 
 	return options, offset

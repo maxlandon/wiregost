@@ -125,7 +125,7 @@ func newPrompt(c *Console) Prompt {
 			return ip
 		},
 		"{serverip}": func() string {
-			return c.serverPublicIP
+			return c.server.Config.LHost
 		},
 		// Listeners
 		"{listeners}": func() string {
