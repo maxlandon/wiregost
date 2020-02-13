@@ -25,6 +25,9 @@ func RegisterCommands() {
 	RegisterHelpCommands()
 	RegisterUserCommands()
 
+	// Server
+	RegisterServerCommands()
+
 	// Data Service
 	RegisterWorkspaceCommands()
 	RegisterHostCommands()

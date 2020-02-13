@@ -64,6 +64,7 @@ func (c *Console) connect() error {
 
 	// Actualize shell context with server
 	c.shellContext.Server = c.server
+	c.shellContext.CurrentServer = c.currentServer
 
 	return nil
 }
