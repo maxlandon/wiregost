@@ -423,7 +423,7 @@ message Event {
 message Players { repeated Player Players = 1; }
 
 message Player {
-        string User = 1;
+        Client Client = 1;
         bool Online = 2;
 }
 

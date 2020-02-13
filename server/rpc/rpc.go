@@ -56,6 +56,10 @@ var (
 
 		// Profiles
 		clientpb.MsgProfiles: rpcListProfiles,
+
+		// Users
+		clientpb.MsgUser:    rpcListUsers,
+		clientpb.MsgUserReq: rpcAddUser,
 	}
 
 	tunnelHandlers = &map[uint32]TunnelHandler{

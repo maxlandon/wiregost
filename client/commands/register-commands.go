@@ -23,6 +23,7 @@ func RegisterCommands() {
 	// Core
 	RegisterCoreCommands()
 	RegisterHelpCommands()
+	RegisterUserCommands()
 
 	// Data Service
 	RegisterWorkspaceCommands()
