@@ -18,7 +18,6 @@ package commands
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/evilsocket/islazy/tui"
@@ -240,7 +239,13 @@ func showInfo(ctx ShellContext) {
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 	)
 	for _, v := range util.SortListenerOptionKeys(m.Options) {
-		table.Append([]string{m.Options[v].Name, m.Options[v].Value, strconv.FormatBool(m.Options[v].Required), m.Options[v].Description})
+		required := ""
+		if m.Options[v].Required {
+			required = "yes"
+		} else {
+			required = "no"
+		}
+		table.Append([]string{m.Options[v].Name, m.Options[v].Value, required, m.Options[v].Description})
 	}
 	table.Render()
 
@@ -256,7 +261,13 @@ func showInfo(ctx ShellContext) {
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 	)
 	for _, v := range util.SortGenerateOptionKeys(m.Options) {
-		table.Append([]string{m.Options[v].Name, m.Options[v].Value, strconv.FormatBool(m.Options[v].Required), m.Options[v].Description})
+		required := ""
+		if m.Options[v].Required {
+			required = "yes"
+		} else {
+			required = "no"
+		}
+		table.Append([]string{m.Options[v].Name, m.Options[v].Value, required, m.Options[v].Description})
 	}
 	table.Render()
 
@@ -282,7 +293,13 @@ func showOptions(ctx ShellContext) {
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 	)
 	for _, v := range util.SortListenerOptionKeys(m.Options) {
-		table.Append([]string{m.Options[v].Name, m.Options[v].Value, strconv.FormatBool(m.Options[v].Required), m.Options[v].Description})
+		required := ""
+		if m.Options[v].Required {
+			required = "yes"
+		} else {
+			required = "no"
+		}
+		table.Append([]string{m.Options[v].Name, m.Options[v].Value, required, m.Options[v].Description})
 	}
 	table.Render()
 
@@ -298,7 +315,13 @@ func showOptions(ctx ShellContext) {
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 	)
 	for _, v := range util.SortGenerateOptionKeys(m.Options) {
-		table.Append([]string{m.Options[v].Name, m.Options[v].Value, strconv.FormatBool(m.Options[v].Required), m.Options[v].Description})
+		required := ""
+		if m.Options[v].Required {
+			required = "yes"
+		} else {
+			required = "no"
+		}
+		table.Append([]string{m.Options[v].Name, m.Options[v].Value, required, m.Options[v].Description})
 	}
 	table.Render()
 }
