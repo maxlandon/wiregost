@@ -15,3 +15,31 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package help
+
+import (
+	"fmt"
+
+	"github.com/evilsocket/islazy/tui"
+)
+
+var (
+	profileHelp = fmt.Sprintf(`%s%s Profile Commands%s 
+
+%s About:%s Manage implant profiles 
+
+%s Commands:%s
+    profiles    %sList saved implant profiles and their options%s
+
+%s Notes:%s
+    - Profiles can be used with payload modules. 
+    - The 'Implant' options of these modules, when using 'parse_profile' will be populated with the selected 
+      profile options. Any profile can be used with any payload type: the module will only use the options 
+      from the profile that are relevant to him.
+    - Conversely, profiles can be generated using the payload module command 'to_profile'`,
+		tui.BLUE, tui.BOLD, tui.RESET,
+		tui.YELLOW, tui.RESET,
+		tui.YELLOW, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.YELLOW, tui.RESET,
+	)
+)

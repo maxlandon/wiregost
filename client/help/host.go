@@ -94,7 +94,7 @@ var (
 
     hosts delete addresses=192.168.1.24 os-family=Windows       %sDelete hosts matching both address and os_family%s
     hosts delete addresses=220.188.2.15 arch=64                 %sDelete hosts matching both address and arch%s
-    hosts delete host-id=2 "                                    %sDelete host with ID 2%s`,
+    hosts delete host-id=2                                      %sDelete host with ID 2%s`,
 		tui.BLUE, tui.BOLD, tui.FOREWHITE, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,

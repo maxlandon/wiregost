@@ -246,7 +246,7 @@ func showInfo(ctx ShellContext) {
 
 	// Generate Options
 	fmt.Println()
-	fmt.Println(tui.Bold(tui.Blue(" Generate Options")))
+	fmt.Println(tui.Bold(tui.Blue(" Implant Options")))
 	table = util.Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
 	table.SetColWidth(90)
@@ -288,7 +288,7 @@ func showOptions(ctx ShellContext) {
 
 	// Generate Options
 	fmt.Println()
-	fmt.Println(tui.Bold(tui.Blue(" Generate Options")))
+	fmt.Println(tui.Bold(tui.Blue(" Implant Options")))
 	table = util.Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
 	table.SetColWidth(90)

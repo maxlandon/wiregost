@@ -23,20 +23,17 @@ import (
 )
 
 var (
-	stackHelp = fmt.Sprintf(`%s%s Stack Commands%s 
+	jobHelp = fmt.Sprintf(`%s%s Job Commands%s 
 
-%s About:%s Manage the modules loaded on the current workspace' stack 
+%s About:%s Job management
 
 %s Commands:%s
-    stack           %sList all modules currently loaded on the stack, and the current one%s
-    stack use       %sUse a module from the stack (or not) (used with stack modules completion)%s
-    stack pop       %sUnload one, more or all modules from the stack (will forget about current options)%s
+    jobs            %sList all active jobs%s
+    jobs kill       %sKill one or more jobs%s
+    jobs kill-all   %sKill all jobs%s
 
 %s Examples:%s
-    stack pop                                       %sPop the current module from the stack (will fall back on next one)%s
-    stack pop all                                   %sFlush the stack%s
-    stack pop payload/multi/single/reverse_dns      %sUnload a precise module from the stack (modules are auto-completed)%s
-    stack use payload/multi/single/reverse_https    %sSwitch to a module already on the stack (auto-completed)%s`,
+    jobs kill 3     %sKill job with ID 3%s`,
 		tui.BLUE, tui.BOLD, tui.RESET,
 		tui.YELLOW, tui.RESET,
 		tui.YELLOW, tui.RESET,
@@ -44,9 +41,6 @@ var (
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.YELLOW, tui.RESET,
-		tui.DIM, tui.RESET,
-		tui.DIM, tui.RESET,
-		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 	)
 )

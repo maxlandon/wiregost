@@ -37,7 +37,6 @@ var (
 		consts.User: userHelp,
 
 		// [ Data Service ]
-
 		// Workspace
 		consts.WorkspaceStr: workspaceHelp,
 
@@ -54,14 +53,14 @@ var (
 		consts.ServicesUpdate: servicesUpdate,
 
 		// [ Stack & Modules ]
-		// consts.Stack:  stackHelp,
-		// consts.Module: moduleHelp,
+		consts.Stack:  stackHelp,
+		consts.Module: moduleHelp,
 
 		// [ Jobs ]
-		// consts.Jobs: jobsHelp,
+		consts.Jobs: jobHelp,
 
 		// [ Profiles ]
-		// consts.Profiles: profilesHelp,
+		consts.Profiles: profileHelp,
 	}
 )
 

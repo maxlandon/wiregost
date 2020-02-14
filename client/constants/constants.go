@@ -84,6 +84,7 @@ const (
 
 	// Stack & Modules -----------------------
 	Stack              = "stack"
+	Module             = "module"
 	ModuleUse          = "use"
 	ModuleToListener   = "to_listener"
 	ModuleParseProfile = "parse_profile"
