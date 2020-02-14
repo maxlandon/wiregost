@@ -18,9 +18,18 @@ They are regrouped by topic/specialisation
 * `host.go`                 - Manages hosts
 * `service.go`              - Manages services
 
+#### Server
+* `server.go`               - Server connection and management 
+
+#### Users 
+* `users.go`                - Manage users of a Wiregost server 
+
 #### Stack / Modules
 * `stack.go`                - Loads/unloads modules onto the workspace's module stack
 * `module.go`               - Interact with current module (run, set options, info, etc...)
 
 #### Jobs
 * `job.go`                  - Manages jobs (show, kill, kill-all)
+
+#### Profiles 
+* `profile.go`              - Implant profiles management 

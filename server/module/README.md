@@ -18,7 +18,8 @@ Go in the `templates/` directory for further information on each bundled module 
 
 The main goal of the following package structure, and the model of "bundled modules"
 is to provide locality of information for each module. However, some modules may only use
-a subset of the available bundle structure (ie payloads, scanners, listeners)
+a subset of the available bundle structure (ie payloads, scanners, listeners).
+When reusing one of the bundle templates, feel free to add directories and files, and to remove the unneeded ones.
 
 * `module.go`           - Core functionality of the module, with Run(), Init(), Reload() functions.
 * `metadata.json`       - Module information and options, loaded during module initialization

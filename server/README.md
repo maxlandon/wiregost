@@ -17,4 +17,5 @@ The `server/` directory contains the Wiregost server implementation.
 * `msf/`            - Metasploit helper functions
 * `rpc/`            - RPC functions and logic, called by clients to control agents
 * `transport/`      - Contains server-side code for handling communication with clients
+* `users /`         - Contains server-side code for managing Wiregost users 
 * `website/`        - Static content that can be hosted on HTTP(S) C2 domains

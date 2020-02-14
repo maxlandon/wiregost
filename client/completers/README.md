@@ -13,3 +13,6 @@ the root completer calls specialized functions contained in their appropriate so
 * `module.go`           - Completes paths for all modules
 * `stack.go`            - Completes module paths for stack-loaded modules
 * `option.go`           - Completes module options
+* `profiles.go`         - Completes implant profiles names 
+* `user.go`             - Completes user option fields 
+* `server.go`           - Completes server configs for server switching 
