@@ -231,4 +231,42 @@ func RegisterCoreCommands() {
 	AddCommand("main", resource)
 	AddCommand("module", resource)
 	AddCommand("ghost", resource)
+
+	mode := &Command{
+		Name: "mode",
+		SubCommands: []string{
+			"vim",
+			"emacs",
+		},
+		Handle: func(r *Request) error {
+			if len(r.Args) == 0 {
+				fmt.Printf("%s[!]%s Missing mode (vim/emacs)", tui.YELLOW, tui.RESET)
+				fmt.Println()
+				return nil
+			}
+
+			switch r.Args[0] {
+			case "vim":
+				*r.context.Mode = "vim"
+				fmt.Println()
+				fmt.Printf("%s*%s Switched mode: %sVim%s", tui.BLUE, tui.RESET, tui.YELLOW, tui.RESET)
+				fmt.Println()
+			case "emacs":
+				*r.context.Mode = "emacs"
+				fmt.Println()
+				fmt.Printf("%s*%s Switched mode: %sEmacs%s", tui.BLUE, tui.RESET, tui.YELLOW, tui.RESET)
+				fmt.Println()
+			default:
+				fmt.Printf("%s[!]%s Invalid mode (vim/emacs)", tui.RED, tui.RESET)
+				fmt.Println()
+				return nil
+			}
+
+			return nil
+		},
+	}
+
+	AddCommand("main", mode)
+	AddCommand("module", mode)
+	AddCommand("ghost", mode)
 }

@@ -25,8 +25,8 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
+	"github.com/evilsocket/islazy/fs"
 
-	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/completers"
 	"github.com/maxlandon/wiregost/client/core"
@@ -41,6 +41,7 @@ type Console struct {
 	// Shell
 	Shell   *readline.Instance
 	prompt  Prompt
+	mode    string
 	vimMode string
 
 	// Context
@@ -68,34 +69,50 @@ type Console struct {
 
 func NewConsole() *Console {
 
+	// [ Config ]
+	conf := LoadConsoleConfig()
+	history, _ := fs.Expand(conf.HistoryFile)
+
+	// [ New console ]
+	console := &Console{
+		menuContext: "main",
+	}
+
+	console.initContext()
+	console.prompt = newPrompt(console, conf.Prompt)
+
+	// [ Console input ]
 	shell, _ := readline.NewEx(&readline.Config{
-		HistoryFile:       assets.GetRootAppDir() + "/.history",
+		HistoryFile:       history,
 		InterruptPrompt:   "^C",
 		EOFPrompt:         "exit",
 		HistoryLimit:      5000,
 		HistorySearchFold: true,
-		VimMode:           true,
 	})
 
-	console := &Console{
-		Shell:       shell,
-		menuContext: "main",
-	}
-	console.initContext()
-	console.prompt = newPrompt(console)
+	console.Shell = shell
 
-	// Setup Autocompleter
+	// Set keyboard mode
+	if conf.Mode == "vim" {
+		shell.Config.VimMode = true
+	} else if conf.Mode == "emacs" {
+		shell.Config.VimMode = false
+	} else {
+		shell.Config.VimMode = false
+	}
+
+	// Set Vim mode
+	console.vimMode = "insert"
+	console.Shell.Config.FuncFilterInputRune = console.filterInput
+
+	// [ Autocompleters ]
 	completer := &completers.AutoCompleter{
 		MenuContext: &console.menuContext,
 		Context:     console.shellContext,
 	}
 	console.Shell.Config.AutoComplete = completer
 
-	// Set Vim mode
-	console.vimMode = "insert"
-	console.Shell.Config.FuncFilterInputRune = console.filterInput
-
-	// Register all commands into their respective menus
+	// [ Commands ]
 	commands.RegisterCommands()
 
 	return console
@@ -124,7 +141,6 @@ func Start() {
 	// Command loop
 	for {
 		// Refresh Vim mode each time is needed here
-		c.vimMode = "insert"
 		c.refresh()
 
 		line, err := c.Shell.Readline()
@@ -154,6 +170,7 @@ func Start() {
 			continue
 		}
 
+		// Sanitize input
 		var args []string
 		for _, arg := range unfiltered {
 			if arg != "" {
@@ -172,6 +189,13 @@ func Start() {
 // [ Generic console functions ] ---------------------------------------------------------------//
 
 func (c *Console) refresh() {
+	if c.mode == "vim" {
+		c.Shell.Config.VimMode = true
+		c.vimMode = "insert"
+	} else if c.mode == "emacs" {
+		c.Shell.Config.VimMode = false
+	}
+
 	c.refreshContext()
 	refreshPrompt(c.prompt, c.Shell)
 	c.Shell.Refresh()
@@ -192,38 +216,48 @@ func (c *Console) refreshContext() {
 
 func (c *Console) filterInput(r rune) (rune, bool) {
 
-	switch c.vimMode {
-	case "insert":
-		switch r {
-		case readline.CharEsc:
-			c.vimMode = "normal"
-			_, m := c.prompt.render()
-			c.Shell.SetPrompt(m)
-			c.Shell.Refresh()
-			return r, true
+	switch c.Shell.IsVimMode() {
+	// If in Vim mode, apply filters
+	case true:
+		switch c.vimMode {
+		case "insert":
+			switch r {
+			case readline.CharEsc:
+				c.vimMode = "normal"
+				_, m := c.prompt.render(true)
+				c.Shell.SetPrompt(m)
+				c.Shell.Refresh()
+				return r, true
 
-		case readline.CharCtrlL:
-			readline.ClearScreen(c.Shell)
-			c.Shell.Refresh()
-			c.refresh()
-			return r, false
-		}
-	case "normal":
-		switch r {
-		case 'i', 'I', 'a', 'A', 's', 'S', 'c':
-			c.vimMode = "insert"
-			_, p := c.prompt.render()
-			c.Shell.SetPrompt(p)
-			c.Shell.Refresh()
-			return r, true
+			case readline.CharCtrlL:
+				readline.ClearScreen(c.Shell)
+				c.Shell.Refresh()
+				c.refresh()
+				return r, false
+			}
+		case "normal":
+			switch r {
+			case 'i', 'I', 'a', 'A', 's', 'S', 'c':
+				c.vimMode = "insert"
+				_, p := c.prompt.render(true)
+				c.Shell.SetPrompt(p)
+				c.Shell.Refresh()
+				return r, true
 
-		case readline.CharCtrlL:
-			readline.ClearScreen(c.Shell)
-			c.Shell.Refresh()
-			c.refresh()
-			return r, true
+			case readline.CharCtrlL:
+				readline.ClearScreen(c.Shell)
+				c.Shell.Refresh()
+				c.refresh()
+				return r, true
+			}
 		}
+		return r, true
+
+	// If in Emacs, no filters needed
+	case false:
+		return r, true
 	}
+
 	return r, true
 }
 

@@ -32,11 +32,12 @@ import (
 // Prompt object
 type Prompt struct {
 	// Prompt strings
-	base      string
-	module    string
-	agent     string
-	compiler  string
-	multiline string
+	base           string
+	module         string
+	agent          string
+	custom         string
+	multilineVim   string
+	multilineEmacs string
 	// Prompt variables
 	workspace     *string
 	currentModule *string
@@ -48,15 +49,16 @@ type Prompt struct {
 	effects         map[string]string
 }
 
-func newPrompt(c *Console) Prompt {
+func newPrompt(c *Console, custom string) Prompt {
 	// These are here because if colors are disabled, we need the updated tui.* variable
 	prompt := Prompt{
 		// Prompt strings
-		base:      "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
-		module:    "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw}) =>{reset} {type}({mod})",
-		agent:     "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw}) =>{reset} agent[{db}{agent}]",
-		compiler:  "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw}) =>{reset} [{bold}{y}Compiler{reset}]",
-		multiline: "{vim} > {ly}",
+		base:           "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
+		module:         " =>{reset} {type}({mod})",
+		agent:          " =>{reset} agent[{db}{agent}]",
+		custom:         custom,
+		multilineVim:   "{vim} > {ly}",
+		multilineEmacs: " > {ly}",
 		// Prompt variabes
 		workspace:     &c.currentWorkspace.Name,
 		currentModule: &c.currentModule,
@@ -166,26 +168,39 @@ func newPrompt(c *Console) Prompt {
 	return prompt
 }
 
-func (p Prompt) render() (first string, multi string) {
+func (p Prompt) render(vimMode bool) (first string, multi string) {
 
 	var prompt string
 
-	// Current module does not depend on context...
-	if *p.currentModule != "" {
-		prompt = p.module
-	} else {
-		prompt = p.base
-	}
-	// ... and is overidden by the context string if needed.
-	if *p.menu == "compiler" {
-		prompt = p.compiler
-	}
-	// ... or overriden by the context agent if needed.
-	if *p.menu == "agent" {
-		prompt = p.agent
+	switch p.custom {
+	// No custom prompt provided, use base
+	case "":
+		if *p.currentModule != "" {
+			prompt = p.base + p.module
+		} else {
+			prompt = p.base
+		}
+		if *p.menu == "agent" {
+			prompt = p.base + p.agent
+		}
+
+	// Custom provided, use it
+	default:
+		if *p.currentModule != "" {
+			prompt = p.custom + p.module
+		} else {
+			prompt = p.custom
+		}
+		if *p.menu == "agent" {
+			prompt = p.custom + p.agent
+		}
 	}
 
-	multiline := p.multiline
+	// Set multiline based on input mode
+	multiline := p.multilineEmacs
+	if vimMode {
+		multiline = p.multilineVim
+	}
 
 	for tok, effect := range p.effects {
 		prompt = strings.Replace(prompt, tok, effect, -1)
@@ -206,8 +221,8 @@ func (p Prompt) render() (first string, multi string) {
 
 // Refresh prompt
 func refreshPrompt(prompt Prompt, input *readline.Instance) {
-	p, _ := prompt.render()
-	_, m := prompt.render()
+	p, _ := prompt.render(input.IsVimMode())
+	_, m := prompt.render(input.IsVimMode())
 	fmt.Println()
 	fmt.Println(p)
 	input.SetPrompt(m)

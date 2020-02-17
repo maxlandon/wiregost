@@ -30,6 +30,7 @@ type ShellContext struct {
 	// Context
 	Context     context.Context
 	MenuContext *string
+	Mode        *string
 
 	CurrentModule    *string
 	Module           *templates.Module
