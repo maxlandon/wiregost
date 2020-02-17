@@ -98,7 +98,7 @@ func listServers(ctx ShellContext) {
 func connectServer(args []string, ctx ShellContext) error {
 	if len(args) == 0 {
 		fmt.Println()
-		fmt.Printf("%s[!]%s Provide a server address \n", tui.RED, tui.RESET, assets.GetConfigDir())
+		fmt.Printf("%s[!]%s Provide a server address \n", tui.RED, tui.RESET)
 		return nil
 	}
 
@@ -122,6 +122,7 @@ func connectServer(args []string, ctx ShellContext) error {
 	if err != nil {
 		errString := fmt.Sprintf("%s[!] Connection to server failed: %v", tui.RED, err)
 		return errors.New(errString)
+
 	} else {
 		fmt.Printf("%s[*]%s Connected to Wiregost server at %s:%d, as user %s%s%s",
 			tui.GREEN, tui.RESET, config.LHost, config.LPort, tui.YELLOW, config.User, tui.RESET)

@@ -60,13 +60,12 @@ func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int)
 	if len(verbFound) == 0 {
 		return
 	}
-	switch verbFound {
-	case "set":
-		options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
-	case "use":
-		options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
-	case "parse_profile":
-		options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
+
+	// Autocomplete commands with no subcommands but variable arguments
+	for _, c := range commands {
+		if c.Name == "set" || c.Name == "use" || c.Name == "parse_profile" {
+			options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
+		}
 	}
 
 	// Autocomplete subcommands
@@ -94,8 +93,7 @@ func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int)
 	return options, offset
 }
 
-// Completion building ------------------------------------------------------------------------------------------------------------//
-
+// buildCommandMap - Creates a map of commands for completion
 func buildCommandMap(ctx string) (commandMap map[string]*commands.Command) {
 	commandMap = map[string]*commands.Command{}
 	for _, cmd := range commands.AllContextCommands(ctx) {
