@@ -38,6 +38,8 @@ var (
 
 var once = &sync.Once{}
 
+var userClients = &map[string]int{}
+
 // StartClientListener - Starts a MTLS listener, waiting for client connections
 func StartClientListener(bindIface string, port uint16) (net.Listener, error) {
 
@@ -91,25 +93,42 @@ func handleClientConnection(conn net.Conn) {
 	}).Info("connected")
 
 	client := core.GetClient(certs[0])
-	core.Clients.AddClient(client)
 
-	core.EventBroker.Publish(core.Event{
-		EventType: consts.JoinedEvent,
-		Client:    client,
-	})
+	// Check if user is already connected with another console
+	if _, ok := (*userClients)[client.User]; !ok {
+		(*userClients)[client.User] = 0
+	}
+
+	// fmt.Println(*userClients[client.User])
+	if (*userClients)[client.User] == 0 {
+		core.EventBroker.Publish(core.Event{
+			EventType: consts.JoinedEvent,
+			Client:    client,
+		})
+	}
+
+	// Add client
+	core.Clients.AddClient(client)
+	(*userClients)[client.User]++
+	fmt.Println((*userClients)[client.User])
 
 	cleanup := func() {
 		clientLog.Infof("Closing connection to client (%s)", client.User)
 		log.AuditLogger.WithFields(logrus.Fields{
-			"pkg":      "transport",
-			"operator": client.User,
+			"pkg":  "transport",
+			"user": client.User,
 		}).Info("disconnected")
 		core.Clients.RemoveClient(client.ID)
 		conn.Close()
-		core.EventBroker.Publish(core.Event{
-			EventType: consts.LeftEvent,
-			Client:    client,
-		})
+		(*userClients)[client.User]--
+		fmt.Println((*userClients)[client.User])
+		fmt.Println(len(*core.Clients.Connections))
+		if (*userClients)[client.User] == 0 {
+			core.EventBroker.Publish(core.Event{
+				EventType: consts.LeftEvent,
+				Client:    client,
+			})
+		}
 	}
 
 	// Handle RPC requests/responses

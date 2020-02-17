@@ -232,7 +232,7 @@ func showInfo(ctx ShellContext) {
 	fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
 	table := util.Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	table.SetColWidth(90)
+	table.SetColWidth(60)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -254,7 +254,7 @@ func showInfo(ctx ShellContext) {
 	fmt.Println(tui.Bold(tui.Blue(" Implant Options")))
 	table = util.Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	table.SetColWidth(90)
+	table.SetColWidth(60)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -286,7 +286,7 @@ func showOptions(ctx ShellContext) {
 	fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
 	table := util.Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	table.SetColWidth(90)
+	table.SetColWidth(60)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -308,7 +308,7 @@ func showOptions(ctx ShellContext) {
 	fmt.Println(tui.Bold(tui.Blue(" Implant Options")))
 	table = util.Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	table.SetColWidth(90)
+	table.SetColWidth(60)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
