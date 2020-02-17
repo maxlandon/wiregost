@@ -101,10 +101,6 @@ func newPrompt(c *Console, custom string) Prompt {
 			return ""
 		},
 
-		// Interface
-		"{iface}": func() string {
-			return "192.168.1.0/24"
-		},
 		// Working directory
 		"{pwd}": func() string {
 			pwd, _ := os.Getwd()

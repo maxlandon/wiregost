@@ -141,7 +141,7 @@ func Start() {
 	// Command loop
 	for {
 		// Refresh Vim mode each time is needed here
-		c.refresh()
+		c.hardRefresh()
 
 		line, err := c.Shell.Readline()
 		if err == readline.ErrInterrupt {
@@ -188,7 +188,9 @@ func Start() {
 
 // [ Generic console functions ] ---------------------------------------------------------------//
 
-func (c *Console) refresh() {
+// hardRefresh prints a new prompt
+func (c *Console) hardRefresh() {
+	// Input
 	if c.mode == "vim" {
 		c.Shell.Config.VimMode = true
 		c.vimMode = "insert"
@@ -196,12 +198,6 @@ func (c *Console) refresh() {
 		c.Shell.Config.VimMode = false
 	}
 
-	c.refreshContext()
-	refreshPrompt(c.prompt, c.Shell)
-	c.Shell.Refresh()
-}
-
-func (c *Console) refreshContext() {
 	// Menu context
 	if c.currentModule != "" {
 		c.menuContext = "module"
@@ -212,6 +208,14 @@ func (c *Console) refreshContext() {
 	// Jobs
 	jobs := commands.GetJobs(c.shellContext.Server.RPC)
 	c.listeners = len(jobs.Active)
+
+	// Prompt
+	refreshPrompt(c.prompt, c.Shell)
+	c.Shell.Refresh()
+}
+
+// softRefresh does not print a new prompt, it simply updates the current one
+func (c *Console) softRefresh() {
 }
 
 func (c *Console) filterInput(r rune) (rune, bool) {
@@ -232,7 +236,7 @@ func (c *Console) filterInput(r rune) (rune, bool) {
 			case readline.CharCtrlL:
 				readline.ClearScreen(c.Shell)
 				c.Shell.Refresh()
-				c.refresh()
+				c.hardRefresh()
 				return r, false
 			}
 		case "normal":
@@ -247,7 +251,7 @@ func (c *Console) filterInput(r rune) (rune, bool) {
 			case readline.CharCtrlL:
 				readline.ClearScreen(c.Shell)
 				c.Shell.Refresh()
-				c.refresh()
+				c.hardRefresh()
 				return r, true
 			}
 		}

@@ -114,6 +114,7 @@ var helpConfig = `
 # {serverip}    IP address of server as specified in client config
 # {listeners}   Number of listeners jobs currently running
 # {ghosts}      Number of Ghost implants currently connected
+# {localip}     IP address of client 
 
 # Prompt colors:
 # "{bold}":  BOLD,

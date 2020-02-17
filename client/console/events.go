@@ -46,9 +46,11 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 			os.Exit(4)
 
 		case consts.JoinedEvent:
-			fmt.Printf("%s*%s %s connected to the server \n\n", tui.BLUE, tui.RESET, event.Client.User)
+			fmt.Println()
+			fmt.Printf("%s*%s %s connected to the server \n", tui.BLUE, tui.RESET, event.Client.User)
+			c.hardRefresh()
 		case consts.LeftEvent:
-			fmt.Printf("%s*%s %s disconnected from the server \n\n", tui.BLUE, tui.RESET, event.Client.User)
+			fmt.Printf("%s*%s %s disconnected from the server \n", tui.BLUE, tui.RESET, event.Client.User)
 
 		case consts.StoppedEvent:
 			job := event.Job
