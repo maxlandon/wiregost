@@ -5,7 +5,7 @@ ______
 ![Demo](./pics/welcomeToWireGost.png)
 
 
-The grounds for the WireGost exploitation framwework project are:
+The grounds for the WireGost exploitation framework project are:
 * **Go is syntactically dead simple** and has a simple C-like object-model: This will lower the number of abstraction-layers-caused headaches.
 * Consequently, Go code is easily readable and maintainable. Go is strongly typed, which make Gophers winners on all fronts.
 * Go **compiles itself cross-platform**: Code compiled on a Linux machine will run _on virtually any architecture and operating system_.

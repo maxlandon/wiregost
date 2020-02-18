@@ -38,6 +38,7 @@ var (
 
 var once = &sync.Once{}
 
+// userClients - Number of connected client consoles per user
 var userClients = &map[string]int{}
 
 // StartClientListener - Starts a MTLS listener, waiting for client connections
