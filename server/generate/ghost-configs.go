@@ -18,8 +18,11 @@ package generate
 
 import (
 	"net/url"
+	"os"
+	"path"
 
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
+	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/log"
 )
 
@@ -43,7 +46,7 @@ const (
 	LINUX = "linux"
 
 	clientsDirName = "clients"
-	sliversDirName = "slivers"
+	ghostsDirName  = "ghosts"
 
 	encryptKeySize = 16
 
@@ -54,10 +57,10 @@ const (
 	// DefaultHTTPLPort - Default HTTP listen port
 	DefaultHTTPLPort = 443 // Assume SSL, it'll fallback
 
-	// SliverCC64EnvVar - Environment variable that can specify the 64 bit mingw path
-	SliverCC64EnvVar = "SLIVER_CC_64"
-	// SliverCC32EnvVar - Environment variable that can specify the 32 bit mingw path
-	SliverCC32EnvVar = "SLIVER_CC_32"
+	// GhostCC64EnvVar - Environment variable that can specify the 64 bit mingw path
+	GhostCC64EnvVar = "SLIVER_CC_64"
+	// GhostCC32EnvVar - Environment variable that can specify the 32 bit mingw path
+	GhostCC32EnvVar = "SLIVER_CC_32"
 )
 
 // GhostConfig - Parameters when generating a implant
@@ -216,4 +219,24 @@ func (s GhostC2) ToProtobuf() *clientpb.GhostC2 {
 
 func (s GhostC2) String() string {
 	return s.URL
+}
+
+// GetGhostsDir - Get the binary directory
+func GetGhostsDir() string {
+	appDir := assets.GetRootAppDir()
+	ghostsDir := path.Join(appDir, ghostsDirName)
+	if _, err := os.Stat(ghostsDir); os.IsNotExist(err) {
+		buildLog.Infof("Creating bin directory: %s", ghostsDir)
+		err = os.MkdirAll(ghostsDir, 0700)
+		if err != nil {
+			buildLog.Fatal(err)
+		}
+	}
+	return ghostsDir
+}
+
+// GhostEgg - Generates a sliver egg (stager) binary
+func GhostEgg(config GhostConfig) (string, error) {
+
+	return "", nil
 }
