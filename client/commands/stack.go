@@ -21,12 +21,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
 	"github.com/olekukonko/tablewriter"
 
-	"github.com/maxlandon/wiregost/client/help"
-	"github.com/maxlandon/wiregost/client/util"
+	. "github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/maxlandon/wiregost/server/module/templates"
@@ -36,7 +34,6 @@ func RegisterStackCommands() {
 
 	stack := &Command{
 		Name: "stack",
-		Help: help.GetHelpFor("stack"),
 		SubCommands: []string{
 			"use",
 			"pop",
@@ -50,10 +47,7 @@ func RegisterStackCommands() {
 				switch r.Args[0] {
 				case "use":
 					if len(r.Args) == 1 {
-						fmt.Println()
-						fmt.Printf("%s[!]%s Provide a module path name",
-							tui.RED, tui.RESET)
-						fmt.Println()
+						fmt.Printf("\n", Error, "Provide a module path name\n")
 					} else {
 						stackUse(*r.context, r.Args[1], r.context.Server.RPC)
 					}
@@ -98,7 +92,7 @@ func stackUse(ctx ShellContext, module string, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf(RPCError, "%s\n", resp.Err)
 		return
 	}
 
@@ -106,7 +100,7 @@ func stackUse(ctx ShellContext, module string, rpc RPCServer) {
 	proto.Unmarshal(resp.Data, stack)
 	if stack.Err != "" {
 		fmt.Println()
-		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, stack.Err)
+		fmt.Printf(Error, "%s", stack.Err)
 		fmt.Println()
 		return
 	}
@@ -129,7 +123,7 @@ func stackList(ctx ShellContext, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf(RPCError, "%s\n", resp.Err)
 		return
 	}
 
@@ -137,12 +131,12 @@ func stackList(ctx ShellContext, rpc RPCServer) {
 	proto.Unmarshal(resp.Data, stackList)
 	if stackList.Err != "" {
 		fmt.Println()
-		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, stackList.Err)
+		fmt.Printf(Error, "%s", stackList.Err)
 		fmt.Println()
 		return
 	}
 
-	table := util.Table()
+	table := Table()
 	table.SetHeader([]string{"Type", "Path", "Description"})
 	table.SetColWidth(60)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -189,14 +183,14 @@ func stackPop(ctx ShellContext, module string, all bool, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf(RPCError, "%s\n", resp.Err)
 		return
 	}
 
 	stack := &clientpb.Stack{}
 	proto.Unmarshal(resp.Data, stack)
 	if stack.Err != "" {
-		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, stack.Err)
+		fmt.Printf(Error, "%s", stack.Err)
 		return
 	}
 

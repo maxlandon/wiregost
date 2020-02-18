@@ -26,8 +26,7 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	"github.com/olekukonko/tablewriter"
 
-	"github.com/maxlandon/wiregost/client/help"
-	"github.com/maxlandon/wiregost/client/util"
+	. "github.com/maxlandon/wiregost/client/util"
 	"github.com/maxlandon/wiregost/data_service/models"
 	"github.com/maxlandon/wiregost/data_service/remote"
 )
@@ -37,7 +36,6 @@ func RegisterWorkspaceCommands() {
 	// Declare all commands, subcommands and arguments
 	workspace := &Command{
 		Name: "workspace",
-		Help: help.GetHelpFor("workspace"),
 		SubCommands: []string{
 			"switch",
 			"add",
@@ -65,8 +63,7 @@ func RegisterWorkspaceCommands() {
 					if len(r.Args) == 2 {
 						switchWorkspace(r.Args[1], r.context.CurrentWorkspace, &r.context.Context, *r.context)
 					} else {
-						fmt.Printf("%s[!]%s Provide a workspace name",
-							tui.RED, tui.RESET)
+						fmt.Printf(Error, "Provide a workspace name")
 					}
 					fmt.Println()
 				case "add":
@@ -133,8 +130,7 @@ func switchWorkspace(name string, workspace *models.Workspace, ctx *context.Cont
 			*workspace = workspaces[i]
 			*ctx = context.WithValue(*ctx, "workspace_id", workspaces[i].ID)
 			workspace = &workspaces[i]
-			fmt.Printf("%s*%s Switched to workspace %s",
-				tui.BLUE, tui.RESET, workspaces[i].Name)
+			fmt.Printf(Info, "Switched to workspace %s", workspaces[i].Name)
 			// Reset currentModule
 			*sctx.CurrentModule = ""
 
@@ -148,8 +144,7 @@ func addWorkspaces(names []string) {
 		fmt.Println(err.Error())
 	} else {
 		for _, n := range names {
-			fmt.Printf("%s*%s Created workspace %s",
-				tui.BLUE, tui.RESET, n)
+			fmt.Printf(Info, "Created workspace %s", n)
 		}
 	}
 }
@@ -170,14 +165,13 @@ func deleteWorkspaces(names []string) {
 		fmt.Println(err.Error())
 	} else {
 		for _, n := range names {
-			fmt.Printf("%s*%s Deleted workspace %s",
-				tui.BLUE, tui.RESET, n)
+			fmt.Printf(Info, "Deleted workspace %s", n)
 		}
 	}
 }
 
 func printWorkspaceTable(data [][]string) {
-	table := util.Table()
+	table := Table()
 	table.SetColWidth(70)
 	table.SetHeader([]string{"Name", "Description", "Default", "Boundary", "Limit", "Updated At"})
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -209,8 +203,7 @@ func updateWorkspace(args []string) {
 			}
 		}
 	} else {
-		fmt.Printf("%s[!]%s Provide a workspace name (name='workspace')",
-			tui.RED, tui.RESET)
+		fmt.Printf(Error, "rovide a workspace name (name='workspace')")
 		return
 	}
 	desc, found := opts["description"]
@@ -231,8 +224,7 @@ func updateWorkspace(args []string) {
 	if err != nil {
 		fmt.Println(err.Error())
 	} else {
-		fmt.Printf("%s*%s Updated workspace %s",
-			tui.BLUE, tui.RESET, w.Name)
+		fmt.Printf(Info, "Updated workspace %s", w.Name)
 	}
 }
 

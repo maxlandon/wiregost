@@ -24,8 +24,8 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/olekukonko/tablewriter"
 
-	"github.com/maxlandon/wiregost/client/help"
 	"github.com/maxlandon/wiregost/client/util"
+	. "github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
@@ -34,13 +34,10 @@ func RegisterModuleCommands() {
 
 	moduleUse := &Command{
 		Name: "use",
-		Help: help.GetHelpFor("use"),
 		Handle: func(r *Request) error {
 			if len(r.Args) == 0 {
 				fmt.Println()
-				fmt.Printf("%s[!]%s Provide a module path name",
-					tui.RED, tui.RESET)
-				fmt.Println()
+				fmt.Printf("\n", Error, "Provide a module path name\n")
 			} else {
 				stackUse(*r.context, r.Args[0], r.context.Server.RPC)
 			}
@@ -53,7 +50,6 @@ func RegisterModuleCommands() {
 
 	info := &Command{
 		Name: "info",
-		Help: help.GetHelpFor("info"),
 		Handle: func(r *Request) error {
 			fmt.Println()
 			showInfo(*r.context)
@@ -66,7 +62,6 @@ func RegisterModuleCommands() {
 
 	options := &Command{
 		Name: "options",
-		Help: help.GetHelpFor("options"),
 		Handle: func(r *Request) error {
 			fmt.Println()
 			showOptions(*r.context)
@@ -79,7 +74,6 @@ func RegisterModuleCommands() {
 
 	setOptions := &Command{
 		Name: "set",
-		Help: help.GetHelpFor("set"),
 		Handle: func(r *Request) error {
 			fmt.Println()
 			setOption(r.Args, *r.context, r.context.Server.RPC)
@@ -92,7 +86,6 @@ func RegisterModuleCommands() {
 
 	run := &Command{
 		Name: "run",
-		Help: help.GetHelpFor("run"),
 		Handle: func(r *Request) error {
 			fmt.Println()
 			runModule("run", *r.context, r.context.Server.RPC)
@@ -105,7 +98,6 @@ func RegisterModuleCommands() {
 
 	listener := &Command{
 		Name: "to_listener",
-		Help: help.GetHelpFor("to_listener"),
 		Handle: func(r *Request) error {
 			fmt.Println()
 			runModule("to_listener", *r.context, r.context.Server.RPC)
@@ -118,7 +110,6 @@ func RegisterModuleCommands() {
 
 	back := &Command{
 		Name: "back",
-		Help: help.GetHelpFor("back"),
 		Handle: func(r *Request) error {
 			backToMainMenu(*r.context)
 			return nil
@@ -129,12 +120,10 @@ func RegisterModuleCommands() {
 
 	parseProfile := &Command{
 		Name: "parse_profile",
-		Help: help.GetHelpFor("parse_profile"),
 		Handle: func(r *Request) error {
 			fmt.Println()
 			if len(r.Args) == 0 {
-				fmt.Printf("%s[!]%s Provide a Ghost profile name",
-					tui.RED, tui.RESET)
+				fmt.Printf(Error, "Provide a Ghost profile name")
 				return nil
 			}
 			parseProfile(r.Args[0], *r.context, r.context.Server.RPC)
@@ -147,13 +136,10 @@ func RegisterModuleCommands() {
 
 	toProfile := &Command{
 		Name: "to_profile",
-		Help: help.GetHelpFor("to_profile"),
 		Handle: func(r *Request) error {
 			fmt.Println()
 			if len(r.Args) == 0 {
-				fmt.Printf("%s[!]%s Provide a profile name (to_profile <name>)",
-					tui.RED, tui.RESET)
-				fmt.Println()
+				fmt.Printf(Error, "Provide a profile name (to_profile <name>)\n")
 				return nil
 			}
 			toProfile(r.Args[0], *r.context, r.context.Server.RPC)
@@ -168,16 +154,14 @@ func RegisterModuleCommands() {
 func setOption(args []string, ctx ShellContext, rpc RPCServer) {
 
 	if len(args) < 2 {
-		fmt.Printf("%s[!]%s Option name/value pair not provided",
-			tui.RED, tui.RESET)
+		fmt.Printf(Error, "Option name/value pair not provided")
 		return
 	}
 
 	name := strings.TrimSpace(args[0])
 
 	if _, found := ctx.Module.Options[name]; !found {
-		fmt.Printf("%s[!]%s Invalid option: %s",
-			tui.RED, tui.RESET, args[0])
+		fmt.Printf(Error, "Invalid option: %s", args[0])
 		return
 	}
 
@@ -195,7 +179,7 @@ func setOption(args []string, ctx ShellContext, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf(RPCError, "%s\n", resp.Err)
 		return
 	}
 
@@ -231,7 +215,7 @@ func showInfo(ctx ShellContext) {
 
 	// Listener Options
 	fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
-	table := util.Table()
+	table := Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
 	table.SetColWidth(60)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -253,7 +237,7 @@ func showInfo(ctx ShellContext) {
 	// Generate Options
 	fmt.Println()
 	fmt.Println(tui.Bold(tui.Blue(" Implant Options")))
-	table = util.Table()
+	table = Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
 	table.SetColWidth(60)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -285,10 +269,10 @@ func showOptions(ctx ShellContext) {
 
 	// Listener Options
 	fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
-	table := util.Table()
-	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	table.SetColWidth(60)
-	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+	tab := util.Table()
+	tab.SetHeader([]string{"Name", "Value", "Required", "Description"})
+	tab.SetColWidth(60)
+	tab.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -300,17 +284,17 @@ func showOptions(ctx ShellContext) {
 		} else {
 			required = "no"
 		}
-		table.Append([]string{m.Options[v].Name, m.Options[v].Value, required, m.Options[v].Description})
+		tab.Append([]string{m.Options[v].Name, m.Options[v].Value, required, m.Options[v].Description})
 	}
-	table.Render()
+	tab.Render()
 
 	// Generate Options
 	fmt.Println()
 	fmt.Println(tui.Bold(tui.Blue(" Implant Options")))
-	table = util.Table()
-	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	table.SetColWidth(60)
-	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+	tab = util.Table()
+	tab.SetHeader([]string{"Name", "Value", "Required", "Description"})
+	tab.SetColWidth(60)
+	tab.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -322,9 +306,9 @@ func showOptions(ctx ShellContext) {
 		} else {
 			required = "no"
 		}
-		table.Append([]string{m.Options[v].Name, m.Options[v].Value, required, m.Options[v].Description})
+		tab.Append([]string{m.Options[v].Name, m.Options[v].Value, required, m.Options[v].Description})
 	}
-	table.Render()
+	tab.Render()
 }
 
 func runModule(action string, ctx ShellContext, rpc RPCServer) {
@@ -343,7 +327,7 @@ func runModule(action string, ctx ShellContext, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf("%s[!] RPC error:%s %s", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf(RPCError, "%s", resp.Err)
 		return
 	}
 
@@ -351,9 +335,9 @@ func runModule(action string, ctx ShellContext, rpc RPCServer) {
 	proto.Unmarshal(resp.Data, result)
 
 	if result.Success == false {
-		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, result.Err)
+		fmt.Printf(Error, "%s", result.Err)
 	} else {
-		fmt.Printf("%s[*]%s %s", tui.GREEN, tui.RESET, result.Result)
+		fmt.Printf(Success, "%s", result.Result)
 	}
 
 }
@@ -375,7 +359,7 @@ func parseProfile(profile string, ctx ShellContext, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf("%s[!] RPC error:%s %s", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf(RPCError, "%s", resp.Err)
 		return
 	}
 
@@ -383,10 +367,10 @@ func parseProfile(profile string, ctx ShellContext, rpc RPCServer) {
 	proto.Unmarshal(resp.Data, result)
 
 	if result.Success == false {
-		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, result.Err)
+		fmt.Printf(Error, "%s", result.Err)
 	} else {
 		m.ParseProto(result.Updated)
-		fmt.Printf("%s[*]%s %s", tui.BLUE, tui.RESET, result.Result)
+		fmt.Printf(Info, "%s", result.Result)
 	}
 }
 
@@ -407,7 +391,7 @@ func toProfile(profile string, ctx ShellContext, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf("%s[!] RPC error:%s %s", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf(RPCError, "%s", resp.Err)
 		return
 	}
 
@@ -415,9 +399,9 @@ func toProfile(profile string, ctx ShellContext, rpc RPCServer) {
 	proto.Unmarshal(resp.Data, result)
 
 	if result.Success == false {
-		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, result.Err)
+		fmt.Printf(Error, "%s", result.Err)
 	} else {
-		fmt.Printf("%s[*]%s %s", tui.BLUE, tui.RESET, result.Result)
+		fmt.Printf(Info, "%s", result.Result)
 	}
 }
 

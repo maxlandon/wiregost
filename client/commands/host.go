@@ -23,12 +23,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/evilsocket/islazy/tui"
 	"github.com/olekukonko/tablewriter"
 
 	"github.com/maxlandon/wiregost/client/constants"
 	"github.com/maxlandon/wiregost/client/help"
-	"github.com/maxlandon/wiregost/client/util"
+	. "github.com/maxlandon/wiregost/client/util"
 	"github.com/maxlandon/wiregost/data_service/models"
 	"github.com/maxlandon/wiregost/data_service/remote"
 )
@@ -38,7 +37,6 @@ func RegisterHostCommands() {
 	// Declare all commands, subcommands and arguments
 	hosts := &Command{
 		Name: "hosts",
-		Help: help.GetHelpFor("hosts"),
 		SubCommands: []string{
 			"search",
 			"add",
@@ -99,7 +97,6 @@ func RegisterHostCommands() {
 	AddCommand("main", hosts)
 	AddCommand("module", hosts)
 	AddCommand("ghost", hosts)
-	AddCommand("compiler", hosts)
 }
 
 func hosts(ctx *context.Context, options []string) {
@@ -110,15 +107,13 @@ func hosts(ctx *context.Context, options []string) {
 	if len(opts) == 0 {
 		hosts, err = remote.Hosts(*ctx, nil)
 		if err != nil {
-			fmt.Printf("%s[!]%s Error: %s",
-				tui.RED, tui.RESET, err.Error())
+			fmt.Printf(DBError, "%s", err.Error())
 			return
 		}
 	} else {
 		hosts, err = remote.Hosts(*ctx, opts)
 		if err != nil {
-			fmt.Printf("%s[!]%s Error: %s",
-				tui.RED, tui.RESET, err.Error())
+			fmt.Printf(DBError, "%s", err.Error())
 			return
 		}
 	}
@@ -138,21 +133,18 @@ func addHost(cctx *context.Context, args []string) {
 
 	host, err := remote.ReportHost(*cctx, opts)
 	if err != nil {
-		fmt.Printf("%s[!]%s Error: %s",
-			tui.RED, tui.RESET, err.Error())
+		fmt.Printf(DBError, "%s", err.Error())
 		return
 	}
 
 	for _, h := range hosts {
 		if h.ID == host.ID {
-			fmt.Printf("%s*%s Host already exists at: %s",
-				tui.YELLOW, tui.RESET, host.Addresses)
+			fmt.Printf(Warn, "Host already exists at: %s", host.Addresses)
 			return
 		}
 	}
 
-	fmt.Printf("%s*%s New host at: %s",
-		tui.BLUE, tui.RESET, host.Addresses)
+	fmt.Printf(Info, "New host at: %s", host.Addresses)
 }
 
 func deleteHosts(cctx *context.Context, args []string) {
@@ -165,21 +157,18 @@ func deleteHosts(cctx *context.Context, args []string) {
 	// Get a list of hosts matching filters given
 	switch len(opts) {
 	case 0:
-		fmt.Printf("%s[!]%s Provide filters for host selection ",
-			tui.RED, tui.RESET)
+		fmt.Printf(Error, "Provide filters for host selection ")
 	default:
 		var hosts []models.Host
 		var err error
 
 		hosts, err = remote.Hosts(*cctx, opts)
 		if err != nil {
-			fmt.Printf("%s[!]%s Error: %s",
-				tui.RED, tui.RESET, err.Error())
+			fmt.Printf(DBError, "%s", err.Error())
 			return
 		}
 		if len(hosts) == 0 {
-			fmt.Printf("%s*%s No hosts match the given filters ",
-				tui.YELLOW, tui.RESET)
+			fmt.Printf(Warn, "No hosts match the given filters ")
 			return
 		}
 
@@ -187,12 +176,10 @@ func deleteHosts(cctx *context.Context, args []string) {
 			opts["host_id"] = []uint{hosts[i].ID}
 			err = remote.DeleteHosts(*cctx, opts)
 			if err != nil {
-				fmt.Printf("%s[!]%s Error: %s",
-					tui.RED, tui.RESET, err.Error())
+				fmt.Printf(DBError, "%s", err.Error())
 				continue
 			} else {
-				fmt.Printf("%s*%s Deleted host at: %s",
-					tui.BLUE, tui.RESET, hosts[i].Addresses)
+				fmt.Printf(Info, "Deleted host at: %s", hosts[i].Addresses)
 			}
 		}
 	}
@@ -219,8 +206,7 @@ func updateHost(cctx *context.Context, args []string) {
 			}
 		}
 	} else {
-		fmt.Printf("%s[!]%s Provide a host ID (host-id=2)",
-			tui.RED, tui.RESET)
+		fmt.Printf(Error, "Provide a host ID (host-id=2)")
 		return
 	}
 
@@ -271,16 +257,14 @@ func updateHost(cctx *context.Context, args []string) {
 	// Update host
 	updated, err := remote.UpdateHost(host)
 	if err != nil {
-		fmt.Printf("%s[!]%s Error: %s",
-			tui.RED, tui.RESET, err.Error())
+		fmt.Printf(DBError, "%s", err.Error())
 	} else {
-		fmt.Printf("%s*%s Updated host at: %s",
-			tui.BLUE, tui.RESET, updated.Addresses)
+		fmt.Printf(Info, "Updated host at: %s", updated.Addresses)
 	}
 }
 
 func hostsTable(cctx *context.Context, hosts *[]models.Host) {
-	table := util.Table()
+	table := Table()
 	table.SetHeader([]string{"ID", "Addresses", "Name", "OS Name", "OS Flavor", "OS SP", "Arch", "Purpose", "Info", "Comments"})
 	table.SetColWidth(60)
 	table.SetColMinWidth(1, 15)

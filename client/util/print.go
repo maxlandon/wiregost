@@ -14,29 +14,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package console
+package util
 
 import (
 	"fmt"
 
 	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/wiregost/client/commands"
-	. "github.com/maxlandon/wiregost/client/util"
 )
 
-// ExecCmd executes a single command and provides it all the context it might need
-func ExecCmd(args []string, menu string, shellContext *commands.ShellContext) error {
-	if len(args) < 1 {
-		return nil
-	}
+var (
+	Info    = fmt.Sprintf("%s[-]%s ", tui.BLUE, tui.RESET)
+	Warn    = fmt.Sprintf("%s[!]%s ", tui.YELLOW, tui.RESET)
+	Error   = fmt.Sprintf("%s[!]%s ", tui.RED, tui.RESET)
+	Success = fmt.Sprintf("%s[*]%s ", tui.GREEN, tui.RESET)
 
-	command := commands.FindCommand(menu, args[0])
-	if command != nil {
-		return command.Handle(commands.NewRequest(command, args[1:], shellContext))
-	} else {
-		fmt.Println()
-		fmt.Printf(CommandError, "%s%s%s is not a valid command. \n", tui.YELLOW, args[0], tui.RESET)
-	}
+	Infof   = fmt.Sprintf("%s[-] ", tui.BLUE)
+	Warnf   = fmt.Sprintf("%s[!] ", tui.YELLOW)
+	Errorf  = fmt.Sprintf("%s[!] ", tui.RED)
+	Sucessf = fmt.Sprintf("%s[*] ", tui.GREEN)
 
-	return nil
-}
+	RPCError     = fmt.Sprintf("%s[RPC Error]%s ", tui.RED, tui.RESET)
+	CommandError = fmt.Sprintf("%s[Command Error]%s ", tui.RED, tui.RESET)
+	DBError      = fmt.Sprintf("%s[DB Error]%s ", tui.RED, tui.RESET)
+)

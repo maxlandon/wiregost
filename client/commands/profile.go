@@ -21,10 +21,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
-	"github.com/maxlandon/wiregost/client/help"
-	"github.com/maxlandon/wiregost/client/util"
+	. "github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/olekukonko/tablewriter"
@@ -34,7 +32,6 @@ func RegisterProfileCommands() {
 
 	profiles := &Command{
 		Name: "profiles",
-		Help: help.GetHelpFor("profiles"),
 		Handle: func(r *Request) error {
 			fmt.Println()
 			listProfiles(r.context.Server.RPC)
@@ -52,7 +49,7 @@ func listProfiles(rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf(RPCError, "%s\n", resp.Err)
 		return
 	}
 
@@ -60,7 +57,7 @@ func listProfiles(rpc RPCServer) {
 	err := proto.Unmarshal(resp.Data, pbProfiles)
 	if err != nil {
 		fmt.Println()
-		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, err.Error())
+		fmt.Printf(Error, "%s", err.Error())
 		fmt.Println()
 		return
 	}
@@ -70,7 +67,7 @@ func listProfiles(rpc RPCServer) {
 		(*profiles)[profile.Name] = profile
 	}
 
-	table := util.Table()
+	table := Table()
 	table.SetHeader([]string{"Name", "Platform", "Format", "Command & Control", "Limitations", "Debug"})
 	table.SetColWidth(40)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},

@@ -25,6 +25,7 @@ import (
 
 	consts "github.com/maxlandon/wiregost/client/constants"
 	"github.com/maxlandon/wiregost/client/core"
+	. "github.com/maxlandon/wiregost/client/util"
 )
 
 func (c *Console) eventLoop(server *core.WiregostServer) {
@@ -42,36 +43,34 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 			fmt.Println()
 
 		case consts.ServerErrorStr:
-			fmt.Printf("%s[!]%s Server connection error! \n\n", tui.RED, tui.RESET)
+			fmt.Printf(Errorf, "Server connection error! \n\n")
 			os.Exit(4)
 
 		case consts.JoinedEvent:
-			fmt.Println()
-			fmt.Printf("%s*%s %s connected to the server \n", tui.BLUE, tui.RESET, event.Client.User)
+			fmt.Printf("\n", Info, "%s connected to the server \n", event.Client.User)
 			c.hardRefresh()
 		case consts.LeftEvent:
-			fmt.Println()
-			fmt.Printf("%s*%s %s disconnected from the server \n", tui.BLUE, tui.RESET, event.Client.User)
+			fmt.Printf("\n", Info, "%s disconnected from the server \n", event.Client.User)
 			c.hardRefresh()
 
 		case consts.StoppedEvent:
 			job := event.Job
-			fmt.Printf("%s[*]%s Job #%d stopped (%s/%s) \n", tui.BLUE, tui.RESET, job.ID, job.Protocol, job.Name)
+			fmt.Printf("\n", Info, "Job #%d stopped (%s/%s) \n", job.ID, job.Protocol, job.Name)
 
 		case consts.ConnectedEvent:
 			ghost := event.Ghost
-			fmt.Printf("%s[*]%s Session #%d %s - %s (%s) - %s/%s \n\n",
-				tui.GREEN, tui.RESET, ghost.ID, ghost.Name, ghost.RemoteAddress, ghost.Hostname, ghost.OS, ghost.Arch)
+			fmt.Printf("\n", Success, "Session #%d %s - %s (%s) - %s/%s \n",
+				ghost.ID, ghost.Name, ghost.RemoteAddress, ghost.Hostname, ghost.OS, ghost.Arch)
 
 		case consts.DisconnectedEvent:
 			ghost := event.Ghost
-			fmt.Printf("%s[!]%s Lost session #%d %s - %s (%s) - %s/%s\n",
-				tui.RED, tui.RESET, ghost.ID, ghost.Name, ghost.RemoteAddress, ghost.Hostname, ghost.OS, ghost.Arch)
+			fmt.Printf("\n", Error, "Lost session #%d %s - %s (%s) - %s/%s\n",
+				ghost.ID, ghost.Name, ghost.RemoteAddress, ghost.Hostname, ghost.OS, ghost.Arch)
 			activeGhost := c.currentAgent
 			if activeGhost != nil && ghost.ID == activeGhost.ID {
 				c.currentAgent = nil
 				// app.SetPrompt(getPrompt())
-				fmt.Printf("%s[!]%s Active sliver diconnected\n", tui.RED, tui.RESET)
+				fmt.Printf("\n", Error, "Active sliver diconnected\n")
 			}
 			fmt.Println()
 

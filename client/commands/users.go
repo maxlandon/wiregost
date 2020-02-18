@@ -23,8 +23,7 @@ import (
 
 	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
-	"github.com/maxlandon/wiregost/client/help"
-	"github.com/maxlandon/wiregost/client/util"
+	. "github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/olekukonko/tablewriter"
@@ -34,7 +33,6 @@ func RegisterUserCommands() {
 
 	users := &Command{
 		Name: "user",
-		Help: help.GetHelpFor("user"),
 		SubCommands: []string{
 			"add",
 		},
@@ -71,29 +69,27 @@ func users(rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf(RPCError, "%s\n", resp.Err)
 		return
 	}
 
 	users := &clientpb.Players{}
 	err := proto.Unmarshal(resp.Data, users)
 	if err != nil {
-		fmt.Println()
-		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, err.Error())
-		fmt.Println()
+		fmt.Printf("\n", Error, "%s\n", err.Error())
 		return
 	}
 
 	if 0 < len(users.Players) {
 		displayUsers(users.Players)
 	} else {
-		fmt.Printf("%s*%s No players currently registered", tui.BLUE, tui.RESET)
+		fmt.Printf(Info, "No players currently registered")
 	}
 
 }
 
 func displayUsers(users []*clientpb.Player) {
-	table := util.Table()
+	table := Table()
 	table.SetHeader([]string{"Name", "Status"})
 	table.SetColWidth(40)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -142,24 +138,15 @@ func addUser(args []string, rpc RPCServer) {
 	}
 
 	if name == "" {
-		fmt.Println()
-		fmt.Printf("%s[!]%s Provide a user name (name='name')",
-			tui.RED, tui.RESET)
-		fmt.Println()
+		fmt.Printf("\n", Warn, "Provide a user name (name='name')\n")
 		return
 	}
 	if lhost == "" {
-		fmt.Println()
-		fmt.Printf("%s[!]%s Provide a lhost (lhost=192.168.1.1)",
-			tui.RED, tui.RESET)
-		fmt.Println()
+		fmt.Printf("\n", Warn, "Provide a lhost (lhost=192.168.1.1)\n")
 		return
 	}
 	if lport == 0 {
-		fmt.Println()
-		fmt.Printf("%s[!]%s Provide a lport (lport=8443)",
-			tui.RED, tui.RESET)
-		fmt.Println()
+		fmt.Printf("\n", Warn, "Provide a lport (lport=8443)\n")
 		return
 	}
 
@@ -176,26 +163,20 @@ func addUser(args []string, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf(RPCError, "%s\n", resp.Err)
 		return
 	}
 
 	userRes := &clientpb.User{}
 	err := proto.Unmarshal(resp.Data, userRes)
 	if err != nil {
-		fmt.Println()
-		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, err.Error())
-		fmt.Println()
+		fmt.Printf("\n", Error, "%s\n", err.Error())
 		return
 	}
 
 	if userRes.Success {
-		fmt.Println()
-		fmt.Printf("%s[*]%s Added user %s with server %s:%d", tui.GREEN, tui.RESET, name, lhost, lport)
-		fmt.Println()
+		fmt.Printf("\n", Success, "Added user %s with server %s:%d\n", name, lhost, lport)
 	} else {
-		fmt.Println()
-		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, userRes.Err)
-		fmt.Println()
+		fmt.Printf("\n", Error, "%s\n", userRes.Err)
 	}
 }

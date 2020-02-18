@@ -21,10 +21,9 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
-	"github.com/maxlandon/wiregost/client/help"
 	"github.com/maxlandon/wiregost/client/util"
+	. "github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/olekukonko/tablewriter"
@@ -34,7 +33,6 @@ func RegisterJobCommands() {
 
 	jobs := &Command{
 		Name: "jobs",
-		Help: help.GetHelpFor("jobs"),
 		SubCommands: []string{
 			"kill",
 			"kill-all",
@@ -47,10 +45,7 @@ func RegisterJobCommands() {
 				switch r.Args[0] {
 				case "kill":
 					if len(r.Args) == 1 {
-						fmt.Println()
-						fmt.Printf("%s[!]%s Provide one or more Job IDs",
-							tui.RED, tui.RESET)
-						fmt.Println()
+						fmt.Printf("\n", Error, "Provide one or more Job IDs\n")
 						return nil
 					} else {
 						for _, arg := range r.Args[1:] {
@@ -84,7 +79,7 @@ func listJobs(ctx ShellContext, rpc RPCServer) {
 	if 0 < len(activeJobs) {
 		printJobs(activeJobs)
 	} else {
-		fmt.Printf("%s*%s No active jobs\n", tui.BLUE, tui.RESET)
+		fmt.Printf(Info, "No active jobs\n")
 	}
 }
 
@@ -95,7 +90,7 @@ func GetJobs(rpc RPCServer) *clientpb.Jobs {
 		Data: []byte{},
 	}, defaultTimeout)
 	if resp.Err != "" {
-		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf(RPCError, "%s\n", resp.Err)
 		return nil
 	}
 	jobs := &clientpb.Jobs{}
@@ -114,33 +109,33 @@ func killAllJobs(rpc RPCServer) {
 }
 
 func killJob(jobID int32, rpc RPCServer) {
-	fmt.Println()
-	fmt.Printf("%s[-]%s Killing job #%d ...\n", tui.BLUE, tui.RESET, jobID)
+
+	fmt.Printf("\n", Info, "Killing job #%d ...\n", jobID)
 	data, _ := proto.Marshal(&clientpb.JobKillReq{ID: jobID})
 	resp := <-rpc(&ghostpb.Envelope{
 		Type: clientpb.MsgJobKill,
 		Data: data,
 	}, defaultTimeout)
 	if resp.Err != "" {
-		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf(RPCError, "%s\n", resp.Err)
 		return
 	}
 	jobKill := &clientpb.JobKill{}
 	proto.Unmarshal(resp.Data, jobKill)
 
 	if jobKill.Success {
-		fmt.Printf("%s[*]%s Successfully killed job #%d\n", tui.GREEN, tui.RESET, jobKill.ID)
+		fmt.Printf(Success, "Successfully killed job #%d\n", jobKill.ID)
 	} else {
-		fmt.Printf("%s[!]%s Failed to kill job #%d, %s\n", tui.RED, tui.RESET, jobKill.ID, jobKill.Err)
+		fmt.Printf(Error, "Failed to kill job #%d, %s\n", jobKill.ID, jobKill.Err)
 	}
 }
 
 func printJobs(jobs map[int32]*clientpb.Job) {
 
-	table := util.Table()
-	table.SetHeader([]string{"ID", "Name", "Protocol", "Port", "Description"})
-	table.SetColWidth(80)
-	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+	tab := util.Table()
+	tab.SetHeader([]string{"ID", "Name", "Protocol", "Port", "Description"})
+	tab.SetColWidth(80)
+	tab.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -154,8 +149,8 @@ func printJobs(jobs map[int32]*clientpb.Job) {
 
 	for _, k := range keys {
 		job := jobs[int32(k)]
-		table.Append([]string{strconv.Itoa(int(job.ID)), job.Name, job.Protocol, strconv.Itoa(int(job.Port)), job.Description})
+		tab.Append([]string{strconv.Itoa(int(job.ID)), job.Name, job.Protocol, strconv.Itoa(int(job.Port)), job.Description})
 	}
 
-	table.Render()
+	tab.Render()
 }

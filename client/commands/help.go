@@ -67,6 +67,4 @@ func RegisterHelpCommands() {
 	// Finally register commands
 	AddCommand("main", help)
 	AddCommand("module", help)
-	// AddCommand("ghost", help)
-	// AddCommand("compiler", help)
 }

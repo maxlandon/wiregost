@@ -29,7 +29,7 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/help"
-	"github.com/maxlandon/wiregost/client/util"
+	. "github.com/maxlandon/wiregost/client/util"
 )
 
 func RegisterCoreCommands() {
@@ -38,7 +38,6 @@ func RegisterCoreCommands() {
 
 	shell := &Command{
 		Name: "!",
-		Help: help.GetHelpFor("!"),
 		Handle: func(r *Request) error {
 			switch length := len(r.Args); {
 			case length == 0:
@@ -47,9 +46,9 @@ func RegisterCoreCommands() {
 				fmt.Println()
 			default:
 				fmt.Println()
-				out, err := util.Shell(r.Args[0:])
+				out, err := Shell(r.Args[0:])
 				if err != nil {
-					fmt.Printf("%s Error:%s %s", tui.RED, tui.RESET, err)
+					fmt.Printf(CommandError, "%s", err)
 				} else {
 					fmt.Printf("%s%s\n", tui.RESET, out)
 				}
@@ -68,22 +67,20 @@ func RegisterCoreCommands() {
 
 	cd := &Command{
 		Name: "cd",
-		Help: help.GetHelpFor("cd"),
 		Handle: func(r *Request) error {
 			switch length := len(r.Args); {
 			case length == 0:
 				fmt.Println()
-				fmt.Printf(help.GetHelpFor("cd"))
+				fmt.Printf("\n", help.GetHelpFor("cd"), "\n")
 				fmt.Println()
 			default:
 				fmt.Println()
 				dir, err := fs.Expand(r.Args[0])
 				err = os.Chdir(dir)
 				if err != nil {
-					fmt.Printf("%s Error:%s %s", tui.RED, tui.RESET, err)
+					fmt.Printf(CommandError, "%s", err)
 				} else {
-					fmt.Printf("%s*%s Changed directory to %s", tui.BLUE, tui.RESET, dir)
-					fmt.Println()
+					fmt.Printf(Info, "Changed directory to %s\n", dir)
 				}
 			}
 			return nil
@@ -100,7 +97,6 @@ func RegisterCoreCommands() {
 
 	resource := &Command{
 		Name: "resource",
-		Help: help.GetHelpFor("resource"),
 		SubCommands: []string{
 			"make",
 			"load",
@@ -122,7 +118,7 @@ func RegisterCoreCommands() {
 				// Make a resource file --------------------------------------------------------------------------------------//
 				case "make":
 					if len(r.Args) < 3 {
-						fmt.Printf("%s[!]%s Missing some parameters (type 'resource' for help)", tui.YELLOW, tui.RESET)
+						fmt.Printf(Warn, "Missing some parameters (type 'resource' for help)")
 						fmt.Println()
 						return nil
 					}
@@ -141,11 +137,11 @@ func RegisterCoreCommands() {
 						}
 					}
 					if filename == "" {
-						fmt.Printf("%s[!]%s Missing resource filename (filename='name.rc')", tui.YELLOW, tui.RESET)
+						fmt.Printf(Warn, "Missing resource filename (filename='name.rc')")
 						return nil
 					}
 					if length == 0 {
-						fmt.Printf("%s[!]%s Missing resource command length (length=8)", tui.YELLOW, tui.RESET)
+						fmt.Printf(Warn, "Missing resource command length (length=8)")
 						return nil
 					}
 					if !strings.Contains(filename, "rc") {
@@ -155,8 +151,7 @@ func RegisterCoreCommands() {
 					// Check if resource already exists
 					file, _ := fs.Expand(path.Join(assets.GetResourceDir(), filename))
 					if fs.Exists(file) {
-						fmt.Printf("%sError:%s resource file already exists. Cannot overwrite it.",
-							tui.RED, tui.RESET)
+						fmt.Printf(Error, "Resource file already exists. Cannot overwrite it.")
 						return nil
 					}
 					// If not, create it
@@ -185,20 +180,20 @@ func RegisterCoreCommands() {
 						}
 						hlength -= 1
 					}
-					fmt.Printf("%s[*]%s Resource file created and filed with last %s commands.%s",
-						tui.GREEN, tui.RESET, strconv.Itoa(length), tui.RESET)
+					fmt.Printf(Success, "Resource file created and filed with last %s commands.%s",
+						strconv.Itoa(length), tui.RESET)
 
 					// Load a resource file --------------------------------------------------------------------------------------//
 				case "load":
 					if len(r.Args) == 1 {
-						fmt.Printf("%s[!]%s Missing resource filename (resource load <file>)", tui.YELLOW, tui.RESET)
+						fmt.Printf(Warn, "Missing resource filename (resource load <file>)")
 						return nil
 					}
 					filename := r.Args[1]
 					filestr, _ := fs.Expand(path.Join(assets.GetResourceDir(), filename))
 					file, _ := os.Open(filestr)
 					if filepath.Ext(filestr) != ".rc" {
-						fmt.Printf("%s[!]%s File must be a configuration (.rc) file.", tui.RED, tui.RESET)
+						fmt.Printf(Error, "File must be a configuration (.rc) file.")
 					}
 					defer file.Close()
 
@@ -211,14 +206,13 @@ func RegisterCoreCommands() {
 							command.Handle(NewRequest(command, cmds[1:], r.context))
 							fmt.Println(tui.Dim(tui.Blue("------------------------------------------------------")))
 						} else {
-							fmt.Println()
-							fmt.Printf("%sError:%s %s%s%s is not a valid command.",
-								tui.RED, tui.RESET, tui.YELLOW, cmds[0], tui.RESET)
+							fmt.Printf("\n", CommandError, "%s%s%s is not a valid command.",
+								tui.YELLOW, cmds[0], tui.RESET)
 						}
 					}
 					if err := scanner.Err(); err != nil {
-						fmt.Printf("%s[!]%s Error parsing resource command %s%s%s : %s",
-							tui.RED, tui.RESET, tui.YELLOW, scanner.Text(), tui.RESET, err)
+						fmt.Printf(Error, "Error parsing resource command %s%s%s : %s",
+							tui.YELLOW, scanner.Text(), tui.RESET, err)
 					}
 				}
 			}
@@ -240,7 +234,7 @@ func RegisterCoreCommands() {
 		},
 		Handle: func(r *Request) error {
 			if len(r.Args) == 0 {
-				fmt.Printf("%s[!]%s Missing mode (vim/emacs)", tui.YELLOW, tui.RESET)
+				fmt.Printf(Warn, "Missing mode (vim/emacs)")
 				fmt.Println()
 				return nil
 			}
@@ -248,17 +242,12 @@ func RegisterCoreCommands() {
 			switch r.Args[0] {
 			case "vim":
 				*r.context.Mode = "vim"
-				fmt.Println()
-				fmt.Printf("%s*%s Switched mode: %sVim%s", tui.BLUE, tui.RESET, tui.YELLOW, tui.RESET)
-				fmt.Println()
+				fmt.Printf("\n", Info, "Switched mode: %sVim%s\n")
 			case "emacs":
 				*r.context.Mode = "emacs"
-				fmt.Println()
-				fmt.Printf("%s*%s Switched mode: %sEmacs%s", tui.BLUE, tui.RESET, tui.YELLOW, tui.RESET)
-				fmt.Println()
+				fmt.Printf("\n", Info, "Switched mode: %sEmacs%s\n", tui.YELLOW, tui.RESET)
 			default:
-				fmt.Printf("%s[!]%s Invalid mode (vim/emacs)", tui.RED, tui.RESET)
-				fmt.Println()
+				fmt.Printf(Error, "Invalid mode (vim/emacs)\n")
 				return nil
 			}
 
