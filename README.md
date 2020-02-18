@@ -51,21 +51,20 @@ ______
 ## Sub-Repository Tools
 
 #### EffectiveCouscous
-
-#### Maltego
 [Maltego](https://www.paterva.com/web7/buy/maltego-clients/maltego-ce.php) is not really a tool for computer exploitation. 
 Maltego is a software that allows to graph various kinds of networks (computers, social, criminal, and many others), in a
 versatile, flexible, automated and efficient way, . It can be used for any activity having an investigative character. 
 And since computer security is the cute child of a chessboard, a magic labyrinth and an escape game, Maltego is your best friend.
+[EffectiveCouscous](https://github.com/maxlandon/EffectiveCouscous) is an attempt at interfacing various security tools with Maltego.
 
 Maltego will act as a GUI interface with visualization, inference and discovery capabilities. All data from WireGost will be used
 by Maltego.
 
 
-## Projects that have insipired/motivated/been outright copy-pasted
+## Projects that have inspired/motivated/been outright copy-pasted
 
 #### Sliver
-[Sliver](https://github.com/BishopFox/sliver) is an post-exploitation/implant framework written in Go. It seems to be the most advanced 
+[Sliver](https://github.com/BishopFox/sliver) is a post-exploitation/implant framework written in Go. It seems to be the most advanced 
 framework written in Go at the moment. Therefore, most of WireGost codebase is exactly the same than Sliver.
 
 #### Merlin
