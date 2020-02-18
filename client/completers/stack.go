@@ -21,9 +21,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
 	"github.com/maxlandon/wiregost/client/commands"
+	. "github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
@@ -56,7 +56,7 @@ func (mc *StackCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf("%s[!] RPC Error:%s %s\n", tui.RED, tui.RESET, resp.Err)
+		fmt.Printf(RPCError, "%s\n", resp.Err)
 		return
 	}
 
@@ -64,7 +64,7 @@ func (mc *StackCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (
 	proto.Unmarshal(resp.Data, stackList)
 	if stackList.Err != "" {
 		fmt.Println()
-		fmt.Printf("%s[!]%s %s", tui.RED, tui.RESET, stackList.Err)
+		fmt.Printf(Error, "%s", stackList.Err)
 		fmt.Println()
 		return
 	}
