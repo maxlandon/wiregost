@@ -56,7 +56,6 @@ func main() {
 	err := users.CreateDefaultUser()
 	if err != nil {
 		log.Println(err.Error())
-		fmt.Println("test")
 	}
 
 	// Initialize Module Stacks
