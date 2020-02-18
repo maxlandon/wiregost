@@ -37,7 +37,7 @@ func RegisterModuleCommands() {
 		Handle: func(r *Request) error {
 			if len(r.Args) == 0 {
 				fmt.Println()
-				fmt.Printf("\n", Error, "Provide a module path name\n")
+				fmt.Printf("\n" + Error + "Provide a module path name\n")
 			} else {
 				stackUse(*r.context, r.Args[0], r.context.Server.RPC)
 			}
@@ -123,7 +123,7 @@ func RegisterModuleCommands() {
 		Handle: func(r *Request) error {
 			fmt.Println()
 			if len(r.Args) == 0 {
-				fmt.Printf(Error, "Provide a Ghost profile name")
+				fmt.Printf(Error + "Provide a Ghost profile name")
 				return nil
 			}
 			parseProfile(r.Args[0], *r.context, r.context.Server.RPC)
@@ -139,7 +139,7 @@ func RegisterModuleCommands() {
 		Handle: func(r *Request) error {
 			fmt.Println()
 			if len(r.Args) == 0 {
-				fmt.Printf(Error, "Provide a profile name (to_profile <name>)\n")
+				fmt.Printf(Error + "Provide a profile name (to_profile <name>)\n")
 				return nil
 			}
 			toProfile(r.Args[0], *r.context, r.context.Server.RPC)
@@ -154,14 +154,14 @@ func RegisterModuleCommands() {
 func setOption(args []string, ctx ShellContext, rpc RPCServer) {
 
 	if len(args) < 2 {
-		fmt.Printf(Error, "Option name/value pair not provided")
+		fmt.Printf(Error + "Option name/value pair not provided")
 		return
 	}
 
 	name := strings.TrimSpace(args[0])
 
 	if _, found := ctx.Module.Options[name]; !found {
-		fmt.Printf(Error, "Invalid option: %s", args[0])
+		fmt.Printf(Error+"Invalid option: %s", args[0])
 		return
 	}
 
@@ -327,7 +327,7 @@ func runModule(action string, ctx ShellContext, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf(RPCError, "%s", resp.Err)
+		fmt.Printf(RPCError+"%s", resp.Err)
 		return
 	}
 
@@ -335,9 +335,9 @@ func runModule(action string, ctx ShellContext, rpc RPCServer) {
 	proto.Unmarshal(resp.Data, result)
 
 	if result.Success == false {
-		fmt.Printf(Error, "%s", result.Err)
+		fmt.Printf(Error+"%s", result.Err)
 	} else {
-		fmt.Printf(Success, "%s", result.Result)
+		fmt.Printf(Success+"%s", result.Result)
 	}
 
 }
@@ -359,7 +359,7 @@ func parseProfile(profile string, ctx ShellContext, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf(RPCError, "%s", resp.Err)
+		fmt.Printf(RPCError+"%s", resp.Err)
 		return
 	}
 
@@ -367,10 +367,10 @@ func parseProfile(profile string, ctx ShellContext, rpc RPCServer) {
 	proto.Unmarshal(resp.Data, result)
 
 	if result.Success == false {
-		fmt.Printf(Error, "%s", result.Err)
+		fmt.Printf(Error+"%s", result.Err)
 	} else {
 		m.ParseProto(result.Updated)
-		fmt.Printf(Info, "%s", result.Result)
+		fmt.Printf(Info+"%s", result.Result)
 	}
 }
 
@@ -391,7 +391,7 @@ func toProfile(profile string, ctx ShellContext, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf(RPCError, "%s", resp.Err)
+		fmt.Printf(RPCError+"%s", resp.Err)
 		return
 	}
 
@@ -399,9 +399,9 @@ func toProfile(profile string, ctx ShellContext, rpc RPCServer) {
 	proto.Unmarshal(resp.Data, result)
 
 	if result.Success == false {
-		fmt.Printf(Error, "%s", result.Err)
+		fmt.Printf(Error+"%s", result.Err)
 	} else {
-		fmt.Printf(Info, "%s", result.Result)
+		fmt.Printf(Info+"%s", result.Result)
 	}
 }
 

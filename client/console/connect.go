@@ -30,7 +30,7 @@ import (
 func getDefaultServerConfig() *assets.ClientConfig {
 	configs := assets.GetConfigs()
 	if len(configs) == 0 {
-		fmt.Printf(Warnf, "No config files found at %s or -config\n", assets.GetConfigDir())
+		fmt.Printf(Warnf+"No config files found at %s or -config\n", assets.GetConfigDir())
 		return nil
 	}
 
@@ -47,13 +47,13 @@ func getDefaultServerConfig() *assets.ClientConfig {
 func (c *Console) connect(config *assets.ClientConfig) error {
 
 	// Initiate connection
-	fmt.Printf(Info, "Connecting to %s:%d ...\n", config.LHost, config.LPort)
+	fmt.Printf(Info+"Connecting to %s:%d ...\n", config.LHost, config.LPort)
 	send, recv, err := transport.MTLSConnect(config)
 	if err != nil {
-		errString := fmt.Sprintf(Errorf, "Connection to server failed: %v", err)
+		errString := fmt.Sprintf(Errorf+"Connection to server failed: %v", err)
 		return errors.New(errString)
 	} else {
-		fmt.Printf(Success, "Connected to Wiregost server at %s:%d, as user %s%s%s",
+		fmt.Printf(Success+"Connected to Wiregost server at %s:%d, as user %s%s%s",
 			config.LHost, config.LPort, tui.YELLOW, config.User, tui.RESET)
 		fmt.Println()
 	}

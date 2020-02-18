@@ -69,21 +69,21 @@ func users(rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf(RPCError, "%s\n", resp.Err)
+		fmt.Printf(RPCError+"%s\n", resp.Err)
 		return
 	}
 
 	users := &clientpb.Players{}
 	err := proto.Unmarshal(resp.Data, users)
 	if err != nil {
-		fmt.Printf("\n", Error, "%s\n", err.Error())
+		fmt.Printf("\n", Error+"%s\n", err.Error())
 		return
 	}
 
 	if 0 < len(users.Players) {
 		displayUsers(users.Players)
 	} else {
-		fmt.Printf(Info, "No players currently registered")
+		fmt.Printf(Info + "No players currently registered")
 	}
 
 }
@@ -138,15 +138,15 @@ func addUser(args []string, rpc RPCServer) {
 	}
 
 	if name == "" {
-		fmt.Printf("\n", Warn, "Provide a user name (name='name')\n")
+		fmt.Printf("\n" + Warn + "Provide a user name (name='name')\n")
 		return
 	}
 	if lhost == "" {
-		fmt.Printf("\n", Warn, "Provide a lhost (lhost=192.168.1.1)\n")
+		fmt.Printf("\n" + Warn + "Provide a lhost (lhost=192.168.1.1)\n")
 		return
 	}
 	if lport == 0 {
-		fmt.Printf("\n", Warn, "Provide a lport (lport=8443)\n")
+		fmt.Printf("\n" + Warn + "Provide a lport (lport=8443)\n")
 		return
 	}
 
@@ -163,20 +163,20 @@ func addUser(args []string, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf(RPCError, "%s\n", resp.Err)
+		fmt.Printf(RPCError+"%s\n", resp.Err)
 		return
 	}
 
 	userRes := &clientpb.User{}
 	err := proto.Unmarshal(resp.Data, userRes)
 	if err != nil {
-		fmt.Printf("\n", Error, "%s\n", err.Error())
+		fmt.Printf("\n"+Error+"%s\n", err.Error())
 		return
 	}
 
 	if userRes.Success {
-		fmt.Printf("\n", Success, "Added user %s with server %s:%d\n", name, lhost, lport)
+		fmt.Printf("\n"+Success+"Added user %s with server %s:%d\n", name, lhost, lport)
 	} else {
-		fmt.Printf("\n", Error, "%s\n", userRes.Err)
+		fmt.Printf("\n"+Error+"%s\n", userRes.Err)
 	}
 }

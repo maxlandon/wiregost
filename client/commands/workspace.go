@@ -63,7 +63,7 @@ func RegisterWorkspaceCommands() {
 					if len(r.Args) == 2 {
 						switchWorkspace(r.Args[1], r.context.CurrentWorkspace, &r.context.Context, *r.context)
 					} else {
-						fmt.Printf(Error, "Provide a workspace name")
+						fmt.Printf(Error + "Provide a workspace name")
 					}
 					fmt.Println()
 				case "add":
@@ -130,7 +130,7 @@ func switchWorkspace(name string, workspace *models.Workspace, ctx *context.Cont
 			*workspace = workspaces[i]
 			*ctx = context.WithValue(*ctx, "workspace_id", workspaces[i].ID)
 			workspace = &workspaces[i]
-			fmt.Printf(Info, "Switched to workspace %s", workspaces[i].Name)
+			fmt.Printf(Info+"Switched to workspace %s", workspaces[i].Name)
 			// Reset currentModule
 			*sctx.CurrentModule = ""
 
@@ -144,7 +144,7 @@ func addWorkspaces(names []string) {
 		fmt.Println(err.Error())
 	} else {
 		for _, n := range names {
-			fmt.Printf(Info, "Created workspace %s", n)
+			fmt.Printf(Info+"Created workspace %s", n)
 		}
 	}
 }
@@ -165,7 +165,7 @@ func deleteWorkspaces(names []string) {
 		fmt.Println(err.Error())
 	} else {
 		for _, n := range names {
-			fmt.Printf(Info, "Deleted workspace %s", n)
+			fmt.Printf(Info+"Deleted workspace %s", n)
 		}
 	}
 }
@@ -203,7 +203,7 @@ func updateWorkspace(args []string) {
 			}
 		}
 	} else {
-		fmt.Printf(Error, "rovide a workspace name (name='workspace')")
+		fmt.Printf(Error + "rovide a workspace name (name='workspace')")
 		return
 	}
 	desc, found := opts["description"]
@@ -224,7 +224,7 @@ func updateWorkspace(args []string) {
 	if err != nil {
 		fmt.Println(err.Error())
 	} else {
-		fmt.Printf(Info, "Updated workspace %s", w.Name)
+		fmt.Printf(Info+"Updated workspace %s", w.Name)
 	}
 }
 

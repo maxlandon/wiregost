@@ -107,13 +107,13 @@ func hosts(ctx *context.Context, options []string) {
 	if len(opts) == 0 {
 		hosts, err = remote.Hosts(*ctx, nil)
 		if err != nil {
-			fmt.Printf(DBError, "%s", err.Error())
+			fmt.Printf(DBError+"%s", err.Error())
 			return
 		}
 	} else {
 		hosts, err = remote.Hosts(*ctx, opts)
 		if err != nil {
-			fmt.Printf(DBError, "%s", err.Error())
+			fmt.Printf(DBError+"%s", err.Error())
 			return
 		}
 	}
@@ -133,13 +133,13 @@ func addHost(cctx *context.Context, args []string) {
 
 	host, err := remote.ReportHost(*cctx, opts)
 	if err != nil {
-		fmt.Printf(DBError, "%s", err.Error())
+		fmt.Printf(DBError+"%s", err.Error())
 		return
 	}
 
 	for _, h := range hosts {
 		if h.ID == host.ID {
-			fmt.Printf(Warn, "Host already exists at: %s", host.Addresses)
+			fmt.Printf(Warn+"Host already exists at: %s", host.Addresses)
 			return
 		}
 	}
@@ -157,18 +157,18 @@ func deleteHosts(cctx *context.Context, args []string) {
 	// Get a list of hosts matching filters given
 	switch len(opts) {
 	case 0:
-		fmt.Printf(Error, "Provide filters for host selection ")
+		fmt.Printf(Error + "Provide filters for host selection ")
 	default:
 		var hosts []models.Host
 		var err error
 
 		hosts, err = remote.Hosts(*cctx, opts)
 		if err != nil {
-			fmt.Printf(DBError, "%s", err.Error())
+			fmt.Printf(DBError+"%s", err.Error())
 			return
 		}
 		if len(hosts) == 0 {
-			fmt.Printf(Warn, "No hosts match the given filters ")
+			fmt.Printf(Warn + "No hosts match the given filters ")
 			return
 		}
 
@@ -179,7 +179,7 @@ func deleteHosts(cctx *context.Context, args []string) {
 				fmt.Printf(DBError, "%s", err.Error())
 				continue
 			} else {
-				fmt.Printf(Info, "Deleted host at: %s", hosts[i].Addresses)
+				fmt.Printf(Info+"Deleted host at: %s", hosts[i].Addresses)
 			}
 		}
 	}
@@ -206,7 +206,7 @@ func updateHost(cctx *context.Context, args []string) {
 			}
 		}
 	} else {
-		fmt.Printf(Error, "Provide a host ID (host-id=2)")
+		fmt.Printf(Error + "Provide a host ID (host-id=2)")
 		return
 	}
 
@@ -257,9 +257,9 @@ func updateHost(cctx *context.Context, args []string) {
 	// Update host
 	updated, err := remote.UpdateHost(host)
 	if err != nil {
-		fmt.Printf(DBError, "%s", err.Error())
+		fmt.Printf(DBError+"%s", err.Error())
 	} else {
-		fmt.Printf(Info, "Updated host at: %s", updated.Addresses)
+		fmt.Printf(Info+"Updated host at: %s", updated.Addresses)
 	}
 }
 

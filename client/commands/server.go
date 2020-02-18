@@ -63,7 +63,7 @@ func listServers(ctx ShellContext) {
 
 	configs := assets.GetConfigs()
 	if len(configs) == 0 {
-		fmt.Printf(Warnf, "No config files found at %s or -config\n", assets.GetConfigDir())
+		fmt.Printf(Warnf+"No config files found at %s or -config\n", assets.GetConfigDir())
 		return
 	}
 
@@ -96,7 +96,7 @@ func listServers(ctx ShellContext) {
 
 func connectServer(args []string, ctx ShellContext) error {
 	if len(args) == 0 {
-		fmt.Printf("\n", Warn, "Provide a server address \n")
+		fmt.Printf("\n" + Warn + "Provide a server address \n")
 		return nil
 	}
 
@@ -113,16 +113,16 @@ func connectServer(args []string, ctx ShellContext) error {
 		}
 	}
 
-	fmt.Printf(Warn, "Disconnecting from current server %s:%d \n...\n", ctx.Server.Config.LHost, ctx.Server.Config.LPort)
+	fmt.Printf(Warn+"Disconnecting from current server %s:%d \n...\n", ctx.Server.Config.LHost, ctx.Server.Config.LPort)
 
-	fmt.Printf(Info, "Connecting to %s:%d ...\n", config.LHost, config.LPort)
+	fmt.Printf(Info+"Connecting to %s:%d ...\n", config.LHost, config.LPort)
 	send, recv, err := transport.MTLSConnect(config)
 	if err != nil {
-		errString := fmt.Sprintf(Errorf, "Connection to server failed: %v", err)
+		errString := fmt.Sprintf(Errorf+"Connection to server failed: %v", err)
 		return errors.New(errString)
 
 	} else {
-		fmt.Printf(Success, "Connected to Wiregost server at %s:%d, as user %s%s%s",
+		fmt.Printf(Success+"Connected to Wiregost server at %s:%d, as user %s%s%s",
 			config.LHost, config.LPort, tui.YELLOW, config.User, tui.RESET)
 		fmt.Println()
 	}

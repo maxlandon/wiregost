@@ -45,7 +45,7 @@ func RegisterJobCommands() {
 				switch r.Args[0] {
 				case "kill":
 					if len(r.Args) == 1 {
-						fmt.Printf("\n", Error, "Provide one or more Job IDs\n")
+						fmt.Printf("\n" + Error + "Provide one or more Job IDs\n")
 						return nil
 					} else {
 						for _, arg := range r.Args[1:] {
@@ -79,7 +79,7 @@ func listJobs(ctx ShellContext, rpc RPCServer) {
 	if 0 < len(activeJobs) {
 		printJobs(activeJobs)
 	} else {
-		fmt.Printf(Info, "No active jobs\n")
+		fmt.Printf(Info + "No active jobs\n")
 	}
 }
 
@@ -90,7 +90,7 @@ func GetJobs(rpc RPCServer) *clientpb.Jobs {
 		Data: []byte{},
 	}, defaultTimeout)
 	if resp.Err != "" {
-		fmt.Printf(RPCError, "%s\n", resp.Err)
+		fmt.Printf(RPCError+"%s\n", resp.Err)
 		return nil
 	}
 	jobs := &clientpb.Jobs{}
@@ -110,7 +110,7 @@ func killAllJobs(rpc RPCServer) {
 
 func killJob(jobID int32, rpc RPCServer) {
 
-	fmt.Printf("\n", Info, "Killing job #%d ...\n", jobID)
+	fmt.Printf("\n"+Info+"Killing job #%d ...\n", jobID)
 	data, _ := proto.Marshal(&clientpb.JobKillReq{ID: jobID})
 	resp := <-rpc(&ghostpb.Envelope{
 		Type: clientpb.MsgJobKill,
@@ -124,9 +124,9 @@ func killJob(jobID int32, rpc RPCServer) {
 	proto.Unmarshal(resp.Data, jobKill)
 
 	if jobKill.Success {
-		fmt.Printf(Success, "Successfully killed job #%d\n", jobKill.ID)
+		fmt.Printf(Success+"Successfully killed job #%d\n", jobKill.ID)
 	} else {
-		fmt.Printf(Error, "Failed to kill job #%d, %s\n", jobKill.ID, jobKill.Err)
+		fmt.Printf(Error+"Failed to kill job #%d, %s\n", jobKill.ID, jobKill.Err)
 	}
 }
 

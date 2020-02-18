@@ -49,7 +49,7 @@ func listProfiles(rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf(RPCError, "%s\n", resp.Err)
+		fmt.Printf(RPCError+"%s\n", resp.Err)
 		return
 	}
 
@@ -57,7 +57,7 @@ func listProfiles(rpc RPCServer) {
 	err := proto.Unmarshal(resp.Data, pbProfiles)
 	if err != nil {
 		fmt.Println()
-		fmt.Printf(Error, "%s", err.Error())
+		fmt.Printf(Error+"%s", err.Error())
 		fmt.Println()
 		return
 	}

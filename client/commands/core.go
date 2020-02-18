@@ -78,9 +78,9 @@ func RegisterCoreCommands() {
 				dir, err := fs.Expand(r.Args[0])
 				err = os.Chdir(dir)
 				if err != nil {
-					fmt.Printf(CommandError, "%s", err)
+					fmt.Printf(CommandError+"%s", err)
 				} else {
-					fmt.Printf(Info, "Changed directory to %s\n", dir)
+					fmt.Printf(Info+"Changed directory to %s\n", dir)
 				}
 			}
 			return nil
@@ -118,7 +118,7 @@ func RegisterCoreCommands() {
 				// Make a resource file --------------------------------------------------------------------------------------//
 				case "make":
 					if len(r.Args) < 3 {
-						fmt.Printf(Warn, "Missing some parameters (type 'resource' for help)")
+						fmt.Printf(Warn + "Missing some parameters (type 'resource' for help)")
 						fmt.Println()
 						return nil
 					}
@@ -137,11 +137,11 @@ func RegisterCoreCommands() {
 						}
 					}
 					if filename == "" {
-						fmt.Printf(Warn, "Missing resource filename (filename='name.rc')")
+						fmt.Printf(Warn + "Missing resource filename (filename='name.rc')")
 						return nil
 					}
 					if length == 0 {
-						fmt.Printf(Warn, "Missing resource command length (length=8)")
+						fmt.Printf(Warn + "Missing resource command length (length=8)")
 						return nil
 					}
 					if !strings.Contains(filename, "rc") {
@@ -151,7 +151,7 @@ func RegisterCoreCommands() {
 					// Check if resource already exists
 					file, _ := fs.Expand(path.Join(assets.GetResourceDir(), filename))
 					if fs.Exists(file) {
-						fmt.Printf(Error, "Resource file already exists. Cannot overwrite it.")
+						fmt.Printf(Error + "Resource file already exists. Cannot overwrite it.")
 						return nil
 					}
 					// If not, create it
@@ -180,7 +180,7 @@ func RegisterCoreCommands() {
 						}
 						hlength -= 1
 					}
-					fmt.Printf(Success, "Resource file created and filed with last %s commands.%s",
+					fmt.Printf(Success+"Resource file created and filed with last %s commands.%s",
 						strconv.Itoa(length), tui.RESET)
 
 					// Load a resource file --------------------------------------------------------------------------------------//
@@ -193,7 +193,7 @@ func RegisterCoreCommands() {
 					filestr, _ := fs.Expand(path.Join(assets.GetResourceDir(), filename))
 					file, _ := os.Open(filestr)
 					if filepath.Ext(filestr) != ".rc" {
-						fmt.Printf(Error, "File must be a configuration (.rc) file.")
+						fmt.Printf(Error + "File must be a configuration (.rc) file.")
 					}
 					defer file.Close()
 
@@ -211,7 +211,7 @@ func RegisterCoreCommands() {
 						}
 					}
 					if err := scanner.Err(); err != nil {
-						fmt.Printf(Error, "Error parsing resource command %s%s%s : %s",
+						fmt.Printf(Error+"Error parsing resource command %s%s%s : %s",
 							tui.YELLOW, scanner.Text(), tui.RESET, err)
 					}
 				}
@@ -234,7 +234,7 @@ func RegisterCoreCommands() {
 		},
 		Handle: func(r *Request) error {
 			if len(r.Args) == 0 {
-				fmt.Printf(Warn, "Missing mode (vim/emacs)")
+				fmt.Printf(Warn + "Missing mode (vim/emacs)")
 				fmt.Println()
 				return nil
 			}
@@ -242,12 +242,12 @@ func RegisterCoreCommands() {
 			switch r.Args[0] {
 			case "vim":
 				*r.context.Mode = "vim"
-				fmt.Printf("\n", Info, "Switched mode: %sVim%s\n")
+				fmt.Printf("\n" + Info + "Switched mode: %sVim%s\n")
 			case "emacs":
 				*r.context.Mode = "emacs"
-				fmt.Printf("\n", Info, "Switched mode: %sEmacs%s\n", tui.YELLOW, tui.RESET)
+				fmt.Printf("\n"+Info+"Switched mode: %sEmacs%s\n", tui.YELLOW, tui.RESET)
 			default:
-				fmt.Printf(Error, "Invalid mode (vim/emacs)\n")
+				fmt.Printf(Error + "Invalid mode (vim/emacs)\n")
 				return nil
 			}
 

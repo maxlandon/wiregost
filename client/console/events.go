@@ -43,34 +43,34 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 			fmt.Println()
 
 		case consts.ServerErrorStr:
-			fmt.Printf(Errorf, "Server connection error! \n\n")
+			fmt.Printf(Errorf + "Server connection error! \n\n")
 			os.Exit(4)
 
 		case consts.JoinedEvent:
-			fmt.Printf("\n", Info, "%s connected to the server \n", event.Client.User)
+			fmt.Printf("\n"+Info+"%s connected to the server \n", event.Client.User)
 			c.hardRefresh()
 		case consts.LeftEvent:
-			fmt.Printf("\n", Info, "%s disconnected from the server \n", event.Client.User)
+			fmt.Printf("\n"+Info+"%s disconnected from the server \n", event.Client.User)
 			c.hardRefresh()
 
 		case consts.StoppedEvent:
 			job := event.Job
-			fmt.Printf("\n", Info, "Job #%d stopped (%s/%s) \n", job.ID, job.Protocol, job.Name)
+			fmt.Printf("\n"+Info+"Job #%d stopped (%s/%s) \n", job.ID, job.Protocol, job.Name)
 
 		case consts.ConnectedEvent:
 			ghost := event.Ghost
-			fmt.Printf("\n", Success, "Session #%d %s - %s (%s) - %s/%s \n",
+			fmt.Printf("\n"+Success+"Session #%d %s - %s (%s) - %s/%s \n",
 				ghost.ID, ghost.Name, ghost.RemoteAddress, ghost.Hostname, ghost.OS, ghost.Arch)
 
 		case consts.DisconnectedEvent:
 			ghost := event.Ghost
-			fmt.Printf("\n", Error, "Lost session #%d %s - %s (%s) - %s/%s\n",
+			fmt.Printf("\n"+Error+"Lost session #%d %s - %s (%s) - %s/%s\n",
 				ghost.ID, ghost.Name, ghost.RemoteAddress, ghost.Hostname, ghost.OS, ghost.Arch)
 			activeGhost := c.currentAgent
 			if activeGhost != nil && ghost.ID == activeGhost.ID {
 				c.currentAgent = nil
 				// app.SetPrompt(getPrompt())
-				fmt.Printf("\n", Error, "Active sliver diconnected\n")
+				fmt.Printf("\n" + Error + "Active sliver diconnected\n")
 			}
 			fmt.Println()
 

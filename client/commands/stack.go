@@ -47,7 +47,7 @@ func RegisterStackCommands() {
 				switch r.Args[0] {
 				case "use":
 					if len(r.Args) == 1 {
-						fmt.Printf("\n", Error, "Provide a module path name\n")
+						fmt.Printf("\n" + Error + "Provide a module path name\n")
 					} else {
 						stackUse(*r.context, r.Args[1], r.context.Server.RPC)
 					}
@@ -92,16 +92,14 @@ func stackUse(ctx ShellContext, module string, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf(RPCError, "%s\n", resp.Err)
+		fmt.Printf(RPCError+"%s\n", resp.Err)
 		return
 	}
 
 	stack := &clientpb.Stack{}
 	proto.Unmarshal(resp.Data, stack)
 	if stack.Err != "" {
-		fmt.Println()
-		fmt.Printf(Error, "%s", stack.Err)
-		fmt.Println()
+		fmt.Printf("\n"+Error+"%s\n", stack.Err)
 		return
 	}
 
@@ -123,7 +121,7 @@ func stackList(ctx ShellContext, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf(RPCError, "%s\n", resp.Err)
+		fmt.Printf(RPCError+"%s\n", resp.Err)
 		return
 	}
 
@@ -131,7 +129,7 @@ func stackList(ctx ShellContext, rpc RPCServer) {
 	proto.Unmarshal(resp.Data, stackList)
 	if stackList.Err != "" {
 		fmt.Println()
-		fmt.Printf(Error, "%s", stackList.Err)
+		fmt.Printf(Error+"%s", stackList.Err)
 		fmt.Println()
 		return
 	}
@@ -183,14 +181,14 @@ func stackPop(ctx ShellContext, module string, all bool, rpc RPCServer) {
 	}, defaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf(RPCError, "%s\n", resp.Err)
+		fmt.Printf(RPCError+"%s\n", resp.Err)
 		return
 	}
 
 	stack := &clientpb.Stack{}
 	proto.Unmarshal(resp.Data, stack)
 	if stack.Err != "" {
-		fmt.Printf(Error, "%s", stack.Err)
+		fmt.Printf(Error+"%s", stack.Err)
 		return
 	}
 
