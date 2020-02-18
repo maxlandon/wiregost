@@ -25,18 +25,18 @@ endif
 
 .PHONY: macos
 macos: clean version pb
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-server ./server
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-client ./client
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
 
 .PHONY: linux
 linux: clean version pb
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-server ./server
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-client ./client
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
 
 .PHONY: windows
 windows: clean version pb
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-server.exe ./server
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-client.exe ./client
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server.exe ./server
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console.exe ./client
 
 
 #
@@ -47,24 +47,24 @@ static-macos: clean version pb packr
 	packr
 	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-server ./server
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
 
 .PHONY: static-windows
 static-windows: clean version pb packr
 	packr
 	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-server.exe ./server
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server.exe ./server
 
 .PHONY: static-linux
 static-linux: clean version pb packr
 	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o sliver-server ./server
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
 
 .PHONY: pb
 pb:
-	protoc -I protobuf/ protobuf/sliver/sliver.proto --go_out=protobuf/
+	protoc -I protobuf/ protobuf/ghost/ghost.proto --go_out=protobuf/
 	protoc -I protobuf/ protobuf/client/client.proto --go_out=protobuf/
 
 .PHONY: version
@@ -93,6 +93,6 @@ clean-all: clean clean-version
 clean: clean-version
 	packr clean
 	rm -f ./protobuf/client/*.pb.go
-	rm -f ./protobuf/sliver/*.pb.go
-	rm -f sliver-client sliver-server *.exe
+	rm -f ./protobuf/ghost/*.pb.go
+	rm -f wiregost-console wiregost-server *.exe
 
