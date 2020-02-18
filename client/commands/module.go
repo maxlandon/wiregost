@@ -183,6 +183,7 @@ func setOption(args []string, ctx ShellContext, rpc RPCServer) {
 
 	opt, _ := proto.Marshal(&clientpb.SetOptionReq{
 		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		User:        ctx.Server.Config.User,
 		Path:        strings.Split(*ctx.CurrentModule, "/"),
 		Name:        name,
 		Value:       args[1],
@@ -225,7 +226,7 @@ func showInfo(ctx ShellContext) {
 	fmt.Printf("%sPriviledged:%s \t%t\n", tui.YELLOW, tui.RESET, m.Priviledged)
 	fmt.Println()
 	fmt.Printf("%sDescription:%s\r\n", tui.YELLOW, tui.RESET)
-	fmt.Println(tui.Dim(util.Wrap(m.Description, 140)))
+	fmt.Println(tui.Dim(util.Wrap(m.Description, 100)))
 	fmt.Println()
 
 	// Listener Options
@@ -331,6 +332,7 @@ func runModule(action string, ctx ShellContext, rpc RPCServer) {
 
 	run, _ := proto.Marshal(&clientpb.ModuleActionReq{
 		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		User:        ctx.Server.Config.User,
 		Path:        m.Path,
 		Action:      action,
 	})
@@ -361,6 +363,7 @@ func parseProfile(profile string, ctx ShellContext, rpc RPCServer) {
 
 	run, _ := proto.Marshal(&clientpb.ModuleActionReq{
 		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		User:        ctx.Server.Config.User,
 		Path:        m.Path,
 		Action:      "parse_profile",
 		Profile:     profile,
@@ -392,6 +395,7 @@ func toProfile(profile string, ctx ShellContext, rpc RPCServer) {
 
 	run, _ := proto.Marshal(&clientpb.ModuleActionReq{
 		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		User:        ctx.Server.Config.User,
 		Path:        m.Path,
 		Action:      "to_profile",
 		Profile:     profile,

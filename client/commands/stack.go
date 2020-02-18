@@ -89,6 +89,7 @@ func stackUse(ctx ShellContext, module string, rpc RPCServer) {
 		Path:        strings.Split(module, "/"),
 		Action:      "use",
 		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		User:        ctx.Server.Config.User,
 	})
 
 	resp := <-rpc(&ghostpb.Envelope{
@@ -119,6 +120,7 @@ func stackList(ctx ShellContext, rpc RPCServer) {
 	stack, _ := proto.Marshal(&clientpb.StackReq{
 		Action:      "list",
 		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		User:        ctx.Server.Config.User,
 	})
 
 	resp := <-rpc(&ghostpb.Envelope{
@@ -142,7 +144,7 @@ func stackList(ctx ShellContext, rpc RPCServer) {
 
 	table := util.Table()
 	table.SetHeader([]string{"Type", "Path", "Description"})
-	table.SetColWidth(80)
+	table.SetColWidth(60)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -178,6 +180,7 @@ func stackPop(ctx ShellContext, module string, all bool, rpc RPCServer) {
 		Path:        strings.Split(module, "/"),
 		All:         all,
 		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		User:        ctx.Server.Config.User,
 	})
 
 	resp := <-rpc(&ghostpb.Envelope{

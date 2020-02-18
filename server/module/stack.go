@@ -17,15 +17,17 @@
 package module
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/maxlandon/wiregost/data_service/remote"
+	"github.com/maxlandon/wiregost/server/certs"
 )
 
 var (
 	// Stacks - All module stacks (one per workspace),
 	// which can be loaded/unloaded on demand, pulling from Modules
-	Stacks = &map[uint]*stack{}
+	Stacks = &map[uint]map[string]*stack{}
 )
 
 type stack struct {
@@ -35,14 +37,30 @@ type stack struct {
 
 // InitStacks - Creates a new stack for each workspace in Wiregost
 func InitStacks() {
+	clientCerts := certs.UserClientListCertificates()
+
+	users := []string{}
+	for _, c := range clientCerts {
+		users = append(users, c.Subject.CommonName)
+	}
+	users = unique(users)
+
 	workspaces, _ := remote.Workspaces(nil)
 	for _, w := range workspaces {
-		(*Stacks)[w.ID] = &stack{}
+		for _, user := range users {
+			userStack := &map[string]*stack{}
+			(*userStack)[user] = &stack{}
+			(*Stacks)[w.ID] = (*userStack)
+		}
 	}
 
 	for _, v := range *Stacks {
-		v.Loaded = &map[string]Module{}
-		v.mutex = &sync.RWMutex{}
+		for _, u := range users {
+			v[u] = &stack{}
+			v[u].Loaded = &map[string]Module{}
+			v[u].mutex = &sync.RWMutex{}
+			fmt.Println(v[u].Loaded)
+		}
 	}
 }
 
@@ -84,4 +102,17 @@ func (s *stack) Module(path string) (Module, error) {
 	} else {
 		return mod, nil
 	}
+
+}
+
+func unique(intSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range intSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }

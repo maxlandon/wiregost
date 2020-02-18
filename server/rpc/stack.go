@@ -17,6 +17,7 @@
 package rpc
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -35,7 +36,7 @@ func rpcStackUse(data []byte, timeout time.Duration, resp RPCResponse) {
 
 	// Find the workspace stack
 	wsID := uint(stackReq.WorkspaceID)
-	stack := (*module.Stacks)[wsID]
+	stack := (*module.Stacks)[wsID][stackReq.User]
 
 	path := strings.Join(stackReq.Path, "/")
 
@@ -86,7 +87,7 @@ func rpcStackPop(data []byte, timeout time.Duration, resp RPCResponse) {
 
 	// Find workspace stack
 	wsID := uint(stackReq.WorkspaceID)
-	stack := (*module.Stacks)[wsID]
+	stack := (*module.Stacks)[wsID][stackReq.User]
 
 	if stackReq.All {
 		for k, _ := range *stack.Loaded {
@@ -127,7 +128,11 @@ func rpcStackList(data []byte, timeout time.Duration, resp RPCResponse) {
 
 	// Find workspace stack
 	wsID := uint(stackReq.WorkspaceID)
-	stack := (*module.Stacks)[wsID]
+	stack := (*module.Stacks)[wsID][stackReq.User]
+	for _, s := range (*module.Stacks)[wsID] {
+		fmt.Println(s)
+	}
+	fmt.Println(stack)
 
 	modules := []*clientpb.Module{}
 

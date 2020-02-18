@@ -45,6 +45,7 @@ func (mc *StackCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (
 	stack, _ := proto.Marshal(&clientpb.StackReq{
 		Action:      "list",
 		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		User:        ctx.Server.Config.User,
 	})
 
 	rpc := ctx.Server.RPC

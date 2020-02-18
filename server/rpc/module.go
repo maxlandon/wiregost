@@ -36,7 +36,7 @@ func rpcModuleSetOption(data []byte, timeout time.Duration, resp RPCResponse) {
 	// Find module
 	path := strings.Join(optionReq.Path, "/")
 	wsID := uint(optionReq.WorkspaceID)
-	stack := (*module.Stacks)[wsID]
+	stack := (*module.Stacks)[wsID][optionReq.User]
 	mod := (*stack.Loaded)[path]
 	mod.SetOption(optionReq.Name, optionReq.Value)
 
@@ -58,7 +58,7 @@ func rpcModuleRun(data []byte, timeout time.Duration, resp RPCResponse) {
 	// Find module
 	path := strings.Join(modReq.Path, "/")
 	wsID := uint(modReq.WorkspaceID)
-	stack := (*module.Stacks)[wsID]
+	stack := (*module.Stacks)[wsID][modReq.User]
 	mod := (*stack.Loaded)[path]
 
 	var res string

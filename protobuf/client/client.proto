@@ -14,7 +14,7 @@
 // You should) have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-synt = "proto3";
+syntax = "proto3";
 
 package clientpb;
 
@@ -72,15 +72,18 @@ message Jobs { repeated Job Active = 1; }
 // Stack requests & responses
 message StackReq {
         uint32 WorkspaceID = 1;
-        repeated string Path = 2;
-        string Action = 3;      // use / pop 
-        bool All = 4;           // True if we pop all modules 
+        string User = 2;
+        repeated string Path = 3;
+        string Action = 4;      // use / pop 
+        bool All = 5;           // True if we pop all modules 
 }
 
 message Stack {
-        repeated string Path = 1;
-        string Err = 2;
-        repeated Module Modules = 3;
+        uint32 WorkspaceID = 1;
+        string User = 2;
+        repeated string Path = 3;
+        string Err = 4;
+        repeated Module Modules = 5;
 }
 
 // Modules requests & responses
@@ -104,9 +107,10 @@ message Module {
 
 message ModuleActionReq {
         uint32 WorkspaceID = 1;
-        repeated string Path = 2;
-        string Action = 3;
-        string Profile = 4;
+        string User = 2;
+        repeated string Path = 3;
+        string Action = 4;
+        string Profile = 5;
 }
 
 message ModuleAction {
@@ -129,9 +133,10 @@ message Option {
 
 message SetOptionReq {
         uint32 WorkspaceID = 1;
-        repeated string Path = 2;
-        string Name = 3;
-        string Value = 4;
+        string User = 2;
+        repeated string Path = 3;
+        string Name = 4;
+        string Value = 5;
 }
 
 message SetOption {
