@@ -21,7 +21,10 @@ import (
 	"fmt"
 	"path"
 
+	consts "github.com/maxlandon/wiregost/client/constants"
+	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/assets"
+	"github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/gogo"
 )
 
@@ -76,7 +79,7 @@ func GhostSharedLibrary(config *GhostConfig) (string, error) {
 	return dest, err
 }
 
-// GhostExecutable - Generates a sliver executable binary
+// GhostExecutable - Generates a ghost executable binary
 func GhostExecutable(config *GhostConfig) (string, error) {
 
 	// Compile go code
@@ -117,4 +120,80 @@ func GhostExecutable(config *GhostConfig) (string, error) {
 		buildLog.Errorf("Failed to save file to db %s %s", saveFileErr, saveCfgErr)
 	}
 	return dest, err
+}
+
+// CompileGhost concurrently compiles a ghost implant with the provided config
+func CompileGhost(config GhostConfig) {
+	c2s := []string{}
+	for _, c := range config.C2 {
+		c2s = append(c2s, c.String())
+	}
+	description := fmt.Sprintf("Platform: %s/%s - Type: %s => %v", config.GOOS, config.GOARCH, config.Format, c2s)
+
+	// Send job start
+	job := &core.Job{
+		ID:          core.GetJobID(),
+		Name:        "Compiler",
+		Description: description,
+		JobCtrl:     make(chan bool),
+	}
+
+	go func() {
+		<-job.JobCtrl
+		buildLog.Infof("Done compiling ghost implant %s", config.Name)
+		core.Jobs.RemoveJob(job)
+
+		core.EventBroker.Publish(core.Event{
+			Job:       job,
+			EventType: consts.StoppedEvent,
+		})
+	}()
+
+	core.Jobs.AddJob(job)
+
+	// Compile according to Format
+	switch config.Format {
+	case clientpb.GhostConfig_EXECUTABLE:
+		go func() {
+			path, err := GhostExecutable(&config)
+			if err != nil {
+				job.Err = err.Error()
+				fmt.Println(err.Error())
+				job.JobCtrl <- true
+			}
+			job.Err = path
+			job.JobCtrl <- true
+		}()
+
+	case clientpb.GhostConfig_SHARED_LIB:
+		go func() {
+			path, err := GhostSharedLibrary(&config)
+			if err != nil {
+				job.Err = err.Error()
+				fmt.Println(err.Error())
+				job.JobCtrl <- true
+			}
+			job.Err = path
+			job.JobCtrl <- true
+		}()
+
+	case clientpb.GhostConfig_SHELLCODE:
+		go func() {
+			path, err := GhostSharedLibrary(&config)
+			if err != nil {
+				job.Err = err.Error()
+				fmt.Println(err.Error())
+				job.JobCtrl <- true
+			}
+			path, err = ShellcodeRDIToFile(path, "")
+			if err != nil {
+				job.Err = err.Error()
+				fmt.Println(err.Error())
+				job.JobCtrl <- true
+			}
+
+			job.Err = path
+			job.JobCtrl <- true
+		}()
+	}
 }

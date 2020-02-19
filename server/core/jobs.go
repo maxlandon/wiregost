@@ -36,6 +36,7 @@ type Job struct {
 	ID          int
 	Name        string
 	Description string
+	Err         string
 	Protocol    string
 	Port        uint16
 	JobCtrl     chan bool

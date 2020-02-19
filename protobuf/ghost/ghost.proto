@@ -21,9 +21,9 @@ package ghostpb;
 // [ Base ] ------------------------------------------------------------------//
 
 message Envelope {
-        uint32 Type = 1;
-        uint64 ID = 2;          // Message Type
-        int64 Timeout = 3;      // Response ID
+        uint32 Type = 1;        // Message Type
+        uint64 ID = 2;          // Response ID
+        int64 Timeout = 3;      
 
         bytes Data = 9;         // Message Data
 
@@ -170,12 +170,12 @@ message NetInterface {
         int32 Index = 1;
         string Name = 2;
         string MAC = 3;
-        repeated string IPAddress = 4;
+        repeated string IPAddresses = 4;
 }
 
-message IfConfigReq { uint32 GhostID = 1; }
+message IfconfigReq { uint32 GhostID = 1; }
 
-message IfConfig { repeated NetInterface NetInterfaces = 1; }
+message Ifconfig { repeated NetInterface NetInterfaces = 1; }
 
 message LsReq {
         string Path = 1;
@@ -251,7 +251,7 @@ message UploadReq {
 
 message Upload {
         string Path = 1;
-        string Encoder = 2;
+        string Err = 2;
         bool Success = 3;
 }
 
@@ -330,7 +330,7 @@ message ExecuteAssembly {
 
 message MigrateReq {
         uint32 Pid = 1;
-        bytes Shellcode = 2;
+        bytes Data = 2;
         uint32 GhostID = 9;
 }
 

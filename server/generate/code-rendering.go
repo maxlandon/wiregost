@@ -21,11 +21,11 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"fmt"
-	"html/template"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/gobuffalo/packr"
 	"github.com/maxlandon/wiregost/server/assets"
@@ -129,7 +129,7 @@ func renderGhostGoCode(config *GhostConfig, goConfig *gogo.GoConfig) (string, er
 			fileName = fmt.Sprintf("s%d%s", index, suffix)
 		}
 		if dirName != "." {
-			// Add an extra "sliver" dir
+			// Add an extra "ghost" dir
 			dirPath := path.Join(ghostPkgDir, "ghost", dirName)
 			if _, err := os.Stat(dirPath); os.IsNotExist(err) {
 				buildLog.Infof("[mkdir] %#v", dirPath)

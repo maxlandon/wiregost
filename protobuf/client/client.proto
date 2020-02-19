@@ -53,8 +53,9 @@ message Job {
         int32 ID = 1;
         string Name = 2;
         string Description = 3;
-        string Protocol = 4;
-        int32 Port = 5;
+        string Err = 4;
+        string Protocol = 5;
+        int32 Port = 6;
 }
 
 message JobKillReq { int32 ID = 1; }
