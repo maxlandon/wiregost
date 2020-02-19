@@ -3,6 +3,7 @@ module github.com/maxlandon/wiregost
 go 1.13
 
 require (
+	github.com/bishopfox/sliver v0.0.6-alpha
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/desertbit/closer/v3 v3.1.1 // indirect
 	github.com/desertbit/grumble v1.0.3
@@ -19,9 +20,10 @@ require (
 	github.com/miekg/dns v1.1.27
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/sirupsen/logrus v1.4.2
+	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20200210222208-86ce3cb69678
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
-	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
+	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5
 	golang.org/x/tools v0.0.0-20191216052735-49a3e744a425
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.2.7
