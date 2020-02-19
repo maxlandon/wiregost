@@ -77,6 +77,8 @@ func (s *ReverseMulti) Run(command string) (result string, err error) {
 	action := strings.Split(command, " ")[0]
 
 	switch action {
+	case "run":
+		return s.CompileImplant()
 	case "to_listener":
 		return s.toListener()
 	case "parse_profile":
@@ -85,6 +87,17 @@ func (s *ReverseMulti) Run(command string) (result string, err error) {
 		return s.generateProfile(command)
 	}
 	return "", nil
+}
+
+func (s *ReverseMulti) CompileImplant() (result string, err error) {
+	c, err := s.ToGhostConfig()
+	if err != nil {
+		return "", err
+	}
+
+	go generate.CompileGhost(*c)
+
+	return fmt.Sprintf("Started compiling DNS implant"), nil
 }
 
 func (s *ReverseMulti) toListener() (result string, err error) {
@@ -374,7 +387,27 @@ func (s *ReverseMulti) parseProfile(name string) (result string, err error) {
 func (s *ReverseMulti) generateProfile(name string) (result string, err error) {
 	profileName := strings.Split(name, " ")[1]
 
-	c := &generate.GhostConfig{}
+	c, err := s.ToGhostConfig()
+	if err != nil {
+		return "", err
+	}
+
+	// Save profile
+	c.Name = profileName
+	if 0 < len(c.Name) && c.Name != "." {
+		rpcLog.Infof("Saving new profile with name %#v", c.Name)
+		err = generate.ProfileSave(c.Name, c)
+	} else {
+		err = errors.New("Invalid profile name")
+		return "", err
+	}
+
+	return fmt.Sprintf("Saved reverse multi-protocol implant profile with name %#v", c.Name), nil
+}
+
+func (s *ReverseMulti) ToGhostConfig() (c *generate.GhostConfig, err error) {
+
+	c = &generate.GhostConfig{}
 
 	// OS
 	targetOS := s.Base.Options["OS"].Value
@@ -423,11 +456,10 @@ func (s *ReverseMulti) generateProfile(name string) (result string, err error) {
 	c2s = append(c2s, generate.ParseMTLSc2ToStruct(s.Base.Options["DomainsMTLS"].Value)...)
 
 	if len(c2s) == 0 {
-		return "", errors.New("You must specify at least one C2 endpoint (DNS, HTTP(S) or mTLS)")
+		return nil, errors.New("You must specify at least one C2 endpoint (DNS, HTTP(S) or mTLS)")
 	}
 
 	// Populate fields
-	c.Name = profileName
 	c.GOOS = targetOS
 	c.GOARCH = arch
 	c.Format = outputFormat
@@ -445,14 +477,5 @@ func (s *ReverseMulti) generateProfile(name string) (result string, err error) {
 	c.LimitUsername = s.Base.Options["LimitUsername"].Value
 	c.LimitDatetime = s.Base.Options["LimitDatetime"].Value
 
-	// Save profile
-	if 0 < len(c.Name) && c.Name != "." {
-		rpcLog.Infof("Saving new profile with name %#v", c.Name)
-		err = generate.ProfileSave(c.Name, c)
-	} else {
-		err = errors.New("Invalid profile name")
-		return "", err
-	}
-
-	return fmt.Sprintf("Saved reverse multi-protocol implant profile with name %#v", c.Name), nil
+	return c, nil
 }

@@ -74,6 +74,8 @@ func (s *ReverseMTLS) Run(command string) (result string, err error) {
 	action := strings.Split(command, " ")[0]
 
 	switch action {
+	case "run":
+		return s.CompileImplant()
 	case "to_listener":
 		return s.toListener()
 	case "parse_profile":
@@ -83,6 +85,17 @@ func (s *ReverseMTLS) Run(command string) (result string, err error) {
 	}
 
 	return "", nil
+}
+
+func (s *ReverseMTLS) CompileImplant() (result string, err error) {
+	c, err := s.ToGhostConfig()
+	if err != nil {
+		return "", err
+	}
+
+	go generate.CompileGhost(*c)
+
+	return fmt.Sprintf("Started compiling DNS implant"), nil
 }
 
 func (s *ReverseMTLS) toListener() (result string, err error) {
@@ -179,7 +192,26 @@ func (s *ReverseMTLS) parseProfile(name string) (result string, err error) {
 func (s *ReverseMTLS) generateProfile(name string) (result string, err error) {
 	profileName := strings.Split(name, " ")[1]
 
-	c := &generate.GhostConfig{}
+	c, err := s.ToGhostConfig()
+	if err != nil {
+		return "", err
+	}
+
+	// Save profile
+	c.Name = profileName
+	if 0 < len(c.Name) && c.Name != "." {
+		rpcLog.Infof("Saving new profile with name %#v", c.Name)
+		err = generate.ProfileSave(c.Name, c)
+	} else {
+		err = errors.New("Invalid profile name")
+		return "", err
+	}
+
+	return fmt.Sprintf("Saved reverse DNS implant profile with name %#v", c.Name), nil
+}
+
+func (s *ReverseMTLS) ToGhostConfig() (c *generate.GhostConfig, err error) {
+	c = &generate.GhostConfig{}
 
 	// OS
 	targetOS := s.Base.Options["OS"].Value
@@ -223,11 +255,10 @@ func (s *ReverseMTLS) generateProfile(name string) (result string, err error) {
 	// MTLS C2
 	c2s := generate.ParseMTLSc2ToStruct(s.Base.Options["DomainsMTLS"].Value)
 	if len(c2s) == 0 {
-		return "", errors.New("You must specify at least one mTLS C2 endpoint")
+		return nil, errors.New("You must specify at least one mTLS C2 endpoint")
 	}
 
 	// Populate fields
-	c.Name = profileName
 	c.GOOS = targetOS
 	c.GOARCH = arch
 	c.Format = outputFormat
@@ -243,14 +274,5 @@ func (s *ReverseMTLS) generateProfile(name string) (result string, err error) {
 	c.LimitUsername = s.Base.Options["LimitUsername"].Value
 	c.LimitDatetime = s.Base.Options["LimitDatetime"].Value
 
-	// Save profile
-	if 0 < len(c.Name) && c.Name != "." {
-		rpcLog.Infof("Saving new profile with name %#v", c.Name)
-		err = generate.ProfileSave(c.Name, c)
-	} else {
-		err = errors.New("Invalid profile name")
-		return "", err
-	}
-
-	return fmt.Sprintf("Saved reverse DNS implant profile with name %#v", c.Name), nil
+	return c, nil
 }
