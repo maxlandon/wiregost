@@ -17,6 +17,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -41,6 +42,7 @@ const (
 )
 
 func main() {
+	unpack := flag.Bool("unpack", false, "force unpack assets")
 
 	// Set Logging
 	appDir := assets.GetRootAppDir()
@@ -49,6 +51,12 @@ func main() {
 
 	// Setup Certificate Infrastructure
 	certs.SetupCAs()
+
+	// Setup static assets
+	assets.Setup(*unpack)
+	if *unpack {
+		os.Exit(0)
+	}
 
 	// Load server config here (interface and listening ports, between others)
 

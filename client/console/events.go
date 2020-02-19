@@ -56,6 +56,10 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 		case consts.StoppedEvent:
 			job := event.Job
 			fmt.Printf("\n"+Info+"Job #%d stopped (%s/%s) \n", job.ID, job.Protocol, job.Name)
+			if job.Err != "" {
+				fmt.Printf(Info+"Reason: %s) \n", job.Err)
+			}
+			c.hardRefresh()
 
 		case consts.ConnectedEvent:
 			ghost := event.Ghost
