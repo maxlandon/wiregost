@@ -92,8 +92,8 @@ func (g *Ghost) ToProtobuf() *clientpb.Ghost {
 		ActiveC2:      g.ActiveC2,
 
 		// Added
-		WorkspaceID: uint32(g.WorkspaceID),
-		HostID:      uint32(g.Host.ID),
+		// WorkspaceID: uint32(g.WorkspaceID),
+		// HostID:      uint32(g.Host.ID),
 	}
 }
 

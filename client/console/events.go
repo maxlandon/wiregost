@@ -65,6 +65,7 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 			ghost := event.Ghost
 			fmt.Printf("\n"+Success+"Session #%d %s - %s (%s) - %s/%s \n",
 				ghost.ID, ghost.Name, ghost.RemoteAddress, ghost.Hostname, ghost.OS, ghost.Arch)
+			c.hardRefresh()
 
 		case consts.DisconnectedEvent:
 			ghost := event.Ghost

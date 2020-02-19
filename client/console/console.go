@@ -31,7 +31,7 @@ import (
 	"github.com/maxlandon/wiregost/client/completers"
 	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/data_service/models"
-	clientpb "github.com/maxlandon/wiregost/protobuf/client"
+	score "github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
@@ -61,7 +61,8 @@ type Console struct {
 	// Agents
 	ghosts int
 	// Keep for prompt, until not needed anymore
-	currentAgent *clientpb.Ghost
+	currentAgent score.Ghost
+	// currentAgent *clientpb.Ghost
 
 	// CommandShellContext
 	shellContext *commands.ShellContext
@@ -201,6 +202,10 @@ func (c *Console) hardRefresh() {
 	// Menu context
 	if c.currentModule != "" {
 		c.menuContext = "module"
+	}
+	if c.currentAgent != nil {
+		fmt.Println("test")
+		c.menuContext = "agent"
 	} else {
 		c.menuContext = "main"
 	}
@@ -208,6 +213,10 @@ func (c *Console) hardRefresh() {
 	// Jobs
 	jobs := commands.GetJobs(c.shellContext.Server.RPC)
 	c.listeners = len(jobs.Active)
+
+	// Sessions
+	sessions := commands.GetGhosts(c.shellContext.Server.RPC)
+	c.ghosts = len(sessions.Ghosts)
 
 	// Prompt
 	refreshPrompt(c.prompt, c.Shell)

@@ -46,4 +46,7 @@ func RegisterCommands() {
 
 	// Builds & Canaries
 	RegisterGhostBuildsCommands()
+
+	// Sessions
+	RegisterSessionCommands()
 }

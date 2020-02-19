@@ -19,9 +19,9 @@ package commands
 import (
 	"context"
 
-	"github.com/maxlandon/wiregost/client/core"
+	ccore "github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/data_service/models"
-	clientpb "github.com/maxlandon/wiregost/protobuf/client"
+	score "github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
@@ -37,7 +37,7 @@ type ShellContext struct {
 	CurrentWorkspace *models.Workspace
 
 	// Server state
-	Server *core.WiregostServer
+	Server *ccore.WiregostServer
 
 	// Jobs
 	Listeners *int
@@ -45,5 +45,5 @@ type ShellContext struct {
 	// Agents
 	Ghosts *int
 	// Keep for prompt, until not needed anymore
-	CurrentAgent *clientpb.Ghost
+	CurrentAgent *score.Ghost
 }

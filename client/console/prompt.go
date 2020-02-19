@@ -55,7 +55,7 @@ func newPrompt(c *Console, custom string) Prompt {
 		// Prompt strings
 		base:           "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
 		module:         " =>{reset} {type}({mod})",
-		agent:          " =>{reset} agent[{db}{agent}]",
+		agent:          " =>{reset} agent[{agent}]",
 		custom:         custom,
 		multilineVim:   "{vim} > {ly}",
 		multilineEmacs: " > {ly}",
@@ -157,7 +157,10 @@ func newPrompt(c *Console, custom string) Prompt {
 		},
 		// Current agent
 		"{agent}": func() string {
-			return tui.Bold(c.currentAgent.String()) + tui.RESET
+			if c.currentAgent != nil {
+				return tui.Bold(c.currentAgent.Name) + tui.RESET
+			}
+			return ""
 		},
 	}
 

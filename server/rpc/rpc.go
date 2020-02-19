@@ -41,6 +41,7 @@ type TunnelHandler func(*core.Client, []byte, RPCResponse)
 var (
 	rpcHandlers = &map[uint32]RPCHandler{
 
+		// CLIENT -------------------------------------//
 		// Users
 		clientpb.MsgUser:    rpcListUsers,
 		clientpb.MsgUserReq: rpcAddUser,
@@ -64,6 +65,12 @@ var (
 		// Builds & Canaries
 		clientpb.MsgListGhostBuilds: rpcGhostBuilds,
 		clientpb.MsgListCanaries:    rpcListCanaries,
+
+		// Sessions
+		clientpb.MsgSessions: rpcSessions,
+
+		// GHOST -------------------------------------//
+		ghostpb.MsgKill: rpcKill,
 	}
 
 	tunnelHandlers = &map[uint32]TunnelHandler{
