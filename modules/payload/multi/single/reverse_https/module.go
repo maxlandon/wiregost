@@ -98,7 +98,7 @@ func (s *ReverseHTTPS) CompileImplant() (result string, err error) {
 
 	go generate.CompileGhost(*c)
 
-	return fmt.Sprintf("Started compiling DNS implant"), nil
+	return fmt.Sprintf("Started compiling HTTPS implant"), nil
 }
 
 func (s *ReverseHTTPS) toListener() (result string, err error) {
@@ -303,6 +303,12 @@ func (s *ReverseHTTPS) ToGhostConfig() (c *generate.GhostConfig, err error) {
 		return nil, errors.New("You must specify at least one HTTPS C2 endpoint")
 	}
 
+	// Canary Domains
+	canaries := strings.Split(s.Base.Options["Canaries"].Value, ",")
+	if canaries[0] != "" {
+		c.CanaryDomains = strings.Split(s.Base.Options["Canaries"].Value, ",")
+	}
+
 	// Populate fields
 	c.GOOS = targetOS
 	c.GOARCH = arch
@@ -313,7 +319,6 @@ func (s *ReverseHTTPS) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	c.ObfuscateSymbols, _ = strconv.ParseBool(s.Base.Options["ObfuscateSymbols"].Value)
 	c.MaxConnectionErrors, _ = strconv.Atoi(s.Base.Options["MaxErrors"].Value)
 	c.ReconnectInterval, _ = strconv.Atoi(s.Base.Options["ReconnectInterval"].Value)
-	c.CanaryDomains = strings.Split(s.Base.Options["Canaries"].Value, ",")
 	c.LimitDomainJoined, _ = strconv.ParseBool(s.Base.Options["LimitDomainJoined"].Value)
 	c.LimitHostname = s.Base.Options["LimitHostname"].Value
 	c.LimitUsername = s.Base.Options["LimitUsername"].Value

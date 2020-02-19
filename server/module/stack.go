@@ -17,7 +17,6 @@
 package module
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/maxlandon/wiregost/data_service/remote"
@@ -59,7 +58,6 @@ func InitStacks() {
 			v[u] = &stack{}
 			v[u].Loaded = &map[string]Module{}
 			v[u].mutex = &sync.RWMutex{}
-			fmt.Println(v[u].Loaded)
 		}
 	}
 }

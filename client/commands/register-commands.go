@@ -43,4 +43,7 @@ func RegisterCommands() {
 
 	// Profiles
 	RegisterProfileCommands()
+
+	// Builds & Canaries
+	RegisterGhostBuildsCommands()
 }

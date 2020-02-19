@@ -17,7 +17,6 @@
 package rpc
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -129,10 +128,6 @@ func rpcStackList(data []byte, timeout time.Duration, resp RPCResponse) {
 	// Find workspace stack
 	wsID := uint(stackReq.WorkspaceID)
 	stack := (*module.Stacks)[wsID][stackReq.User]
-	for _, s := range (*module.Stacks)[wsID] {
-		fmt.Println(s)
-	}
-	fmt.Println(stack)
 
 	modules := []*clientpb.Module{}
 

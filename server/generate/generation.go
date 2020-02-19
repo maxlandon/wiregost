@@ -158,7 +158,6 @@ func CompileGhost(config GhostConfig) {
 			path, err := GhostExecutable(&config)
 			if err != nil {
 				job.Err = err.Error()
-				fmt.Println(err.Error())
 				job.JobCtrl <- true
 			}
 			job.Err = path
@@ -170,7 +169,6 @@ func CompileGhost(config GhostConfig) {
 			path, err := GhostSharedLibrary(&config)
 			if err != nil {
 				job.Err = err.Error()
-				fmt.Println(err.Error())
 				job.JobCtrl <- true
 			}
 			job.Err = path
@@ -182,13 +180,11 @@ func CompileGhost(config GhostConfig) {
 			path, err := GhostSharedLibrary(&config)
 			if err != nil {
 				job.Err = err.Error()
-				fmt.Println(err.Error())
 				job.JobCtrl <- true
 			}
 			path, err = ShellcodeRDIToFile(path, "")
 			if err != nil {
 				job.Err = err.Error()
-				fmt.Println(err.Error())
 				job.JobCtrl <- true
 			}
 
