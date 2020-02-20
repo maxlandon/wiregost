@@ -31,15 +31,16 @@ var (
     profiles    %sList saved implant profiles and their options%s
 
 %s Notes:%s
-    - Profiles can be used with payload modules. 
+%s    - Profiles can be used with payload modules. 
     - The 'Implant' options of these modules, when using 'parse_profile' will be populated with the selected 
       profile options. Any profile can be used with any payload type: the module will only use the options 
       from the profile that are relevant to him.
-    - Conversely, profiles can be generated using the payload module command 'to_profile'`,
+    - Conversely, profiles can be generated using the payload module command 'to_profile'%s`,
 		tui.BLUE, tui.BOLD, tui.RESET,
 		tui.YELLOW, tui.RESET,
 		tui.YELLOW, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.YELLOW, tui.RESET,
+		tui.DIM, tui.RESET,
 	)
 )

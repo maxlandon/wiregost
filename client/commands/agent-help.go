@@ -27,23 +27,6 @@ func RegisterAgentHelpCommands() {
 	// Command categories
 	help := &Command{
 		Name: "help",
-		// Needed for completion
-		SubCommands: []string{
-			"filesystem",
-			"info",
-			"priv",
-			"proc",
-			"shell",
-			"execute",
-		},
-		Args: []*CommandArg{
-			&CommandArg{Name: "filesystem"},
-			&CommandArg{Name: "info"},
-			&CommandArg{Name: "priv"},
-			&CommandArg{Name: "proc"},
-			&CommandArg{Name: "shell"},
-			&CommandArg{Name: "execute"},
-		},
 		Handle: func(r *Request) error {
 			switch length := len(r.Args); {
 			case length == 0:

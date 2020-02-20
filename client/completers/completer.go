@@ -61,9 +61,16 @@ func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int)
 		return
 	}
 
+	// Help commands need to be filtered here depending on context
+	if verbFound == "help" {
+		if *ac.Context.MenuContext == "agent" {
+			options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
+		}
+	}
+
 	// Autocomplete commands with no subcommands but variable arguments
 	for _, c := range commands {
-		if c.Name == "set" || c.Name == "use" || c.Name == "parse_profile" {
+		if c.Name == "set" || c.Name == "use" || c.Name == "parse_profile" || c.Name == "help" {
 			options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
 		}
 	}
@@ -105,31 +112,42 @@ func buildCommandMap(ctx string) (commandMap map[string]*commands.Command) {
 // yieldCommandCompletions determines the type of command used and redirects to its completer
 func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, line []rune, pos int) (options [][]rune, offset int) {
 
-	switch cmd.Name {
-	case "workspace":
-		comp := &WorkspaceCompleter{Command: cmd}
-		options, offset = comp.Do(ctx, line, pos)
-	case "hosts":
-		comp := &HostCompleter{Command: cmd}
-		options, offset = comp.Do(ctx, line, pos)
-	case "set":
-		comp := &OptionCompleter{Command: cmd}
-		options, offset = comp.Do(ctx, line, pos)
-	case "use":
-		comp := &ModuleCompleter{Command: cmd}
-		options, offset = comp.Do(ctx, line, pos)
-	case "stack":
-		comp := &StackCompleter{Command: cmd}
-		options, offset = comp.Do(ctx, line, pos)
-	case "parse_profile":
-		comp := &ProfileCompleter{Command: cmd}
-		options, offset = comp.Do(ctx, line, pos)
-	case "user":
-		comp := &UserCompleter{Command: cmd}
-		options, offset = comp.Do(ctx, line, pos)
-	case "server":
-		comp := &ServerCompleter{Command: cmd}
-		options, offset = comp.Do(ctx, line, pos)
+	switch *ctx.MenuContext {
+	case "main", "module":
+		switch cmd.Name {
+		case "workspace":
+			comp := &WorkspaceCompleter{Command: cmd}
+			options, offset = comp.Do(ctx, line, pos)
+		case "hosts":
+			comp := &HostCompleter{Command: cmd}
+			options, offset = comp.Do(ctx, line, pos)
+		case "set":
+			comp := &OptionCompleter{Command: cmd}
+			options, offset = comp.Do(ctx, line, pos)
+		case "use":
+			comp := &ModuleCompleter{Command: cmd}
+			options, offset = comp.Do(ctx, line, pos)
+		case "stack":
+			comp := &StackCompleter{Command: cmd}
+			options, offset = comp.Do(ctx, line, pos)
+		case "parse_profile":
+			comp := &ProfileCompleter{Command: cmd}
+			options, offset = comp.Do(ctx, line, pos)
+		case "user":
+			comp := &UserCompleter{Command: cmd}
+			options, offset = comp.Do(ctx, line, pos)
+		case "server":
+			comp := &ServerCompleter{Command: cmd}
+			options, offset = comp.Do(ctx, line, pos)
+		}
+
+	case "agent":
+		switch cmd.Name {
+		case "help":
+			comp := &AgentHelpCompleter{Command: cmd}
+			options, offset = comp.Do(ctx, line, pos)
+		}
+
 	}
 
 	return options, offset
