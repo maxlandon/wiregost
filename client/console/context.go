@@ -72,5 +72,6 @@ func (c *Console) initContext() {
 		Ghosts: &c.ghosts,
 		// Keep for prompt, until not needed anymore
 		CurrentAgent: c.CurrentAgent,
+		AgentPwd:     &c.AgentPwd,
 	}
 }

@@ -168,8 +168,7 @@ func newPrompt(c *Console, custom string) Prompt {
 			return tui.Bold(c.CurrentAgent.Hostname) + tui.RESET
 		},
 		"{rpwd}": func() string {
-			pwd, _ := os.Getwd()
-			return tui.Blue(pwd) + tui.RESET
+			return tui.Blue(c.AgentPwd) + tui.RESET
 		},
 	}
 

@@ -61,6 +61,7 @@ type Console struct {
 	// Agents
 	ghosts       int
 	CurrentAgent *clientpb.Ghost
+	AgentPwd     string
 
 	// CommandShellContext
 	shellContext *commands.ShellContext

@@ -180,7 +180,7 @@ message Ifconfig { repeated NetInterface NetInterfaces = 1; }
 message LsReq {
         string Path = 1;
 
-        uint32 SliverID = 9;
+        uint32 GhostID = 9;
 }
 
 message Ls {

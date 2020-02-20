@@ -49,4 +49,7 @@ func RegisterCommands() {
 
 	// Sessions
 	RegisterSessionCommands()
+
+	// Ghosts
+	RegisterFileSystemCommands()
 }

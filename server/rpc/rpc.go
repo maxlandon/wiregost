@@ -70,7 +70,17 @@ var (
 		clientpb.MsgSessions: rpcSessions,
 
 		// GHOST -------------------------------------//
+		// Special
 		ghostpb.MsgKill: rpcKill,
+
+		// File system
+		ghostpb.MsgCdReq:       rpcCd,
+		ghostpb.MsgPwdReq:      rpcPwd,
+		ghostpb.MsgLsReq:       rpcLs,
+		ghostpb.MsgRmReq:       rpcRm,
+		ghostpb.MsgMkdirReq:    rpcMkdir,
+		ghostpb.MsgDownloadReq: rpcDownload,
+		ghostpb.MsgUpload:      rpcUpload,
 	}
 
 	tunnelHandlers = &map[uint32]TunnelHandler{

@@ -195,6 +195,7 @@ func interactGhost(args []string, ctx ShellContext, rpc RPCServer) {
 	ghost := getGhost(name, rpc)
 	if ghost != nil {
 		*ctx.CurrentAgent = *ghost
+		*ctx.AgentPwd = agentPwd(ghost.Name, rpc)
 	} else {
 		fmt.Printf(Error+"Invalid ghost name or session number: %s", name)
 	}
