@@ -31,7 +31,7 @@ import (
 	"github.com/maxlandon/wiregost/client/completers"
 	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/data_service/models"
-	score "github.com/maxlandon/wiregost/server/core"
+	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
@@ -59,10 +59,8 @@ type Console struct {
 	listeners int
 
 	// Agents
-	ghosts int
-	// Keep for prompt, until not needed anymore
-	currentAgent score.Ghost
-	// currentAgent *clientpb.Ghost
+	ghosts       int
+	CurrentAgent *clientpb.Ghost
 
 	// CommandShellContext
 	shellContext *commands.ShellContext
@@ -202,12 +200,11 @@ func (c *Console) hardRefresh() {
 	// Menu context
 	if c.currentModule != "" {
 		c.menuContext = "module"
-	}
-	if c.currentAgent != nil {
-		fmt.Println("test")
-		c.menuContext = "agent"
 	} else {
 		c.menuContext = "main"
+	}
+	if c.CurrentAgent.Name != "" {
+		c.menuContext = "agent"
 	}
 
 	// Jobs

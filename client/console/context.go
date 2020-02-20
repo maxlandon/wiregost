@@ -21,13 +21,15 @@ import (
 	"fmt"
 
 	"github.com/evilsocket/islazy/tui"
+
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/data_service/remote"
+	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
 func (c *Console) initContext() {
-	// Set workspace
+	// Workspace
 	workspaces, err := remote.Workspaces(nil)
 	if err != nil {
 		fmt.Println(tui.Red("Failed to fetch workspaces"))
@@ -38,13 +40,17 @@ func (c *Console) initContext() {
 		}
 	}
 
-	// Set context object (needed for some commands), further included in ShellContext
+	// Data Service
 	rootCtx := context.Background()
 	c.context = context.WithValue(rootCtx, "workspace_id", c.currentWorkspace.ID)
 
-	// Set current module to nil
+	// Current module
 	c.currentModule = ""
 	c.module = &templates.Module{}
+
+	// Agent
+
+	c.CurrentAgent = &clientpb.Ghost{}
 
 	// Set ShellContext struct, passed to all commands
 	c.shellContext = &commands.ShellContext{
@@ -65,6 +71,6 @@ func (c *Console) initContext() {
 		// Agents
 		Ghosts: &c.ghosts,
 		// Keep for prompt, until not needed anymore
-		CurrentAgent: c.currentAgent,
+		CurrentAgent: c.CurrentAgent,
 	}
 }

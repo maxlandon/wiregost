@@ -53,9 +53,10 @@ func newPrompt(c *Console, custom string) Prompt {
 	// These are here because if colors are disabled, we need the updated tui.* variable
 	prompt := Prompt{
 		// Prompt strings
-		base:           "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
-		module:         " =>{reset} {type}({mod})",
-		agent:          " =>{reset} agent[{agent}]",
+		base:   "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
+		module: " =>{reset} {type}({mod})",
+		agent:  "{reset}agent[{agent}] {dim}as {user}@{host}/{rpwd} {dim}in {workspace}",
+		// agent:          " =>{reset} agent[{agent}]",
 		custom:         custom,
 		multilineVim:   "{vim} > {ly}",
 		multilineEmacs: " > {ly}",
@@ -157,10 +158,18 @@ func newPrompt(c *Console, custom string) Prompt {
 		},
 		// Current agent
 		"{agent}": func() string {
-			if c.currentAgent != nil {
-				return tui.Bold(c.currentAgent.Name) + tui.RESET
-			}
-			return ""
+			return tui.Red(c.CurrentAgent.Name) + tui.RESET
+		},
+		// Current agent
+		"{user}": func() string {
+			return tui.RESET + tui.Bold(c.CurrentAgent.Username)
+		},
+		"{host}": func() string {
+			return tui.Bold(c.CurrentAgent.Hostname) + tui.RESET
+		},
+		"{rpwd}": func() string {
+			pwd, _ := os.Getwd()
+			return tui.Blue(pwd) + tui.RESET
 		},
 	}
 
@@ -180,7 +189,7 @@ func (p Prompt) render(vimMode bool) (first string, multi string) {
 			prompt = p.base
 		}
 		if *p.menu == "agent" {
-			prompt = p.base + p.agent
+			prompt = p.agent
 		}
 
 	// Custom provided, use it
@@ -191,7 +200,7 @@ func (p Prompt) render(vimMode bool) (first string, multi string) {
 			prompt = p.custom
 		}
 		if *p.menu == "agent" {
-			prompt = p.custom + p.agent
+			prompt = p.agent
 		}
 	}
 
