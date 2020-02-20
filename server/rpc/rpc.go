@@ -83,7 +83,14 @@ var (
 		ghostpb.MsgUpload:      rpcUpload,
 
 		// Info
+		ghostpb.MsgIfconfigReq: rpcIfconfig,
+
 		// Priv
+		ghostpb.MsgElevate:       rpcElevate,
+		ghostpb.MsgImpersonate:   rpcImpersonate,
+		ghostpb.MsgRunAs:         rpcRunAs,
+		ghostpb.MsgRevToSelf:     rpcRevToSelf,
+		clientpb.MsgGetSystemReq: rpcGetSystem,
 		// Proc
 		// Shell
 		// Execute

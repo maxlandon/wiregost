@@ -14,45 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package commands
+package rpc
 
-// RegisterCommands register all commands in Wiregost and maps them
-// to their respective contexts
-func RegisterCommands() {
+import (
+	"time"
 
-	// Core
-	RegisterCoreCommands()
-	RegisterHelpCommands()
-	RegisterUserCommands()
+	"github.com/golang/protobuf/proto"
 
-	// Server
-	RegisterServerCommands()
+	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
+	"github.com/maxlandon/wiregost/server/core"
+)
 
-	// Data Service
-	RegisterWorkspaceCommands()
-	RegisterHostCommands()
+func rpcIfconfig(req []byte, timeout time.Duration, resp RPCResponse) {
+	ifconfigReq := &ghostpb.IfconfigReq{}
+	err := proto.Unmarshal(req, ifconfigReq)
+	if err != nil {
+		resp([]byte{}, err)
+		return
+	}
+	sliver := (*core.Wire.Ghosts)[ifconfigReq.GhostID]
+	if sliver == nil {
+		resp([]byte{}, err)
+		return
+	}
 
-	// Stack
-	RegisterStackCommands()
-
-	// Module
-	RegisterModuleCommands()
-
-	// Jobs
-	RegisterJobCommands()
-
-	// Profiles
-	RegisterProfileCommands()
-
-	// Builds & Canaries
-	RegisterGhostBuildsCommands()
-
-	// Sessions
-	RegisterSessionCommands()
-
-	// Ghosts
-	RegisterAgentHelpCommands()
-	RegisterFileSystemCommands()
-	RegisterAgentInfoCommands()
-	RegisterPrivCommands()
+	data, _ := proto.Marshal(&ghostpb.IfconfigReq{})
+	data, err = sliver.Request(ghostpb.MsgIfconfigReq, timeout, data)
+	resp(data, err)
 }
