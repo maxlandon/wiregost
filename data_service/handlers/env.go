@@ -53,7 +53,7 @@ func LoadEnv() *Env {
 	env := &Env{}
 
 	// Load config
-	file, _ := fs.Expand("~/.pentest/wiregost/data_service/config.yaml")
+	file, _ := fs.Expand("~/pentest/wiregost/data_service/config.yaml")
 
 	data, err := ioutil.ReadFile(file)
 	if err != nil {

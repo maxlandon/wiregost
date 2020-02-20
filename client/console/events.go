@@ -71,9 +71,9 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 			ghost := event.Ghost
 			fmt.Printf("\n"+Error+"Lost session #%d %s - %s (%s) - %s/%s\n",
 				ghost.ID, ghost.Name, ghost.RemoteAddress, ghost.Hostname, ghost.OS, ghost.Arch)
-			activeGhost := c.currentAgent
+			activeGhost := c.CurrentAgent
 			if activeGhost != nil && ghost.ID == activeGhost.ID {
-				c.currentAgent = nil
+				c.CurrentAgent = nil
 				// app.SetPrompt(getPrompt())
 				fmt.Printf("\n" + Error + "Active sliver diconnected\n")
 			}
