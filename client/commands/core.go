@@ -242,7 +242,7 @@ func RegisterCoreCommands() {
 			switch r.Args[0] {
 			case "vim":
 				*r.context.Mode = "vim"
-				fmt.Printf("\n" + Info + "Switched mode: %sVim%s\n")
+				fmt.Printf("\n"+Info+"Switched mode: %sVim%s\n", tui.YELLOW, tui.RESET)
 			case "emacs":
 				*r.context.Mode = "emacs"
 				fmt.Printf("\n"+Info+"Switched mode: %sEmacs%s\n", tui.YELLOW, tui.RESET)

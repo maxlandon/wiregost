@@ -22,8 +22,8 @@ import (
 
 var (
 	cmdHelp = map[string]string{
-		// [ Core ]
 
+		// [ Core ]
 		consts.Help:     helpHelp,
 		consts.Core:     coreHelp,
 		consts.Shell:    shellHelp,
@@ -61,6 +61,18 @@ var (
 
 		// [ Profiles ]
 		consts.Profiles: profileHelp,
+
+		// [ Sessions ]
+		consts.Sessions: sessionsHelp,
+
+		// [ Ghost Implants ]
+		consts.AgentHelp:  agentHelp,
+		consts.FileSystem: filesystemHelp,
+		consts.Info:       infoHelp,
+		consts.Priv:       privHelp,
+		consts.Proc:       procHelp,
+		consts.AgentShell: agentShellHelp,
+		consts.Execute:    executeHelp,
 	}
 )
 

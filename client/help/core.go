@@ -36,10 +36,12 @@ var (
     stack           %sManage modules loaded on the workspace stack%s
     module          %sHelp about modules, their types and appropriate commands%s
     jobs            %sList and manage jobs%s
-    profiles        %sHelp about profiles, and how to use them%s`,
+    profiles        %sHelp about profiles, and how to use them%s
+    sessions        %sManage Ghost implant sessions (currently connected)%s`,
 		tui.BLUE, tui.BOLD, tui.RESET,
 		tui.YELLOW, tui.RESET,
 		tui.YELLOW, tui.RESET,
+		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
@@ -57,12 +59,14 @@ var (
 
 %s Commands:%s
     exit                        %sExit console%s
+    mode <vim>|<emacs>          %sChange the shell's input mode%s
     ! <args>                    %sExecute a shell command through the console (bin/sh is used)%s
     cd                          %sChange the shell's current working directory%s
     resource make|load <file>   %sMake a resource file with commands, or load and execute one%s`,
 		tui.BLUE, tui.BOLD, tui.RESET,
 		tui.YELLOW, tui.RESET,
 		tui.YELLOW, tui.RESET,
+		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,

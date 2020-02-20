@@ -56,10 +56,10 @@ const (
 	Cd       = "cd"
 	Resource = "resource"
 
-	// Server --------------------------------
+	// Server
 	Server = "server"
 
-	// User --------------------------------
+	// User
 	User = "user"
 
 	// Data Service --------------------------
@@ -90,9 +90,21 @@ const (
 	ModuleParseProfile = "parse_profile"
 	ModuleToProfile    = "to_profile"
 
-	// Jobs ----------------------------------
+	// Jobs
 	Jobs = "jobs"
 
-	// Profiles ------------------------------
+	// Profiles
 	Profiles = "profiles"
+
+	// Sessions
+	Sessions = "sessions"
+
+	// Ghost Implants -------------------------
+	AgentHelp  = "agent-help"
+	FileSystem = "filesystem"
+	Info       = "info"
+	Priv       = "priv"
+	Proc       = "proc"
+	AgentShell = "shell"
+	Execute    = "execute"
 )
