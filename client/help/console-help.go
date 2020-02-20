@@ -17,7 +17,10 @@
 package help
 
 import (
+	"fmt"
+
 	consts "github.com/maxlandon/wiregost/client/constants"
+	. "github.com/maxlandon/wiregost/client/util"
 )
 
 var (
@@ -66,13 +69,36 @@ var (
 		consts.Sessions: sessionsHelp,
 
 		// [ Ghost Implants ]
-		consts.AgentHelp:  agentHelp,
+
+		// Help
+		consts.AgentHelp:         agentHelp,
+		consts.CompleteAgentHelp: completeAgentHelp,
+
+		// FileSystem
 		consts.FileSystem: filesystemHelp,
-		consts.Info:       infoHelp,
-		consts.Priv:       privHelp,
-		consts.Proc:       procHelp,
+
+		// Info
+		consts.Info: infoHelp,
+
+		// Priv
+		consts.Priv:        privHelp,
+		consts.RunAs:       runasHelp,
+		consts.Impersonate: impersonateHelp,
+
+		// Proc
+		consts.Proc:     procHelp,
+		consts.ProcDump: procdumpHelp,
+
+		// Shell
 		consts.AgentShell: agentShellHelp,
-		consts.Execute:    executeHelp,
+
+		// Execute
+		consts.Execute:          executeHelp,
+		consts.MsfInject:        msfInjectHelp,
+		consts.ExecuteShellcode: shellcodeHelp,
+		consts.ExecuteAssembly:  assemblyHelp,
+		consts.Sideload:         sideloadHelp,
+		consts.SpawnDll:         spawndllHelp,
 	}
 )
 
@@ -81,6 +107,8 @@ func GetHelpFor(cmdName string) string {
 	if 0 < len(cmdName) {
 		if helpTempl, ok := cmdHelp[cmdName]; ok {
 			return helpTempl
+		} else {
+			return fmt.Sprintf(Warn+"No help for command %s", cmdName)
 		}
 	}
 	return ""

@@ -48,7 +48,10 @@ func RegisterAgentHelpCommands() {
 			switch length := len(r.Args); {
 			case length == 0:
 				fmt.Println()
-				fmt.Printf(help.GetHelpFor("agent-help"))
+				// One page help with all commands
+				fmt.Printf(help.GetHelpFor("complete-agent-help"))
+				// Multi page command categories
+				// fmt.Printf(help.GetHelpFor("agent-help"))
 				fmt.Println()
 			default:
 				fmt.Println()

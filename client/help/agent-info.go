@@ -26,7 +26,6 @@ var (
 	infoHelp = fmt.Sprintf(`%s%s Implant Info Commands%s 
 
 %s About:%s Show various informations about implant/target 
-        Type 'help <command>' for command-specific help.
 
 %s Commands:%s
     ifconfig        %sPrint network/interfaces information of target%s

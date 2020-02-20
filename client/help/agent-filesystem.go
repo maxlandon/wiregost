@@ -32,7 +32,7 @@ var (
     filesystem      %sFile system management (ls,mkdir,download, upload, etc....)%s
     info            %sInformation commands (network, implant...)%s
     priv            %sManage target privileges (impersonate, getsystem, run as...)%s
-    proc            %sManage target processes (ps, proc info, proc dump, terminate...)%s
+    proc            %sManage target processes (ps, procdump, migrate, terminate...)%s
     shell           %sHelp for target shell usage%s
     execute         %sHelp for executing MSF/shellcode/assembly payloads on target%s`,
 		tui.BLUE, tui.BOLD, tui.RESET,

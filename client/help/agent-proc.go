@@ -41,4 +41,20 @@ var (
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 	)
+
+	procdumpHelp = fmt.Sprintf(`%s%sCommand:%s procdump pid=<pid> name=<name> timeout=60%s 
+
+%s About:%s Dumps the process memory given a process identifier (pid) 
+
+%s Filters:%s
+    name        %sTarget process name%s
+    pid         %sTarget process ID%s
+    timeout     %sOptional command timeout in seconds (default:360)%s`,
+		tui.BLUE, tui.BOLD, tui.RESET, tui.RESET,
+		tui.YELLOW, tui.RESET,
+		tui.YELLOW, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.DIM, tui.RESET,
+	)
 )

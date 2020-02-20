@@ -45,4 +45,35 @@ var (
 		tui.DIM, tui.RESET,
 		tui.DIM, tui.RESET,
 	)
+	runasHelp = fmt.Sprintf(`%s%sCommand:%s run_as proc=<proc> user=<user> args="arg1 arg2"%s 
+
+%s About:%s Run a process as user, with optional arguments
+
+%s Filters:%s
+    proc        %sProcess name to start%s
+    user        %sUser to impersonate%s
+    args        %sOptional arguments to use with process (delimit with "arg1 arg2")%s`,
+		tui.BLUE, tui.BOLD, tui.RESET, tui.RESET,
+		tui.YELLOW, tui.RESET,
+		tui.YELLOW, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.DIM, tui.RESET,
+	)
+
+	impersonateHelp = fmt.Sprintf(`%s%sCommand:%s impersonate proc=<proc> user=<user> args="arg1 arg2"%s 
+
+%s About:%s (Windows only) Run a process as user, with optional arguments
+
+%s Filters:%s
+    proc        %sProcess name to start%s
+    user        %sUser to impersonate (default: NT AUTHORITY\SYSTEM)%s
+    args        %sOptional arguments to use with process (delimit with "arg1 arg2")%s`,
+		tui.BLUE, tui.BOLD, tui.RESET, tui.RESET,
+		tui.YELLOW, tui.RESET,
+		tui.YELLOW, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.DIM, tui.RESET,
+		tui.DIM, tui.RESET,
+	)
 )
