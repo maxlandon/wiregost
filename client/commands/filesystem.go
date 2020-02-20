@@ -260,7 +260,7 @@ func RegisterFileSystemCommands() {
 			fmt.Println(tui.RESET)
 			rpc := r.context.Server.RPC
 			if len(r.Args) < 1 {
-				fmt.Println(Warn + "Missing parameter(s), see `help download`\n")
+				fmt.Println(Warn + "Missing parameter(s), see `help filesystem`\n")
 				return nil
 			}
 
@@ -330,7 +330,7 @@ func RegisterFileSystemCommands() {
 			fmt.Println(tui.RESET)
 			rpc := r.context.Server.RPC
 			if len(r.Args) < 1 {
-				fmt.Println(Warn + "Missing parameter, see `help upload`\n")
+				fmt.Println(Warn + "Missing parameter, see `help filesystem`\n")
 				return nil
 			}
 

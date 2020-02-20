@@ -51,5 +51,6 @@ func RegisterCommands() {
 	RegisterSessionCommands()
 
 	// Ghosts
+	RegisterAgentHelpCommands()
 	RegisterFileSystemCommands()
 }

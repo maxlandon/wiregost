@@ -81,6 +81,12 @@ var (
 		ghostpb.MsgMkdirReq:    rpcMkdir,
 		ghostpb.MsgDownloadReq: rpcDownload,
 		ghostpb.MsgUpload:      rpcUpload,
+
+		// Info
+		// Priv
+		// Proc
+		// Shell
+		// Execute
 	}
 
 	tunnelHandlers = &map[uint32]TunnelHandler{
