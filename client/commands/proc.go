@@ -96,7 +96,7 @@ func ps(args []string, ctx ShellContext, rpc RPCServer) {
 	var pidFilter int
 	spid, found := opts["pid"]
 	if found {
-		pidFilter, _ = strconv.Atoi((spid.(string)))
+		pidFilter = spid.(int)
 	} else {
 		pidFilter = -1
 	}
@@ -198,7 +198,7 @@ func procdump(args []string, ctx ShellContext, rpc RPCServer) {
 	var pid int
 	spid, found := opts["pid"]
 	if found {
-		pid, _ = strconv.Atoi((spid.(string)))
+		pid = spid.(int)
 	} else {
 		pid = -1
 	}
@@ -264,21 +264,17 @@ func procdump(args []string, ctx ShellContext, rpc RPCServer) {
 func terminate(args []string, ctx ShellContext, rpc RPCServer) {
 
 	opts := procFilters(args)
+
 	if len(args) != 1 {
 		fmt.Printf(Warn + "Please provide a PID\n")
 		return
 	}
-	var pidStr string
+	var pid int
 	spid, found := opts["pid"]
 	if found {
-		pidStr = spid.(string)
+		pid = spid.(int)
 	}
 
-	pid, err := strconv.Atoi(pidStr)
-	if err != nil {
-		fmt.Printf(Warn+"Error: %v\n", err)
-		return
-	}
 	data, _ := proto.Marshal(&ghostpb.TerminateReq{
 		GhostID: ctx.CurrentAgent.ID,
 		Pid:     int32(pid),

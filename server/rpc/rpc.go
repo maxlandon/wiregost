@@ -96,8 +96,13 @@ var (
 		ghostpb.MsgPsReq:          rpcPs,
 		ghostpb.MsgTerminate:      rpcTerminate,
 		ghostpb.MsgProcessDumpReq: rpcProcdump,
+
 		// Shell
 		// Execute
+		clientpb.MsgTask:               rpcTask,
+		ghostpb.MsgExecuteReq:          rpcExecute,
+		clientpb.MsgExecuteAssemblyReq: rpcExecuteAssembly,
+		clientpb.MsgMsfInject:          rpcMsfInject,
 	}
 
 	tunnelHandlers = &map[uint32]TunnelHandler{
