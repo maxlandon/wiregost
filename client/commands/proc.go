@@ -340,7 +340,7 @@ func migrate(args []string, ctx ShellContext, rpc RPCServer) {
 	if resp.Err != "" {
 		fmt.Printf(Warn+"%s\n", resp.Err)
 	} else {
-		fmt.Printf("\n"+Success+"Successfully migrated to %d\n", pid)
+		fmt.Printf(Success+"Successfully migrated to %d\n", pid)
 	}
 }
 

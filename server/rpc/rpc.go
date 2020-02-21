@@ -96,6 +96,7 @@ var (
 		ghostpb.MsgPsReq:          rpcPs,
 		ghostpb.MsgTerminate:      rpcTerminate,
 		ghostpb.MsgProcessDumpReq: rpcProcdump,
+		clientpb.MsgMigrate:       rpcMigrate,
 
 		// Shell
 		// Execute

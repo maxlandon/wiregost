@@ -68,7 +68,7 @@ func RegisterPrivCommands() {
 	AddCommand("agent", rev2self)
 
 	getsystem := &Command{
-		Name: "getsytem",
+		Name: "getsystem",
 		Args: []*CommandArg{
 			&CommandArg{Name: "proc", Type: "string"},
 		},
@@ -195,7 +195,7 @@ func revToSelf(ctx ShellContext, rpc RPCServer) {
 		fmt.Printf(Warn+"Error: %s", resp.Err)
 		return
 	}
-	fmt.Printf(Info + "Back to self...")
+	fmt.Printf(Info + "Back to self...\n")
 }
 
 func getsystem(args []string, ctx ShellContext, rpc RPCServer) {
@@ -235,7 +235,7 @@ func getsystem(args []string, ctx ShellContext, rpc RPCServer) {
 		fmt.Printf("\n"+Warn+"Error: %s\n", gsResp.Output)
 		return
 	}
-	fmt.Printf("\n" + Info + "A new SYSTEM session should pop soon...\n")
+	fmt.Printf(Info + "A new SYSTEM session should pop soon...\n")
 }
 
 func elevate(ctx ShellContext, rpc RPCServer) {
@@ -263,7 +263,7 @@ func elevate(ctx ShellContext, rpc RPCServer) {
 		fmt.Printf(Warn+"Elevation failed: %s\n", elevate.Err)
 		return
 	}
-	fmt.Printf(Success + "Elevation successful, a new Ghost implant session should pop soon.")
+	fmt.Printf(Success + "Elevation successful, a new Ghost implant session should pop soon.\n")
 }
 
 // Utility functions

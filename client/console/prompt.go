@@ -53,10 +53,9 @@ func newPrompt(c *Console, custom string) Prompt {
 	// These are here because if colors are disabled, we need the updated tui.* variable
 	prompt := Prompt{
 		// Prompt strings
-		base:   "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
-		module: " =>{reset} {type}({mod})",
-		agent:  "{reset}agent[{agent}] {dim}as {user}@{host}/{rpwd} {dim}in {workspace}",
-		// agent:          " =>{reset} agent[{agent}]",
+		base:           "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
+		module:         " =>{reset} {type}({mod})",
+		agent:          "{bddg}{fw}agent[{lb}{agent}]{reset} {dim}as {user}{bold}{y}@{reset}{host}/{rpwd} {dim}in {workspace}",
 		custom:         custom,
 		multilineVim:   "{vim} > {ly}",
 		multilineEmacs: " > {ly}",
@@ -158,15 +157,18 @@ func newPrompt(c *Console, custom string) Prompt {
 		},
 		// Current agent
 		"{agent}": func() string {
-			return tui.Red(c.CurrentAgent.Name) + tui.RESET
+			return c.CurrentAgent.Name
+			// return tui.Blue(c.CurrentAgent.Name) + tui.RESET
 		},
-		// Current agent
+		// Agent username
 		"{user}": func() string {
 			return tui.RESET + tui.Bold(c.CurrentAgent.Username)
 		},
+		// Agent hostname
 		"{host}": func() string {
 			return tui.Bold(c.CurrentAgent.Hostname) + tui.RESET
 		},
+		// Agent cwd
 		"{rpwd}": func() string {
 			return tui.Blue(c.AgentPwd) + tui.RESET
 		},
