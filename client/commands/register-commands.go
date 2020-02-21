@@ -56,4 +56,5 @@ func RegisterCommands() {
 	RegisterAgentInfoCommands()
 	RegisterPrivCommands()
 	RegisterProcCommands()
+	RegisterExecuteCommands()
 }

@@ -263,18 +263,17 @@ func procdump(args []string, ctx ShellContext, rpc RPCServer) {
 
 func terminate(args []string, ctx ShellContext, rpc RPCServer) {
 
-	opts := procFilters(args)
-
 	if len(args) != 1 {
 		fmt.Printf(Warn + "Please provide a PID\n")
 		return
 	}
-	var pid int
-	spid, found := opts["pid"]
-	if found {
-		pid = spid.(int)
-	}
+	var pidStr = args[0]
 
+	pid, err := strconv.Atoi(pidStr)
+	if err != nil {
+		fmt.Printf(Warn+"Error: %v\n", err)
+		return
+	}
 	data, _ := proto.Marshal(&ghostpb.TerminateReq{
 		GhostID: ctx.CurrentAgent.ID,
 		Pid:     int32(pid),
