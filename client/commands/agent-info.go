@@ -198,9 +198,9 @@ func ifconfig(ctx ShellContext, rpc RPCServer) {
 			}
 
 			if 0 < subnet && subnet <= 32 && !isLoopback(ip) {
-				fmt.Printf(tui.BLUE+"    IP Address: %s%s%s\n", ip, tui.RESET)
+				fmt.Printf(tui.BLUE+"    IP Address: %s%s%s\n", tui.FOREWHITE, ip, tui.RESET)
 			} else if 32 < subnet && !isLoopback(ip) {
-				fmt.Printf(tui.BLUE+"    IP Address: %s%s%s\n", ip, tui.RESET)
+				fmt.Printf(tui.BLUE+"    IP Address: %s%s%s\n", tui.FOREWHITE, ip, tui.RESET)
 			} else {
 				fmt.Printf("    IP Address: %s\n", ip)
 			}

@@ -37,7 +37,7 @@ func RegisterPrivCommands() {
 		Args: []*CommandArg{
 			&CommandArg{Name: "proc", Type: "string"},
 			&CommandArg{Name: "user", Type: "string"},
-			&CommandArg{Name: "timeout", Type: "boolean"},
+			&CommandArg{Name: "timeout", Type: "int"},
 		},
 		Handle: func(r *Request) error {
 			fmt.Println()
@@ -120,9 +120,6 @@ func runAs(args []string, ctx ShellContext, rpc RPCServer) {
 	spargs, found := opts["args"]
 	if found {
 		arguments = spargs.(string)
-	} else {
-		fmt.Printf(Warn + "please specify a process path\n")
-		return
 	}
 
 	runAs, err := runProcessAsUser(username, process, arguments, ctx, rpc)
@@ -283,7 +280,7 @@ func runProcessAsUser(username, process, arguments string, ctx ShellContext, rpc
 		Data: data,
 	}, defaultTimeout)
 	if resp.Err != "" {
-		err = fmt.Errorf(Warn+"Error: %s", resp.Err)
+		fmt.Printf(RPCError+"%s\n", resp.Err)
 		return
 	}
 	runAs = &ghostpb.RunAs{}

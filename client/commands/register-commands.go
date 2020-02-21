@@ -55,4 +55,5 @@ func RegisterCommands() {
 	RegisterFileSystemCommands()
 	RegisterAgentInfoCommands()
 	RegisterPrivCommands()
+	RegisterProcCommands()
 }

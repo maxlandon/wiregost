@@ -91,7 +91,11 @@ var (
 		ghostpb.MsgRunAs:         rpcRunAs,
 		ghostpb.MsgRevToSelf:     rpcRevToSelf,
 		clientpb.MsgGetSystemReq: rpcGetSystem,
+
 		// Proc
+		ghostpb.MsgPsReq:          rpcPs,
+		ghostpb.MsgTerminate:      rpcTerminate,
+		ghostpb.MsgProcessDumpReq: rpcProcdump,
 		// Shell
 		// Execute
 	}

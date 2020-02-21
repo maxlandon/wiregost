@@ -58,7 +58,7 @@ var (
     rev_to_self         %sTerminate any impersonation that you have actively enabled%s
 
 %s Processes:%s
-    ps                      %sList processes on remote system%s
+    ps <filters>            %sList processes on remote system%s
     procdump <pid>|<name>   %sDumps the process memory given a process identifier <pid> or process name <name>%s
     migrate <pid>           %sMigrate implant into a host process with identifier <pid>%s
     terminate <pid>         %sTerminates a process given a process identifier <pid>%s
