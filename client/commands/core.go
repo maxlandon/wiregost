@@ -71,7 +71,7 @@ func RegisterCoreCommands() {
 			switch length := len(r.Args); {
 			case length == 0:
 				fmt.Println()
-				fmt.Printf("\n", help.GetHelpFor("cd"), "\n")
+				fmt.Printf("\n" + help.GetHelpFor("cd") + "\n")
 				fmt.Println()
 			default:
 				fmt.Println()
@@ -197,16 +197,27 @@ func RegisterCoreCommands() {
 					}
 					defer file.Close()
 
+					// Need to get a copy of the context, to refresh menu context
+					updatedContext := *r.context
+
 					scanner := bufio.NewScanner(file)
 					for scanner.Scan() {
 						lign := scanner.Text()
 						cmds := strings.Split(lign, " ")
-						command := FindCommand("main", cmds[0])
+						var args []string
+						for _, arg := range cmds {
+							if arg != "" {
+								args = append(args, arg)
+							}
+						}
+						command := FindCommand(*r.context.MenuContext, args[0])
 						if command != nil {
-							command.Handle(NewRequest(command, cmds[1:], r.context))
-							fmt.Println(tui.Dim(tui.Blue("------------------------------------------------------")))
+							err := command.Handle(NewRequest(command, args[1:], &updatedContext))
+							if err == nil && command.Name == "use" {
+								*updatedContext.MenuContext = "module"
+							}
 						} else {
-							fmt.Printf("\n", CommandError, "%s%s%s is not a valid command.",
+							fmt.Printf("\n"+CommandError+"%s%s%s is not a valid command.",
 								tui.YELLOW, cmds[0], tui.RESET)
 						}
 					}
@@ -216,7 +227,6 @@ func RegisterCoreCommands() {
 					}
 				}
 			}
-			fmt.Println()
 			return nil
 		},
 	}

@@ -57,8 +57,8 @@ func newPrompt(c *Console, custom string) Prompt {
 		module:         " =>{reset} {type}({mod})",
 		agent:          "{bddg}{fw}agent[{lb}{agent}]{reset} {dim}as {user}{bold}{y}@{reset}{host}/{rpwd} {dim}in {workspace}",
 		custom:         custom,
-		multilineVim:   "{vim} > {ly}",
-		multilineEmacs: " > {ly}",
+		multilineVim:   "{vim} > ",
+		multilineEmacs: " > ",
 		// Prompt variabes
 		workspace:     &c.currentWorkspace.Name,
 		currentModule: &c.currentModule,
