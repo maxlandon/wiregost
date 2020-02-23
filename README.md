@@ -2,7 +2,7 @@
 #                      <center>WireGost - Golang Exploitation Framework</center> 
 ______
 
-![Demo](./docs/.pics/console-greeting.png)
+![Demo](./.git/images/console-greeting.png)
 
 
 The grounds for the WireGost exploitation framework project are:
