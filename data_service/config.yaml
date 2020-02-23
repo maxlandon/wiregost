@@ -9,5 +9,5 @@ service:
         address: "localhost"
         port: 8001
         url: "/"
-        certificate: "~/.wiregost/server/certificates/spectre_public.pem"
-        key: "~/.wiregost/server/certificates/spectre_private.pem"
+        certificate: "~/.wiregost/data-service/certs/wiregost_pub.pem"
+        key: "~/.wiregost/data-service/certs/wiregost_priv_pem"

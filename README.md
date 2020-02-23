@@ -2,7 +2,7 @@
 #                      <center>WireGost - Golang Exploitation Framework</center> 
 ______
 
-![Demo](./pics/welcomeToWireGost.png)
+![Demo](./docs/.pics/console-greeting.png)
 
 
 The grounds for the WireGost exploitation framework project are:
@@ -44,7 +44,6 @@ The documentation for WireGost is also available on the [Wiki](https://github.co
 
 ### Other 
 * [**Required Specs**](https://github.com/maxlandon/wiregost/wiki/Required-Specs)
-* [**Ideas**](https://github.com/maxlandon/wiregost/wiki/Ideas)
 * [**To Do**](https://github.com/maxlandon/wiregost/wiki/To-Do)
 
 ______

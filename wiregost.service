@@ -1,6 +1,6 @@
 [Unit]
 Description=Wiregost (Golang Exploitation Framework)
-ConditionPathExists=/home/para/pentest/wiregost/cmd/spectre
+ConditionPathExists=/home/para/.pentest/wiregost/server/wiregost
 After=network.target
 
 [Service]
@@ -13,8 +13,8 @@ Restart=on-failure
 RestartSec=10
 startLimitIntervalSec=60
 
-WorkingDirectory=/home/para/pentest/wiregost
-ExecStart=/home/para/pentest/wiregost/cmd/spectre --name=wiregost
+WorkingDirectory=/home/para/.pentest/wiregost
+ExecStart=/home/para/.pentest/wiregost/server/wiregost --name=wiregost
 
 [Install]
 WantedBy=multi-user.target
