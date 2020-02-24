@@ -56,9 +56,8 @@ func main() {
 	// mux.Handle(handlers.CredentialAPIPath, ch)
 	//
 	// Start server --------------------------------------------
-	log.Print("%s*%s Wiregost Data Service listening for requests...")
-	err = http.ListenAndServeTLS(env.Service.Address+":"+strconv.Itoa(env.Service.Port),
-		env.Service.Certificate, env.Service.Key, mux)
+	log.Printf("%s*%s Wiregost Data Service listening for requests...", tui.GREEN, tui.RESET)
+	err = http.ListenAndServeTLS(env.Service.Address+":"+strconv.Itoa(env.Service.Port), env.Service.Certificate, env.Service.Key, mux)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
