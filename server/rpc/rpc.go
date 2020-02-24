@@ -80,7 +80,7 @@ var (
 		ghostpb.MsgRmReq:       rpcRm,
 		ghostpb.MsgMkdirReq:    rpcMkdir,
 		ghostpb.MsgDownloadReq: rpcDownload,
-		ghostpb.MsgUpload:      rpcUpload,
+		ghostpb.MsgUploadReq:   rpcUpload,
 
 		// Info
 		ghostpb.MsgIfconfigReq: rpcIfconfig,

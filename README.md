@@ -3,6 +3,7 @@
 ______
 
 ![Demo](./.github/images/console-greet.png)
+![Sessions-Interact](./.github/images/sessions-interact.png)
 
 
 The grounds for the WireGost exploitation framework project are:
@@ -19,32 +20,10 @@ and pricacy issues. Boring questions, boring answers (so boring that everyone co
 the girl... very surprising), but he remembered me the name of his book: _"Ghost in the Wires"_. Just on point. Thank you Mr. Mitnick.
 
 ______
-## Table of Contents 
+## Documentation 
 
 The documentation for WireGost is also available on the [Wiki](https://github.com/maxlandon/wiregost/wiki) of this repository.
-
-### Overview
-* [**General Architecture**](https://github.com/maxlandon/wiregost/wiki/General-Architecture)
-* [**Code Structure**](https://github.com/maxlandon/wiregost/wiki/Code-Structure)
-* [**Environment**](https://github.com/maxlandon/wiregost/wiki/Personal-Environment)
-
-
-### Usage
-* [**Installation**](https://github.com/maxlandon/wiregost/wiki/Installation)
-* [**Base Usage**](https://github.com/maxlandon/wiregost/wiki/Base-Usage)
-* [**Commands**](https://github.com/maxlandon/wiregost/wiki/Commands)
-    * [Core](https://github.com/maxlandon/wiregost/wiki/Core-Commands)
-    * [Help](https://github.com/maxlandon/wiregost/wiki/Help-Commands)
-    * [Server](https://github.com/maxlandon/wiregost/wiki/Server-Commands)
-    * [Log](https://github.com/maxlandon/wiregost/wiki/Log-Commands)
-    * [Chat](https://github.com/maxlandon/wiregost/wiki/Chat-Commands)
-    * [Workspace](https://github.com/maxlandon/wiregost/wiki/Workspace-Commands)
-    * [Stack](https://github.com/maxlandon/wiregost/wiki/Stack-Commands)
-
-
-### Other 
-* [**Required Specs**](https://github.com/maxlandon/wiregost/wiki/Required-Specs)
-* [**To Do**](https://github.com/maxlandon/wiregost/wiki/To-Do)
+You will find everything needed to install, setup and use Wiregost C2 Server and Console.
 
 ______
 ## Sub-Repository Tools
@@ -64,7 +43,11 @@ by Maltego.
 
 #### Sliver
 [Sliver](https://github.com/BishopFox/sliver) is a post-exploitation/implant framework written in Go. It seems to be the most advanced 
-framework written in Go at the moment. Therefore, most of WireGost codebase is exactly the same than Sliver.
+framework written in Go at the moment. Therefore, most of WireGost codebase is exactly the same than Sliver. We then need to address
+**a huge thanks** and **deep and sincere excuses** to the BishopFox team, because my code is mostly theirs, and I have shamelessly change the "Slivers"
+everywhere with "Ghost". (I have a good excuse, though: it was the most efficient way to force myself going everywhere in their code base.)
+Thanks a lot, because I've learned a ton of things from it, and I'm really admirative of such tools, I would be totally unable to produce a iota
+of it on my own. 
 
 #### Merlin
 [Merlin](https://github.com/Ne0nd0g/merlin) is also a post exploitation framework written in Go. It emphasizes on the use of HTTP/2 for C2
@@ -78,15 +61,80 @@ I would gladly pay for another 30 lives so I can discover them all, but I don't 
 poor as hell. If, in the context of this project, some of them are worth so much that it would be criminal not to include 
 them in this list, I will add them.
 
-______
-
-## The Requirements
-
-[This is the list of requirements for WireGost](https://github.com/maxlandon/wiregost/wiki/Requirements). 
-This list will be updated as ideas appear, appear to be good, or appear to be bad.
 
 ______
+## TO DO & ROADMAP
 
+#### TO DO
+
+**Console**
+* Check codebase linting
+* Add completers for:
+    - Session names for interacting
+    - Workspace names for setting implant options
+    - All command options/filters in the implant menu
+    - Filesystem completion in the implant menu
+    - Fix the completion for help commands, depending on menu context
+* Commands for:
+    - Deleting generated ghost implants
+    - Deleting profiles
+    - Deleting users
+* Less hacky option filters for many commands, and better command help for these
+* Add/Rewrite help for:
+    - Execute-Assembly command
+    - Add examples to many command helps
+* Fix commands:
+    - Fix resource make (number of lines saved)
+    - Fix resource load (which is not refreshing the shell state/context)
+    - Fix `stack pop` which is not pulling the next module from the server.
+* Config file/content for implant prompt/completions/etc...
+
+**C2 Server**
+* Persistent module stacks
+* Persistent listeners
+* Fix connect/disconnect detections from the server
+* Add workspace/host settings to implant modules + implant registration
+* Fix .pentest/path for Data Service Env loading
+* Help for MSF listeners / eventually a separate module.
+* Check all proc/priv/execute commands.
+* Check why obfuscated implants cannot be generated at the same time without messing the namespace up
+
+**Data Service**
+* Change Certificates location/use/storage, etc... (Potentially merge with the Server) + code to handle this.
+* Move config file to the Server config directory
+* Try to make the Server not depending too much on the Data Service (if possible)
+
+**Documentation**
+* Add PostgreSQL install/setup to Required Dependencies
+* Pages for:
+    - Canaries commands
+    - Websites commands
+    - Ghosts commands
+    - Implant config
+    - Console troubleshooting
+    - Priv Commands
+    - Proc Commands
+    - Execute Commands
+    - Agent shell command
+    - Post Modules
+
+Writing Modules:
+    - Modules Overview (Payload & Post)
+
+Data Service:
+    - Config
+    - Usage
+    - Systemd
+    - Host Commands
+
+**Code Repository**
+* Update all READMEs:
+    - If they miss files in their lists
+    - If they are not accurate
+
+
+______
 ## Warmest Thanks
 * The **Golang Project**.
 * **BishopFox** for their Sliver framework, with which I've learned a lot.
+* The **Merlin** project, with which I learned a lot too !
