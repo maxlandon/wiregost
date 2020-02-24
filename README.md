@@ -3,7 +3,7 @@
 ______
 
 ![Demo](./.github/images/console-greet.png)
-![Sessions-Interact](./.github/images/sessions-interact.png)
+<!-- ![Sessions-Interact](./.github/images/sessions-interact.png) -->
 
 
 The grounds for the WireGost exploitation framework project are:
