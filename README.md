@@ -101,6 +101,7 @@ ______
 
 **Modules**
 * Add stagers modules
+* Add Merlin post-exploitation modules
 * If possible, uniformize Options key:value pairs for console usage
 
 **Data Service**
@@ -122,10 +123,10 @@ ______
     - Agent shell command
     - Post Modules
 
-Writing Modules:
+* Writing Modules:
     - Modules Overview (Payload & Post)
 
-Data Service:
+* Data Service:
     - Config
     - Usage
     - Systemd
