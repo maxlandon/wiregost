@@ -22,7 +22,7 @@ the girl... very surprising), but he remembered me the name of his book: _"Ghost
 ______
 ## Documentation 
 
-The documentation for WireGost is also available on the [Wiki](https://github.com/maxlandon/wiregost/wiki) of this repository.
+The documentation for WireGost is available on the [Wiki](https://github.com/maxlandon/wiregost/wiki) of this repository.
 You will find everything needed to install, setup and use Wiregost C2 Server and Console.
 
 ______
@@ -44,7 +44,7 @@ by Maltego.
 #### Sliver
 [Sliver](https://github.com/BishopFox/sliver) is a post-exploitation/implant framework written in Go. It seems to be the most advanced 
 framework written in Go at the moment. Therefore, most of WireGost codebase is exactly the same than Sliver. We then need to address
-**a huge thanks** and **deep and sincere excuses** to the BishopFox team, because my code is mostly theirs, and I have shamelessly change the "Slivers"
+**a huge thanks** and **deep and sincere excuses** to the BishopFox team, because my code is mostly theirs, and I have shamelessly changed the "Slivers"
 everywhere with "Ghost". (I have a good excuse, though: it was the most efficient way to force myself going everywhere in their code base.)
 Thanks a lot, because I've learned a ton of things from it, and I'm really admirative of such tools, I would be totally unable to produce a iota
 of it on my own. 
