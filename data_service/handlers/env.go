@@ -17,12 +17,18 @@
 package handlers
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/big"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
@@ -72,7 +78,7 @@ func LoadEnv() *Env {
 			Port:        8001,
 			URL:         "/",
 			Certificate: "~/.wiregost/data-service/certs/wiregost_pub.pem",
-			Key:         "~/.wiregost/data-service/certs/wiregost_priv_pem",
+			Key:         "~/.wiregost/data-service/certs/wiregost_priv.pem",
 		},
 	}
 
@@ -93,7 +99,19 @@ func LoadEnv() *Env {
 		log.Fatal(tui.Red("[!] Error: failed to unmarshal config.yaml file."))
 	}
 
-	// Adjust for certificate and key file paths
+	// Check certificate and key exist
+	cert := filepath.Join(assets.GetDataServiceDir(), "certs", "wiregost_pub.pem")
+
+	// If not, generate them
+	if _, err := os.Stat(cert); os.IsNotExist(err) {
+		err = createDataServiceCertificates()
+		if err != nil {
+			fmt.Println(err.Error())
+			panic(err)
+		}
+	}
+
+	// Load them
 	env.Service.Certificate, err = fs.Expand(env.Service.Certificate)
 	env.Service.Key, err = fs.Expand(env.Service.Key)
 
@@ -135,6 +153,66 @@ func saveDataServiceEnv(env *Env) error {
 	}
 
 	f.Close()
+
+	return nil
+}
+
+func createDataServiceCertificates() error {
+	certsDir := filepath.Join(assets.GetDataServiceDir(), "certs")
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	publicKey := key.PublicKey
+
+	// RSA PRIVATE KEY
+	outFile, err := os.Create(filepath.Join(certsDir, "wiregost_priv.pem"))
+	if err != nil {
+		return err
+	}
+
+	var privateKey = &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(key),
+	}
+
+	err = pem.Encode(outFile, privateKey)
+	if err != nil {
+		return err
+	}
+	outFile.Close()
+
+	// CERTIFICATE
+	//Generate cryptographically strong pseudo-random between 0 - max
+	max := new(big.Int)
+	max.Exp(big.NewInt(2), big.NewInt(130), nil).Sub(max, big.NewInt(1))
+	n, err := rand.Int(rand.Reader, max)
+
+	template := &x509.Certificate{
+		BasicConstraintsValid: true,
+		SerialNumber:          n,
+		NotBefore:             time.Now(),
+		NotAfter:              time.Now().AddDate(5, 0, 0),
+	}
+
+	cert, err := x509.CreateCertificate(rand.Reader, template, template, &publicKey, key)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	var certPem = &pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: cert,
+	}
+
+	pemfile, err := os.Create(filepath.Join(certsDir, "wiregost_pub.pem"))
+	if err != nil {
+		return err
+	}
+
+	err = pem.Encode(pemfile, certPem)
+	if err != nil {
+		return err
+	}
+	pemfile.Close()
 
 	return nil
 }
