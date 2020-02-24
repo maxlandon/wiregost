@@ -99,6 +99,10 @@ ______
 * Check all proc/priv/execute commands.
 * Check why obfuscated implants cannot be generated at the same time without messing the namespace up
 
+**Modules**
+* Add stagers modules
+* If possible, uniformize Options key:value pairs for console usage
+
 **Data Service**
 * Change Certificates location/use/storage, etc... (Potentially merge with the Server) + code to handle this.
 * Move config file to the Server config directory
