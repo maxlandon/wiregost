@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-// CHANGE THE NAME OF THE PACKAGE WITH THE NAME OF YOUR MODULE/DIRECTORY
 package reverse_dns
 
 import (
@@ -39,12 +38,12 @@ var metadataFile = filepath.Join(assets.GetModulesDir(), "payload/multi/single/r
 
 // [ Base Methods ] ------------------------------------------------------------------------//
 
-// ReverseDNS - A single stage MTLS implant
+// ReverseDNS - A single stage DNS implant
 type ReverseDNS struct {
 	Base *templates.Module
 }
 
-// New - Instantiates a reverse MTLS module, empty.
+// New - Instantiates a reverse DNS module, empty.
 func New() *ReverseDNS {
 	return &ReverseDNS{Base: &templates.Module{}}
 }
@@ -66,7 +65,7 @@ func (s *ReverseDNS) SetOption(option, name string) {
 
 // [ Module Methods ] ------------------------------------------------------------------------//
 
-var rpcLog = log.ServerLogger("rpc", "server")
+var rpcLog = log.ServerLogger("reverse_dns", "module")
 
 // Run - Module entrypoint. ** DO NOT ERASE **
 func (s *ReverseDNS) Run(command string) (result string, err error) {

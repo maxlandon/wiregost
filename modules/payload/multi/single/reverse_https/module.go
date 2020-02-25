@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-// CHANGE THE NAME OF THE PACKAGE WITH THE NAME OF YOUR MODULE/DIRECTORY
 package reverse_https
 
 import (
@@ -42,12 +41,12 @@ var metadataFile = filepath.Join(assets.GetModulesDir(), "payload/multi/single/r
 
 // [ Base Methods ] ------------------------------------------------------------------------//
 
-// ReverseHTTPS - A single stage MTLS implant
+// ReverseHTTPS - A single stage HTTPS implant
 type ReverseHTTPS struct {
 	Base *templates.Module
 }
 
-// New - Instantiates a reverse MTLS module, empty.
+// New - Instantiates a reverse HTTPS module, empty.
 func New() *ReverseHTTPS {
 	return &ReverseHTTPS{Base: &templates.Module{}}
 }
@@ -69,7 +68,7 @@ func (s *ReverseHTTPS) SetOption(option, name string) {
 
 // [ Module Methods ] ------------------------------------------------------------------------//
 
-var rpcLog = log.ServerLogger("rpc", "server")
+var rpcLog = log.ServerLogger("reverse_https", "module")
 
 // Run - Module entrypoint. ** DO NOT ERASE **
 func (s *ReverseHTTPS) Run(command string) (result string, err error) {

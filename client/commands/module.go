@@ -192,6 +192,14 @@ func setOption(args []string, ctx ShellContext, rpc RPCServer) {
 
 func showInfo(ctx ShellContext) {
 	m := ctx.Module
+	sub := strings.Join(m.Path, "/")
+	moduleSubtype := ""
+	switch subtype := sub; {
+	case strings.Contains(subtype, "payload/multi/single"):
+		moduleSubtype = "payload/multi/single"
+	case strings.Contains(subtype, "payload/multi/stager"):
+		moduleSubtype = "payload/multi/stager"
+	}
 
 	// Info
 	fmt.Printf("%sModule:%s\r\t\t%s\r\n", tui.YELLOW, tui.RESET, m.Name)
@@ -214,7 +222,12 @@ func showInfo(ctx ShellContext) {
 	fmt.Println()
 
 	// Listener Options
-	fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
+	switch moduleSubtype {
+	case "payload/multi/single":
+		fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
+	case "payload/multi/stager":
+		fmt.Println(tui.Bold(tui.Blue(" Staging Listener Options")))
+	}
 	table := Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
 	table.SetColWidth(60)
@@ -236,7 +249,12 @@ func showInfo(ctx ShellContext) {
 
 	// Generate Options
 	fmt.Println()
-	fmt.Println(tui.Bold(tui.Blue(" Implant Options")))
+	switch moduleSubtype {
+	case "payload/multi/single":
+		fmt.Println(tui.Bold(tui.Blue(" Implant Options")))
+	case "payload/multi/stager":
+		fmt.Println(tui.Bold(tui.Blue(" Stager Options")))
+	}
 	table = Table()
 	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
 	table.SetColWidth(60)

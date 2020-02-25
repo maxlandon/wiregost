@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-// CHANGE THE NAME OF THE PACKAGE WITH THE NAME OF YOUR MODULE/DIRECTORY
 package reverse_mtls
 
 import (
@@ -66,7 +65,7 @@ func (s *ReverseMTLS) SetOption(option, name string) {
 
 // [ Module Methods ] ------------------------------------------------------------------------//
 
-var rpcLog = log.ServerLogger("rpc", "server")
+var rpcLog = log.ServerLogger("reverse_mtls", "module")
 
 // Run - Module entrypoint. ** DO NOT ERASE **
 func (s *ReverseMTLS) Run(command string) (result string, err error) {

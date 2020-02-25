@@ -67,6 +67,7 @@ func Wrap(text string, lineWidth int) (wrapped string) {
 // to give an order for the most important options
 func SortGenerateOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 
+	// Single Payloads
 	if _, v := opts["DomainsHTTP"]; v {
 		keys = append(keys, "DomainsHTTP")
 	}
@@ -119,11 +120,23 @@ func SortGenerateOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 		keys = append(keys, k.Name)
 	}
 
+	// Stager Payloads
+	if _, v := opts["LHostStager"]; v {
+		keys = append(keys, "LHostStager")
+	}
+	if _, v := opts["LPortStager"]; v {
+		keys = append(keys, "LPortStager")
+	}
+	if _, v := opts["OutputFormat"]; v {
+		keys = append(keys, "OutputFormat")
+	}
+
 	return keys
 }
 
 func SortListenerOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 
+	// Single Payloads
 	if _, v := opts["LHost"]; v {
 		keys = append(keys, "LHost")
 	}
@@ -164,5 +177,16 @@ func SortListenerOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 		keys = append(keys, k.Name)
 	}
 
+	// Stager Payloads
+	if _, v := opts["LHostListener"]; v {
+		keys = append(keys, "LHostListener")
+		// keys = append(keys, k.Name)
+	}
+	if _, v := opts["LPortListener"]; v {
+		keys = append(keys, "LPortListener")
+	}
+	if _, v := opts["StageImplant"]; v {
+		keys = append(keys, "StageImplant")
+	}
 	return keys
 }
