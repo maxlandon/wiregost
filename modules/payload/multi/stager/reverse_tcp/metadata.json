@@ -1,0 +1,28 @@
+{
+        "type": "payload",
+        "name": "Reverse TCP Stager implant",
+        "path": ["payload", "multi", "stager", "reverse_tcp"],
+
+        "author": ["BishopFox"],
+        "credits": ["BishopFox"],
+
+        "description": "A reverse TCP Stager/Listener generation stub. This module allows you to generate a stager shellcode, that will connect back to a Staging Listener, which itself will deliver a full implant stage. This stage, in turn, will connect back to its specified connection strings. Please, therefore, ensure a Single Implant Module listener is running, and that a ghost implant build (shellcode format) is ready to be used by the staging listener of this module.",
+        "notes": "",
+        "references": [],
+
+        "plaftorm": "multi",
+        "targets": ["multi"],
+        "arch": "multi",
+        "lang": "Go",
+        "privileged": false,
+
+        "options": {
+                "LHostListener": {"name": "LHost", "value": "192.168.1.1", "required": true, "description": "Host address to start the staging listener on"},
+                "LPortListener": {"name": "LPort", "value": "8443", "required": true, "description": "Host port to start the staging listener on"},
+                "StageImplant": {"name": "Stage", "value": "", "required": true, "description": "The Ghost implant build name (shellcode format) that the staging listener will send to the stager"},
+
+                "LHostStager": {"name": "LHost", "value": "", "required": true, "description": "The Host IP/Domain the stager will callback to retrieve the stage"},
+                "LPortStager": {"name": "LPort", "value": "", "required": true, "description": "The Host Port to callback"},
+                "OutputFormat": {"name": "Output Format", "value": "raw", "required": true, "description": "Output format (msfvenom's style). All msfvenom's transform formats are supported."}
+        }
+}

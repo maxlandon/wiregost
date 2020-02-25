@@ -49,9 +49,9 @@ import (
 
 var isRunning bool = false
 
-// RunSliver - Export for shared lib build
+// RunGhost - Export for shared lib build
 //export RunSliver
-func RunSliver() {
+func RunGhost() {
 	if !isRunning {
 		isRunning = true
 		main()
