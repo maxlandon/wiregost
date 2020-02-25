@@ -1,5 +1,5 @@
 
-#                      <center>WireGost - Golang Exploitation Framework</center> 
+#                      <center>WireGost - Golang Implant & Post-Exploitation Framework</center> 
 ______
 
 ![Demo](./.github/images/console-greet.png)
@@ -19,11 +19,26 @@ The grounds for the WireGost exploitation framework project are:
 and pricacy issues. Boring questions, boring answers (so boring that everyone comments on this instead of saying obsenities on 
 the girl... very surprising), but he remembered me the name of his book: _"Ghost in the Wires"_. Just on point. Thank you Mr. Mitnick.
 
+
 ______
 ## Documentation 
 
 The documentation for WireGost is available on the [Wiki](https://github.com/maxlandon/wiregost/wiki) of this repository.
 You will find everything needed to install, setup and use Wiregost C2 Server and Console.
+
+
+______
+## Quick Codebase Structure Overview 
+
+* `client/`         - Console client code
+* `server/`         - C2 Server code
+* `ghost/`          - Implants code
+* `modules/`        - All modules available (implants, post, etc...)
+* `protobuf/`       - Protobuf message (core of the capabilities of Wiregost)
+* `data_service/`   - Data Service code
+
+You can find a more through description of the code base in the [wiki page](https://github.com/maxlandon/wiregost/wiki/Code-Structure),
+or by browsing the repository: READMEs are available for pretty much all subpackages, explaining their role and contents.
 
 ______
 ## Sub-Repository Tools
@@ -39,6 +54,7 @@ Maltego will act as a GUI interface with visualization, inference and discovery 
 by Maltego.
 
 
+______
 ## Projects that have inspired/motivated/been outright copy-pasted
 
 #### Sliver
@@ -94,7 +110,6 @@ ______
 * Persistent listeners
 * Fix connect/disconnect detections from the server
 * Add workspace/host settings to implant modules + implant registration
-* Fix .pentest/path for Data Service Env loading
 * Help for MSF listeners / eventually a separate module.
 * Check all proc/priv/execute commands.
 * Check why obfuscated implants cannot be generated at the same time without messing the namespace up
@@ -104,13 +119,7 @@ ______
 * Add Merlin post-exploitation modules
 * If possible, uniformize Options key:value pairs for console usage
 
-**Data Service**
-* Change Certificates location/use/storage, etc... (Potentially merge with the Server) + code to handle this.
-* Move config file to the Server config directory
-* Try to make the Server not depending too much on the Data Service (if possible)
-
 **Documentation**
-* Add PostgreSQL install/setup to Required Dependencies
 * Pages for:
     - Canaries commands
     - Websites commands
@@ -127,15 +136,7 @@ ______
     - Modules Overview (Payload & Post)
 
 * Data Service:
-    - Config
-    - Usage
-    - Systemd
     - Host Commands
-
-**Code Repository**
-* Update all READMEs:
-    - If they miss files in their lists
-    - If they are not accurate
 
 
 ______

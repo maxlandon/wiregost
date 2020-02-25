@@ -7,6 +7,9 @@ for root commands.
 Each time a root command needs further completion (for its subcommands, arguments, or data_service objects),
 the root completer calls specialized functions contained in their appropriate source files.
 
+----
+#### Main menu
+
 * `completer.go`        - Main console completer, calling other specialized completer functions
 * `workspace.go`        - Workspace subcommands and objects
 * `hosts.go`            - Hosts subcommands and objects
@@ -16,3 +19,6 @@ the root completer calls specialized functions contained in their appropriate so
 * `profiles.go`         - Completes implant profiles names 
 * `user.go`             - Completes user option fields 
 * `server.go`           - Completes server configs for server switching 
+
+#### Implant menu
+* `agent-help.go`       - Completes agent help commands 
