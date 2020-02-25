@@ -30,17 +30,19 @@ import (
 )
 
 type ConsoleConfig struct {
-	Mode        string
-	Prompt      string
-	HistoryFile string
+	Mode          string
+	Prompt        string
+	ImplantPrompt string
+	HistoryFile   string
 }
 
 func LoadConsoleConfig() *ConsoleConfig {
 	// Load a default console config, eventually parse one if found
 	conf := &ConsoleConfig{
-		Mode:        "emacs",
-		Prompt:      "",
-		HistoryFile: "~/.wiregost-client/.history",
+		Mode:          "emacs",
+		Prompt:        "",
+		ImplantPrompt: "",
+		HistoryFile:   "~/.wiregost-client/.history",
 	}
 
 	// Load config
@@ -104,9 +106,10 @@ var helpConfig = `
 
 # [ HELP ] ------------------------------------------------------//
 
-# Mode:         vim/emacs
-# HistoryFile:  relative/absolute path to history file
-# Prompt:       prompt string to use (below are examples and variables)
+# Mode:             vim/emacs
+# HistoryFile:      relative/absolute path to history file
+# Prompt:           prompt string to use (below are examples and variables)
+# ImplantPrompt:    prompt string to use when interacting with an implant 
 
 # Prompt variables:
 # {pwd}         Current working directory of the client
@@ -115,6 +118,18 @@ var helpConfig = `
 # {listeners}   Number of listeners jobs currently running
 # {ghosts}      Number of Ghost implants currently connected
 # {localip}     IP address of client 
+
+# ImplantPrompt variables:
+# {user}        Username of the implant process owner
+# {host}        Hostname of the target 
+# {rpwd}        Current working directory of the implant 
+# {os}          Operating System of the target 
+# {arch}        CPU architecture of the target 
+# {uid}         User ID of the implant process owner 
+# {gid}         Group ID of the implant process owner 
+# {pid}         Process ID of the implant 
+# {transport}   C2 protocol used by the implant (mtls/https/dns) 
+# {address}     host:port address of the implant 
 
 # Prompt colors:
 # "{bold}":  BOLD,
@@ -138,6 +153,9 @@ var helpConfig = `
 # "{db}":    DARKBLUE 
 # "{bddg}":  BACK DARK DARKGRAY 
 # "{ly}":    LIGHT YELLOW 
+
+# Notes:
+# When setting the implant prompt, you can also mix Prompt and ImplantPrompt variables as you wish.
 
 # Examples:
 

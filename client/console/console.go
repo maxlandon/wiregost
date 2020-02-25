@@ -78,7 +78,7 @@ func NewConsole() *Console {
 	}
 
 	console.initContext()
-	console.prompt = newPrompt(console, conf.Prompt)
+	console.prompt = newPrompt(console, conf.Prompt, conf.ImplantPrompt)
 
 	// [ Console input ]
 	shell, _ := readline.NewEx(&readline.Config{

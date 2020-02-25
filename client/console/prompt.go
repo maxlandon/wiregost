@@ -32,10 +32,12 @@ import (
 // Prompt object
 type Prompt struct {
 	// Prompt strings
-	base           string
+	baseMain       string
+	baseAgent      string
 	module         string
 	agent          string
-	custom         string
+	customMain     string
+	customAgent    string
 	multilineVim   string
 	multilineEmacs string
 	// Prompt variables
@@ -49,14 +51,16 @@ type Prompt struct {
 	effects         map[string]string
 }
 
-func newPrompt(c *Console, custom string) Prompt {
+func newPrompt(c *Console, customMain string, customAgent string) Prompt {
 	// These are here because if colors are disabled, we need the updated tui.* variable
 	prompt := Prompt{
 		// Prompt strings
-		base:           "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
+		baseMain:       "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
 		module:         " =>{reset} {type}({mod})",
-		agent:          "{bddg}{fw}agent[{lb}{agent}]{reset} {dim}as {user}{bold}{y}@{reset}{host}/{rpwd} {dim}in {workspace}",
-		custom:         custom,
+		baseAgent:      "{dim}as {user}{bold}{y}@{reset}{host}/{rpwd} {dim}in {workspace}",
+		agent:          "{bddg}{fw}agent[{lb}{agent}]{reset} ",
+		customMain:     customMain,
+		customAgent:    customAgent,
 		multilineVim:   "{vim} > ",
 		multilineEmacs: " > ",
 		// Prompt variabes
@@ -158,7 +162,6 @@ func newPrompt(c *Console, custom string) Prompt {
 		// Current agent
 		"{agent}": func() string {
 			return c.CurrentAgent.Name
-			// return tui.Blue(c.CurrentAgent.Name) + tui.RESET
 		},
 		// Agent username
 		"{user}": func() string {
@@ -172,6 +175,34 @@ func newPrompt(c *Console, custom string) Prompt {
 		"{rpwd}": func() string {
 			return tui.Blue(c.AgentPwd) + tui.RESET
 		},
+		// agent user ID
+		"{uid}": func() string {
+			return c.CurrentAgent.UID
+		},
+		// agent user group ID
+		"{gid}": func() string {
+			return c.CurrentAgent.GID
+		},
+		// agent process ID
+		"{pid}": func() string {
+			return strconv.Itoa(int(c.CurrentAgent.PID))
+		},
+		// agent C2 protocol
+		"{transport}": func() string {
+			return c.CurrentAgent.Transport
+		},
+		// agent remote host:port address
+		"{address}": func() string {
+			return c.CurrentAgent.RemoteAddress
+		},
+		// agent target OS
+		"{os}": func() string {
+			return c.CurrentAgent.OS
+		},
+		// agent target CPU Arch
+		"{arch}": func() string {
+			return c.CurrentAgent.Arch
+		},
 	}
 
 	return prompt
@@ -181,27 +212,37 @@ func (p Prompt) render(vimMode bool) (first string, multi string) {
 
 	var prompt string
 
-	switch p.custom {
+	switch p.customMain {
 	// No custom prompt provided, use base
 	case "":
 		if *p.currentModule != "" {
-			prompt = p.base + p.module
+			prompt = p.baseMain + p.module
 		} else {
-			prompt = p.base
+			prompt = p.baseMain
 		}
 		if *p.menu == "agent" {
-			prompt = p.agent
+			// Check custom implant prompt provided
+			if p.customAgent == "" {
+				prompt = p.agent + p.baseAgent
+			} else {
+				prompt = p.agent + p.customAgent
+			}
 		}
 
 	// Custom provided, use it
 	default:
 		if *p.currentModule != "" {
-			prompt = p.custom + p.module
+			prompt = p.customMain + p.module
 		} else {
-			prompt = p.custom
+			prompt = p.customMain
 		}
 		if *p.menu == "agent" {
-			prompt = p.agent
+			// Check custom implant prompt provided
+			if p.customAgent == "" {
+				prompt = p.agent + p.baseAgent
+			} else {
+				prompt = p.agent + p.customAgent
+			}
 		}
 	}
 
