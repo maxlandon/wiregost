@@ -127,8 +127,17 @@ func SortGenerateOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 	if _, v := opts["LPortStager"]; v {
 		keys = append(keys, "LPortStager")
 	}
+	if _, v := opts["StageConfig"]; v {
+		keys = append(keys, "StageConfig")
+	}
 	if _, v := opts["OutputFormat"]; v {
 		keys = append(keys, "OutputFormat")
+	}
+	if _, v := opts["OutputStdout"]; v {
+		keys = append(keys, "OutputStdout")
+	}
+	if _, v := opts["FileName"]; v {
+		keys = append(keys, "FileName")
 	}
 
 	return keys
