@@ -228,3 +228,20 @@ func GetGhosts(rpc RPCServer) *clientpb.Sessions {
 
 	return sessions
 }
+
+func GhostSessionsByName(name string, rpc RPCServer) []*clientpb.Ghost {
+	resp := <-rpc(&ghostpb.Envelope{
+		Type: clientpb.MsgSessions,
+		Data: []byte{},
+	}, defaultTimeout)
+	allSessions := &clientpb.Sessions{}
+	proto.Unmarshal((resp).Data, allSessions)
+
+	sessions := []*clientpb.Ghost{}
+	for _, ghost := range allSessions.Ghosts {
+		if ghost.Name == name {
+			sessions = append(sessions, ghost)
+		}
+	}
+	return sessions
+}

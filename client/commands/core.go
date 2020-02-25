@@ -175,7 +175,8 @@ func RegisterCoreCommands() {
 					defer hist.Close()
 					scan := bufio.NewScanner(hist)
 					for scan.Scan() {
-						if hlength <= length {
+						// Needed this to adjust for last command (not needed)
+						if hlength <= length+1 && hlength > 1 {
 							res.Write([]byte(scan.Text() + "\n"))
 						}
 						hlength -= 1
@@ -213,8 +214,12 @@ func RegisterCoreCommands() {
 						command := FindCommand(*r.context.MenuContext, args[0])
 						if command != nil {
 							err := command.Handle(NewRequest(command, args[1:], &updatedContext))
-							if err == nil && command.Name == "use" {
+							// Adjust for context, depending on commands
+							if (err == nil) && (command.Name == "use") {
 								*updatedContext.MenuContext = "module"
+							}
+							if (command.Name == "sessions") && (args[1] == "interact") {
+								*updatedContext.MenuContext = "agent"
 							}
 						} else {
 							fmt.Printf("\n"+CommandError+"%s%s%s is not a valid command.",

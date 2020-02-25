@@ -369,7 +369,8 @@ func parseProfile(profile string, ctx ShellContext, rpc RPCServer) {
 	if result.Success == false {
 		fmt.Printf(Error+"%s", result.Err)
 	} else {
-		m.ParseProto(result.Updated)
+		*m = *result.Updated
+		// m.ParseProto(result.Updated)
 		fmt.Printf(Info+"%s", result.Result)
 	}
 }

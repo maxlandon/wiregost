@@ -17,12 +17,14 @@
 package rpc
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
 
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
+	"github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/module"
 )
 
@@ -46,6 +48,22 @@ func rpcModuleSetOption(data []byte, timeout time.Duration, resp RPCResponse) {
 	}
 	data, err = proto.Marshal(option)
 	resp(data, err)
+	time.Sleep(time.Millisecond * 50)
+
+	optionUpdated := fmt.Sprintf("%s %s %s", optionReq.Name, optionReq.Value, path)
+	optionBytes := []byte(optionUpdated)
+
+	for _, c := range *core.Clients.Connections {
+		if c.User == optionReq.User {
+			core.EventBroker.Publish(core.Event{
+				Client:    c,
+				EventType: "module",
+				Data:      optionBytes,
+			})
+			// One push is enough
+			break
+		}
+	}
 }
 
 func rpcModuleRun(data []byte, timeout time.Duration, resp RPCResponse) {
