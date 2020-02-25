@@ -100,6 +100,7 @@ ______
     - Execute-Assembly command
     - Add examples to many command helps
 * Config for implant working directory completions
+* Config for MSF path, if installed from source and not with nightly installers (error with msfvenom)
 
 **C2 Server**
 * Persistent module stacks
@@ -112,7 +113,6 @@ ______
 * Rewrite Makefile with C2, Console and Data Service
 
 **Modules**
-* Add stagers modules
 * Add Merlin post-exploitation modules
 * If possible, uniformize Options key:value pairs for console usage
 
