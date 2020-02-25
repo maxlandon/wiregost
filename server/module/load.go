@@ -28,6 +28,7 @@ import (
 	https "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_https"
 	mtls "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_mtls"
 	multi "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_multi_protocol"
+	http_stager "github.com/maxlandon/wiregost/modules/payload/multi/stager/reverse_http"
 	tcp_stager "github.com/maxlandon/wiregost/modules/payload/multi/stager/reverse_tcp"
 )
 
@@ -40,6 +41,7 @@ func LoadModules() {
 	AddModule("payload/multi/single/reverse_https", https.New())
 	AddModule("payload/multi/single/reverse_multi_protocol", multi.New())
 	AddModule("payload/multi/stager/reverse_tcp", tcp_stager.New())
+	AddModule("payload/multi/stager/reverse_http", http_stager.New())
 
 	// Exploit -------------------------------------------------------------//
 
