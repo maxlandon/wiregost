@@ -99,7 +99,7 @@ ______
 * Add/Rewrite help for:
     - Execute-Assembly command
     - Add examples to many command helps
-* Config file/content for implant prompt/completions/etc...
+* Config for implant working directory completions
 
 **C2 Server**
 * Persistent module stacks
@@ -109,6 +109,7 @@ ______
 * Help for MSF listeners / eventually a separate module.
 * Check all proc/priv/execute commands.
 * Check why obfuscated implants cannot be generated at the same time without messing the namespace up
+* Rewrite Makefile with C2, Console and Data Service
 
 **Modules**
 * Add stagers modules
@@ -116,6 +117,9 @@ ______
 * If possible, uniformize Options key:value pairs for console usage
 
 **Documentation**
+* Install
+    - Compile from Source (add C2, Console, Data Service)
+
 * Pages for:
     - Canaries commands
     - Websites commands
@@ -133,6 +137,10 @@ ______
 
 * Data Service:
     - Host Commands
+
+**Releases**
+* Compile C2 Server, Console and Data Service
+* Add them to Releases
 
 
 ______
