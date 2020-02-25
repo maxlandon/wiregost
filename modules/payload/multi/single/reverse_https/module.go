@@ -106,7 +106,7 @@ func (s *ReverseHTTPS) toListener() (result string, err error) {
 	portUint, _ := strconv.Atoi(s.Base.Options["LPort"].Value)
 	port := uint16(portUint)
 	addr := fmt.Sprintf("%s:%d", host, port)
-	domain := s.Base.Options["Domain"].Value
+	domain := s.Base.Options["DomainHTTPListener"].Value
 	website := s.Base.Options["Website"].Value
 	letsEncrypt := false
 	if s.Base.Options["LetsEncrypt"].Value == "true" {

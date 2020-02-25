@@ -151,8 +151,8 @@ func SortListenerOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 	if k, v := opts["LetsEncrypt"]; v {
 		keys = append(keys, k.Name)
 	}
-	if _, v := opts["LimitResponseDomain"]; v {
-		keys = append(keys, "LimitResponseDomain")
+	if _, v := opts["DomainsHTTPListener"]; v {
+		keys = append(keys, "DomainsHTTPListener")
 	}
 	if k, v := opts["Website"]; v {
 		keys = append(keys, k.Name)
