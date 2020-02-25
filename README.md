@@ -99,10 +99,6 @@ ______
 * Add/Rewrite help for:
     - Execute-Assembly command
     - Add examples to many command helps
-* Fix commands:
-    - Fix resource make (number of lines saved)
-    - Fix resource load (which is not refreshing the shell state/context)
-    - Fix `stack pop` which is not pulling the next module from the server.
 * Config file/content for implant prompt/completions/etc...
 
 **C2 Server**
