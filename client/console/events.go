@@ -20,9 +20,11 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/evilsocket/islazy/tui"
 
+	"github.com/maxlandon/wiregost/client/commands"
 	consts "github.com/maxlandon/wiregost/client/constants"
 	"github.com/maxlandon/wiregost/client/core"
 	. "github.com/maxlandon/wiregost/client/util"
@@ -36,11 +38,32 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 
 		case consts.CanaryEvent:
 			fmt.Printf("%s[WARNING]%s %s has been burned (DNS Canary) \n", tui.YELLOW, tui.RESET, event.Ghost.Name)
-			// sessions := cmd.GhostSessionsByName(event.Ghost.Name, server.RPC)
-			// for _, ghost := range sessions {
-			//         fmt.Printf("%s[!]%s \tSession #%d is compromised\n", tui.YELLOW, tui.RESET, ghost.ID)
-			// }
+			sessions := commands.GhostSessionsByName(event.Ghost.Name, server.RPC)
+			for _, ghost := range sessions {
+				fmt.Printf("%s[!]%s \tSession #%d is compromised\n", tui.YELLOW, tui.RESET, ghost.ID)
+			}
 			fmt.Println()
+
+		// Stack has been updated, update current module if needed
+		case consts.StackEvent:
+			data := string(event.Data)
+			current := strings.Split(data, " ")[0]
+			next := strings.Split(data, " ")[1]
+			if strings.Join(c.module.Path, "/") == current {
+				args := []string{"stack", "use", next}
+				ExecCmd(args, c.menuContext, c.shellContext)
+				c.hardRefresh()
+			}
+
+		// A module option has been updated, update current module if needed
+		case consts.ModuleEvent:
+			data := string(event.Data)
+			optionName := strings.Split(data, " ")[0]
+			optionValue := strings.Split(data, " ")[1]
+			module := strings.Split(data, " ")[2]
+			if strings.Join(c.module.Path, "/") == module {
+				c.module.Options[optionName].Value = optionValue
+			}
 
 		case consts.ServerErrorStr:
 			fmt.Printf(Errorf + "Server connection error! \n\n")

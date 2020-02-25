@@ -25,7 +25,6 @@ import (
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/data_service/remote"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
-	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
 func (c *Console) initContext() {
@@ -46,7 +45,7 @@ func (c *Console) initContext() {
 
 	// Current module
 	c.currentModule = ""
-	c.module = &templates.Module{}
+	c.module = &clientpb.Module{}
 
 	// Agent
 

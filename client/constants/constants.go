@@ -27,6 +27,9 @@ const (
 
 	ServerErrorStr = "server"
 
+	StackEvent  = "stack pop"
+	ModuleEvent = "module"
+
 	// ConnectedEvent - Ghost Connected
 	ConnectedEvent = "connected"
 	// DisconnectedEvent - Ghost disconnected

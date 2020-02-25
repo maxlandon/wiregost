@@ -22,7 +22,6 @@ import (
 	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/data_service/models"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
-	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
 // ShellContext - Passes client shell variable pointers to command for read/write access
@@ -33,7 +32,7 @@ type ShellContext struct {
 	Mode        *string
 
 	CurrentModule    *string
-	Module           *templates.Module
+	Module           *clientpb.Module
 	CurrentWorkspace *models.Workspace
 
 	// Server state

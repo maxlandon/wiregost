@@ -22,8 +22,9 @@ import (
 	"strings"
 
 	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/wiregost/server/module/templates"
 	"github.com/olekukonko/tablewriter"
+
+	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
 
 func Table() *tablewriter.Table {
@@ -64,7 +65,7 @@ func Wrap(text string, lineWidth int) (wrapped string) {
 
 // SortOptionKeys - Golang prints maps in an ever-changing order, so try at least
 // to give an order for the most important options
-func SortGenerateOptionKeys(opts map[string]*templates.Option) (keys []string) {
+func SortGenerateOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 
 	if _, v := opts["DomainsHTTP"]; v {
 		keys = append(keys, "DomainsHTTP")
@@ -121,7 +122,7 @@ func SortGenerateOptionKeys(opts map[string]*templates.Option) (keys []string) {
 	return keys
 }
 
-func SortListenerOptionKeys(opts map[string]*templates.Option) (keys []string) {
+func SortListenerOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 
 	if _, v := opts["LHost"]; v {
 		keys = append(keys, "LHost")

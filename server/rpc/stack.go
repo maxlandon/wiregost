@@ -17,12 +17,14 @@
 package rpc
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
 
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
+	"github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/module"
 )
 
@@ -116,6 +118,23 @@ func rpcStackPop(data []byte, timeout time.Duration, resp RPCResponse) {
 
 	data, err = proto.Marshal(stackPop)
 	resp(data, err)
+	time.Sleep(time.Millisecond * 50)
+
+	// Push stack events to user clients
+	prevNext := fmt.Sprintf("%s %s", strings.Join(stackReq.Path, "/"), strings.Join(next, "/"))
+	stackBytes := []byte(prevNext)
+
+	for _, c := range *core.Clients.Connections {
+		if c.User == stackReq.User {
+			core.EventBroker.Publish(core.Event{
+				Client:    c,
+				EventType: "stack pop",
+				Data:      stackBytes,
+			})
+			// One push is enough
+			break
+		}
+	}
 }
 
 func rpcStackList(data []byte, timeout time.Duration, resp RPCResponse) {

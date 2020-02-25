@@ -27,7 +27,6 @@ import (
 	. "github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
-	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
 func RegisterStackCommands() {
@@ -103,9 +102,8 @@ func stackUse(ctx ShellContext, module string, rpc RPCServer) {
 		return
 	}
 
-	currentMod := stack.Modules[0]
-	*ctx.CurrentModule = strings.Join(currentMod.Path, "/")
-	ctx.Module.ParseProto(currentMod)
+	*ctx.Module = *stack.Modules[0]
+	*ctx.CurrentModule = strings.Join(ctx.Module.Path, "/")
 }
 
 func stackList(ctx ShellContext, rpc RPCServer) {
@@ -200,9 +198,7 @@ func stackPop(ctx ShellContext, module string, all bool, rpc RPCServer) {
 
 	if (stack.Path != nil) && (len(stack.Path) != 0) {
 		*ctx.CurrentModule = strings.Join(stack.Path, "/")
-		newMod := &templates.Module{}
-		newMod.ParseProto(stack.Modules[0])
-		ctx.Module = newMod
+		*ctx.Module = *stack.Modules[0]
 		return
 	}
 

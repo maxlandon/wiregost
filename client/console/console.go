@@ -32,7 +32,6 @@ import (
 	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/data_service/models"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
-	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
 var home, _ = os.UserHomeDir()
@@ -49,7 +48,7 @@ type Console struct {
 	menuContext string
 
 	currentModule    string
-	module           *templates.Module
+	module           *clientpb.Module
 	currentWorkspace *models.Workspace
 
 	// Server
