@@ -1,13 +1,13 @@
 # General
 [Unit]
 Description=Wiregost Data Service 
-ConditionPathExists=/home/para/.pentest/wiregost/data_service/data_service
+ConditionPathExists=$PATH_TO_DATA_SERVICE_BINARY
 After=network.target
 
 [Service]
 Type=simple
-User=para
-Group=users
+User=$USER
+Group=$GROUP
 LimitNOFILE=1024
 
 # Run Management
@@ -16,8 +16,8 @@ RestartSec=10
 startLimitIntervalSec=60
 
 # File paths
-WorkingDirectory=/home/para/.pentest/wiregost
-ExecStart=/home/para/.pentest/wiregost/data_service/data_service --name=wiregost
+WorkingDirectory=$PATH_TO_DATA_SERVICE_BINARY
+ExecStart=$PATH_TO_DATA_SERVICE_BINARY --name=wiregost
 
 [Install]
 WantedBy=multi-user.target
