@@ -129,7 +129,8 @@ message Option {
         string Name = 2;
         string Value = 3;
         bool Required = 4;
-        string Description = 5;
+        string Flag = 5;
+        string Description = 6;
 }
 
 message SetOptionReq {

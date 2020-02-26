@@ -49,6 +49,7 @@ type Option struct {
 	Name        string `json:"name"`        // Name of the option
 	Value       string `json:"value"`       // Value of the option (default is filled here)
 	Required    bool   `json:"required"`    // Is this a required option ?
+	Flag        string `json:"flag"`        // Flag value of the option, used for execution
 	Description string `json:"description"` // A description of the option
 }
 
@@ -84,6 +85,7 @@ func (o *Option) ToProtobuf() *pb.Option {
 		Name:        o.Name,
 		Value:       o.Value,
 		Required:    o.Required,
+		Flag:        o.Flag,
 		Description: o.Description,
 	}
 }
@@ -135,6 +137,7 @@ func (m *Module) ParseProto(pbmod *pb.Module) {
 		option := Option{}
 		option.Name = opt.Name
 		option.Value = opt.Value
+		option.Flag = opt.Flag
 		option.Required = opt.Required
 		option.Description = opt.Description
 		m.Options[name] = &option

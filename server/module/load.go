@@ -24,6 +24,7 @@ package module
 // The import path to the module has to be added to the imports as well.
 
 import (
+	// Payloads
 	dns "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_dns"
 	https "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_https"
 	mtls "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_mtls"
@@ -31,6 +32,9 @@ import (
 	http_stager "github.com/maxlandon/wiregost/modules/payload/multi/stager/reverse_http"
 	https_stager "github.com/maxlandon/wiregost/modules/payload/multi/stager/reverse_https"
 	tcp_stager "github.com/maxlandon/wiregost/modules/payload/multi/stager/reverse_tcp"
+
+	// Post
+	minidump "github.com/maxlandon/wiregost/modules/post/windows/x64/go/credentials/minidump"
 )
 
 // LoadAllModules - Load all modules in the modules directory.
@@ -46,6 +50,7 @@ func LoadModules() {
 	AddModule("payload/multi/stager/reverse_https", https_stager.New())
 
 	// Exploit -------------------------------------------------------------//
+	AddModule("post/windows/x64/go/credentials/minidump", minidump.New())
 
 	// Post ----------------------------------------------------------------//
 
