@@ -1,7 +1,10 @@
 # Binaries
 wiregost-console
+wiregost-server
+data_service
 server/wiregost-server
 data_service/data_service
+
 
 
 # Test files
