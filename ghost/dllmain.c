@@ -2,7 +2,7 @@
 
 DWORD WINAPI Enjoy()
 {
-    RunSliver();
+    RunGhost();
     return 0;
 }
 

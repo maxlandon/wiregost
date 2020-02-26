@@ -50,7 +50,7 @@ import (
 var isRunning bool = false
 
 // RunGhost - Export for shared lib build
-//export RunSliver
+//export RunGhost
 func RunGhost() {
 	if !isRunning {
 		isRunning = true

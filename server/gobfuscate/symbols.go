@@ -16,9 +16,9 @@ import (
 
 // IgnoreMethods - Methods to skip when obfuscating
 var IgnoreMethods = map[string]bool{
-	"main":      true,
-	"init":      true,
-	"RunSliver": true,
+	"main":     true,
+	"init":     true,
+	"RunGhost": true,
 }
 
 // SkipRenames - Skip renaming these symbols

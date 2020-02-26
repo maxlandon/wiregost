@@ -27,56 +27,73 @@ endif
 macos: clean version pb
 	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
 	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data_service
 
 .PHONY: linux
 linux: clean version pb
 	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
 	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data_service
 
 .PHONY: windows
 windows: clean version pb
 	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server.exe ./server
 	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console.exe ./client
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service.exe ./data_service
 
 
 #
-# Static builds were we bundle everything together
+# Static builds were we bundle everything together ---------------------------------------------------
 #
 # MacOS 
 .PHONY: static-server-macos
-static-macos: clean version pb packr
+static-server-macos: clean version pb packr
 	packr
 	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
 	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
 
 .PHONY: console-macos
-macos: clean version pb
+console-macos: clean version pb
 	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
+
+.PHONY: data-service-macos
+data-service-macos: clean version pb
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data_service
 
 # Windows
 .PHONY: static-server-windows
-static-windows: clean version pb packr
+static-server-windows: clean version pb packr
 	packr
 	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
 	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server.exe ./server
 
 .PHONY: console-windows
-windows: clean version pb
+console-windows: clean version pb
 	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console.exe ./client
+
+.PHONY: data-service-windows
+data-service-windows: clean version pb
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service.exe ./data_service
 
 # Linux 
 .PHONY: static-server-linux
-static-linux: clean version pb packr
+static-server-linux: clean version pb packr
 	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
 	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
 
 .PHONY: console-linux
-linux: clean version pb
+console-linux: clean version pb
 	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
 
+.PHONY: data-service-linux
+data-service-linux: clean version pb
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data_service
+
+
+# Accessory Makes ------------------------------------------------------------------------------------------
 .PHONY: pb
 pb:
 	protoc -I protobuf/ protobuf/ghost/ghost.proto --go_out=protobuf/
