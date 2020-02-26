@@ -1,9 +1,10 @@
 # Binaries
 wiregost-console
 wiregost-server
-data_service
+wiregost-data-service
 server/wiregost-server
 data_service/data_service
+client/wiregost-console
 
 
 
