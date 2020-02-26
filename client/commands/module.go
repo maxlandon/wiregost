@@ -284,9 +284,22 @@ func showInfo(ctx ShellContext) {
 
 func showOptions(ctx ShellContext) {
 	m := ctx.Module
+	sub := strings.Join(m.Path, "/")
+	moduleSubtype := ""
+	switch subtype := sub; {
+	case strings.Contains(subtype, "payload/multi/single"):
+		moduleSubtype = "payload/multi/single"
+	case strings.Contains(subtype, "payload/multi/stager"):
+		moduleSubtype = "payload/multi/stager"
+	}
 
 	// Listener Options
-	fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
+	switch moduleSubtype {
+	case "payload/multi/single":
+		fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
+	case "payload/multi/stager":
+		fmt.Println(tui.Bold(tui.Blue(" Staging Listener Options")))
+	}
 	tab := util.Table()
 	tab.SetHeader([]string{"Name", "Value", "Required", "Description"})
 	tab.SetColWidth(60)
@@ -308,7 +321,12 @@ func showOptions(ctx ShellContext) {
 
 	// Generate Options
 	fmt.Println()
-	fmt.Println(tui.Bold(tui.Blue(" Implant Options")))
+	switch moduleSubtype {
+	case "payload/multi/single":
+		fmt.Println(tui.Bold(tui.Blue(" Implant Options")))
+	case "payload/multi/stager":
+		fmt.Println(tui.Bold(tui.Blue(" Stager Options")))
+	}
 	tab = util.Table()
 	tab.SetHeader([]string{"Name", "Value", "Required", "Description"})
 	tab.SetColWidth(60)
