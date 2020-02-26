@@ -1,5 +1,5 @@
 #
-# Makefile for Sliver
+# Makefile for Wiregost 
 #
 
 GO ?= go
@@ -42,25 +42,40 @@ windows: clean version pb
 #
 # Static builds were we bundle everything together
 #
-.PHONY: static-macos
+# MacOS 
+.PHONY: static-server-macos
 static-macos: clean version pb packr
 	packr
 	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
 	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
 
-.PHONY: static-windows
+.PHONY: console-macos
+macos: clean version pb
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
+
+# Windows
+.PHONY: static-server-windows
 static-windows: clean version pb packr
 	packr
 	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
 	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server.exe ./server
 
-.PHONY: static-linux
+.PHONY: console-windows
+windows: clean version pb
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console.exe ./client
+
+# Linux 
+.PHONY: static-server-linux
 static-linux: clean version pb packr
 	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
 	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
+
+.PHONY: console-linux
+linux: clean version pb
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
 
 .PHONY: pb
 pb:

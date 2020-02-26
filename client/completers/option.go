@@ -24,6 +24,7 @@ import (
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/util"
 	. "github.com/maxlandon/wiregost/client/util"
+	"github.com/maxlandon/wiregost/data_service/remote"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
@@ -109,7 +110,43 @@ func (oc *OptionCompleter) yieldOptionValues(ctx *commands.ShellContext, optionN
 				offset = sOffset
 			}
 		}
-		return
+	case "Workspace":
+		workspaces, _ := remote.Workspaces(nil)
+		for _, w := range workspaces {
+			search := w.Name
+			if !hasPrefix(line, []rune(search)) {
+				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+				options = append(options, sLine...)
+				offset = sOffset
+			}
+		}
+	case "Session":
+		rpc := ctx.Server.RPC
+
+		resp := <-rpc(&ghostpb.Envelope{
+			Type: clientpb.MsgSessions,
+			Data: []byte{},
+		}, defaultTimeout)
+		if resp.Err != "" {
+			fmt.Printf(RPCError+"%s\n", resp.Err)
+			return
+		}
+		sessions := &clientpb.Sessions{}
+		proto.Unmarshal(resp.Data, sessions)
+
+		ghosts := map[uint32]*clientpb.Ghost{}
+		for _, ghost := range sessions.Ghosts {
+			ghosts[ghost.ID] = ghost
+		}
+
+		for _, g := range ghosts {
+			search := g.Name
+			if !hasPrefix(line, []rune(search)) {
+				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+				options = append(options, sLine...)
+				offset = sOffset
+			}
+		}
 	}
 
 	return options, offset
