@@ -86,7 +86,6 @@ ______
 **Console**
 * Check codebase linting
 * Add completers for:
-    - Session names for interacting
     - Workspace names for setting implant options
     - All command options/filters in the implant menu
     - Filesystem completion in the implant menu

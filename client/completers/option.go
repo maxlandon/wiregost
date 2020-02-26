@@ -36,6 +36,24 @@ type OptionCompleter struct {
 // Do is the completion function triggered at each line
 func (oc *OptionCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 
+	// Complete command args
+	splitLine := strings.Split(string(line), " ")
+	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+
+	moduleOptions := []string{}
+	moduleOptions = append(moduleOptions, util.SortGenerateOptionKeys(ctx.Module.Options)...)
+	moduleOptions = append(moduleOptions, util.SortListenerOptionKeys(ctx.Module.Options)...)
+
+	switch word := splitLine[0]; {
+	case wordInOptions(word, moduleOptions):
+		return oc.yieldOptionValues(ctx, word, line, pos)
+	default:
+		return oc.yieldOptionNames(ctx, line, pos)
+	}
+}
+
+// Do is the completion function triggered at each line
+func (oc *OptionCompleter) yieldOptionNames(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 	switch *ctx.MenuContext {
 	case "module":
 		for _, v := range util.SortListenerOptionKeys(ctx.Module.Options) {
@@ -56,19 +74,13 @@ func (oc *OptionCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) 
 			}
 		}
 	}
+	return options, offset
+}
 
-	// Else, provide some specific option values:
-	words := strings.Split(string(line), " ")
-	argInput := lastString(words)
+// Do is the completion function triggered at each line
+func (oc *OptionCompleter) yieldOptionValues(ctx *commands.ShellContext, optionName string, line []rune, pos int) (options [][]rune, offset int) {
 
-	// For some arguments, the split results in a last empty item.
-	if words[len(words)-1] == "" {
-		argInput = words[0]
-	}
-	if argInput == "StageImplant" {
-	}
-
-	switch argInput {
+	switch optionName {
 	case "StageImplant", "StageConfig":
 		// Get ghost builds
 		rpc := ctx.Server.RPC
@@ -90,19 +102,24 @@ func (oc *OptionCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) 
 		}
 
 		for _, c := range shellcodeBuilds {
-			options = append(options, []rune(c.Name))
-			offset = len(argInput + " ")
-			// search := c.Name
-			// if !hasPrefix(line, []rune(search)) {
-			//         sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-			//         options = append(options, sLine...)
-			//         offset = sOffset
-			// } else {
-			//
-			// }
+			search := c.Name
+			if !hasPrefix(line, []rune(search)) {
+				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+				options = append(options, sLine...)
+				offset = sOffset
+			}
 		}
 		return
 	}
 
 	return options, offset
+}
+
+func wordInOptions(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
