@@ -53,7 +53,7 @@ func GetRootAppDir() string {
 
 // GetDataDir - Returns the full path to the data directory
 func GetDataServiceDir() string {
-	dir := path.Join(GetRootAppDir(), dataServiceDir)
+	dir := path.Join(GetDataServiceDir(), dataServiceDir)
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.MkdirAll(dir, os.ModePerm)
