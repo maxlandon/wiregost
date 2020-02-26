@@ -18,6 +18,7 @@ package completers
 
 import (
 	"sort"
+	"strings"
 	"unicode"
 
 	"github.com/maxlandon/wiregost/client/commands"
@@ -91,8 +92,9 @@ func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int)
 	}
 
 	// Option name is found, yield option completions
-	if (len(subFound) != 0) && verbFound != "set" {
-		options, offset = yieldOptionompletions(ac.Context, commands[verbFound], subFound, line, pos)
+	if (len(subFound) == 0) && verbFound != "set" {
+		// fmt.Println(subFound == "StageImplant")
+		// options, offset = yieldOptionompletions(ac.Context, commands[verbFound], line, pos)
 		return
 	}
 	if subFound == "interact" {
@@ -162,15 +164,25 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 }
 
 // yieldCommandCompletions determines the type of command used and redirects to its completer
-func yieldOptionompletions(ctx *commands.ShellContext, cmd *commands.Command, option string, line []rune, pos int) (options [][]rune, offset int) {
+func yieldOptionompletions(ctx *commands.ShellContext, cmd *commands.Command, line []rune, pos int) (options [][]rune, offset int) {
+
+	splitLine := strings.Split(string(line), " ")
+	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
 
 	switch *ctx.MenuContext {
 	case "module":
 		switch cmd.Name {
 		case "set":
-			switch option {
-			case "StageImplant", "StageConfig":
+			// If name is identified, that means option is already typed
+			switch string(line) {
+
+			case "StageImplant ", "StageConfig ":
 				comp := &StagerCompleter{Command: cmd}
+				options, offset = comp.Do(ctx, line, pos)
+
+				// Default is: no options have been typed yet
+			default:
+				comp := &OptionCompleter{Command: cmd}
 				options, offset = comp.Do(ctx, line, pos)
 			}
 		}
