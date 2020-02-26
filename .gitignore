@@ -28,3 +28,7 @@ server/assets/version.go
 
 # Protobuf
 *.pb.go
+
+# Packer files generated during static builds
+server/assets/a_assets-packr.go
+server/generate/a_generate-packr.go
