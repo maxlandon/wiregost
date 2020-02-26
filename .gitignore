@@ -15,6 +15,9 @@ assets/*.zip
 assets/darwin/*.zip
 assets/linux/*.zip
 assets/windows/*.zip
+assets/golang_x_sys.zip
+assets/src.zip
+assets/*.go
 
 # Test binary, build with `go test -c`
 *.test
