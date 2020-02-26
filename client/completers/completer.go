@@ -90,8 +90,13 @@ func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int)
 		}
 	}
 
-	if (len(subFound) == 0) && verbFound != "set" {
+	// Option name is found, yield option completions
+	if (len(subFound) != 0) && verbFound != "set" {
+		options, offset = yieldOptionompletions(ac.Context, commands[verbFound], subFound, line, pos)
 		return
+	}
+	if subFound == "interact" {
+		options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
 	}
 
 	// Get command completer and yield options
@@ -139,6 +144,9 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 		case "server":
 			comp := &ServerCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
+		case "sessions":
+			comp := &SessionCompleter{Command: cmd}
+			options, offset = comp.Do(ctx, line, pos)
 		}
 
 	case "agent":
@@ -148,6 +156,24 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 			options, offset = comp.Do(ctx, line, pos)
 		}
 
+	}
+
+	return options, offset
+}
+
+// yieldCommandCompletions determines the type of command used and redirects to its completer
+func yieldOptionompletions(ctx *commands.ShellContext, cmd *commands.Command, option string, line []rune, pos int) (options [][]rune, offset int) {
+
+	switch *ctx.MenuContext {
+	case "module":
+		switch cmd.Name {
+		case "set":
+			switch option {
+			case "StageImplant", "StageConfig":
+				comp := &StagerCompleter{Command: cmd}
+				options, offset = comp.Do(ctx, line, pos)
+			}
+		}
 	}
 
 	return options, offset
