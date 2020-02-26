@@ -100,7 +100,7 @@ func LoadEnv() *Env {
 	}
 
 	// Check certificate and key exist
-	cert := filepath.Join(assets.GetDataServiceDir(), "certs", "wiregost_pub.pem")
+	cert := filepath.Join(assets.GetDataServiceCertsDir(), "wiregost_pub.pem")
 
 	// If not, generate them
 	if _, err := os.Stat(cert); os.IsNotExist(err) {
@@ -158,7 +158,7 @@ func saveDataServiceEnv(env *Env) error {
 }
 
 func createDataServiceCertificates() error {
-	certsDir := filepath.Join(assets.GetDataServiceDir(), "certs")
+	certsDir := assets.GetDataServiceCertsDir()
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	publicKey := key.PublicKey

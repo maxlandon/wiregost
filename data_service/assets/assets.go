@@ -25,8 +25,9 @@ import (
 
 const (
 	// GoDirName - The directory to store the go compiler/toolchain files in
-	envVarName     = "SLIVER_ROOT_DIR"
-	dataServiceDir = "data-service"
+	envVarName          = "SLIVER_ROOT_DIR"
+	dataServiceDir      = "data-service"
+	dataServiceCertsDir = "certs"
 )
 
 // GetRootAppDir - Get the Wiregost app dir, default is: ~/.wiregost/
@@ -53,7 +54,21 @@ func GetRootAppDir() string {
 
 // GetDataDir - Returns the full path to the data directory
 func GetDataServiceDir() string {
-	dir := path.Join(GetDataServiceDir(), dataServiceDir)
+	dir := path.Join(GetRootAppDir(), dataServiceDir)
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, os.ModePerm)
+		if err != nil {
+			log.Fatalf("Cannot write to Wiregost Data Service directory %s", err)
+		}
+	}
+
+	return dir
+}
+
+// GetDataDir - Returns the full path to the data directory
+func GetDataServiceCertsDir() string {
+	dir := path.Join(GetDataServiceDir(), dataServiceCertsDir)
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.MkdirAll(dir, os.ModePerm)
