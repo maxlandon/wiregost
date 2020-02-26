@@ -86,7 +86,6 @@ ______
 **Console**
 * Check codebase linting
 * Add completers for:
-    - Workspace names for setting implant options
     - All command options/filters in the implant menu
     - Filesystem completion in the implant menu
     - Fix the completion for help commands, depending on menu context
@@ -116,9 +115,6 @@ ______
 * If possible, uniformize Options key:value pairs for console usage
 
 **Documentation**
-* Install
-    - Compile from Source (add C2, Console, Data Service)
-
 * Pages for:
     - Canaries commands
     - Websites commands
