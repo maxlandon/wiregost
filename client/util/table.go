@@ -19,6 +19,7 @@ package util
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/evilsocket/islazy/tui"
@@ -198,4 +199,115 @@ func SortListenerOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 		keys = append(keys, "StageImplant")
 	}
 	return keys
+}
+
+func SortPostOptions(opts map[string]*clientpb.Option) (keys []string) {
+
+	options := []string{}
+	for v, _ := range opts {
+		options = append(options, v)
+	}
+
+	sort.Strings(options)
+
+	return options
+}
+
+func PrintOptions(mod *clientpb.Module) {
+
+	sub := strings.Join(mod.Path, "/")
+	moduleSubtype := ""
+
+	// Get module subtype
+	switch subtype := sub; {
+	case strings.Contains(subtype, "payload/multi/single"):
+		moduleSubtype = "payload/multi/single"
+	case strings.Contains(subtype, "payload/multi/stager"):
+		moduleSubtype = "payload/multi/stager"
+	}
+
+	// Print options depending on module Type/Subtype
+	switch mod.Type {
+	case "payload":
+		// Listener Options
+		switch moduleSubtype {
+		case "payload/multi/single":
+			fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
+		case "payload/multi/stager":
+			fmt.Println(tui.Bold(tui.Blue(" Staging Listener Options")))
+		}
+		tab := Table()
+		tab.SetHeader([]string{"Name", "Value", "Required", "Description"})
+		tab.SetColWidth(70)
+		tab.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		)
+		for _, v := range SortListenerOptionKeys(mod.Options) {
+			required := ""
+			if mod.Options[v].Required {
+				required = "yes"
+			} else {
+				required = "no"
+			}
+			tab.Append([]string{mod.Options[v].Name, mod.Options[v].Value, required, mod.Options[v].Description})
+		}
+		tab.Render()
+
+		// Generate Options
+		fmt.Println()
+		switch moduleSubtype {
+		case "payload/multi/single":
+			fmt.Println(tui.Bold(tui.Blue(" Implant Options")))
+		case "payload/multi/stager":
+			fmt.Println(tui.Bold(tui.Blue(" Stager Options")))
+		}
+		tab = Table()
+		tab.SetHeader([]string{"Name", "Value", "Required", "Description"})
+		tab.SetColWidth(70)
+		tab.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		)
+		for _, v := range SortGenerateOptionKeys(mod.Options) {
+			required := ""
+			if mod.Options[v].Required {
+				required = "yes"
+			} else {
+				required = "no"
+			}
+			tab.Append([]string{mod.Options[v].Name, mod.Options[v].Value, required, mod.Options[v].Description})
+		}
+		tab.Render()
+
+	case "post":
+		// Print Session
+		fmt.Printf(" %sSession: %s%s%s \n", tui.BOLD, "\033[38;5;43m", mod.Options["Session"].Value, tui.RESET)
+		fmt.Println()
+
+		tab := Table()
+		fmt.Println(tui.Bold(tui.Blue(" Post Options")))
+		tab.SetHeader([]string{"Name", "Value", "Required", "Description"})
+		tab.SetColWidth(70)
+		tab.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
+		)
+		for _, v := range SortPostOptions(mod.Options) {
+			required := ""
+			if mod.Options[v].Required {
+				required = "yes"
+			} else {
+				required = "no"
+			}
+			// Avoid printing session option again
+			if v != "Session" {
+				tab.Append([]string{mod.Options[v].Name, mod.Options[v].Value, required, mod.Options[v].Description})
+			}
+		}
+		tab.Render()
+	}
 }

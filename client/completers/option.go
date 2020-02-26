@@ -42,8 +42,13 @@ func (oc *OptionCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) 
 	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
 
 	moduleOptions := []string{}
-	moduleOptions = append(moduleOptions, util.SortGenerateOptionKeys(ctx.Module.Options)...)
-	moduleOptions = append(moduleOptions, util.SortListenerOptionKeys(ctx.Module.Options)...)
+	switch ctx.Module.Type {
+	case "payload":
+		moduleOptions = append(moduleOptions, util.SortGenerateOptionKeys(ctx.Module.Options)...)
+		moduleOptions = append(moduleOptions, util.SortListenerOptionKeys(ctx.Module.Options)...)
+	case "post":
+		moduleOptions = append(moduleOptions, util.SortPostOptions(ctx.Module.Options)...)
+	}
 
 	switch word := splitLine[0]; {
 	case wordInOptions(word, moduleOptions):
@@ -55,8 +60,8 @@ func (oc *OptionCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) 
 
 // Do is the completion function triggered at each line
 func (oc *OptionCompleter) yieldOptionNames(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
-	switch *ctx.MenuContext {
-	case "module":
+	switch ctx.Module.Type {
+	case "payload":
 		for _, v := range util.SortListenerOptionKeys(ctx.Module.Options) {
 			search := v + " "
 			if !hasPrefix(line, []rune(search)) {
@@ -67,6 +72,15 @@ func (oc *OptionCompleter) yieldOptionNames(ctx *commands.ShellContext, line []r
 		}
 
 		for _, v := range util.SortGenerateOptionKeys(ctx.Module.Options) {
+			search := v + " "
+			if !hasPrefix(line, []rune(search)) {
+				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+				options = append(options, sLine...)
+				offset = sOffset
+			}
+		}
+	case "post":
+		for _, v := range util.SortPostOptions(ctx.Module.Options) {
 			search := v + " "
 			if !hasPrefix(line, []rune(search)) {
 				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))

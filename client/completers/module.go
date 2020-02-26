@@ -39,6 +39,8 @@ func (mc *ModuleCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) 
 	// types := []string{"exploit", "post", "auxiliary", "payload"}
 
 	dirs := []string{}
+
+	// Get all dirs and subdirs in modules
 	err := filepath.Walk(assets.GetModulesDir(),
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -57,7 +59,10 @@ func (mc *ModuleCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) 
 		return
 	}
 
-	for _, dir := range dirs {
+	// Filter out subdirs not containing modules
+	filtered := difference(dirs, moduleSubDirs)
+
+	for _, dir := range filtered {
 		search := dir
 		if !hasPrefix(line, []rune(search)) {
 			sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
@@ -118,4 +123,39 @@ func (mc *ModuleCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) 
 	// }
 	// }
 	return options, offset
+}
+
+func difference(a, b []string) []string {
+	mb := make(map[string]struct{}, len(b))
+	for _, x := range b {
+		mb[x] = struct{}{}
+	}
+	var diff []string
+	for _, x := range a {
+		if _, found := mb[x]; !found {
+			diff = append(diff, x)
+		}
+	}
+	return diff
+}
+
+var moduleSubDirs = []string{
+	// Post
+	"post",
+	"post/windows",
+	"post/windows/x64",
+	"post/windows/x64/go",
+	"post/windows/x64/go/credentials",
+
+	// Payload
+	"payload",
+	"payload/multi",
+	"payload/multi/single",
+	"payload/multi/stager",
+
+	// Exploit
+	"exploit",
+
+	// Auxiliary
+	"auxiliary",
 }

@@ -22,7 +22,6 @@ import (
 
 	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
-	"github.com/olekukonko/tablewriter"
 
 	"github.com/maxlandon/wiregost/client/util"
 	. "github.com/maxlandon/wiregost/client/util"
@@ -192,14 +191,6 @@ func setOption(args []string, ctx ShellContext, rpc RPCServer) {
 
 func showInfo(ctx ShellContext) {
 	m := ctx.Module
-	sub := strings.Join(m.Path, "/")
-	moduleSubtype := ""
-	switch subtype := sub; {
-	case strings.Contains(subtype, "payload/multi/single"):
-		moduleSubtype = "payload/multi/single"
-	case strings.Contains(subtype, "payload/multi/stager"):
-		moduleSubtype = "payload/multi/stager"
-	}
 
 	// Info
 	fmt.Printf("%sModule:%s\r\t\t%s\r\n", tui.YELLOW, tui.RESET, m.Name)
@@ -221,130 +212,21 @@ func showInfo(ctx ShellContext) {
 	fmt.Println(tui.Dim(util.Wrap(m.Description, 100)))
 	fmt.Println()
 
-	// Listener Options
-	switch moduleSubtype {
-	case "payload/multi/single":
-		fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
-	case "payload/multi/stager":
-		fmt.Println(tui.Bold(tui.Blue(" Staging Listener Options")))
-	}
-	table := Table()
-	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	table.SetColWidth(60)
-	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-	)
-	for _, v := range util.SortListenerOptionKeys(m.Options) {
-		required := ""
-		if m.Options[v].Required {
-			required = "yes"
-		} else {
-			required = "no"
-		}
-		table.Append([]string{m.Options[v].Name, m.Options[v].Value, required, m.Options[v].Description})
-	}
-	table.Render()
-
-	// Generate Options
-	fmt.Println()
-	switch moduleSubtype {
-	case "payload/multi/single":
-		fmt.Println(tui.Bold(tui.Blue(" Implant Options")))
-	case "payload/multi/stager":
-		fmt.Println(tui.Bold(tui.Blue(" Stager Options")))
-	}
-	table = Table()
-	table.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	table.SetColWidth(60)
-	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-	)
-	for _, v := range util.SortGenerateOptionKeys(m.Options) {
-		required := ""
-		if m.Options[v].Required {
-			required = "yes"
-		} else {
-			required = "no"
-		}
-		table.Append([]string{m.Options[v].Name, m.Options[v].Value, required, m.Options[v].Description})
-	}
-	table.Render()
+	// Options
+	util.PrintOptions(m)
 
 	// Notes
 	if m.Notes != "" {
 		fmt.Println()
 		fmt.Printf("%sNotes:%s ", tui.YELLOW, tui.RESET)
-		fmt.Println(tui.Dim(util.Wrap(m.Notes, 140)))
+		fmt.Println(tui.Dim(util.Wrap(m.Notes, 100)))
 	}
 }
 
 func showOptions(ctx ShellContext) {
 	m := ctx.Module
-	sub := strings.Join(m.Path, "/")
-	moduleSubtype := ""
-	switch subtype := sub; {
-	case strings.Contains(subtype, "payload/multi/single"):
-		moduleSubtype = "payload/multi/single"
-	case strings.Contains(subtype, "payload/multi/stager"):
-		moduleSubtype = "payload/multi/stager"
-	}
 
-	// Listener Options
-	switch moduleSubtype {
-	case "payload/multi/single":
-		fmt.Println(tui.Bold(tui.Blue(" Listener Options")))
-	case "payload/multi/stager":
-		fmt.Println(tui.Bold(tui.Blue(" Staging Listener Options")))
-	}
-	tab := util.Table()
-	tab.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	tab.SetColWidth(60)
-	tab.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-	)
-	for _, v := range util.SortListenerOptionKeys(m.Options) {
-		required := ""
-		if m.Options[v].Required {
-			required = "yes"
-		} else {
-			required = "no"
-		}
-		tab.Append([]string{m.Options[v].Name, m.Options[v].Value, required, m.Options[v].Description})
-	}
-	tab.Render()
-
-	// Generate Options
-	fmt.Println()
-	switch moduleSubtype {
-	case "payload/multi/single":
-		fmt.Println(tui.Bold(tui.Blue(" Implant Options")))
-	case "payload/multi/stager":
-		fmt.Println(tui.Bold(tui.Blue(" Stager Options")))
-	}
-	tab = util.Table()
-	tab.SetHeader([]string{"Name", "Value", "Required", "Description"})
-	tab.SetColWidth(60)
-	tab.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-	)
-	for _, v := range util.SortGenerateOptionKeys(m.Options) {
-		required := ""
-		if m.Options[v].Required {
-			required = "yes"
-		} else {
-			required = "no"
-		}
-		tab.Append([]string{m.Options[v].Name, m.Options[v].Value, required, m.Options[v].Description})
-	}
-	tab.Render()
+	util.PrintOptions(m)
 }
 
 func runModule(action string, ctx ShellContext, rpc RPCServer) {

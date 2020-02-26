@@ -110,6 +110,9 @@ ______
 * Check why obfuscated implants cannot be generated at the same time without messing the namespace up
 * Rewrite Makefile with C2, Console and Data Service
 
+* Error handling/UI:
+    - Make all errors in modules at the server level to go up to the console
+
 **Modules**
 * Add Merlin post-exploitation modules
 * If possible, uniformize Options key:value pairs for console usage
