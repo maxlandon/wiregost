@@ -93,8 +93,6 @@ func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int)
 
 	// Option name is found, yield option completions
 	if (len(subFound) == 0) && verbFound != "set" {
-		// fmt.Println(subFound == "StageImplant")
-		// options, offset = yieldOptionompletions(ac.Context, commands[verbFound], line, pos)
 		return
 	}
 	if subFound == "interact" {

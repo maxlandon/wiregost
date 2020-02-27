@@ -170,45 +170,6 @@ func (m *Module) CheckRequiredOptions() (ok bool, err error) {
 	return true, nil
 }
 
-func (m *Module) GetSession() (session *core.Ghost, err error) {
-
-	// Check empty session
-	if m.Options["Session"].Value == "" {
-		return nil, errors.New("Provide a Session to run this module on.")
-	}
-
-	// Check connected session
-	if 0 < len(*core.Wire.Ghosts) {
-		for _, g := range *core.Wire.Ghosts {
-			if g.Name == m.Options["Session"].Value {
-				session = g
-			}
-		}
-	}
-
-	if session == nil {
-		invalid := fmt.Sprintf("Invalid or non-connected session: %s", m.Options["Session"].Value)
-		return nil, errors.New(invalid)
-	}
-
-	// Check valid platform
-	platform := ""
-	switch m.Platform {
-	case "windows", "win", "Windows":
-		platform = "windows"
-	case "darwin", "ios", "macos", "MacOS", "Apple":
-		platform = "darwin"
-	case "Linux", "linux":
-		platform = "linux"
-	}
-
-	if platform != session.OS {
-		return nil, errors.New("The session's target OS is not supported by this module")
-	}
-
-	return session, nil
-}
-
 func (m *Module) ModuleEvent(requestID int32, event string) {
 	core.EventBroker.Publish(core.Event{
 		EventType:       consts.ModuleEvent,
