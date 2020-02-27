@@ -56,7 +56,7 @@ var modLog = log.ServerLogger("payload/multi/stager/reverse_tcp", "module")
 // [ Module Methods ] ------------------------------------------------------------------------//
 
 // Run - Module entrypoint. ** DO NOT ERASE **
-func (s *ReverseTCPStager) Run(requestID int32, command string) (result string, err error) {
+func (s *ReverseTCPStager) Run(command string) (result string, err error) {
 
 	action := strings.Split(command, " ")[0]
 

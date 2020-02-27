@@ -44,7 +44,7 @@ var modLog = log.ServerLogger("windows/x64/go/credentials/minidump", "module")
 // [ Module  Methods ] ------------------------------------------------------------------------//
 
 // Run - Module entrypoint. ** DO NOT ERASE **
-func (s *Minidump) Run(requestID int32, command string) (result string, err error) {
+func (s *Minidump) Run(command string) (result string, err error) {
 
 	// Check options
 	if ok, err := s.CheckRequiredOptions(); !ok {

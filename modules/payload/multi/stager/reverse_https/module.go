@@ -57,7 +57,7 @@ var modLog = log.ServerLogger("payload/multi/stager/reverse_https", "module")
 // [ Module Methods ] ------------------------------------------------------------------------//
 
 // Run - Module entrypoint. ** DO NOT ERASE **
-func (s *ReverseHttpsStager) Run(requestID int32, command string) (result string, err error) {
+func (s *ReverseHttpsStager) Run(command string) (result string, err error) {
 
 	action := strings.Split(command, " ")[0]
 

