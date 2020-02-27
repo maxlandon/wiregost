@@ -53,7 +53,7 @@ var modLog = log.ServerLogger("payload/multi/single/reverse_https", "module")
 // [ Module Methods ] ------------------------------------------------------------------------//
 
 // Run - Module entrypoint. ** DO NOT ERASE **
-func (s *ReverseHTTPS) Run(command string) (result string, err error) {
+func (s *ReverseHTTPS) Run(requestID int32, command string) (result string, err error) {
 
 	action := strings.Split(command, " ")[0]
 
