@@ -7,12 +7,44 @@ ______
 
 
 The grounds for the WireGost exploitation framework project are:
-* **Go is syntactically dead simple** and has a simple C-like object-model: This will lower the number of abstraction-layers-caused headaches.
+* **Go is syntactically dead simple** and has a C-like object-model: This will lower the number of abstraction-layers-caused headaches.
 * Consequently, Go code is easily readable and maintainable. Go is strongly typed, which make Gophers winners on all fronts.
 * Go **compiles itself cross-platform**: Code compiled on a Linux machine will run _on virtually any architecture and operating system_.
   The implications for payload efficiency are wide-ranging.
 * Go standard library includes what is probably the most advanced networking stack at the moment. Again, the implications for both framework
   complexity and payload modularity are significant.
+
+
+______
+## Features
+
+Most the features below are the same as [Sliver](https://github.com/BishopFox/sliver), as this project is mostly an enhancement of Sliver
+and an attempt at merging [Merlin](https://github.com/Ne0nd0g/merlin) post-exploitation modules (altough with enhancements as well).
+
+### Infrastructure
+* [Secure C2](https://github.com/maxlandon/wiregost/wiki/Transport-Encryption) over mTLS, HTTP(S), and DNS
+* Metasploit-like workspaces
+* Mutiple consoles per user
+* Multiple users per C2 Server + seggregated workspace context (module stacks, etc)
+* Let's Encrypt integration
+* [DNS Canary](https://github.com/maxlandon/wiregost/wiki/DNS-Canaries) Blue Team Detection
+
+### Implants
+* Multi architecture/OS implants
+* Concurrent & Dynamic code generation
+* Compile-time obfuscation
+* Local and remote process injection
+* Anti-forensics
+* Windows process migration
+* Windows user token manipulation
+* In-memory .NET assembly execution
+
+### Modules
+* Metasploit-like Modules User Interface
+* Implant generation & listener spawn modules (both single and stager payloads/listeners)
+* Post-exploitation modules from Merlin (rewrited) (*work in progress*)
+* Easy interface and templates for writing Post-exploitation modules
+
 
 **The name:** I recently looked a [video](https://www.youtube.com/watch?v=T8aXx3K_lKY) where the notorious 
 [Kevin Mitnick](https://en.wikipedia.org/wiki/Kevin_Mitnick) is interviewed by an attractive journalist about the usual security 
@@ -108,7 +140,6 @@ ______
 * Help for MSF listeners / eventually a separate module.
 * Check all proc/priv/execute commands.
 * Check why obfuscated implants cannot be generated at the same time without messing the namespace up
-* Rewrite Makefile with C2, Console and Data Service
 
 * Error handling/UI:
     - Make all errors in modules at the server level to go up to the console
@@ -135,10 +166,6 @@ ______
 
 * Data Service:
     - Host Commands
-
-**Releases**
-* Compile C2 Server, Console and Data Service
-* Add them to Releases
 
 
 ______

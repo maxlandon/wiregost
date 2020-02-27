@@ -55,9 +55,10 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 				c.hardRefresh()
 			}
 
-			// MODULE EVENTS --------------------------------------------------------------------------------------
-		// A module option has been updated, update current module if needed
+		// MODULE EVENTS --------------------------------------------------------------------------------------
+
 		case consts.ModuleEvent:
+			// A module option has been updated, update current module if needed
 			if event.EventSubType == "set" {
 				data := string(event.Data)
 				optionName := strings.Split(data, " ")[0]
@@ -67,6 +68,7 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 					c.module.Options[optionName].Value = optionValue
 				}
 			}
+			// A module is ran, an event has been pushed
 			if event.EventSubType == "run" {
 				if event.ModuleRequestID == c.moduleRequestID {
 					fmt.Println(Info + string(event.Data))
