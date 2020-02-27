@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math/rand"
 	"os"
 	"strings"
 
@@ -49,6 +50,7 @@ type Console struct {
 
 	currentModule    string
 	module           *clientpb.Module
+	moduleRequestID  int32
 	currentWorkspace *models.Workspace
 
 	// Server
@@ -110,6 +112,9 @@ func NewConsole() *Console {
 		Context:     console.shellContext,
 	}
 	console.Shell.Config.AutoComplete = completer
+
+	// Set ModuleRequestID
+	console.moduleRequestID = rand.Int31()
 
 	// [ Commands ]
 	commands.RegisterCommands()

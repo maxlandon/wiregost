@@ -58,6 +58,7 @@ func (c *Console) initContext() {
 		MenuContext:      &c.menuContext,
 		Mode:             &c.mode,
 		CurrentModule:    &c.currentModule,
+		ModuleRequestID:  &c.moduleRequestID,
 		Module:           c.module,
 		CurrentWorkspace: c.currentWorkspace,
 

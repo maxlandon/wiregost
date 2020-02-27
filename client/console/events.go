@@ -55,14 +55,22 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 				c.hardRefresh()
 			}
 
+			// MODULE EVENTS --------------------------------------------------------------------------------------
 		// A module option has been updated, update current module if needed
 		case consts.ModuleEvent:
-			data := string(event.Data)
-			optionName := strings.Split(data, " ")[0]
-			optionValue := strings.Split(data, " ")[1]
-			module := strings.Split(data, " ")[2]
-			if strings.Join(c.module.Path, "/") == module {
-				c.module.Options[optionName].Value = optionValue
+			if event.EventSubType == "set" {
+				data := string(event.Data)
+				optionName := strings.Split(data, " ")[0]
+				optionValue := strings.Split(data, " ")[1]
+				module := strings.Split(data, " ")[2]
+				if strings.Join(c.module.Path, "/") == module {
+					c.module.Options[optionName].Value = optionValue
+				}
+			}
+			if event.EventSubType == "run" {
+				if event.ModuleRequestID == c.moduleRequestID {
+					fmt.Println(Info + string(event.Data))
+				}
 			}
 
 		case consts.ServerErrorStr:
@@ -98,7 +106,7 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 			if activeGhost != nil && ghost.ID == activeGhost.ID {
 				c.CurrentAgent = nil
 				// app.SetPrompt(getPrompt())
-				fmt.Printf("\n" + Error + "Active sliver diconnected\n")
+				fmt.Printf("\n" + Error + "Active Ghost diconnected\n")
 			}
 			fmt.Println()
 

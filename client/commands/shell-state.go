@@ -33,6 +33,7 @@ type ShellContext struct {
 
 	CurrentModule    *string
 	Module           *clientpb.Module
+	ModuleRequestID  *int32
 	CurrentWorkspace *models.Workspace
 
 	// Server state
