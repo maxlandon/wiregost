@@ -19,7 +19,6 @@ package reverse_https
 import (
 	"errors"
 	"fmt"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -28,7 +27,6 @@ import (
 
 	consts "github.com/maxlandon/wiregost/client/constants"
 	pb "github.com/maxlandon/wiregost/protobuf/client"
-	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/c2"
 	"github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/generate"
@@ -36,39 +34,23 @@ import (
 	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
-// metadataFile - Full path to module metadata
-var metadataFile = filepath.Join(assets.GetModulesDir(), "payload/multi/single/reverse_https/metadata.json")
-
 // [ Base Methods ] ------------------------------------------------------------------------//
 
 // ReverseHTTPS - A single stage HTTPS implant
 type ReverseHTTPS struct {
-	Base *templates.Module
+	*templates.Module
 }
 
 // New - Instantiates a reverse HTTPS module, empty.
 func New() *ReverseHTTPS {
-	return &ReverseHTTPS{Base: &templates.Module{}}
+	mod := &ReverseHTTPS{&templates.Module{}}
+	mod.Path = []string{"payload/multi/single/reverse_https"}
+	return mod
 }
 
-// Init - Module initialization, loads metadata. ** DO NOT ERASE **
-func (s *ReverseHTTPS) Init() error {
-	return s.Base.Init(metadataFile)
-}
-
-// ToProtobuf - Returns protobuf version of module
-func (s *ReverseHTTPS) ToProtobuf() *pb.Module {
-	return s.Base.ToProtobuf()
-}
-
-// SetOption - Sets a module option through its base object.
-func (s *ReverseHTTPS) SetOption(option, name string) {
-	s.Base.SetOption(option, name)
-}
+var modLog = log.ServerLogger("payload/multi/single/reverse_https", "module")
 
 // [ Module Methods ] ------------------------------------------------------------------------//
-
-var rpcLog = log.ServerLogger("reverse_https", "module")
 
 // Run - Module entrypoint. ** DO NOT ERASE **
 func (s *ReverseHTTPS) Run(command string) (result string, err error) {
@@ -101,19 +83,19 @@ func (s *ReverseHTTPS) CompileImplant() (result string, err error) {
 }
 
 func (s *ReverseHTTPS) toListener() (result string, err error) {
-	host := s.Base.Options["LHost"].Value
-	portUint, _ := strconv.Atoi(s.Base.Options["LPort"].Value)
+	host := s.Options["LHost"].Value
+	portUint, _ := strconv.Atoi(s.Options["LPort"].Value)
 	port := uint16(portUint)
 	addr := fmt.Sprintf("%s:%d", host, port)
-	domain := s.Base.Options["DomainHTTPListener"].Value
-	website := s.Base.Options["Website"].Value
+	domain := s.Options["DomainHTTPListener"].Value
+	website := s.Options["Website"].Value
 	letsEncrypt := false
-	if s.Base.Options["LetsEncrypt"].Value == "true" {
+	if s.Options["LetsEncrypt"].Value == "true" {
 		letsEncrypt = true
 	}
 
-	certFile, _ := fs.Expand(s.Base.Options["Certificate"].Value)
-	keyFile, _ := fs.Expand(s.Base.Options["Key"].Value)
+	certFile, _ := fs.Expand(s.Options["Certificate"].Value)
+	keyFile, _ := fs.Expand(s.Options["Key"].Value)
 	cert, key, err := getLocalCertificatePair(certFile, keyFile)
 	if err != nil {
 		return "", errors.New(fmt.Sprintf("Failed to load local certificate %v", err))
@@ -164,7 +146,7 @@ func (s *ReverseHTTPS) toListener() (result string, err error) {
 			err = listenAndServeTLS(server.HTTPServer, conf.Cert, conf.Key)
 		}
 		if err != nil {
-			rpcLog.Errorf("HTTPS listener error %v", err)
+			modLog.Errorf("HTTPS listener error %v", err)
 			once.Do(func() { cleanup(err) })
 			job.JobCtrl <- true // Cleanup other goroutine
 		}
@@ -196,7 +178,7 @@ func (s *ReverseHTTPS) parseProfile(name string) (result string, err error) {
 				urls = append(urls, url)
 			}
 		}
-		s.Base.Options["DomainsHTTP"].Value = strings.Join(urls, ",")
+		s.Options["DomainsHTTP"].Value = strings.Join(urls, ",")
 	}
 
 	// Canaries
@@ -205,30 +187,30 @@ func (s *ReverseHTTPS) parseProfile(name string) (result string, err error) {
 		for _, d := range profile.CanaryDomains {
 			domains = append(domains, d)
 		}
-		s.Base.Options["Canaries"].Value = strings.Join(domains, ",")
+		s.Options["Canaries"].Value = strings.Join(domains, ",")
 	}
 
 	// Format
 	switch profile.Format {
 	case 0:
-		s.Base.Options["Format"].Value = "shared"
+		s.Options["Format"].Value = "shared"
 	case 1:
-		s.Base.Options["Format"].Value = "shellcode"
+		s.Options["Format"].Value = "shellcode"
 	case 2:
-		s.Base.Options["Format"].Value = "exe"
+		s.Options["Format"].Value = "exe"
 	}
 
 	// Other fields
-	s.Base.Options["Arch"].Value = profile.GOARCH
-	s.Base.Options["OS"].Value = profile.GOOS
-	s.Base.Options["MaxErrors"].Value = strconv.Itoa(profile.MaxConnectionErrors)
-	s.Base.Options["ObfuscateSymbols"].Value = strconv.FormatBool(profile.ObfuscateSymbols)
-	s.Base.Options["Debug"].Value = strconv.FormatBool(profile.Debug)
-	s.Base.Options["LimitHostname"].Value = profile.LimitHostname
-	s.Base.Options["LimitUsername"].Value = profile.LimitUsername
-	s.Base.Options["LimitDatetime"].Value = profile.LimitDatetime
-	s.Base.Options["LimitDomainJoined"].Value = strconv.FormatBool(profile.LimitDomainJoined)
-	s.Base.Options["ReconnectInterval"].Value = strconv.Itoa(profile.ReconnectInterval)
+	s.Options["Arch"].Value = profile.GOARCH
+	s.Options["OS"].Value = profile.GOOS
+	s.Options["MaxErrors"].Value = strconv.Itoa(profile.MaxConnectionErrors)
+	s.Options["ObfuscateSymbols"].Value = strconv.FormatBool(profile.ObfuscateSymbols)
+	s.Options["Debug"].Value = strconv.FormatBool(profile.Debug)
+	s.Options["LimitHostname"].Value = profile.LimitHostname
+	s.Options["LimitUsername"].Value = profile.LimitUsername
+	s.Options["LimitDatetime"].Value = profile.LimitDatetime
+	s.Options["LimitDomainJoined"].Value = strconv.FormatBool(profile.LimitDomainJoined)
+	s.Options["ReconnectInterval"].Value = strconv.Itoa(profile.ReconnectInterval)
 
 	return fmt.Sprintf("Profile %s parsed", profile.Name), nil
 }
@@ -244,7 +226,7 @@ func (s *ReverseHTTPS) generateProfile(name string) (result string, err error) {
 	// Save profile
 	c.Name = profileName
 	if 0 < len(c.Name) && c.Name != "." {
-		rpcLog.Infof("Saving new profile with name %#v", c.Name)
+		modLog.Infof("Saving new profile with name %#v", c.Name)
 		err = generate.ProfileSave(c.Name, c)
 	} else {
 		err = errors.New("Invalid profile name")
@@ -258,7 +240,7 @@ func (s *ReverseHTTPS) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	c = &generate.GhostConfig{}
 
 	// OS
-	targetOS := s.Base.Options["OS"].Value
+	targetOS := s.Options["OS"].Value
 	if targetOS == "mac" || targetOS == "macos" || targetOS == "m" || targetOS == "osx" {
 		targetOS = "darwin"
 	}
@@ -270,7 +252,7 @@ func (s *ReverseHTTPS) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	}
 
 	// Arch
-	arch := s.Base.Options["Arch"].Value
+	arch := s.Options["Arch"].Value
 	if arch == "x64" || strings.HasPrefix(arch, "64") {
 		arch = "amd64"
 	}
@@ -280,7 +262,7 @@ func (s *ReverseHTTPS) ToGhostConfig() (c *generate.GhostConfig, err error) {
 
 	// Format
 	var outputFormat pb.GhostConfig_OutputFormat
-	format := s.Base.Options["Format"].Value
+	format := s.Options["Format"].Value
 	switch format {
 	case "shared":
 		outputFormat = pb.GhostConfig_SHARED_LIB
@@ -297,15 +279,15 @@ func (s *ReverseHTTPS) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	}
 
 	// HTTP C2
-	c2s := generate.ParseHTTPc2ToStruct(s.Base.Options["DomainsHTTP"].Value)
+	c2s := generate.ParseHTTPc2ToStruct(s.Options["DomainsHTTP"].Value)
 	if len(c2s) == 0 {
 		return nil, errors.New("You must specify at least one HTTPS C2 endpoint")
 	}
 
 	// Canary Domains
-	canaries := strings.Split(s.Base.Options["Canaries"].Value, ",")
+	canaries := strings.Split(s.Options["Canaries"].Value, ",")
 	if canaries[0] != "" {
-		c.CanaryDomains = strings.Split(s.Base.Options["Canaries"].Value, ",")
+		c.CanaryDomains = strings.Split(s.Options["Canaries"].Value, ",")
 	}
 
 	// Populate fields
@@ -314,14 +296,14 @@ func (s *ReverseHTTPS) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	c.Format = outputFormat
 	c.C2 = c2s
 	c.HTTPc2Enabled = true
-	c.Debug, _ = strconv.ParseBool(s.Base.Options["Debug"].Value)
-	c.ObfuscateSymbols, _ = strconv.ParseBool(s.Base.Options["ObfuscateSymbols"].Value)
-	c.MaxConnectionErrors, _ = strconv.Atoi(s.Base.Options["MaxErrors"].Value)
-	c.ReconnectInterval, _ = strconv.Atoi(s.Base.Options["ReconnectInterval"].Value)
-	c.LimitDomainJoined, _ = strconv.ParseBool(s.Base.Options["LimitDomainJoined"].Value)
-	c.LimitHostname = s.Base.Options["LimitHostname"].Value
-	c.LimitUsername = s.Base.Options["LimitUsername"].Value
-	c.LimitDatetime = s.Base.Options["LimitDatetime"].Value
+	c.Debug, _ = strconv.ParseBool(s.Options["Debug"].Value)
+	c.ObfuscateSymbols, _ = strconv.ParseBool(s.Options["ObfuscateSymbols"].Value)
+	c.MaxConnectionErrors, _ = strconv.Atoi(s.Options["MaxErrors"].Value)
+	c.ReconnectInterval, _ = strconv.Atoi(s.Options["ReconnectInterval"].Value)
+	c.LimitDomainJoined, _ = strconv.ParseBool(s.Options["LimitDomainJoined"].Value)
+	c.LimitHostname = s.Options["LimitHostname"].Value
+	c.LimitUsername = s.Options["LimitUsername"].Value
+	c.LimitDatetime = s.Options["LimitDatetime"].Value
 
 	return c, nil
 }

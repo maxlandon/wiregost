@@ -17,86 +17,70 @@
 package minidump
 
 import (
-	"errors"
 	"fmt"
-	"path/filepath"
+	"strconv"
+	"strings"
 
-	clientpb "github.com/maxlandon/wiregost/protobuf/client"
-	pb "github.com/maxlandon/wiregost/protobuf/client"
-	"github.com/maxlandon/wiregost/server/assets"
-	"github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/log"
 	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
-var rpcLog = log.ServerLogger("windows/x64/go/credentials/minidump", "module")
-
-// metadataFile - Full path to module metadata
-var metadataFile = filepath.Join(assets.GetModulesDir(), "post/windows/x64/go/credentials/minidump/metadata.json")
-
 // [ Base Methods ] ------------------------------------------------------------------------//
 
-// Minidump - A single stage DNS implant
+// Minidump - Credentials dumper module
 type Minidump struct {
-	Base *templates.Module
+	*templates.Module
 }
 
-// New - Instantiates a reverse DNS module, empty.
+// New - Instantiates a Minidump module, empty.
 func New() *Minidump {
-	return &Minidump{Base: &templates.Module{}}
+	mod := &Minidump{&templates.Module{}}
+	mod.Path = []string{"post/windows/x64/go/credentials/minidump"}
+	return mod
 }
 
-// Init - Module initialization, loads metadata. ** DO NOT ERASE **
-func (s *Minidump) Init() error {
-	return s.Base.Init(metadataFile)
-}
+var modLog = log.ServerLogger("windows/x64/go/credentials/minidump", "module")
 
-// ToProtobuf - Returns protobuf version of module
-func (s *Minidump) ToProtobuf() *pb.Module {
-	return s.Base.ToProtobuf()
-}
-
-// SetOption - Sets a module option through its base object.
-func (s *Minidump) SetOption(option, name string) {
-	s.Base.SetOption(option, name)
-}
+// [ Module  Methods ] ------------------------------------------------------------------------//
 
 // Run - Module entrypoint. ** DO NOT ERASE **
 func (s *Minidump) Run(command string) (result string, err error) {
 
-	// Check session
-	if ok, err := s.checkSession(); !ok {
+	// Check options
+	if ok, err := s.CheckRequiredOptions(); !ok {
 		return "", err
 	}
 
-	return "Minidump module executed", nil
+	// Check session
+	sess, err := s.CheckSession()
+	if sess == nil {
+		return "", err
+	}
+
+	commandList, err := s.Parse()
+	result = strings.Join(commandList, " ")
+
+	return result, nil
 }
 
-func (s *Minidump) checkSession() (ok bool, err error) {
-
-	// Check empty session
-	if s.Base.Options["Session"].Value == "" {
-		return false, errors.New("Provide a Session to run this module on.")
-	}
-
-	// Check valid session
-	sessions := &clientpb.Sessions{}
-	if 0 < len(*core.Wire.Ghosts) {
-		for _, ghost := range *core.Wire.Ghosts {
-			sessions.Ghosts = append(sessions.Ghosts, ghost.ToProtobuf())
-		}
-	}
-	found := false
-	for _, sess := range sessions.Ghosts {
-		if sess.Name == s.Base.Options["Session"].Value {
-			found = true
+func (s *Minidump) Parse() ([]string, error) {
+	// Convert PID to integer
+	if s.Options["PID"].Value != "" && s.Options["PID"].Value != "0" {
+		_, errPid := strconv.Atoi(s.Options["PID"].Value)
+		if errPid != nil {
+			return nil, fmt.Errorf("there was an error converting the PID to an integer:\r\n%s", errPid.Error())
 		}
 	}
 
-	if found {
-		return true, nil
-	} else {
-		invalid := fmt.Sprintf("Invalid or non-connected session: %s", s.Base.Options["Session"].Value)
-		return false, errors.New(invalid)
+	command, errCommand := GetJob(s.Options["Process"].Value, s.Options["PID"].Value, s.Options["TempLocation"].Value)
+	if errCommand != nil {
+		return nil, fmt.Errorf("there was an error getting the minidump job:\r\n%s", errCommand.Error())
 	}
+
+	return command, nil
+}
+
+// GetJob returns a string array containing the commands, in the proper order, to be used with agents.AddJob
+func GetJob(process string, pid string, tempLocation string) ([]string, error) {
+	return []string{"Minidump", process, pid, tempLocation}, nil
 }

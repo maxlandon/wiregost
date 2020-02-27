@@ -20,7 +20,6 @@ package reverse_multi_protocol
 import (
 	"errors"
 	"fmt"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -29,7 +28,6 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	consts "github.com/maxlandon/wiregost/client/constants"
 	pb "github.com/maxlandon/wiregost/protobuf/client"
-	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/c2"
 	"github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/generate"
@@ -37,39 +35,23 @@ import (
 	"github.com/maxlandon/wiregost/server/module/templates"
 )
 
-// metadataFile - Full path to module metadata
-var metadataFile = filepath.Join(assets.GetModulesDir(), "payload/multi/single/reverse_multi_protocol/metadata.json")
-
 // [ Base Methods ] ------------------------------------------------------------------------//
 
 // ReverseMulti - A single stage MTLS implant
 type ReverseMulti struct {
-	Base *templates.Module
+	*templates.Module
 }
 
 // New - Instantiates a reverse MTLS module, empty.
 func New() *ReverseMulti {
-	return &ReverseMulti{Base: &templates.Module{}}
+	mod := &ReverseMulti{&templates.Module{}}
+	mod.Path = []string{"payload/multi/single/reverse_multi_protocol"}
+	return mod
 }
 
-// Init - Module initialization, loads metadata. ** DO NOT ERASE **
-func (s *ReverseMulti) Init() error {
-	return s.Base.Init(metadataFile)
-}
-
-// ToProtobuf - Returns protobuf version of module
-func (s *ReverseMulti) ToProtobuf() *pb.Module {
-	return s.Base.ToProtobuf()
-}
-
-// SetOption - Sets a module option through its base object.
-func (s *ReverseMulti) SetOption(option, name string) {
-	s.Base.SetOption(option, name)
-}
+var modLog = log.ServerLogger("payload/multi/single/reverse_multi_protocol", "server")
 
 // [ Module Methods ] ------------------------------------------------------------------------//
-
-var rpcLog = log.ServerLogger("rpc", "server")
 
 // Run - Module entrypoint. ** DO NOT ERASE **
 func (s *ReverseMulti) Run(command string) (result string, err error) {
@@ -103,15 +85,15 @@ func (s *ReverseMulti) CompileImplant() (result string, err error) {
 func (s *ReverseMulti) toListener() (result string, err error) {
 
 	// MTLS ---------------------------------------------------//
-	host := s.Base.Options["MTLSLHost"].Value
-	portUint, _ := strconv.Atoi(s.Base.Options["MTLSLPort"].Value)
+	host := s.Options["MTLSLHost"].Value
+	portUint, _ := strconv.Atoi(s.Options["MTLSLPort"].Value)
 	port := uint16(portUint)
 
 	mtlsResult := ""
 	var mtlsError error
 
 	// If values are set, start MTLS listener
-	if (host != "") && (s.Base.Options["MTLSLPort"].Value != "") {
+	if (host != "") && (s.Options["MTLSLPort"].Value != "") {
 
 		ln, err := c2.StartMutualTLSListener(host, port)
 		if err != nil {
@@ -129,7 +111,7 @@ func (s *ReverseMulti) toListener() (result string, err error) {
 
 		go func() {
 			<-job.JobCtrl
-			rpcLog.Infof("Stopping mTLS listener (%d) ...", job.ID)
+			modLog.Infof("Stopping mTLS listener (%d) ...", job.ID)
 			ln.Close() // Kills listener GoRoutines in startMutualTLSListener() but NOT connections
 
 			core.Jobs.RemoveJob(job)
@@ -148,7 +130,7 @@ func (s *ReverseMulti) toListener() (result string, err error) {
 
 	// DNS -------------------------------------------------//
 	// Listener domains
-	domains := strings.Split(s.Base.Options["DomainsDNSListener"].Value, ",")
+	domains := strings.Split(s.Options["DomainsDNSListener"].Value, ",")
 
 	dnsResult := ""
 
@@ -163,7 +145,7 @@ func (s *ReverseMulti) toListener() (result string, err error) {
 
 		// Implant canaries
 		enableCanaries := true
-		if s.Base.Options["DisableCanaries"].Value == "true" {
+		if s.Options["DisableCanaries"].Value == "true" {
 			enableCanaries = false
 		}
 
@@ -181,7 +163,7 @@ func (s *ReverseMulti) toListener() (result string, err error) {
 
 		go func() {
 			<-job.JobCtrl
-			rpcLog.Infof("Stopping DNS listener (%d) ...", job.ID)
+			modLog.Infof("Stopping DNS listener (%d) ...", job.ID)
 			server.Shutdown()
 
 			core.Jobs.RemoveJob(job)
@@ -202,7 +184,7 @@ func (s *ReverseMulti) toListener() (result string, err error) {
 		go func() {
 			err := server.ListenAndServe()
 			if err != nil {
-				rpcLog.Errorf("DNS listener error %v", err)
+				modLog.Errorf("DNS listener error %v", err)
 				job.JobCtrl <- true
 			}
 		}()
@@ -211,14 +193,14 @@ func (s *ReverseMulti) toListener() (result string, err error) {
 	}
 
 	// HTTPS ---------------------------------------------//
-	host = s.Base.Options["HTTPLHost"].Value
-	portUint, _ = strconv.Atoi(s.Base.Options["HTTPLPort"].Value)
+	host = s.Options["HTTPLHost"].Value
+	portUint, _ = strconv.Atoi(s.Options["HTTPLPort"].Value)
 	port = uint16(portUint)
 	addr := fmt.Sprintf("%s:%d", host, port)
-	domain := s.Base.Options["LimitResponseDomain"].Value
-	website := s.Base.Options["Website"].Value
+	domain := s.Options["LimitResponseDomain"].Value
+	website := s.Options["Website"].Value
 	letsEncrypt := false
-	if s.Base.Options["LetsEncrypt"].Value == "true" {
+	if s.Options["LetsEncrypt"].Value == "true" {
 		letsEncrypt = true
 	}
 
@@ -226,10 +208,10 @@ func (s *ReverseMulti) toListener() (result string, err error) {
 	var httpError error
 
 	// If values are set, start HTTPS listener
-	if (host != "") && (s.Base.Options["HTTPLPort"].Value != "") {
+	if (host != "") && (s.Options["HTTPLPort"].Value != "") {
 
-		certFile, _ := fs.Expand(s.Base.Options["Certificate"].Value)
-		keyFile, _ := fs.Expand(s.Base.Options["Key"].Value)
+		certFile, _ := fs.Expand(s.Options["Certificate"].Value)
+		keyFile, _ := fs.Expand(s.Options["Key"].Value)
 		cert, key, err := getLocalCertificatePair(certFile, keyFile)
 		if err != nil {
 			return "", errors.New(fmt.Sprintf("Failed to load local certificate %v", err))
@@ -280,7 +262,7 @@ func (s *ReverseMulti) toListener() (result string, err error) {
 				err = listenAndServeTLS(server.HTTPServer, conf.Cert, conf.Key)
 			}
 			if err != nil {
-				rpcLog.Errorf("HTTPS listener error %v", err)
+				modLog.Errorf("HTTPS listener error %v", err)
 				once.Do(func() { cleanup(err) })
 				job.JobCtrl <- true // Cleanup other goroutine
 			}
@@ -323,7 +305,7 @@ func (s *ReverseMulti) parseProfile(name string) (result string, err error) {
 				urls = append(urls, url)
 			}
 		}
-		s.Base.Options["DomainsDNS"].Value = strings.Join(urls, ",")
+		s.Options["DomainsDNS"].Value = strings.Join(urls, ",")
 	}
 
 	// HTTP C2
@@ -335,7 +317,7 @@ func (s *ReverseMulti) parseProfile(name string) (result string, err error) {
 				urls = append(urls, url)
 			}
 		}
-		s.Base.Options["DomainsHTTP"].Value = strings.Join(urls, ",")
+		s.Options["DomainsHTTP"].Value = strings.Join(urls, ",")
 	}
 
 	// MTLS C2
@@ -347,7 +329,7 @@ func (s *ReverseMulti) parseProfile(name string) (result string, err error) {
 				urls = append(urls, url)
 			}
 		}
-		s.Base.Options["DomainsMTLS"].Value = strings.Join(urls, ",")
+		s.Options["DomainsMTLS"].Value = strings.Join(urls, ",")
 	}
 
 	// Canaries
@@ -356,30 +338,30 @@ func (s *ReverseMulti) parseProfile(name string) (result string, err error) {
 		for _, d := range profile.CanaryDomains {
 			domains = append(domains, d)
 		}
-		s.Base.Options["Canaries"].Value = strings.Join(domains, ",")
+		s.Options["Canaries"].Value = strings.Join(domains, ",")
 	}
 
 	// Format
 	switch profile.Format {
 	case 0:
-		s.Base.Options["Format"].Value = "shared"
+		s.Options["Format"].Value = "shared"
 	case 1:
-		s.Base.Options["Format"].Value = "shellcode"
+		s.Options["Format"].Value = "shellcode"
 	case 2:
-		s.Base.Options["Format"].Value = "exe"
+		s.Options["Format"].Value = "exe"
 	}
 
 	// Other fields
-	s.Base.Options["Arch"].Value = profile.GOARCH
-	s.Base.Options["OS"].Value = profile.GOOS
-	s.Base.Options["MaxErrors"].Value = strconv.Itoa(profile.MaxConnectionErrors)
-	s.Base.Options["ObfuscateSymbols"].Value = strconv.FormatBool(profile.ObfuscateSymbols)
-	s.Base.Options["Debug"].Value = strconv.FormatBool(profile.Debug)
-	s.Base.Options["LimitHostname"].Value = profile.LimitHostname
-	s.Base.Options["LimitUsername"].Value = profile.LimitUsername
-	s.Base.Options["LimitDatetime"].Value = profile.LimitDatetime
-	s.Base.Options["LimitDomainJoined"].Value = strconv.FormatBool(profile.LimitDomainJoined)
-	s.Base.Options["ReconnectInterval"].Value = strconv.Itoa(profile.ReconnectInterval)
+	s.Options["Arch"].Value = profile.GOARCH
+	s.Options["OS"].Value = profile.GOOS
+	s.Options["MaxErrors"].Value = strconv.Itoa(profile.MaxConnectionErrors)
+	s.Options["ObfuscateSymbols"].Value = strconv.FormatBool(profile.ObfuscateSymbols)
+	s.Options["Debug"].Value = strconv.FormatBool(profile.Debug)
+	s.Options["LimitHostname"].Value = profile.LimitHostname
+	s.Options["LimitUsername"].Value = profile.LimitUsername
+	s.Options["LimitDatetime"].Value = profile.LimitDatetime
+	s.Options["LimitDomainJoined"].Value = strconv.FormatBool(profile.LimitDomainJoined)
+	s.Options["ReconnectInterval"].Value = strconv.Itoa(profile.ReconnectInterval)
 
 	return fmt.Sprintf("Profile %s parsed", profile.Name), nil
 }
@@ -395,7 +377,7 @@ func (s *ReverseMulti) generateProfile(name string) (result string, err error) {
 	// Save profile
 	c.Name = profileName
 	if 0 < len(c.Name) && c.Name != "." {
-		rpcLog.Infof("Saving new profile with name %#v", c.Name)
+		modLog.Infof("Saving new profile with name %#v", c.Name)
 		err = generate.ProfileSave(c.Name, c)
 	} else {
 		err = errors.New("Invalid profile name")
@@ -410,7 +392,7 @@ func (s *ReverseMulti) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	c = &generate.GhostConfig{}
 
 	// OS
-	targetOS := s.Base.Options["OS"].Value
+	targetOS := s.Options["OS"].Value
 	if targetOS == "mac" || targetOS == "macos" || targetOS == "m" || targetOS == "osx" {
 		targetOS = "darwin"
 	}
@@ -422,7 +404,7 @@ func (s *ReverseMulti) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	}
 
 	// Arch
-	arch := s.Base.Options["Arch"].Value
+	arch := s.Options["Arch"].Value
 	if arch == "x64" || strings.HasPrefix(arch, "64") {
 		arch = "amd64"
 	}
@@ -432,7 +414,7 @@ func (s *ReverseMulti) ToGhostConfig() (c *generate.GhostConfig, err error) {
 
 	// Format
 	var outputFormat pb.GhostConfig_OutputFormat
-	format := s.Base.Options["Format"].Value
+	format := s.Options["Format"].Value
 	switch format {
 	case "shared":
 		outputFormat = pb.GhostConfig_SHARED_LIB
@@ -449,20 +431,20 @@ func (s *ReverseMulti) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	}
 
 	// DNS C2
-	c2s := generate.ParseDNSc2ToStruct(s.Base.Options["DomainsDNS"].Value)
+	c2s := generate.ParseDNSc2ToStruct(s.Options["DomainsDNS"].Value)
 	// HTTP C2
-	c2s = append(c2s, generate.ParseHTTPc2ToStruct(s.Base.Options["DomainsHTTP"].Value)...)
+	c2s = append(c2s, generate.ParseHTTPc2ToStruct(s.Options["DomainsHTTP"].Value)...)
 	// MTLS C2
-	c2s = append(c2s, generate.ParseMTLSc2ToStruct(s.Base.Options["DomainsMTLS"].Value)...)
+	c2s = append(c2s, generate.ParseMTLSc2ToStruct(s.Options["DomainsMTLS"].Value)...)
 
 	if len(c2s) == 0 {
 		return nil, errors.New("You must specify at least one C2 endpoint (DNS, HTTP(S) or mTLS)")
 	}
 
 	// Canary Domains
-	canaries := strings.Split(s.Base.Options["Canaries"].Value, ",")
+	canaries := strings.Split(s.Options["Canaries"].Value, ",")
 	if canaries[0] != "" {
-		c.CanaryDomains = strings.Split(s.Base.Options["Canaries"].Value, ",")
+		c.CanaryDomains = strings.Split(s.Options["Canaries"].Value, ",")
 	}
 
 	// Populate fields
@@ -473,14 +455,14 @@ func (s *ReverseMulti) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	c.DNSc2Enabled = true
 	c.HTTPc2Enabled = true
 	c.MTLSc2Enabled = true
-	c.Debug, _ = strconv.ParseBool(s.Base.Options["Debug"].Value)
-	c.ObfuscateSymbols, _ = strconv.ParseBool(s.Base.Options["ObfuscateSymbols"].Value)
-	c.MaxConnectionErrors, _ = strconv.Atoi(s.Base.Options["MaxErrors"].Value)
-	c.ReconnectInterval, _ = strconv.Atoi(s.Base.Options["ReconnectInterval"].Value)
-	c.LimitDomainJoined, _ = strconv.ParseBool(s.Base.Options["LimitDomainJoined"].Value)
-	c.LimitHostname = s.Base.Options["LimitHostname"].Value
-	c.LimitUsername = s.Base.Options["LimitUsername"].Value
-	c.LimitDatetime = s.Base.Options["LimitDatetime"].Value
+	c.Debug, _ = strconv.ParseBool(s.Options["Debug"].Value)
+	c.ObfuscateSymbols, _ = strconv.ParseBool(s.Options["ObfuscateSymbols"].Value)
+	c.MaxConnectionErrors, _ = strconv.Atoi(s.Options["MaxErrors"].Value)
+	c.ReconnectInterval, _ = strconv.Atoi(s.Options["ReconnectInterval"].Value)
+	c.LimitDomainJoined, _ = strconv.ParseBool(s.Options["LimitDomainJoined"].Value)
+	c.LimitHostname = s.Options["LimitHostname"].Value
+	c.LimitUsername = s.Options["LimitUsername"].Value
+	c.LimitDatetime = s.Options["LimitDatetime"].Value
 
 	return c, nil
 }
