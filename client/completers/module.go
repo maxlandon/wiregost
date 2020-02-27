@@ -47,7 +47,7 @@ func (mc *ModuleCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) 
 				return err
 			}
 			if info.IsDir() {
-				if !strings.HasSuffix(path, "/docs") {
+				if !strings.HasSuffix(path, "/docs") && !strings.HasSuffix(path, "/src") {
 					path = strings.TrimPrefix(path, assets.GetModulesDir())
 					path = strings.TrimPrefix(path, "/")
 					dirs = append(dirs, path)
