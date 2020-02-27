@@ -29,8 +29,10 @@ import (
 func socketEventLoop(conn net.Conn, events chan core.Event) {
 	for event := range events {
 		pbEvent := &clientpb.Event{
-			EventType: event.EventType,
-			Data:      event.Data,
+			EventType:       event.EventType,
+			EventSubType:    event.EventSubType,
+			ModuleRequestID: event.ModuleRequestID,
+			Data:            event.Data,
 		}
 
 		if event.Job != nil {

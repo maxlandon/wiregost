@@ -32,12 +32,12 @@ func rpcLs(req []byte, timeout time.Duration, resp RPCResponse) {
 		resp([]byte{}, err)
 		return
 	}
-	sliver := core.Wire.Ghost(dirList.GhostID)
+	ghost := core.Wire.Ghost(dirList.GhostID)
 
 	data, _ := proto.Marshal(&ghostpb.LsReq{
 		Path: dirList.Path,
 	})
-	data, err = sliver.Request(ghostpb.MsgLsReq, timeout, data)
+	data, err = ghost.Request(ghostpb.MsgLsReq, timeout, data)
 	resp(data, err)
 }
 
@@ -48,12 +48,12 @@ func rpcRm(req []byte, timeout time.Duration, resp RPCResponse) {
 		resp([]byte{}, err)
 		return
 	}
-	sliver := core.Wire.Ghost(rmReq.GhostID)
+	ghost := core.Wire.Ghost(rmReq.GhostID)
 
 	data, _ := proto.Marshal(&ghostpb.RmReq{
 		Path: rmReq.Path,
 	})
-	data, err = sliver.Request(ghostpb.MsgRmReq, timeout, data)
+	data, err = ghost.Request(ghostpb.MsgRmReq, timeout, data)
 	resp(data, err)
 }
 
@@ -64,12 +64,12 @@ func rpcMkdir(req []byte, timeout time.Duration, resp RPCResponse) {
 		resp([]byte{}, err)
 		return
 	}
-	sliver := core.Wire.Ghost(mkdirReq.GhostID)
+	ghost := core.Wire.Ghost(mkdirReq.GhostID)
 
 	data, _ := proto.Marshal(&ghostpb.MkdirReq{
 		Path: mkdirReq.Path,
 	})
-	data, err = sliver.Request(ghostpb.MsgMkdirReq, timeout, data)
+	data, err = ghost.Request(ghostpb.MsgMkdirReq, timeout, data)
 	resp(data, err)
 }
 
@@ -80,12 +80,12 @@ func rpcCd(req []byte, timeout time.Duration, resp RPCResponse) {
 		resp([]byte{}, err)
 		return
 	}
-	sliver := core.Wire.Ghost(cdReq.GhostID)
+	ghost := core.Wire.Ghost(cdReq.GhostID)
 
 	data, _ := proto.Marshal(&ghostpb.CdReq{
 		Path: cdReq.Path,
 	})
-	data, err = sliver.Request(ghostpb.MsgCdReq, timeout, data)
+	data, err = ghost.Request(ghostpb.MsgCdReq, timeout, data)
 	resp(data, err)
 }
 
@@ -96,10 +96,10 @@ func rpcPwd(req []byte, timeout time.Duration, resp RPCResponse) {
 		resp([]byte{}, err)
 		return
 	}
-	sliver := (*core.Wire.Ghosts)[pwdReq.GhostID]
+	ghost := (*core.Wire.Ghosts)[pwdReq.GhostID]
 
 	data, _ := proto.Marshal(&ghostpb.PwdReq{})
-	data, err = sliver.Request(ghostpb.MsgPwdReq, timeout, data)
+	data, err = ghost.Request(ghostpb.MsgPwdReq, timeout, data)
 	resp(data, err)
 }
 
@@ -110,12 +110,12 @@ func rpcDownload(req []byte, timeout time.Duration, resp RPCResponse) {
 		resp([]byte{}, err)
 		return
 	}
-	sliver := core.Wire.Ghost(downloadReq.GhostID)
+	ghost := core.Wire.Ghost(downloadReq.GhostID)
 
 	data, _ := proto.Marshal(&ghostpb.DownloadReq{
 		Path: downloadReq.Path,
 	})
-	data, err = sliver.Request(ghostpb.MsgDownloadReq, timeout, data)
+	data, err = ghost.Request(ghostpb.MsgDownloadReq, timeout, data)
 	resp(data, err)
 }
 
@@ -126,13 +126,13 @@ func rpcUpload(req []byte, timeout time.Duration, resp RPCResponse) {
 		resp([]byte{}, err)
 		return
 	}
-	sliver := core.Wire.Ghost(uploadReq.GhostID)
+	ghost := core.Wire.Ghost(uploadReq.GhostID)
 
 	data, _ := proto.Marshal(&ghostpb.UploadReq{
 		Encoder: uploadReq.Encoder,
 		Path:    uploadReq.Path,
 		Data:    uploadReq.Data,
 	})
-	data, err = sliver.Request(ghostpb.MsgUploadReq, timeout, data)
+	data, err = ghost.Request(ghostpb.MsgUploadReq, timeout, data)
 	resp(data, err)
 }

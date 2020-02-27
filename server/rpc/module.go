@@ -56,9 +56,10 @@ func rpcModuleSetOption(data []byte, timeout time.Duration, resp RPCResponse) {
 	for _, c := range *core.Clients.Connections {
 		if c.User == optionReq.User {
 			core.EventBroker.Publish(core.Event{
-				Client:    c,
-				EventType: "module",
-				Data:      optionBytes,
+				Client:       c,
+				EventType:    "module",
+				EventSubType: "set",
+				Data:         optionBytes,
 			})
 			// One push is enough
 			break
@@ -83,9 +84,9 @@ func rpcModuleRun(data []byte, timeout time.Duration, resp RPCResponse) {
 	var modErr error
 	if modReq.Profile != "" {
 		action := modReq.Action + " " + modReq.Profile
-		res, modErr = mod.Run(action)
+		res, modErr = mod.Run(modReq.ModuleRequestID, action)
 	} else {
-		res, modErr = mod.Run(modReq.Action)
+		res, modErr = mod.Run(modReq.ModuleRequestID, modReq.Action)
 	}
 
 	modRun := &clientpb.ModuleAction{}

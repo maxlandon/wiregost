@@ -33,3 +33,8 @@ server/assets/version.go
 # Packer files generated during static builds
 server/assets/a_assets-packr.go
 server/generate/a_generate-packr.go
+
+# Zip files for releases
+wiregost-linux.zip
+wiregost-windows.zip
+wiregost-macos.zip

@@ -77,7 +77,7 @@ func rpcExecuteAssembly(req []byte, timeout time.Duration, resp RPCResponse) {
 	}
 	ghost := core.Wire.Ghost(execReq.GhostID)
 	if ghost == nil {
-		rpcLog.Warnf("Could not find Sliver with ID: %d", execReq.GhostID)
+		rpcLog.Warnf("Could not find Ghost with ID: %d", execReq.GhostID)
 		resp([]byte{}, err)
 		return
 	}

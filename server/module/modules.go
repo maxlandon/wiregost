@@ -40,7 +40,7 @@ type modules struct {
 // All Wiregost modules must implement this interface
 type Module interface {
 	Init() error
-	Run(string) (string, error)
+	Run(int32, string) (string, error)
 	SetOption(string, string)
 	ToProtobuf() *pb.Module
 }

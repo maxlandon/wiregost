@@ -25,36 +25,36 @@ package module
 
 import (
 	// Payloads
-	dns "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_dns"
-	https "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_https"
+	// dns "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_dns"
+	// https "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_https"
 	mtls "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_mtls"
-	multi "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_multi_protocol"
-	http_stager "github.com/maxlandon/wiregost/modules/payload/multi/stager/reverse_http"
-	https_stager "github.com/maxlandon/wiregost/modules/payload/multi/stager/reverse_https"
-	tcp_stager "github.com/maxlandon/wiregost/modules/payload/multi/stager/reverse_tcp"
+	// multi "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_multi_protocol"
+	// http_stager "github.com/maxlandon/wiregost/modules/payload/multi/stager/reverse_http"
+	// https_stager "github.com/maxlandon/wiregost/modules/payload/multi/stager/reverse_https"
+	// tcp_stager "github.com/maxlandon/wiregost/modules/payload/multi/stager/reverse_tcp"
 
 	// Post
 	mimipenguin "github.com/maxlandon/wiregost/modules/post/linux/x64/bash/credentials/MimiPenguin"
-	minidump "github.com/maxlandon/wiregost/modules/post/windows/x64/go/credentials/minidump"
+	// minidump "github.com/maxlandon/wiregost/modules/post/windows/x64/go/credentials/minidump"
 )
 
 // LoadAllModules - Load all modules in the modules directory.
 func LoadModules() {
 
 	// Payload -------------------------------------------------------------//
-	AddModule("payload/multi/single/reverse_dns", dns.New())
+	// AddModule("payload/multi/single/reverse_dns", dns.New())
 	AddModule("payload/multi/single/reverse_mtls", mtls.New())
-	AddModule("payload/multi/single/reverse_https", https.New())
-	AddModule("payload/multi/single/reverse_multi_protocol", multi.New())
-	AddModule("payload/multi/stager/reverse_tcp", tcp_stager.New())
-	AddModule("payload/multi/stager/reverse_http", http_stager.New())
-	AddModule("payload/multi/stager/reverse_https", https_stager.New())
-
-	// Exploit -------------------------------------------------------------//
-	AddModule("post/windows/x64/go/credentials/minidump", minidump.New())
-	AddModule("post/linux/x64/bash/credentials/MimiPenguin", mimipenguin.New())
+	// AddModule("payload/multi/single/reverse_https", https.New())
+	// AddModule("payload/multi/single/reverse_multi_protocol", multi.New())
+	// AddModule("payload/multi/stager/reverse_tcp", tcp_stager.New())
+	// AddModule("payload/multi/stager/reverse_http", http_stager.New())
+	// AddModule("payload/multi/stager/reverse_https", https_stager.New())
 
 	// Post ----------------------------------------------------------------//
+	// AddModule("post/windows/x64/go/credentials/minidump", minidump.New())
+	AddModule("post/linux/x64/bash/credentials/MimiPenguin", mimipenguin.New())
+
+	// Exploit -------------------------------------------------------------//
 
 	// Auxiliary -----------------------------------------------------------//
 }

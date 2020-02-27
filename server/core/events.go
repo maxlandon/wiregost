@@ -23,12 +23,14 @@ var (
 
 // Event - Ghost connect / disconnect
 type Event struct {
-	Ghost     *Ghost
-	Job       *Job
-	Client    *Client
-	EventType string
-	Data      []byte
-	Err       error
+	Ghost           *Ghost
+	Job             *Job
+	Client          *Client
+	EventType       string
+	EventSubType    string
+	ModuleRequestID int32
+	Data            []byte
+	Err             error
 }
 
 type eventBroker struct {

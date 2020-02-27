@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	consts "github.com/maxlandon/wiregost/client/constants"
 	pb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/core"
@@ -169,7 +170,7 @@ func (m *Module) CheckRequiredOptions() (ok bool, err error) {
 	return true, nil
 }
 
-func (m *Module) CheckSession() (session *pb.Ghost, err error) {
+func (m *Module) GetSession() (session *core.Ghost, err error) {
 
 	// Check empty session
 	if m.Options["Session"].Value == "" {
@@ -177,16 +178,11 @@ func (m *Module) CheckSession() (session *pb.Ghost, err error) {
 	}
 
 	// Check connected session
-	sessions := &pb.Sessions{}
 	if 0 < len(*core.Wire.Ghosts) {
-		for _, ghost := range *core.Wire.Ghosts {
-			sessions.Ghosts = append(sessions.Ghosts, ghost.ToProtobuf())
-		}
-	}
-
-	for _, sess := range sessions.Ghosts {
-		if sess.Name == m.Options["Session"].Value {
-			session = sess
+		for _, g := range *core.Wire.Ghosts {
+			if g.Name == m.Options["Session"].Value {
+				session = g
+			}
 		}
 	}
 
@@ -211,4 +207,13 @@ func (m *Module) CheckSession() (session *pb.Ghost, err error) {
 	}
 
 	return session, nil
+}
+
+func (m *Module) ModuleEvent(requestID int32, event string) {
+	core.EventBroker.Publish(core.Event{
+		EventType:       consts.ModuleEvent,
+		EventSubType:    "run",
+		ModuleRequestID: requestID,
+		Data:            []byte(event),
+	})
 }

@@ -112,6 +112,7 @@ message ModuleActionReq {
         repeated string Path = 3;
         string Action = 4;
         string Profile = 5;
+        int32 ModuleRequestID = 6;
 }
 
 message ModuleAction {
@@ -419,10 +420,12 @@ message Client {
 
 message Event {
         string EventType = 1;
-        Ghost Ghost = 2;
-        Job Job = 3;
-        Client Client = 4;
-        bytes Data = 5;
+        string EventSubType = 2;
+        int32 ModuleRequestID = 3;
+        Ghost Ghost = 4;
+        Job Job = 5;
+        Client Client = 6;
+        bytes Data = 7;
 
         string Err = 9;
 }
