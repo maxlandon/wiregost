@@ -30,7 +30,7 @@ import (
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/log"
-	"github.com/maxlandon/wiregost/server/module/templates"
+	"github.com/maxlandon/wiregost/server/module"
 	"github.com/maxlandon/wiregost/util"
 )
 
@@ -38,12 +38,12 @@ import (
 
 // MimiPenguin - A single stage DNS implant
 type MimiPenguin struct {
-	*templates.Module
+	*module.Module
 }
 
 // New - Instantiates a reverse DNS module, empty.
 func New() *MimiPenguin {
-	mod := &MimiPenguin{&templates.Module{}}
+	mod := &MimiPenguin{&module.Module{}}
 	mod.Path = []string{"post/linux/x64/bash/credentials/MimiPenguin"}
 	return mod
 }

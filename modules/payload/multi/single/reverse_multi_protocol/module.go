@@ -32,19 +32,19 @@ import (
 	"github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/generate"
 	"github.com/maxlandon/wiregost/server/log"
-	"github.com/maxlandon/wiregost/server/module/templates"
+	"github.com/maxlandon/wiregost/server/module"
 )
 
 // [ Base Methods ] ------------------------------------------------------------------------//
 
 // ReverseMulti - A single stage MTLS implant
 type ReverseMulti struct {
-	*templates.Module
+	*module.Module
 }
 
 // New - Instantiates a reverse MTLS module, empty.
 func New() *ReverseMulti {
-	mod := &ReverseMulti{&templates.Module{}}
+	mod := &ReverseMulti{&module.Module{}}
 	mod.Path = []string{"payload/multi/single/reverse_multi_protocol"}
 	return mod
 }

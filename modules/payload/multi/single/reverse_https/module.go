@@ -31,19 +31,19 @@ import (
 	"github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/generate"
 	"github.com/maxlandon/wiregost/server/log"
-	"github.com/maxlandon/wiregost/server/module/templates"
+	"github.com/maxlandon/wiregost/server/module"
 )
 
 // [ Base Methods ] ------------------------------------------------------------------------//
 
 // ReverseHTTPS - A single stage HTTPS implant
 type ReverseHTTPS struct {
-	*templates.Module
+	*module.Module
 }
 
 // New - Instantiates a reverse HTTPS module, empty.
 func New() *ReverseHTTPS {
-	mod := &ReverseHTTPS{&templates.Module{}}
+	mod := &ReverseHTTPS{&module.Module{}}
 	mod.Path = []string{"payload/multi/single/reverse_https"}
 	return mod
 }

@@ -28,7 +28,8 @@ import (
 	"github.com/maxlandon/wiregost/client/version"
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/certs"
-	"github.com/maxlandon/wiregost/server/module"
+	"github.com/maxlandon/wiregost/server/core"
+	"github.com/maxlandon/wiregost/server/module/load"
 	"github.com/maxlandon/wiregost/server/transport"
 	"github.com/maxlandon/wiregost/server/users"
 )
@@ -68,8 +69,8 @@ func main() {
 	}
 
 	// Initialize Module Stacks
-	module.LoadModules()
-	module.InitStacks()
+	load.LoadModules()
+	core.InitStacks()
 
 	// Start client listener
 	listener, err := transport.StartClientListener("localhost", 1708)

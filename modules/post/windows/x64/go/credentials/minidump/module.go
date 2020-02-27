@@ -22,19 +22,19 @@ import (
 	"strings"
 
 	"github.com/maxlandon/wiregost/server/log"
-	"github.com/maxlandon/wiregost/server/module/templates"
+	"github.com/maxlandon/wiregost/server/module"
 )
 
 // [ Base Methods ] ------------------------------------------------------------------------//
 
 // Minidump - Credentials dumper module
 type Minidump struct {
-	*templates.Module
+	*module.Module
 }
 
 // New - Instantiates a Minidump module, empty.
 func New() *Minidump {
-	mod := &Minidump{&templates.Module{}}
+	mod := &Minidump{&module.Module{}}
 	mod.Path = []string{"post/windows/x64/go/credentials/minidump"}
 	return mod
 }

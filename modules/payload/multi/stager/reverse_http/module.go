@@ -35,19 +35,19 @@ import (
 	"github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/generate"
 	"github.com/maxlandon/wiregost/server/log"
-	"github.com/maxlandon/wiregost/server/module/templates"
+	"github.com/maxlandon/wiregost/server/module"
 )
 
 // [ Base Methods ] ------------------------------------------------------------------------//
 
 // ReverseHTTPStager - A single stage MTLS implant
 type ReverseHTTPStager struct {
-	*templates.Module
+	*module.Module
 }
 
 // New - Instantiates a reverse MTLS module, empty.
 func New() *ReverseHTTPStager {
-	mod := &ReverseHTTPStager{&templates.Module{}}
+	mod := &ReverseHTTPStager{&module.Module{}}
 	mod.Path = []string{"payload/multi/stager/reverse_http"}
 	return mod
 }

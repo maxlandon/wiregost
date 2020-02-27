@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package core
+package load
 
 // ********************* Adding Modules ****************************//
 
@@ -24,6 +24,9 @@ package core
 // The import path to the module has to be added to the imports as well.
 
 import (
+	// Core
+	. "github.com/maxlandon/wiregost/server/core"
+
 	// Payloads
 	dns "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_dns"
 	https "github.com/maxlandon/wiregost/modules/payload/multi/single/reverse_https"
