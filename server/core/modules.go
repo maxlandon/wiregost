@@ -42,7 +42,8 @@ type modules struct {
 // All Wiregost modules must implement this interface
 type Module interface {
 	Init() error
-	Run(int32, string) (string, error)
+	SetUserID(int32)
+	Run(string) (string, error)
 	SetOption(string, string)
 	ToProtobuf() *pb.Module
 }
@@ -109,7 +110,7 @@ func InitStacks() {
 }
 
 // LoadModule - Load a module onto the stack, by fetching it into Modules
-func (s *stack) LoadModule(path string) error {
+func (s *stack) LoadModule(userID int32, path string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -120,6 +121,7 @@ func (s *stack) LoadModule(path string) error {
 
 	// Init and load onto stack
 	mod.Init()
+	mod.SetUserID(userID)
 	(*s.Loaded)[path] = mod
 
 	return nil
@@ -136,12 +138,12 @@ func (s *stack) PopModule(path string) error {
 }
 
 // Module - Get a module by path, (load it onto the stack if needed)
-func (s *stack) Module(path string) (Module, error) {
+func (s *stack) Module(userID int32, path string) (Module, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	if mod, ok := (*s.Loaded)[path]; !ok {
-		s.LoadModule(path)
+		s.LoadModule(userID, path)
 		return (*s.Loaded)[path], nil
 	} else {
 		return mod, nil

@@ -50,7 +50,7 @@ type Console struct {
 
 	currentModule    string
 	module           *clientpb.Module
-	moduleRequestID  int32
+	moduleUserID     int32
 	currentWorkspace *models.Workspace
 
 	// Server
@@ -78,6 +78,9 @@ func NewConsole() *Console {
 	console := &Console{
 		menuContext: "main",
 	}
+
+	// Set ModuleRequestID
+	console.moduleUserID = rand.Int31()
 
 	console.initContext()
 	console.prompt = newPrompt(console, conf.Prompt, conf.ImplantPrompt)
@@ -112,9 +115,6 @@ func NewConsole() *Console {
 		Context:     console.shellContext,
 	}
 	console.Shell.Config.AutoComplete = completer
-
-	// Set ModuleRequestID
-	console.moduleRequestID = rand.Int31()
 
 	// [ Commands ]
 	commands.RegisterCommands()

@@ -83,9 +83,9 @@ func rpcModuleRun(data []byte, timeout time.Duration, resp RPCResponse) {
 	var modErr error
 	if modReq.Profile != "" {
 		action := modReq.Action + " " + modReq.Profile
-		res, modErr = mod.Run(modReq.ModuleRequestID, action)
+		res, modErr = mod.Run(action)
 	} else {
-		res, modErr = mod.Run(modReq.ModuleRequestID, modReq.Action)
+		res, modErr = mod.Run(modReq.Action)
 	}
 
 	modRun := &clientpb.ModuleAction{}

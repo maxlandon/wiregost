@@ -79,10 +79,11 @@ func RegisterStackCommands() {
 
 func stackUse(ctx ShellContext, module string, rpc RPCServer) {
 	mod, _ := proto.Marshal(&clientpb.StackReq{
-		Path:        strings.Split(module, "/"),
-		Action:      "use",
-		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
-		User:        ctx.Server.Config.User,
+		Path:         strings.Split(module, "/"),
+		Action:       "use",
+		WorkspaceID:  uint32(ctx.CurrentWorkspace.ID),
+		User:         ctx.Server.Config.User,
+		ModuleUserID: *ctx.ModuleUserID,
 	})
 
 	resp := <-rpc(&ghostpb.Envelope{

@@ -233,11 +233,10 @@ func runModule(action string, ctx ShellContext, rpc RPCServer) {
 	m := ctx.Module
 
 	run, _ := proto.Marshal(&clientpb.ModuleActionReq{
-		WorkspaceID:     uint32(ctx.CurrentWorkspace.ID),
-		User:            ctx.Server.Config.User,
-		Path:            m.Path,
-		Action:          action,
-		ModuleRequestID: int32(*ctx.ModuleRequestID),
+		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		User:        ctx.Server.Config.User,
+		Path:        m.Path,
+		Action:      action,
 	})
 
 	resp := <-rpc(&ghostpb.Envelope{

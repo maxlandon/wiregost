@@ -42,7 +42,7 @@ func rpcStackUse(data []byte, timeout time.Duration, resp RPCResponse) {
 
 	if mod, found := (*stack.Loaded)[path]; !found {
 		// If module not found, load it and send it
-		err = stack.LoadModule(path)
+		err = stack.LoadModule(stackReq.ModuleUserID, path)
 		if err != nil {
 			stackErr := &clientpb.Stack{
 				Path: stackReq.Path,

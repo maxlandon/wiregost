@@ -77,6 +77,7 @@ message StackReq {
         repeated string Path = 3;
         string Action = 4;      // use / pop 
         bool All = 5;           // True if we pop all modules 
+        int32 ModuleUserID = 6;
 }
 
 message Stack {
@@ -112,7 +113,6 @@ message ModuleActionReq {
         repeated string Path = 3;
         string Action = 4;
         string Profile = 5;
-        int32 ModuleRequestID = 6;
 }
 
 message ModuleAction {

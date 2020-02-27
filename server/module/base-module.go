@@ -48,6 +48,7 @@ type Module struct {
 	Priviledged bool     `json:"priviledged"` // Does the module requires administrator privileges
 
 	Options map[string]*Option
+	UserID  int32
 }
 
 // Option - Module option
@@ -124,6 +125,12 @@ func (m *Module) Init() error {
 	return nil
 }
 
+func (m *Module) SetUserID(userID int32) {
+	m.UserID = userID
+	fmt.Println(userID)
+	fmt.Println(m.UserID)
+}
+
 // ToProtobuf - Returns the protobuf version of a module
 func (m *Module) ParseProto(pbmod *pb.Module) {
 	m.Name = pbmod.Name
@@ -170,11 +177,11 @@ func (m *Module) CheckRequiredOptions() (ok bool, err error) {
 	return true, nil
 }
 
-func (m *Module) ModuleEvent(requestID int32, event string) {
+func (m *Module) ModuleEvent(event string) {
 	core.EventBroker.Publish(core.Event{
 		EventType:       consts.ModuleEvent,
 		EventSubType:    "run",
-		ModuleRequestID: requestID,
+		ModuleRequestID: m.UserID,
 		Data:            []byte(event),
 	})
 }

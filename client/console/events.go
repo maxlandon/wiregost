@@ -74,7 +74,7 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 			}
 			// A module is ran, an event has been pushed
 			if event.EventSubType == "run" {
-				if event.ModuleRequestID == c.moduleRequestID {
+				if event.ModuleRequestID == c.moduleUserID {
 					fmt.Println(Info + string(event.Data))
 				}
 			}

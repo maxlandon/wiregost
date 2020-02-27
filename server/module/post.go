@@ -74,7 +74,7 @@ func (m *Module) GetSession() (session *core.Ghost, err error) {
 // IsPost - Checks if a module has a Session option, meaning its a post-module
 func (m *Module) IsPost() bool {
 
-	if _, ok := m.Options["Sessions"]; !ok {
+	if _, ok := m.Options["Session"]; !ok {
 		return false
 	} else {
 		return true
