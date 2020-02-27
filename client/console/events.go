@@ -36,6 +36,8 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 
 		switch event.EventType {
 
+		// CANARY EVENTS --------------------------------------------------------------------------------------
+
 		case consts.CanaryEvent:
 			fmt.Printf("%s[WARNING]%s %s has been burned (DNS Canary) \n", tui.YELLOW, tui.RESET, event.Ghost.Name)
 			sessions := commands.GhostSessionsByName(event.Ghost.Name, server.RPC)
@@ -43,6 +45,8 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 				fmt.Printf("%s[!]%s \tSession #%d is compromised\n", tui.YELLOW, tui.RESET, ghost.ID)
 			}
 			fmt.Println()
+
+		// STACK EVENTS --------------------------------------------------------------------------------------
 
 		// Stack has been updated, update current module if needed
 		case consts.StackEvent:
@@ -75,6 +79,8 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 				}
 			}
 
+		// SERVER EVENTS --------------------------------------------------------------------------------------
+
 		case consts.ServerErrorStr:
 			fmt.Printf(Errorf + "Server connection error! \n\n")
 			os.Exit(4)
@@ -86,6 +92,8 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 			fmt.Printf("\n"+Info+"%s disconnected from the server \n", event.Client.User)
 			c.hardRefresh()
 
+		// JOB EVENTS ------------------------------------------------------------------------------------------
+
 		case consts.StoppedEvent:
 			job := event.Job
 			fmt.Printf("\n"+Info+"Job #%d stopped (%s/%s) \n", job.ID, job.Protocol, job.Name)
@@ -93,6 +101,8 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 				fmt.Printf(Info+"Reason: %s) \n", job.Err)
 			}
 			c.hardRefresh()
+
+		// SESSION EVENTS --------------------------------------------------------------------------------------
 
 		case consts.ConnectedEvent:
 			ghost := event.Ghost
@@ -107,14 +117,12 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 			activeGhost := c.CurrentAgent
 			if activeGhost != nil && ghost.ID == activeGhost.ID {
 				c.CurrentAgent = nil
-				// app.SetPrompt(getPrompt())
 				fmt.Printf("\n" + Error + "Active Ghost diconnected\n")
 			}
 			fmt.Println()
 
 		}
 
-		// fmt.Printf(getPrompt())
 		stdout.Flush()
 	}
 }

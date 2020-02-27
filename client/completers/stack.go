@@ -41,40 +41,43 @@ func (mc *StackCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (
 	splitLine := strings.Split(string(line), " ")
 	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
 
-	// Get stack modules
-	stack, _ := proto.Marshal(&clientpb.StackReq{
-		Action:      "list",
-		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
-		User:        ctx.Server.Config.User,
-	})
+	switch splitLine[0] {
+	case "use", "pop":
+		// Get stack modules
+		stack, _ := proto.Marshal(&clientpb.StackReq{
+			Action:      "list",
+			WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+			User:        ctx.Server.Config.User,
+		})
 
-	rpc := ctx.Server.RPC
+		rpc := ctx.Server.RPC
 
-	resp := <-rpc(&ghostpb.Envelope{
-		Type: clientpb.MsgStackList,
-		Data: stack,
-	}, defaultTimeout)
+		resp := <-rpc(&ghostpb.Envelope{
+			Type: clientpb.MsgStackList,
+			Data: stack,
+		}, defaultTimeout)
 
-	if resp.Err != "" {
-		fmt.Printf(RPCError, "%s\n", resp.Err)
-		return
-	}
+		if resp.Err != "" {
+			fmt.Printf(RPCError, "%s\n", resp.Err)
+			return
+		}
 
-	stackList := &clientpb.Stack{}
-	proto.Unmarshal(resp.Data, stackList)
-	if stackList.Err != "" {
-		fmt.Println()
-		fmt.Printf(Error, "%s", stackList.Err)
-		fmt.Println()
-		return
-	}
+		stackList := &clientpb.Stack{}
+		proto.Unmarshal(resp.Data, stackList)
+		if stackList.Err != "" {
+			fmt.Println()
+			fmt.Printf(Error, "%s", stackList.Err)
+			fmt.Println()
+			return
+		}
 
-	for _, mod := range stackList.Modules {
-		search := strings.Join(mod.Path, "/")
-		if !hasPrefix(line, []rune(search)) {
-			sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-			options = append(options, sLine...)
-			offset = sOffset
+		for _, mod := range stackList.Modules {
+			search := strings.Join(mod.Path, "/")
+			if !hasPrefix(line, []rune(search)) {
+				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+				options = append(options, sLine...)
+				offset = sOffset
+			}
 		}
 	}
 
