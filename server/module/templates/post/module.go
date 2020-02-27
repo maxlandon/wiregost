@@ -18,47 +18,31 @@
 package main
 
 import (
-	"path/filepath"
-
-	pb "github.com/maxlandon/wiregost/protobuf/client"
-	"github.com/maxlandon/wiregost/server/assets"
-	"github.com/maxlandon/wiregost/server/module/templates"
+	"github.com/maxlandon/wiregost/server/log"
+	"github.com/maxlandon/wiregost/server/module"
 )
-
-// metadataFile - Full path to module metadata
-var metadataFile = filepath.Join(assets.GetModulesDir(), "post/path/to/metadata.json")
 
 // [ Base Methods ] ------------------------------------------------------------------------//
 
-// Post - A single stage MTLS implant
+// Post - A Post Module (Change "Post")
 type Post struct {
-	Base *templates.Module
+	*module.Module
 }
 
-// New - Instantiates a reverse MTLS module, empty.
+// New - Instantiates a Post Module, loading its metadata
+// - Change the field "path/to/module/directory" by something like "linux/x64/credentials/moduleDirName"
 func New() *Post {
-	return &Post{Base: &templates.Module{}}
+	mod := &Post{&module.Module{}}
+	mod.Path = []string{"auxiliary", "path/to/module/directory"}
+	return mod
 }
 
-// Init - Module initialization, loads metadata. ** DO NOT ERASE **
-func (s *Post) Init() error {
-	return s.Base.Init(metadataFile)
-}
-
-// ToProtobuf - Returns protobuf version of module
-func (s *Post) ToProtobuf() *pb.Module {
-	return s.Base.ToProtobuf()
-}
-
-// SetOption - Sets a module option through its base object.
-func (s *Post) SetOption(option, name string) {
-	s.Base.SetOption(option, name)
-}
+var modLog = log.ServerLogger("path/to/module/directory", "module")
 
 // [ Module Methods ] ------------------------------------------------------------------------//
 
 // Run - Module entrypoint. ** DO NOT ERASE **
-func (s *Post) Run(command string) (result string, err error) {
+func (s *Post) Run(requestID int32, command string) (result string, err error) {
 
-	return "ReverseMTLS listener started", nil
+	return "Module executed", nil
 }

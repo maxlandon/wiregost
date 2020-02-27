@@ -14,14 +14,60 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package module
+package core
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/maxlandon/wiregost/data_service/remote"
+	pb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/certs"
 )
+
+var (
+	// Modules - Map of all modules available in Wiregost (map["path/to/module"] = Module)
+	Modules = &modules{
+		Loaded: &map[string]Module{},
+		mutex:  &sync.RWMutex{},
+	}
+)
+
+type modules struct {
+	Loaded *map[string]Module
+	mutex  *sync.RWMutex
+}
+
+// Module - Represents a module, providing access to its methods
+// All Wiregost modules must implement this interface
+type Module interface {
+	Init() error
+	Run(int32, string) (string, error)
+	SetOption(string, string)
+	ToProtobuf() *pb.Module
+}
+
+// Module - Get module by path, (load it if needed)
+func GetModule(path string) (Module, error) {
+
+	Modules.mutex.Lock()
+	defer Modules.mutex.Unlock()
+
+	if mod, ok := (*Modules.Loaded)[path]; !ok {
+		return nil, errors.New("No module for given path")
+	} else {
+		return mod, nil
+	}
+}
+
+func AddModule(path string, mod Module) error {
+
+	Modules.mutex.Lock()
+	defer Modules.mutex.Unlock()
+
+	(*Modules.Loaded)[path] = mod
+	return nil
+}
 
 var (
 	// Stacks - All module stacks (one per workspace),

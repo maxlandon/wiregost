@@ -18,47 +18,31 @@
 package main
 
 import (
-	"path/filepath"
-
-	pb "github.com/maxlandon/wiregost/protobuf/client"
-	"github.com/maxlandon/wiregost/server/assets"
-	"github.com/maxlandon/wiregost/server/module/templates"
+	"github.com/maxlandon/wiregost/server/log"
+	"github.com/maxlandon/wiregost/server/module"
 )
-
-// metadataFile - Full path to module metadata
-var metadataFile = filepath.Join(assets.GetModulesDir(), "auxiliary/path/to/metadata.json")
 
 // [ Base Methods ] ------------------------------------------------------------------------//
 
-// Auxiliary - A single stage MTLS implant
+// Auxiliary - An Auxiliary Module  (Change "Auxiliary")
 type Auxiliary struct {
-	Base *templates.Module
+	*module.Module
 }
 
-// New - Instantiates a reverse MTLS module, empty.
+// New - Instantiates an Auxiliary module, loading its metadata.
+// - Change the field "path/to/module/directory" by something like "scanner/nmap/moduleDirName"
 func New() *Auxiliary {
-	return &Auxiliary{Base: &templates.Module{}}
+	mod := &Auxiliary{&module.Module{}}
+	mod.Path = []string{"auxiliary", "path/to/module/directory"}
+	return mod
 }
 
-// Init - Module initialization, loads metadata. ** DO NOT ERASE **
-func (s *Auxiliary) Init() error {
-	return s.Base.Init(metadataFile)
-}
-
-// ToProtobuf - Returns protobuf version of module
-func (s *Auxiliary) ToProtobuf() *pb.Module {
-	return s.Base.ToProtobuf()
-}
-
-// SetOption - Sets a module option through its base object.
-func (s *Auxiliary) SetOption(option, name string) {
-	s.Base.SetOption(option, name)
-}
+var modLog = log.ServerLogger("path/to/module/directory", "module")
 
 // [ Module Methods ] ------------------------------------------------------------------------//
 
 // Run - Module entrypoint. ** DO NOT ERASE **
-func (s *Auxiliary) Run(command string) (result string, err error) {
+func (s *Auxiliary) Run(requestID int32, command string) (result string, err error) {
 
 	return "", nil
 }

@@ -25,7 +25,6 @@ import (
 
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/core"
-	"github.com/maxlandon/wiregost/server/module"
 )
 
 func rpcModuleSetOption(data []byte, timeout time.Duration, resp RPCResponse) {
@@ -38,7 +37,7 @@ func rpcModuleSetOption(data []byte, timeout time.Duration, resp RPCResponse) {
 	// Find module
 	path := strings.Join(optionReq.Path, "/")
 	wsID := uint(optionReq.WorkspaceID)
-	stack := (*module.Stacks)[wsID][optionReq.User]
+	stack := (*core.Stacks)[wsID][optionReq.User]
 	mod := (*stack.Loaded)[path]
 	mod.SetOption(optionReq.Name, optionReq.Value)
 
@@ -77,7 +76,7 @@ func rpcModuleRun(data []byte, timeout time.Duration, resp RPCResponse) {
 	// Find module
 	path := strings.Join(modReq.Path, "/")
 	wsID := uint(modReq.WorkspaceID)
-	stack := (*module.Stacks)[wsID][modReq.User]
+	stack := (*core.Stacks)[wsID][modReq.User]
 	mod := (*stack.Loaded)[path]
 
 	var res string
