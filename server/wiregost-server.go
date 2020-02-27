@@ -43,6 +43,7 @@ const (
 
 func main() {
 	unpack := flag.Bool("unpack", false, "force unpack assets")
+	flag.Parse()
 
 	// Set Logging
 	appDir := assets.GetRootAppDir()
