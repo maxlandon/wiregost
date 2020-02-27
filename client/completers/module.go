@@ -146,6 +146,10 @@ var moduleSubDirs = []string{
 	"post/windows/x64",
 	"post/windows/x64/go",
 	"post/windows/x64/go/credentials",
+	"post/linux",
+	"post/linux/x64",
+	"post/linux/x64/bash",
+	"post/linux/x64/bash/credentials",
 
 	// Payload
 	"payload",

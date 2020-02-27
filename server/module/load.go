@@ -34,6 +34,7 @@ import (
 	tcp_stager "github.com/maxlandon/wiregost/modules/payload/multi/stager/reverse_tcp"
 
 	// Post
+	mimipenguin "github.com/maxlandon/wiregost/modules/post/linux/x64/bash/credentials/MimiPenguin"
 	minidump "github.com/maxlandon/wiregost/modules/post/windows/x64/go/credentials/minidump"
 )
 
@@ -51,6 +52,7 @@ func LoadModules() {
 
 	// Exploit -------------------------------------------------------------//
 	AddModule("post/windows/x64/go/credentials/minidump", minidump.New())
+	AddModule("post/linux/x64/bash/credentials/MimiPenguin", mimipenguin.New())
 
 	// Post ----------------------------------------------------------------//
 

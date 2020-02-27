@@ -18,11 +18,16 @@ package templates
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
 
 	pb "github.com/maxlandon/wiregost/protobuf/client"
+	"github.com/maxlandon/wiregost/server/assets"
+	"github.com/maxlandon/wiregost/server/core"
 )
 
 // Module - Contains all properties of a module
@@ -91,11 +96,13 @@ func (o *Option) ToProtobuf() *pb.Option {
 }
 
 // Init - Module initialization, loads metadata.
-func (m *Module) Init(metadataFile string) error {
+func (m *Module) Init() error {
+	// func (m *Module) Init() error {
 
 	m.Options = make(map[string]*Option)
 
-	file, err := os.Open(metadataFile)
+	file, err := os.Open(filepath.Join(assets.GetModulesDir(),
+		strings.Join(m.Path, "/"), "metadata.json"))
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -147,4 +154,61 @@ func (m *Module) ParseProto(pbmod *pb.Module) {
 func (m *Module) SetOption(option, value string) {
 	opt := m.Options[option]
 	opt.Value = value
+}
+
+func (m *Module) CheckRequiredOptions() (ok bool, err error) {
+	// Check every 'required' option to make sure it isn't null
+	for _, v := range m.Options {
+		if v.Required {
+			if v.Value == "" {
+				return false, errors.New(v.Name + " is required")
+			}
+		}
+	}
+
+	return true, nil
+}
+
+func (m *Module) CheckSession() (session *pb.Ghost, err error) {
+
+	// Check empty session
+	if m.Options["Session"].Value == "" {
+		return nil, errors.New("Provide a Session to run this module on.")
+	}
+
+	// Check connected session
+	sessions := &pb.Sessions{}
+	if 0 < len(*core.Wire.Ghosts) {
+		for _, ghost := range *core.Wire.Ghosts {
+			sessions.Ghosts = append(sessions.Ghosts, ghost.ToProtobuf())
+		}
+	}
+
+	for _, sess := range sessions.Ghosts {
+		if sess.Name == m.Options["Session"].Value {
+			session = sess
+		}
+	}
+
+	if session == nil {
+		invalid := fmt.Sprintf("Invalid or non-connected session: %s", m.Options["Session"].Value)
+		return nil, errors.New(invalid)
+	}
+
+	// Check valid platform
+	platform := ""
+	switch m.Platform {
+	case "windows", "win", "Windows":
+		platform = "windows"
+	case "darwin", "ios", "macos", "MacOS", "Apple":
+		platform = "darwin"
+	case "Linux", "linux":
+		platform = "linux"
+	}
+
+	if platform != session.OS {
+		return nil, errors.New("The session's target OS is not supported by this module")
+	}
+
+	return session, nil
 }
