@@ -165,7 +165,7 @@ func (m *Module) Download(lpath string, rpath string, timeout time.Duration) (re
 }
 
 // Remove - Remove a file/directory from the Session's target
-// @path   => path to file/directory to remove
+// @path    => path to file/directory to remove
 // @timeout => Desired timeout for the session command
 func (m *Module) Remove(path string, timeout time.Duration) (result string, err error) {
 	if !m.isPost() {

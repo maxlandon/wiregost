@@ -43,7 +43,7 @@ and an attempt at merging [Merlin](https://github.com/Ne0nd0g/merlin) post-explo
 * Metasploit-like Modules User Interface
 * Implant generation & listener spawn modules (both single and stager payloads/listeners)
 * Post-exploitation modules from Merlin (rewrited) (*work in progress*)
-* Easy interface and templates for writing Post-exploitation modules
+* Easy interface and templates for [writing Post-exploitation modules](https://github.com/maxlandon/wiregost/wiki/Modules-Overview)
 
 
 **The name:** I recently looked a [video](https://www.youtube.com/watch?v=T8aXx3K_lKY) where the notorious 
