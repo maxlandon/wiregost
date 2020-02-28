@@ -41,8 +41,7 @@ type modules struct {
 // Module - Represents a module, providing access to its methods
 // All Wiregost modules must implement this interface
 type Module interface {
-	Init() error
-	SetUserID(int32)
+	Init(int32) error
 	Run(string) (string, error)
 	SetOption(string, string)
 	ToProtobuf() *pb.Module
@@ -120,8 +119,7 @@ func (s *stack) LoadModule(userID int32, path string) error {
 	}
 
 	// Init and load onto stack
-	mod.Init()
-	mod.SetUserID(userID)
+	mod.Init(userID)
 	(*s.Loaded)[path] = mod
 
 	return nil

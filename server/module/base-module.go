@@ -98,7 +98,7 @@ func (o *Option) ToProtobuf() *pb.Option {
 }
 
 // Init - Module initialization, loads metadata.
-func (m *Module) Init() error {
+func (m *Module) Init(userID int32) error {
 	// func (m *Module) Init() error {
 
 	m.Options = make(map[string]*Option)
@@ -122,48 +122,18 @@ func (m *Module) Init() error {
 		return err
 	}
 
+	m.UserID = userID
+
 	return nil
 }
 
-func (m *Module) SetUserID(userID int32) {
-	m.UserID = userID
-	fmt.Println(userID)
-	fmt.Println(m.UserID)
-}
-
-// ToProtobuf - Returns the protobuf version of a module
-func (m *Module) ParseProto(pbmod *pb.Module) {
-	m.Name = pbmod.Name
-	m.Type = pbmod.Type
-	m.Path = pbmod.Path
-	m.Description = pbmod.Description
-	m.Notes = pbmod.Notes
-	m.References = pbmod.References
-	m.Author = pbmod.Author
-	m.Credits = pbmod.Credits
-	m.Platform = pbmod.Platform
-	m.Targets = pbmod.Targets
-	m.Arch = pbmod.Arch
-	m.Lang = pbmod.Lang
-	m.Priviledged = pbmod.Priviledged
-	m.Options = map[string]*Option{}
-
-	for name, opt := range pbmod.Options {
-		option := Option{}
-		option.Name = opt.Name
-		option.Value = opt.Value
-		option.Flag = opt.Flag
-		option.Required = opt.Required
-		option.Description = opt.Description
-		m.Options[name] = &option
-	}
-}
-
+// SetOption - Set one of the Module's option to a value (string)
 func (m *Module) SetOption(option, value string) {
 	opt := m.Options[option]
 	opt.Value = value
 }
 
+// CheckRequiredOptions - Returns an error if one of the Module's required options has no value.
 func (m *Module) CheckRequiredOptions() (ok bool, err error) {
 	// Check every 'required' option to make sure it isn't null
 	for _, v := range m.Options {
@@ -177,6 +147,7 @@ func (m *Module) CheckRequiredOptions() (ok bool, err error) {
 	return true, nil
 }
 
+// ModuleEvent - Sends an event/message back to the console running the module. Useful to give detailed status of the module state.
 func (m *Module) ModuleEvent(event string) {
 	core.EventBroker.Publish(core.Event{
 		EventType:       consts.ModuleEvent,

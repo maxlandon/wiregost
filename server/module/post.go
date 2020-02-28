@@ -32,6 +32,7 @@ import (
 	"github.com/maxlandon/wiregost/util"
 )
 
+// GetSession - Returns the Session corresponding to the Module "Session" option, or nothing if not found.
 func (m *Module) GetSession() (session *core.Ghost, err error) {
 
 	// Check empty session
@@ -71,8 +72,8 @@ func (m *Module) GetSession() (session *core.Ghost, err error) {
 	return session, nil
 }
 
-// IsPost - Checks if a module has a Session option, meaning its a post-module
-func (m *Module) IsPost() bool {
+// isPost - Checks if a module has a Session option, meaning its a post-module
+func (m *Module) isPost() bool {
 
 	if _, ok := m.Options["Session"]; !ok {
 		return false
@@ -81,8 +82,12 @@ func (m *Module) IsPost() bool {
 	}
 }
 
+// Upload - Upload a file on the Session's target
+// @src     => file to upload
+// @path    => path in which to upload the file (including file name)
+// @timeout => Desired timeout for the session command
 func (m *Module) Upload(src string, path string, timeout time.Duration) (result string, err error) {
-	if !m.IsPost() {
+	if !m.isPost() {
 		return "", errors.New("Module is not a Post-Exploitation module")
 	}
 	sess, err := m.GetSession()
@@ -111,8 +116,12 @@ func (m *Module) Upload(src string, path string, timeout time.Duration) (result 
 	}
 }
 
+// Download - Download a file from the Session's target
+// @lpath   => local path in which to save the file
+// @rpath   => path to file to download (including file name)
+// @timeout => Desired timeout for the session command
 func (m *Module) Download(lpath string, rpath string, timeout time.Duration) (result string, err error) {
-	if !m.IsPost() {
+	if !m.isPost() {
 		return "", errors.New("Module is not a Post-Exploitation module")
 	}
 	sess, err := m.GetSession()
@@ -155,8 +164,11 @@ func (m *Module) Download(lpath string, rpath string, timeout time.Duration) (re
 	}
 }
 
+// Remove - Remove a file/directory from the Session's target
+// @path   => path to file/directory to remove
+// @timeout => Desired timeout for the session command
 func (m *Module) Remove(path string, timeout time.Duration) (result string, err error) {
-	if !m.IsPost() {
+	if !m.isPost() {
 		return "", errors.New("Module is not a Post-Exploitation module")
 	}
 	sess, err := m.GetSession()
@@ -185,8 +197,11 @@ func (m *Module) Remove(path string, timeout time.Duration) (result string, err 
 	}
 }
 
+// ChangeDirectory - Change the implant session's current working directory
+// @dir     => target directory
+// @timeout => Desired timeout for the session command
 func (m *Module) ChangeDirectory(dir string, timeout time.Duration) (result string, err error) {
-	if !m.IsPost() {
+	if !m.isPost() {
 		return "", errors.New("Module is not a Post-Exploitation module")
 	}
 	sess, err := m.GetSession()
@@ -211,8 +226,11 @@ func (m *Module) ChangeDirectory(dir string, timeout time.Duration) (result stri
 	}
 }
 
+// ListDirectory - List contents of a directory on the session's target
+// @path    => target directory to list content from
+// @timeout => Desired timeout for the session command
 func (m *Module) ListDirectory(path string, timeout time.Duration) (result string, err error) {
-	if !m.IsPost() {
+	if !m.isPost() {
 		return "", errors.New("Module is not a Post-Exploitation module")
 	}
 	sess, err := m.GetSession()
@@ -237,8 +255,12 @@ func (m *Module) ListDirectory(path string, timeout time.Duration) (result strin
 	}
 }
 
+// Execute - Execute a program on the session's target
+// @path    => path to the program to run
+// @args    => optional list of arguments to run with the program (if none, use []string{})
+// @timeout => Desired timeout for the session command
 func (m *Module) Execute(path string, args []string, timeout time.Duration) (result string, err error) {
-	if !m.IsPost() {
+	if !m.isPost() {
 		return "", errors.New("Module is not a Post-Exploitation module")
 	}
 	sess, err := m.GetSession()
