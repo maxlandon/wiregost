@@ -29,12 +29,12 @@ import (
 
 // [ Base Methods ] ------------------------------------------------------------------------//
 
-// MimiPenguin - A single stage DNS implant
+// MimiPenguin - A module for retrieving plaintext credentials
 type MimiPenguin struct {
 	*module.Module
 }
 
-// New - Instantiates a reverse DNS module, empty.
+// New - Instantiates a MimiPenguin module
 func New() *MimiPenguin {
 	mod := &MimiPenguin{&module.Module{}}
 	mod.Path = []string{"post/linux/x64/bash/credentials/MimiPenguin"}

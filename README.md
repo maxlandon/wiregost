@@ -15,6 +15,12 @@ The grounds for the WireGost exploitation framework project are:
   complexity and payload modularity are significant.
 
 
+**The name:** I recently looked a [video](https://www.youtube.com/watch?v=T8aXx3K_lKY) where the notorious 
+[Kevin Mitnick](https://en.wikipedia.org/wiki/Kevin_Mitnick) is interviewed by an attractive journalist about the usual security 
+and pricacy issues. Boring questions, boring answers (so boring that everyone comments on this instead of saying obsenities on 
+the girl... very surprising), but he remembered me the name of his book: _"Ghost in the Wires"_. Just on point. Thank you Mr. Mitnick.
+
+
 ______
 ## Features
 
@@ -44,12 +50,6 @@ and an attempt at merging [Merlin](https://github.com/Ne0nd0g/merlin) post-explo
 * Implant generation & listener spawn modules (both single and stager payloads/listeners)
 * Post-exploitation modules from Merlin (rewrited) (*work in progress*)
 * Easy interface and templates for [writing Post-exploitation modules](https://github.com/maxlandon/wiregost/wiki/Modules-Overview)
-
-
-**The name:** I recently looked a [video](https://www.youtube.com/watch?v=T8aXx3K_lKY) where the notorious 
-[Kevin Mitnick](https://en.wikipedia.org/wiki/Kevin_Mitnick) is interviewed by an attractive journalist about the usual security 
-and pricacy issues. Boring questions, boring answers (so boring that everyone comments on this instead of saying obsenities on 
-the girl... very surprising), but he remembered me the name of his book: _"Ghost in the Wires"_. Just on point. Thank you Mr. Mitnick.
 
 
 ______

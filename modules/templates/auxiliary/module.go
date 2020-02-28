@@ -24,15 +24,15 @@ import (
 
 // [ Base Methods ] ------------------------------------------------------------------------//
 
-// Post - A Post Module (Change "Post")
-type Post struct {
+// Auxiliary - An Auxiliary Module  (Change "Auxiliary")
+type Auxiliary struct {
 	*module.Module
 }
 
-// New - Instantiates a Post Module, loading its metadata
-// - Change the field "path/to/module/directory" by something like "linux/x64/credentials/moduleDirName"
-func New() *Post {
-	mod := &Post{&module.Module{}}
+// New - Instantiates an Auxiliary module, loading its metadata.
+// - Change the field "path/to/module/directory" by something like "scanner/nmap/moduleDirName"
+func New() *Auxiliary {
+	mod := &Auxiliary{&module.Module{}}
 	mod.Path = []string{"auxiliary", "path/to/module/directory"}
 	return mod
 }
@@ -42,7 +42,7 @@ var modLog = log.ServerLogger("path/to/module/directory", "module")
 // [ Module Methods ] ------------------------------------------------------------------------//
 
 // Run - Module entrypoint. ** DO NOT ERASE **
-func (s *Post) Run(requestID int32, command string) (result string, err error) {
+func (s *Auxiliary) Run(command string) (result string, err error) {
 
 	return "Module executed", nil
 }

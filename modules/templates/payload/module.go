@@ -42,7 +42,7 @@ var modLog = log.ServerLogger("path/to/module/directory", "module")
 // [ Module Methods ] ------------------------------------------------------------------------//
 
 // Run - Module entrypoint. ** DO NOT ERASE **
-func (s *Payload) Run(requestID int32, command string) (result string, err error) {
+func (s *Payload) Run(command string) (result string, err error) {
 
-	return "", nil
+	return "Module executed", nil
 }
