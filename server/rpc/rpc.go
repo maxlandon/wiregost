@@ -52,8 +52,9 @@ var (
 		clientpb.MsgStackList: rpcStackList,
 
 		// Module
-		clientpb.MsgOptionReq: rpcModuleSetOption,
-		clientpb.MsgModuleReq: rpcModuleRun,
+		clientpb.MsgOptionReq:  rpcModuleSetOption,
+		clientpb.MsgModuleReq:  rpcModuleRun,
+		clientpb.MsgModuleList: rpcModuleList,
 
 		// Jobs
 		clientpb.MsgJobs:    rpcJobs,

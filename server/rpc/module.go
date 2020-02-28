@@ -103,3 +103,23 @@ func rpcModuleRun(data []byte, timeout time.Duration, resp RPCResponse) {
 	data, err = proto.Marshal(modRun)
 	resp(data, err)
 }
+
+func rpcModuleList(data []byte, timeout time.Duration, resp RPCResponse) {
+	modReq := &clientpb.ModuleActionReq{}
+	err := proto.Unmarshal(data, modReq)
+	if err != nil {
+		resp(data, err)
+	}
+
+	// Get module list
+	paths := []string{}
+	for _, m := range *core.Modules.Loaded {
+		paths = append(paths, strings.Join(m.ToProtobuf().Path, "/"))
+	}
+
+	modList := &clientpb.ModuleAction{
+		Modules: paths,
+	}
+	data, err = proto.Marshal(modList)
+	resp(data, err)
+}

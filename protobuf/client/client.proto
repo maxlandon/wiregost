@@ -120,8 +120,9 @@ message ModuleAction {
         string Result = 2;
         string Err = 3;
         int32 JobID = 4;
+        repeated string Modules = 5;
         // Used when parsing profiles
-        Module Updated = 5;
+        Module Updated = 6;
 }
 
 // Module Option requests & responses

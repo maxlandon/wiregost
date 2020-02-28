@@ -161,9 +161,6 @@ ______
     - Agent shell command
     - Post Modules
 
-* Writing Modules:
-    - Modules Overview (Payload & Post)
-
 * Data Service:
     - Host Commands
 

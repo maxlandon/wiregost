@@ -51,6 +51,8 @@ const (
 	MsgModuleReq
 	// MsgModule - Success/failure of MsgModuleReq
 	MsgModule
+	// MsgModuleList - Get a list of all modules in Wiregost
+	MsgModuleList
 
 	// MsgOptionReq - Set a module option
 	MsgOptionReq

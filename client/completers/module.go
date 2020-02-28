@@ -17,12 +17,15 @@
 package completers
 
 import (
-	"os"
-	"path/filepath"
+	"fmt"
+	"sort"
 	"strings"
 
+	"github.com/gogo/protobuf/proto"
 	"github.com/maxlandon/wiregost/client/commands"
-	"github.com/maxlandon/wiregost/server/assets"
+	. "github.com/maxlandon/wiregost/client/util"
+	clientpb "github.com/maxlandon/wiregost/protobuf/client"
+	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
 // AutoCompleter is the autocompletion engine
@@ -36,130 +39,34 @@ func (mc *ModuleCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) 
 	splitLine := strings.Split(string(line), " ")
 	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
 
-	// types := []string{"exploit", "post", "auxiliary", "payload"}
+	stack, _ := proto.Marshal(&clientpb.ModuleActionReq{
+		Action: "list",
+	})
 
-	dirs := []string{}
+	rpc := ctx.Server.RPC
 
-	// Get all dirs and subdirs in modules
-	err := filepath.Walk(assets.GetModulesDir(),
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() {
-				if !strings.HasSuffix(path, "/docs") && !strings.HasSuffix(path, "/src") {
-					path = strings.TrimPrefix(path, assets.GetModulesDir())
-					path = strings.TrimPrefix(path, "/")
-					dirs = append(dirs, path)
-				}
-			}
-			return nil
-		})
-	if err != nil {
+	resp := <-rpc(&ghostpb.Envelope{
+		Type: clientpb.MsgModuleList,
+		Data: stack,
+	}, defaultTimeout)
+
+	if resp.Err != "" {
+		fmt.Printf(RPCError, "%s\n", resp.Err)
 		return
 	}
 
-	// Filter out subdirs not containing modules
-	filtered := difference(dirs, moduleSubDirs)
+	modList := &clientpb.ModuleAction{}
+	proto.Unmarshal(resp.Data, modList)
 
-	for _, dir := range filtered {
-		search := dir
+	sort.Strings(modList.Modules)
+	for _, mod := range modList.Modules {
+		search := mod
 		if !hasPrefix(line, []rune(search)) {
 			sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
 			options = append(options, sLine...)
 			offset = sOffset
 		}
 	}
-	// for _, dir := range types {
-	//         search := dir
-	//         if !hasPrefix(line, []rune(search)) {
-	//                 sLine, sOffset := doInternal(line, pos, len(line), []rune(search+"/"))
-	//                 options = append(options, sLine...)
-	//                 offset = sOffset
-	//         } else {
-	//                 dirs := []string{}
-	//                 err := filepath.Walk(assets.GetModulesDir(),
-	//                         func(path string, info os.FileInfo, err error) error {
-	//                                 if err != nil {
-	//                                         return err
-	//                                 }
-	//                                 if info.IsDir() {
-	//                                         if !strings.HasSuffix(path, "/docs") {
-	//                                                 path = strings.TrimPrefix(path, assets.GetModulesDir())
-	//                                                 if strings.HasPrefix(path, "/"+search) {
-	//                                                         path = strings.TrimPrefix(path, "/"+search)
-	//                                                         dirs = append(dirs, path)
-	//                                                 }
-	//                                         }
-	//                                 }
-	//                                 return nil
-	//                         })
-	//                 if err != nil {
-	//                         return
-	//                 }
 
-	// splitLine := strings.Split(string(line), " ")
-	// line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
-
-	// words := strings.Split(string(line), "/")
-	// argInput := lastString(words)
-
-	// For some arguments, the split results in a last empty item.
-	// if words[len(words)-1] == "" {
-	//         argInput = words[0]
-	// }
-
-	// dirs, _ := ioutil.ReadDir(assets.GetModulesDir() + "/" + string(line))
-	// for _, dir := range dirs {
-	//         search := dir
-	//         if !hasPrefix(line, []rune(search)) {
-	//                 sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-	//                 options = append(options, sLine...)
-	//                 offset = sOffset
-	//                 // options = append(options, []rune(search+"/"))
-	//                 // offset = len(search)
-	//         }
-	// }
-	// }
-	// }
 	return options, offset
-}
-
-func difference(a, b []string) []string {
-	mb := make(map[string]struct{}, len(b))
-	for _, x := range b {
-		mb[x] = struct{}{}
-	}
-	var diff []string
-	for _, x := range a {
-		if _, found := mb[x]; !found {
-			diff = append(diff, x)
-		}
-	}
-	return diff
-}
-
-var moduleSubDirs = []string{
-	// Post
-	"post",
-	"post/windows",
-	"post/windows/x64",
-	"post/windows/x64/go",
-	"post/windows/x64/go/credentials",
-	"post/linux",
-	"post/linux/x64",
-	"post/linux/x64/bash",
-	"post/linux/x64/bash/credentials",
-
-	// Payload
-	"payload",
-	"payload/multi",
-	"payload/multi/single",
-	"payload/multi/stager",
-
-	// Exploit
-	"exploit",
-
-	// Auxiliary
-	"auxiliary",
 }
