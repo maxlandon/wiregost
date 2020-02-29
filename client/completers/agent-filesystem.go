@@ -17,21 +17,24 @@
 package completers
 
 import (
-	"io/ioutil"
+	"fmt"
 	"path/filepath"
 	"strings"
 
-	"github.com/evilsocket/islazy/fs"
+	"github.com/gogo/protobuf/proto"
+
 	"github.com/maxlandon/wiregost/client/commands"
+	. "github.com/maxlandon/wiregost/client/util"
+	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
 // AutoCompleter is the autocompletion engine
-type PathCompleter struct {
+type ImplantPathCompleter struct {
 	Command *commands.Command
 }
 
 // Do is the completion function triggered at each line
-func (pc *PathCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+func (pc *ImplantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 
 	splitLine := strings.Split(string(line), " ")
 	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
@@ -41,32 +44,60 @@ func (pc *PathCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (o
 	//      - The path is not a slash: a filter to keep for later.
 	// We keep a boolean for remembering which case we found
 	linePath := ""
-	path := ""
+	// path := ""
 	lastPath := ""
 	if strings.HasSuffix(string(line), "/") {
 		// Trim the non needed slash
 		linePath = strings.TrimSuffix(string(line), "/")
-		linePath = filepath.Dir(string(line))
+		// linePath = filepath.Dir(string(line))
 		// Get absolute path
-		path, _ = fs.Expand(string(linePath))
+		// path, _ = fs.Expand(string(linePath))
 
 	} else {
 		linePath = string(line)
-		linePath = filepath.Dir(string(line))
+		// linePath = filepath.Dir(string(line))
 		// Get absolute path
-		path, _ = fs.Expand(string(linePath))
+		// path, _ = fs.Expand(string(linePath))
 		// Save filter
 		lastPath = filepath.Base(string(line))
 	}
 
 	// 2) We take the absolute path we found, and get all dirs in it.
 	var dirs []string
-	files, _ := ioutil.ReadDir(path)
-	for _, file := range files {
-		if file.IsDir() {
-			dirs = append(dirs, file.Name())
+
+	rpc := ctx.Server.RPC
+	data, _ := proto.Marshal(&ghostpb.LsReq{
+		GhostID: ctx.CurrentAgent.ID,
+		Path:    linePath,
+	})
+	resp := <-rpc(&ghostpb.Envelope{
+		Type: ghostpb.MsgLsReq,
+		Data: data,
+	}, defaultTimeout)
+	if resp.Err != "" {
+		fmt.Printf(RPCError+"%s\n", resp.Err)
+		return
+	}
+
+	dirList := &ghostpb.Ls{}
+	err := proto.Unmarshal(resp.Data, dirList)
+	if err != nil {
+		fmt.Printf(Error+"Unmarshaling envelope error: %v\n", err)
+		return
+	}
+
+	for _, fileInfo := range dirList.Files {
+		if fileInfo.IsDir {
+			dirs = append(dirs, fileInfo.Name)
 		}
 	}
+
+	// files, _ := ioutil.ReadDir(path)
+	// for _, file := range files {
+	//         if file.IsDir() {
+	//                 dirs = append(dirs, file.Name())
+	//         }
+	// }
 
 	switch lastPath {
 	case "":
@@ -94,7 +125,6 @@ func (pc *PathCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (o
 				offset = sOffset
 			}
 		}
-
 	}
 
 	return options, offset

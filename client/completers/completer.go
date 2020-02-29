@@ -157,6 +157,9 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 		case "help":
 			comp := &AgentHelpCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
+		case "cd":
+			comp := &ImplantPathCompleter{Command: cmd}
+			options, offset = comp.Do(ctx, line, pos)
 		}
 
 	}
