@@ -28,6 +28,7 @@ import (
 	"github.com/maxlandon/wiregost/client/version"
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/certs"
+	"github.com/maxlandon/wiregost/server/config"
 	"github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/module/load"
 	"github.com/maxlandon/wiregost/server/transport"
@@ -60,7 +61,8 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Load server config here (interface and listening ports, between others)
+	// Load server config
+	servConf := config.LoadServerConfig()
 
 	// Check at least one user exists
 	err := users.CreateDefaultUser()
@@ -73,7 +75,7 @@ func main() {
 	core.InitStacks()
 
 	// Start client listener
-	listener, err := transport.StartClientListener("localhost", 1708)
+	listener, err := transport.StartClientListener(servConf.LHost, uint16(servConf.LPort))
 	if err != nil {
 		log.Printf("%s Failed to start MTLS client listener: %s", tui.RED, err.Error())
 	} else {
