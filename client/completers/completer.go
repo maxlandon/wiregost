@@ -158,8 +158,11 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 			comp := &AgentHelpCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		case "cd":
-			comp := &ImplantPathCompleter{Command: cmd}
-			options, offset = comp.Do(ctx, line, pos)
+			// Enable only if enabled in config
+			if ctx.SessionPathComplete {
+				comp := &ImplantPathCompleter{Command: cmd}
+				options, offset = comp.Do(ctx, line, pos)
+			}
 		}
 
 	}

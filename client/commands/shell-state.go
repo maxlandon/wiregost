@@ -45,6 +45,7 @@ type ShellContext struct {
 	// Agents
 	Ghosts *int
 	// Keep for prompt, until not needed anymore
-	CurrentAgent *clientpb.Ghost
-	AgentPwd     *string
+	CurrentAgent        *clientpb.Ghost
+	AgentPwd            *string
+	SessionPathComplete bool
 }

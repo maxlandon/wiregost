@@ -60,9 +60,10 @@ type Console struct {
 	listeners int
 
 	// Agents
-	ghosts       int
-	CurrentAgent *clientpb.Ghost
-	AgentPwd     string
+	ghosts              int
+	CurrentAgent        *clientpb.Ghost
+	AgentPwd            string
+	SessionPathComplete bool
 
 	// CommandShellContext
 	shellContext *commands.ShellContext
@@ -76,7 +77,8 @@ func NewConsole() *Console {
 
 	// [ New console ]
 	console := &Console{
-		menuContext: "main",
+		menuContext:         "main",
+		SessionPathComplete: conf.SessionPathCompletion,
 	}
 
 	// Set ModuleRequestID

@@ -30,19 +30,21 @@ import (
 )
 
 type ConsoleConfig struct {
-	Mode          string
-	Prompt        string
-	ImplantPrompt string
-	HistoryFile   string
+	Mode                  string
+	Prompt                string
+	ImplantPrompt         string
+	HistoryFile           string
+	SessionPathCompletion bool
 }
 
 func LoadConsoleConfig() *ConsoleConfig {
 	// Load a default console config, eventually parse one if found
 	conf := &ConsoleConfig{
-		Mode:          "emacs",
-		Prompt:        "",
-		ImplantPrompt: "",
-		HistoryFile:   "~/.wiregost-client/.history",
+		Mode:                  "emacs",
+		Prompt:                "",
+		ImplantPrompt:         "",
+		HistoryFile:           "~/.wiregost-client/.history",
+		SessionPathCompletion: false,
 	}
 
 	// Load config
@@ -106,10 +108,11 @@ var helpConfig = `
 
 # [ HELP ] ------------------------------------------------------//
 
-# Mode:             vim/emacs
-# HistoryFile:      relative/absolute path to history file
-# Prompt:           prompt string to use (below are examples and variables)
-# ImplantPrompt:    prompt string to use when interacting with an implant 
+# Mode:                     vim/emacs
+# HistoryFile:              relative/absolute path to history file
+# Prompt:                   prompt string to use (below are examples and variables)
+# ImplantPrompt:            prompt string to use when interacting with an implant 
+# SessionPathCompletion:    Enable session's path completer (will send ListDir requests often)
 
 # Prompt variables:
 # {pwd}         Current working directory of the client
