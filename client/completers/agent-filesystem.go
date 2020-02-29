@@ -53,6 +53,8 @@ func (pc *ImplantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos 
 		// Get absolute path
 		// path, _ = fs.Expand(string(linePath))
 
+	} else if string(line) == "" {
+		linePath = "."
 	} else {
 		linePath = string(line)
 		// linePath = filepath.Dir(string(line))
@@ -92,17 +94,15 @@ func (pc *ImplantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos 
 		}
 	}
 
-	// files, _ := ioutil.ReadDir(path)
-	// for _, file := range files {
-	//         if file.IsDir() {
-	//                 dirs = append(dirs, file.Name())
-	//         }
-	// }
-
 	switch lastPath {
 	case "":
 		for _, dir := range dirs {
-			search := dir + "/"
+			search := ""
+			if ctx.CurrentAgent.OS == "windows" {
+				search = dir + "\\"
+			} else {
+				search = dir + "/"
+			}
 			if !hasPrefix([]rune(lastPath), []rune(search)) {
 				sLine, sOffset := doInternal([]rune(lastPath), pos, len([]rune(lastPath)), []rune(search))
 				options = append(options, sLine...)
