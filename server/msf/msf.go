@@ -20,9 +20,11 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 
+	"github.com/maxlandon/wiregost/server/config"
 	"github.com/maxlandon/wiregost/server/log"
 )
 
@@ -190,8 +192,17 @@ func VenomPayload(config VenomConfig) ([]byte, error) {
 
 // venomCmd - Execute a msfvenom command
 func venomCmd(args []string) ([]byte, error) {
-	msfLog.Printf("%s %v", venomBin, args)
-	cmd := exec.Command(venomBin, args...)
+	// Check if a path to MSF has been specified
+	msfvenom := venomBin
+	servConf := config.LoadServerConfig()
+	if servConf.MsfDirPath != "" {
+		msfvenom = filepath.Join(servConf.MsfDirPath, venomBin)
+	}
+
+	msfLog.Printf("%s %v", msfvenom, args)
+	cmd := exec.Command(msfvenom, args...)
+	// msfLog.Printf("%s %v", venomBin, args)
+	// cmd := exec.Command(venomBin, args...)
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &stdout
@@ -206,7 +217,7 @@ func venomCmd(args []string) ([]byte, error) {
 	return stdout.Bytes(), err
 }
 
-// consoleCmd - Execute a msfvenom command
+// consoleCmd - Execute a msfconsole command
 func consoleCmd(args []string) ([]byte, error) {
 	cmd := exec.Command(consoleBin, args...)
 	var stdout bytes.Buffer
