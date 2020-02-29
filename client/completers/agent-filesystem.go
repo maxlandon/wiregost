@@ -46,22 +46,29 @@ func (pc *ImplantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos 
 	linePath := ""
 	// path := ""
 	lastPath := ""
-	if strings.HasSuffix(string(line), "/") {
-		// Trim the non needed slash
-		linePath = strings.TrimSuffix(string(line), "/")
-		// linePath = filepath.Dir(string(line))
-		// Get absolute path
-		// path, _ = fs.Expand(string(linePath))
+	switch ctx.CurrentAgent.OS {
+	case "windows":
+		if strings.HasSuffix(string(line), "\\") {
+			// Trim the non needed slash
+			linePath = string(line)
+		} else if string(line) == "" {
+			linePath = "."
+		} else {
+			splitPath := strings.Split(string(line), "\\")
+			linePath = strings.Join(splitPath[:len(splitPath)-1], "\\") + "\\"
+			lastPath = splitPath[len(splitPath)-1]
+		}
+	default:
+		if strings.HasSuffix(string(line), "/") {
+			// Trim the non needed slash
+			linePath = strings.TrimSuffix(string(line), "/")
 
-	} else if string(line) == "" {
-		linePath = "."
-	} else {
-		linePath = string(line)
-		// linePath = filepath.Dir(string(line))
-		// Get absolute path
-		// path, _ = fs.Expand(string(linePath))
-		// Save filter
-		lastPath = filepath.Base(string(line))
+		} else if string(line) == "" {
+			linePath = "."
+		} else {
+			linePath = string(line)
+			lastPath = filepath.Base(string(line))
+		}
 	}
 
 	// 2) We take the absolute path we found, and get all dirs in it.
@@ -118,7 +125,12 @@ func (pc *ImplantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos 
 		}
 
 		for _, dir := range filtered {
-			search := dir + "/"
+			search := ""
+			if ctx.CurrentAgent.OS == "windows" {
+				search = dir + "\\"
+			} else {
+				search = dir + "/"
+			}
 			if !hasPrefix([]rune(lastPath), []rune(search)) {
 				sLine, sOffset := doInternal([]rune(lastPath), pos, len([]rune(lastPath)), []rune(search))
 				options = append(options, sLine...)

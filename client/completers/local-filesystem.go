@@ -50,6 +50,9 @@ func (pc *PathCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (o
 		// Get absolute path
 		path, _ = fs.Expand(string(linePath))
 
+	} else if string(line) == "" {
+		linePath = "."
+		path, _ = fs.Expand(string(linePath))
 	} else {
 		linePath = string(line)
 		linePath = filepath.Dir(string(line))
