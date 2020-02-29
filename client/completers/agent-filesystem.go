@@ -44,7 +44,6 @@ func (pc *ImplantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos 
 	//      - The path is not a slash: a filter to keep for later.
 	// We keep a boolean for remembering which case we found
 	linePath := ""
-	// path := ""
 	lastPath := ""
 	switch ctx.CurrentAgent.OS {
 	case "windows":
@@ -60,13 +59,32 @@ func (pc *ImplantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos 
 		}
 	default:
 		if strings.HasSuffix(string(line), "/") {
-			// Trim the non needed slash
-			linePath = strings.TrimSuffix(string(line), "/")
+			// If the the line is just "/", it means we start from filesystem root
+			if string(line) == "/" {
+				linePath = "/"
+			} else if string(line) == "~/" {
+				// If we look for "~", we need to build the path manually
+				linePath = filepath.Join("/home", ctx.CurrentAgent.Username)
+
+			} else if strings.HasPrefix(string(line), "~/") && string(line) != "~/" {
+				// If we used the "~" at the beginning, we still need to build the path
+				homePath := filepath.Join("/home", ctx.CurrentAgent.Username)
+				linePath = filepath.Join(homePath, strings.TrimPrefix(string(line), "~/"))
+			} else {
+				// Trim the non needed slash
+				linePath = strings.TrimSuffix(string(line), "/")
+			}
+		} else if strings.HasPrefix(string(line), "~/") && string(line) != "~/" {
+			// If we used the "~" at the beginning, we still need to build the path
+			homePath := filepath.Join("/home", ctx.CurrentAgent.Username)
+			linePath = filepath.Join(homePath, filepath.Dir(strings.TrimPrefix(string(line), "~/")))
+			lastPath = filepath.Base(string(line))
 
 		} else if string(line) == "" {
 			linePath = "."
 		} else {
-			linePath = string(line)
+			// linePath = string(line)
+			linePath = filepath.Dir(string(line))
 			lastPath = filepath.Base(string(line))
 		}
 	}
