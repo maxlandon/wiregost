@@ -17,12 +17,18 @@
 package rpc
 
 import (
+	"encoding/json"
+	"fmt"
+	"strings"
 	"time"
 
+	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
 
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
+	"github.com/maxlandon/wiregost/server/c2"
 	"github.com/maxlandon/wiregost/server/core"
+	"github.com/maxlandon/wiregost/server/db"
 )
 
 func rpcJobs(_ []byte, timeout time.Duration, resp RPCResponse) {
@@ -56,6 +62,7 @@ func rpcJobKill(data []byte, timeout time.Duration, resp RPCResponse) {
 	}
 	job := core.Jobs.Job(int(jobKillReq.ID))
 	jobKill := &clientpb.JobKill{ID: int32(job.ID)}
+	// kill job
 	if job != nil {
 		job.JobCtrl <- true
 		jobKill.Success = true
@@ -63,6 +70,30 @@ func rpcJobKill(data []byte, timeout time.Duration, resp RPCResponse) {
 		jobKill.Success = false
 		jobKill.Err = "Invalid Job ID"
 	}
+
+	// If persistent listener, delete config
+	var persist = fmt.Sprintf("%s[P]%s ", tui.GREEN, tui.RESET)
+	if job.Protocol != "" && strings.HasPrefix(job.Description, persist) {
+		bucket, _ := db.GetBucket(c2.ListenerBucketName)
+		ls, _ := bucket.List(c2.ListenerNamespace)
+
+		// listeners := []*c2.ListenerConfig{}
+		for _, listener := range ls {
+			rawListener, err := bucket.Get(listener)
+			if err != nil {
+				fmt.Println(err)
+			}
+			config := &c2.ListenerConfig{}
+			err = json.Unmarshal(rawListener, config)
+			if err != nil {
+				fmt.Println(err)
+			}
+			if config.LPort == job.Port && config.Description == job.Description && config.Name == job.Name {
+				bucket.Delete(listener)
+			}
+		}
+	}
+
 	data, err = proto.Marshal(jobKill)
 	resp(data, err)
 }

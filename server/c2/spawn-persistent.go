@@ -42,20 +42,20 @@ var persist = fmt.Sprintf("%s[P]%s ", tui.GREEN, tui.RESET)
 
 func SpawnPersistentListeners() error {
 
-	bucket, err := db.GetBucket(listenerBucketName)
+	bucket, err := db.GetBucket(ListenerBucketName)
 	if err != nil {
 		return err
 	}
 
 	// Get all listener configs
-	ls, err := bucket.List(listenerNamespace)
-	listeners := []*listenerConfig{}
+	ls, err := bucket.List(ListenerNamespace)
+	listeners := []*ListenerConfig{}
 	for _, listener := range ls {
 		rawListener, err := bucket.Get(listener)
 		if err != nil {
 			fmt.Println(err)
 		}
-		config := &listenerConfig{}
+		config := &ListenerConfig{}
 		err = json.Unmarshal(rawListener, config)
 		if err != nil {
 			fmt.Println(err)
@@ -77,7 +77,7 @@ func SpawnPersistentListeners() error {
 	return nil
 }
 
-func SpawnListener(config *listenerConfig) error {
+func SpawnListener(config *ListenerConfig) error {
 
 	switch config.Name {
 	case "mTLS":
@@ -121,7 +121,7 @@ func SpawnListener(config *listenerConfig) error {
 	return nil
 }
 
-func SpawnMTLS(config *listenerConfig) error {
+func SpawnMTLS(config *ListenerConfig) error {
 
 	ln, err := StartMutualTLSListener(config.LHost, config.LPort)
 	if err != nil {
@@ -156,12 +156,12 @@ func SpawnMTLS(config *listenerConfig) error {
 	return nil
 }
 
-func SpawnHTTP(config *listenerConfig) error {
+func SpawnHTTP(config *ListenerConfig) error {
 
 	return nil
 }
 
-func SpawnHTTPS(config *listenerConfig) error {
+func SpawnHTTPS(config *ListenerConfig) error {
 
 	addr := fmt.Sprintf("%s:%d", config.LHost, config.LPort)
 	certFile, _ := fs.Expand(config.Certificate)
@@ -232,7 +232,7 @@ func SpawnHTTPS(config *listenerConfig) error {
 	return nil
 }
 
-func SpawnDNS(config *listenerConfig) error {
+func SpawnDNS(config *ListenerConfig) error {
 
 	server := StartDNSListener(config.DNSDomains, config.EnableCanaries)
 	description := fmt.Sprintf("%s%s (canaries %v)", persist, strings.Join(config.DNSDomains, " "), config.EnableCanaries)
@@ -278,7 +278,7 @@ func SpawnDNS(config *listenerConfig) error {
 	return nil
 }
 
-func SpawnTCPStager(config *listenerConfig) error {
+func SpawnTCPStager(config *ListenerConfig) error {
 
 	conf := &generate.GhostConfig{}
 	ghostBytes := []byte{}
@@ -353,7 +353,7 @@ func SpawnTCPStager(config *listenerConfig) error {
 	return nil
 }
 
-func SpawnHTTPStager(config *listenerConfig) error {
+func SpawnHTTPStager(config *ListenerConfig) error {
 
 	conf := &generate.GhostConfig{}
 	ghostBytes := []byte{}
@@ -449,7 +449,7 @@ func SpawnHTTPStager(config *listenerConfig) error {
 	return nil
 }
 
-func SpawnHTTPSStager(config *listenerConfig) error {
+func SpawnHTTPSStager(config *ListenerConfig) error {
 
 	conf := &generate.GhostConfig{}
 	ghostBytes := []byte{}

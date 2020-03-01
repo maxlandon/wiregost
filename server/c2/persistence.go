@@ -27,12 +27,12 @@ import (
 )
 
 var (
-	listenerBucketName = "listeners"
-	listenerNamespace  = "listener"
+	ListenerBucketName = "listeners"
+	ListenerNamespace  = "listener"
 	storageLog         = log.ServerLogger("listeners", "persistence")
 )
 
-type listenerConfig struct {
+type ListenerConfig struct {
 	// ID
 	ID int32 `json:"id"`
 	// All
@@ -60,7 +60,7 @@ type listenerConfig struct {
 
 func PersistMTLS(job *core.Job, lhost string) error {
 
-	listener := &listenerConfig{
+	listener := &ListenerConfig{
 		ID:          rand.Int31(),
 		LHost:       lhost,
 		LPort:       job.Port,
@@ -69,7 +69,7 @@ func PersistMTLS(job *core.Job, lhost string) error {
 		Description: job.Description,
 	}
 
-	bucket, err := db.GetBucket(listenerBucketName)
+	bucket, err := db.GetBucket(ListenerBucketName)
 	if err != nil {
 		return err
 	}
@@ -80,13 +80,13 @@ func PersistMTLS(job *core.Job, lhost string) error {
 	storageLog.Infof("Saved persistent listener (name: %s proto: %s, address: %s:%d) ",
 		listener.Name, listener.Protocol, listener.LHost, listener.LPort)
 
-	key := fmt.Sprintf("%s.%s_%s-%d_%d", listenerNamespace, listener.Protocol, listener.LHost, listener.LPort, listener.ID)
+	key := fmt.Sprintf("%s.%s_%s-%d_%d", ListenerNamespace, listener.Protocol, listener.LHost, listener.LPort, listener.ID)
 	return bucket.Set(key, rawListener)
 }
 
 func PersistDNS(job *core.Job, enableCanaries bool, dnsDomains []string) error {
 
-	listener := &listenerConfig{
+	listener := &ListenerConfig{
 		ID:             rand.Int31(),
 		LPort:          job.Port,
 		Protocol:       job.Protocol,
@@ -96,7 +96,7 @@ func PersistDNS(job *core.Job, enableCanaries bool, dnsDomains []string) error {
 		EnableCanaries: enableCanaries,
 	}
 
-	bucket, err := db.GetBucket(listenerBucketName)
+	bucket, err := db.GetBucket(ListenerBucketName)
 	if err != nil {
 		return err
 	}
@@ -107,13 +107,13 @@ func PersistDNS(job *core.Job, enableCanaries bool, dnsDomains []string) error {
 	storageLog.Infof("Saved persistent listener (name: %s proto: %s, address: %s:%d) ",
 		listener.Name, listener.Protocol, listener.LHost, listener.LPort)
 
-	key := fmt.Sprintf("%s.%s_%s-%d_%d", listenerNamespace, listener.Protocol, listener.LHost, listener.LPort, listener.ID)
+	key := fmt.Sprintf("%s.%s_%s-%d_%d", ListenerNamespace, listener.Protocol, listener.LHost, listener.LPort, listener.ID)
 	return bucket.Set(key, rawListener)
 }
 
 func PersistHTTPS(job *core.Job, lhost string, cert string, key string, secure bool, domain string, website string, lets_encrypt bool) error {
 
-	listener := &listenerConfig{
+	listener := &ListenerConfig{
 		ID:          rand.Int31(),
 		LHost:       lhost,
 		LPort:       job.Port,
@@ -128,7 +128,7 @@ func PersistHTTPS(job *core.Job, lhost string, cert string, key string, secure b
 		LetsEncrypt: lets_encrypt,
 	}
 
-	bucket, err := db.GetBucket(listenerBucketName)
+	bucket, err := db.GetBucket(ListenerBucketName)
 	if err != nil {
 		return err
 	}
@@ -139,13 +139,13 @@ func PersistHTTPS(job *core.Job, lhost string, cert string, key string, secure b
 	storageLog.Infof("Saved persistent listener (name: %s proto: %s, address: %s:%d) ",
 		listener.Name, listener.Protocol, listener.LHost, listener.LPort)
 
-	bucketKey := fmt.Sprintf("%s.%s_%s-%d_%d", listenerNamespace, listener.Protocol, listener.LHost, listener.LPort, listener.ID)
+	bucketKey := fmt.Sprintf("%s.%s_%s-%d_%d", ListenerNamespace, listener.Protocol, listener.LHost, listener.LPort, listener.ID)
 	return bucket.Set(bucketKey, rawListener)
 }
 
 func PersistTCPStager(job *core.Job, lhost string, implantStage string) error {
 
-	listener := &listenerConfig{
+	listener := &ListenerConfig{
 		ID:           rand.Int31(),
 		LHost:        lhost,
 		LPort:        job.Port,
@@ -155,7 +155,7 @@ func PersistTCPStager(job *core.Job, lhost string, implantStage string) error {
 		ImplantStage: implantStage,
 	}
 
-	bucket, err := db.GetBucket(listenerBucketName)
+	bucket, err := db.GetBucket(ListenerBucketName)
 	if err != nil {
 		return err
 	}
@@ -166,13 +166,13 @@ func PersistTCPStager(job *core.Job, lhost string, implantStage string) error {
 	storageLog.Infof("Saved persistent listener (name: %s proto: %s, address: %s:%d) ",
 		listener.Name, listener.Protocol, listener.LHost, listener.LPort)
 
-	key := fmt.Sprintf("%s.%s_%s-%d_%d", listenerNamespace, listener.Protocol, listener.LHost, listener.LPort, listener.ID)
+	key := fmt.Sprintf("%s.%s_%s-%d_%d", ListenerNamespace, listener.Protocol, listener.LHost, listener.LPort, listener.ID)
 	return bucket.Set(key, rawListener)
 }
 
 func PersistHTTPStager(job *core.Job, lhost string, implantStage string) error {
 
-	listener := &listenerConfig{
+	listener := &ListenerConfig{
 		ID:           rand.Int31(),
 		LHost:        lhost,
 		LPort:        job.Port,
@@ -182,7 +182,7 @@ func PersistHTTPStager(job *core.Job, lhost string, implantStage string) error {
 		ImplantStage: implantStage,
 	}
 
-	bucket, err := db.GetBucket(listenerBucketName)
+	bucket, err := db.GetBucket(ListenerBucketName)
 	if err != nil {
 		return err
 	}
@@ -193,13 +193,13 @@ func PersistHTTPStager(job *core.Job, lhost string, implantStage string) error {
 	storageLog.Infof("Saved persistent listener (name: %s proto: %s, address: %s:%d) ",
 		listener.Name, listener.Protocol, listener.LHost, listener.LPort)
 
-	key := fmt.Sprintf("%s.%s_%s-%d_%d", listenerNamespace, listener.Protocol, listener.LHost, listener.LPort, listener.ID)
+	key := fmt.Sprintf("%s.%s_%s-%d_%d", ListenerNamespace, listener.Protocol, listener.LHost, listener.LPort, listener.ID)
 	return bucket.Set(key, rawListener)
 }
 
 func PersistHTTPSStager(job *core.Job, lhost string, implantStage string) error {
 
-	listener := &listenerConfig{
+	listener := &ListenerConfig{
 		ID:           rand.Int31(),
 		LHost:        lhost,
 		LPort:        job.Port,
@@ -209,7 +209,7 @@ func PersistHTTPSStager(job *core.Job, lhost string, implantStage string) error 
 		ImplantStage: implantStage,
 	}
 
-	bucket, err := db.GetBucket(listenerBucketName)
+	bucket, err := db.GetBucket(ListenerBucketName)
 	if err != nil {
 		return err
 	}
@@ -220,6 +220,6 @@ func PersistHTTPSStager(job *core.Job, lhost string, implantStage string) error 
 	storageLog.Infof("Saved persistent listener (name: %s proto: %s, address: %s:%d) ",
 		listener.Name, listener.Protocol, listener.LHost, listener.LPort)
 
-	key := fmt.Sprintf("%s.%s_%s-%d_%d", listenerNamespace, listener.Protocol, listener.LHost, listener.LPort, listener.ID)
+	key := fmt.Sprintf("%s.%s_%s-%d_%d", ListenerNamespace, listener.Protocol, listener.LHost, listener.LPort, listener.ID)
 	return bucket.Set(key, rawListener)
 }
