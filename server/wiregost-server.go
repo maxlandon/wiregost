@@ -27,6 +27,7 @@ import (
 
 	"github.com/maxlandon/wiregost/client/version"
 	"github.com/maxlandon/wiregost/server/assets"
+	"github.com/maxlandon/wiregost/server/c2"
 	"github.com/maxlandon/wiregost/server/certs"
 	"github.com/maxlandon/wiregost/server/config"
 	"github.com/maxlandon/wiregost/server/core"
@@ -72,7 +73,13 @@ func main() {
 
 	// Initialize Module Stacks
 	load.LoadModules()
-	core.InitStacks()
+	core.LoadStacks()
+
+	// Spawn persistent listeners
+	err = c2.SpawnPersistentListeners()
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	// Start client listener
 	listener, err := transport.StartClientListener(servConf.LHost, uint16(servConf.LPort))

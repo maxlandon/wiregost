@@ -63,8 +63,9 @@ func rpcStackUse(data []byte, timeout time.Duration, resp RPCResponse) {
 
 		data, err = proto.Marshal(stackUse)
 		resp(data, err)
-		// If found, send it
+
 	} else {
+		// If found, send it
 		mod = (*stack.Loaded)[path]
 		module := []*clientpb.Module{mod.ToProtobuf()}
 		stackUse := &clientpb.Stack{

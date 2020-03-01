@@ -23,6 +23,7 @@ import (
 	"github.com/maxlandon/wiregost/data_service/remote"
 	pb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/certs"
+	"github.com/maxlandon/wiregost/server/log"
 )
 
 var (
@@ -70,42 +71,15 @@ func AddModule(path string, mod Module) error {
 }
 
 var (
-	// Stacks - All module stacks (one per workspace),
-	// which can be loaded/unloaded on demand, pulling from Modules
+	// Stacks - All module stacks (one per workspace, per user),
 	Stacks = &map[uint]map[string]*stack{}
+
+	storageLog = log.ServerLogger("core", "stack")
 )
 
 type stack struct {
 	Loaded *map[string]Module
 	mutex  *sync.RWMutex
-}
-
-// InitStacks - Creates a new stack for each workspace in Wiregost
-func InitStacks() {
-	clientCerts := certs.UserClientListCertificates()
-
-	users := []string{}
-	for _, c := range clientCerts {
-		users = append(users, c.Subject.CommonName)
-	}
-	users = unique(users)
-
-	workspaces, _ := remote.Workspaces(nil)
-	for _, w := range workspaces {
-		for _, user := range users {
-			userStack := &map[string]*stack{}
-			(*userStack)[user] = &stack{}
-			(*Stacks)[w.ID] = (*userStack)
-		}
-	}
-
-	for _, v := range *Stacks {
-		for _, u := range users {
-			v[u] = &stack{}
-			v[u].Loaded = &map[string]Module{}
-			v[u].mutex = &sync.RWMutex{}
-		}
-	}
 }
 
 // LoadModule - Load a module onto the stack, by fetching it into Modules
@@ -147,6 +121,32 @@ func (s *stack) Module(userID int32, path string) (Module, error) {
 		return mod, nil
 	}
 
+}
+
+func LoadStacks() error {
+	// Users
+	clientCerts := certs.UserClientListCertificates()
+	users := []string{}
+	for _, c := range clientCerts {
+		users = append(users, c.Subject.CommonName)
+	}
+	users = unique(users)
+
+	// Workspaces
+	workspaces, _ := remote.Workspaces(nil)
+
+	// Init stack maps, to modify them later if needed
+	for _, w := range workspaces {
+		workspaceStacks := &map[string]*stack{}
+		(*Stacks)[w.ID] = (*workspaceStacks)
+		for _, user := range users {
+			(*workspaceStacks)[user] = &stack{}
+			(*workspaceStacks)[user].Loaded = &map[string]Module{}
+			(*workspaceStacks)[user].mutex = &sync.RWMutex{}
+		}
+	}
+
+	return nil
 }
 
 func unique(intSlice []string) []string {
