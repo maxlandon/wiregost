@@ -17,9 +17,14 @@
 package handlers
 
 import (
+	"context"
+	"fmt"
+	"strings"
+
 	"github.com/gogo/protobuf/proto"
 
 	consts "github.com/maxlandon/wiregost/client/constants"
+	"github.com/maxlandon/wiregost/data_service/remote"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/log"
@@ -69,6 +74,21 @@ func registerGhostHandler(ghost *core.Ghost, data []byte) {
 	ghost.Filename = register.Filename
 	ghost.ActiveC2 = register.ActiveC2
 	ghost.Version = register.Version
+
+	// Register workspace and host
+	if register.WorkspaceID != 0 {
+		ghost.WorkspaceID = uint(register.WorkspaceID)
+	} else {
+		ghost.WorkspaceID = uint(1) // Default workspace
+	}
+	id, err := registerHostToDB(ghost)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if id != 0 {
+		ghost.HostID = id
+	}
+
 	core.Wire.AddGhost(ghost)
 }
 
@@ -100,4 +120,40 @@ func tunnelCloseHandler(ghost *core.Ghost, data []byte) {
 	} else {
 		handlerLog.Warnf("Warning: Ghost %d attempted to close tunnel it did not own", ghost.ID)
 	}
+}
+
+func registerHostToDB(ghost *core.Ghost) (hostID uint, err error) {
+
+	opts := hostFilters(ghost)
+
+	wsID := uint(1)
+	if ghost.WorkspaceID != 0 {
+		wsID = ghost.WorkspaceID
+	}
+	fmt.Println(wsID)
+	rootCtx := context.Background()
+	ctx := context.WithValue(rootCtx, "workspace_id", wsID)
+
+	host, err := remote.ReportHost(ctx, opts)
+	if err != nil {
+		return 0, err
+	} else {
+		fmt.Println(host.ID)
+		return host.ID, nil
+	}
+}
+
+func hostFilters(ghost *core.Ghost) (opts map[string]interface{}) {
+	opts = make(map[string]interface{}, 0)
+
+	opts["os_name"] = ghost.OS
+	opts["os_sp"] = ghost.Version
+	opts["arch"] = ghost.Arch
+	opts["addresses"] = []string{strings.Split(ghost.RemoteAddress, ":")[0]}
+	opts["hostname"] = ghost.Hostname
+	opts["usernames"] = ghost.Username
+	opts["alive"] = true
+	fmt.Println(opts)
+
+	return opts
 }

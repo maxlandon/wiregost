@@ -18,6 +18,7 @@ require (
 	github.com/hinshun/vt10x v0.0.0-20180809195222-d55458df857c // indirect
 	github.com/jinzhu/gorm v1.9.12
 	github.com/kr/pty v1.1.8 // indirect
+	github.com/lib/pq v1.1.1
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.11 // indirect
 	github.com/mattn/go-runewidth v0.0.8 // indirect

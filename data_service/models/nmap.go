@@ -212,6 +212,8 @@ type Element struct {
 
 // Status represents a host's status
 type Status struct {
+	ID        uint
+	HostID    uint    `gorm:"not null"`
 	State     string  `xml:"state,attr"`
 	Reason    string  `xml:"reason,attr"`
 	ReasonTTL float32 `xml:"reason_ttl,attr"`
@@ -223,8 +225,10 @@ func (s Status) String() string {
 
 // Hostname is a name for a host.
 type Hostname struct {
-	Name string `xml:"name,attr"`
-	Type string `xml:"type,attr"`
+	ID     uint
+	HostID uint   `gorm:"not null"`
+	Name   string `xml:"name,attr"`
+	Type   string `xml:"type,attr"`
 }
 
 func (h Hostname) String() string {

@@ -18,6 +18,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 	"time"
@@ -33,9 +34,10 @@ type Host struct {
 	WorkspaceID uint `gorm:"not null"`
 
 	// General
-	MAC  string
-	Comm string
-	Name string
+	MAC       string
+	Comm      string
+	Usernames string
+	Name      string
 
 	// Operating system (filled by other tools when OS is determined)
 	OSName   string
@@ -146,6 +148,7 @@ func (db *DB) Hosts(wsID *uint, opts map[string]interface{}) (hosts []*Host, err
 func (db *DB) ReportHost(wsID uint, opts map[string]interface{}) (host *Host, err error) {
 
 	// Queries are always in a workspace context:
+	fmt.Println(wsID)
 	tx := db.Where("workspace_id = ?", wsID)
 	tx = parseHostOptions(opts, tx)
 
@@ -160,21 +163,49 @@ func (db *DB) ReportHost(wsID uint, opts map[string]interface{}) (host *Host, er
 		}
 		delete(opts, "addresses")
 	}
+	hostnames, found := opts["hostname"]
+	if found {
+		delete(opts, "hostname")
+	}
+	_, userFound := opts["usernames"]
+	if userFound {
+		delete(opts, "usernames")
+	}
+	state, _ := opts["alive"].(bool)
+	if state {
+		delete(opts, "alive")
+	}
 
 	// If no address was given, or none matched, no need to query
 	host = NewHost(wsID)
 	tx = parseHostOptions(opts, tx)
 
 	if tx = db.FirstOrCreate(&host, opts); tx.Error != nil {
+		fmt.Println("error here")
 		return nil, tx.Error
 	} else {
+		fmt.Println("no here in first of create")
 		if addrFound {
 			for _, a := range parseAddresses(addrs) {
 				a.HostID = host.ID
 				host.Addresses = append(host.Addresses, a)
 			}
-			db.Save(&host)
 		}
+		if found {
+			for _, a := range parseHostnames(hostnames) {
+				a.HostID = host.ID
+				host.Hostnames = append(host.Hostnames, a)
+			}
+		}
+		if state {
+			host.Status = Status{HostID: host.ID, State: "alive"}
+		}
+		if userFound {
+			// host.Usernames = usernames.(string)
+		}
+
+		db.Save(&host)
+		fmt.Println("error after save")
 		return host, nil
 	}
 }
@@ -323,6 +354,7 @@ func parseHostOptions(opts map[string]interface{}, tx *gorm.DB) *gorm.DB {
 			osNames = append(osNames, "%"+o+"%")
 		}
 		tx = tx.Where("os_name ILIKE ANY(ARRAY[?])", osNames)
+		fmt.Println(osNames)
 	}
 
 	osFlav, found := opts["os_flavor"]
@@ -333,6 +365,7 @@ func parseHostOptions(opts map[string]interface{}, tx *gorm.DB) *gorm.DB {
 			osFlavors = append(osFlavors, "%"+o+"%")
 		}
 		tx = tx.Where("os_flavor ILIKE ANY(ARRAY[?])", osFlavors)
+		fmt.Println(osFlavors)
 	}
 
 	osFam, found := opts["os_family"]
@@ -343,16 +376,18 @@ func parseHostOptions(opts map[string]interface{}, tx *gorm.DB) *gorm.DB {
 			osFams = append(osFams, "%"+o+"%")
 		}
 		tx = tx.Where("os_family ILIKE ANY(ARRAY[?])", osFams)
+		fmt.Println(osFams)
 	}
 
 	arch, found := opts["arch"]
 	if found {
-		os := strings.Split(arch.(string), ",")
-		archs := []string{}
-		for _, o := range os {
-			archs = append(archs, "%"+o+"%")
-		}
-		tx = tx.Where("arch ILIKE ANY(ARRAY[?])", archs)
+		tx = tx.Where("arch = ?", arch.(string))
+	}
+
+	hostname, found := opts["hostname"]
+	if found {
+
+		tx = tx.Where("name = ?", hostname.(string))
 	}
 
 	return tx
@@ -372,4 +407,18 @@ func parseAddresses(addrs interface{}) (addresses []Address) {
 		}
 	}
 	return addresses
+}
+
+func parseHostnames(names interface{}) (hostnames []Hostname) {
+
+	switch namesList := names.(type) {
+	case []interface{}:
+		for _, name := range namesList {
+			a := Hostname{
+				Name: name.(string),
+			}
+			hostnames = append(hostnames, a)
+		}
+	}
+	return hostnames
 }

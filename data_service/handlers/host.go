@@ -18,6 +18,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -113,6 +114,7 @@ func (hh *HostHandler) reportHost(w http.ResponseWriter, r *http.Request) {
 
 	ws, _ := strconv.ParseUint(r.Header.Get("Workspace_id"), 10, 32)
 	wsID := uint(ws)
+	fmt.Println(wsID)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -127,12 +129,14 @@ func (hh *HostHandler) reportHost(w http.ResponseWriter, r *http.Request) {
 	var opts map[string]interface{}
 	err = json.Unmarshal(b, &opts)
 	if err != nil {
+		fmt.Println("error unmarshaling")
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
 	host, err := hh.DB.ReportHost(wsID, opts)
 	if err != nil {
+		fmt.Println("error after reporting host")
 		http.Error(w, err.Error(), 500)
 		return
 	}

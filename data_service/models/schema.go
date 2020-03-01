@@ -26,6 +26,8 @@ func (db *DB) MigrateSchema() error {
 
 	// Hosts
 	db.AutoMigrate(&Host{})
+	db.AutoMigrate(&Hostname{})
+	db.AutoMigrate(&Status{})
 
 	db.Model(&Host{}).AddForeignKey("workspace_id", "workspaces(id)", "CASCADE", "CASCADE")
 

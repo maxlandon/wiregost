@@ -21,7 +21,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/maxlandon/wiregost/data_service/models"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/sirupsen/logrus"
@@ -59,7 +58,7 @@ type Ghost struct {
 
 	// Added
 	WorkspaceID uint
-	Host        *models.Host
+	HostID      uint
 
 	// Logging
 	Logger *logrus.Entry
@@ -92,8 +91,8 @@ func (g *Ghost) ToProtobuf() *clientpb.Ghost {
 		ActiveC2:      g.ActiveC2,
 
 		// Added
-		// WorkspaceID: uint32(g.WorkspaceID),
-		// HostID:      uint32(g.Host.ID),
+		WorkspaceID: uint32(g.WorkspaceID),
+		HostID:      uint32(g.HostID),
 	}
 }
 
