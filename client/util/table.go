@@ -36,10 +36,12 @@ func Table() *tablewriter.Table {
 	table.SetCenterSeparator(fmt.Sprintf("%s|%s", tui.FOREBLACK, tui.RESET))
 	table.SetColumnSeparator(fmt.Sprintf("%s|%s", tui.FOREBLACK, tui.RESET))
 	table.SetRowSeparator(tui.Dim("-"))
-	table.SetAutoWrapText(true)
-	table.SetColWidth(20)
+	table.SetAutoWrapText(false)
+	table.SetColWidth(30)
+	table.SetAutoFormatHeaders(false)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	table.SetBorder(false)
+	table.SetReflowDuringAutoWrap(false)
 
 	return table
 }
@@ -186,7 +188,6 @@ func SortListenerOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 	if k, v := opts["DisableCanaries"]; v {
 		keys = append(keys, k.Name)
 	}
-
 	// Stager Payloads
 	if _, v := opts["LHostListener"]; v {
 		keys = append(keys, "LHostListener")
@@ -198,6 +199,12 @@ func SortListenerOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 	if _, v := opts["StageImplant"]; v {
 		keys = append(keys, "StageImplant")
 	}
+
+	// All
+	if k, v := opts["Persist"]; v {
+		keys = append(keys, k.Name)
+	}
+
 	return keys
 }
 

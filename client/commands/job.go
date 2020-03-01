@@ -134,7 +134,8 @@ func printJobs(jobs map[int32]*clientpb.Job) {
 
 	tab := util.Table()
 	tab.SetHeader([]string{"ID", "Name", "Protocol", "Port", "Description"})
-	tab.SetColWidth(80)
+	tab.SetColWidth(50)
+	tab.SetColMinWidth(4, 30)
 	tab.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -149,7 +150,9 @@ func printJobs(jobs map[int32]*clientpb.Job) {
 
 	for _, k := range keys {
 		job := jobs[int32(k)]
-		tab.Append([]string{strconv.Itoa(int(job.ID)), job.Name, job.Protocol, strconv.Itoa(int(job.Port)), job.Description})
+		description := util.Wrap(job.Description, 100)
+		tab.Append([]string{strconv.Itoa(int(job.ID)), job.Name, job.Protocol, strconv.Itoa(int(job.Port)), description})
+		// tab.Append([]string{strconv.Itoa(int(job.ID)), job.Name, job.Protocol, strconv.Itoa(int(job.Port)), job.Description})
 	}
 
 	tab.Render()
