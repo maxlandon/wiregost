@@ -35,6 +35,8 @@ const (
 
 	// MsgUserReq - Add a user and create its config
 	MsgUserReq
+	// MsgDeleteUserReq -  Delete a user from the server
+	MsgDeleteUserReq
 	// MsgUser - Success/failure of user creation request
 	MsgUser
 
@@ -87,6 +89,7 @@ const (
 	MsgGenerate
 	MsgNewProfile
 	MsgProfiles
+	MsgDeleteProfile
 	MsgTask
 	MsgMigrate
 	MsgGetSystemReq

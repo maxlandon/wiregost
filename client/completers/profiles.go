@@ -64,12 +64,27 @@ func (oc *ProfileCompleter) Do(ctx *commands.ShellContext, line []rune, pos int)
 		(*profiles)[profile.Name] = profile
 	}
 
-	for k, _ := range *profiles {
-		search := k
-		if !hasPrefix(line, []rune(search)) {
-			sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-			options = append(options, sLine...)
-			offset = sOffset
+	switch oc.Command.Name {
+	case "parse_profile":
+		for k, _ := range *profiles {
+			search := k
+			if !hasPrefix(line, []rune(search)) {
+				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+				options = append(options, sLine...)
+				offset = sOffset
+			}
+		}
+	case "profiles":
+		switch splitLine[0] {
+		case "delete":
+			for k, _ := range *profiles {
+				search := k
+				if !hasPrefix(line, []rune(search)) {
+					sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+					options = append(options, sLine...)
+					offset = sOffset
+				}
+			}
 		}
 	}
 

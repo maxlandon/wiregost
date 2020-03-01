@@ -21,6 +21,7 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
+	"github.com/maxlandon/wiregost/server/db"
 	"github.com/maxlandon/wiregost/server/generate"
 )
 
@@ -34,4 +35,30 @@ func rpcListProfiles(data []byte, timeout time.Duration, resp RPCResponse) {
 	}
 	data, err := proto.Marshal(profiles)
 	resp(data, err)
+}
+
+func rpcDeleteProfile(data []byte, timeout time.Duration, resp RPCResponse) {
+
+	profileReq := &clientpb.Profile{}
+	err := proto.Unmarshal(data, profileReq)
+	if err != nil {
+		resp(data, err)
+	}
+
+	bucket, err := db.GetBucket(generate.ProfilesBucketName)
+	if err != nil {
+		profileReq.Name = err.Error()
+		data, err = proto.Marshal(profileReq)
+		resp(data, err)
+	}
+
+	err = bucket.Delete(profileReq.Name)
+	if err != nil {
+		profileReq.Name = err.Error()
+		data, err = proto.Marshal(profileReq)
+		resp(data, err)
+	} else {
+		data, err = proto.Marshal(profileReq)
+		resp(data, err)
+	}
 }

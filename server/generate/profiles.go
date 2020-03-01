@@ -23,12 +23,12 @@ import (
 )
 
 const (
-	profilesBucketName = "profiles"
+	ProfilesBucketName = "profiles"
 )
 
 // ProfileSave - Save a ghost profile to disk
 func ProfileSave(name string, config *GhostConfig) error {
-	bucket, err := db.GetBucket(profilesBucketName)
+	bucket, err := db.GetBucket(ProfilesBucketName)
 	if err != nil {
 		return err
 	}
@@ -41,7 +41,7 @@ func ProfileSave(name string, config *GhostConfig) error {
 
 // ProfileByName - Fetch a single profile from the database
 func ProfileByName(name string) (*GhostConfig, error) {
-	bucket, err := db.GetBucket(profilesBucketName)
+	bucket, err := db.GetBucket(ProfilesBucketName)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func ProfileByName(name string) (*GhostConfig, error) {
 
 // Profiles - Fetch a map of name<->profiles current in the database
 func Profiles() map[string]*GhostConfig {
-	bucket, err := db.GetBucket(profilesBucketName)
+	bucket, err := db.GetBucket(ProfilesBucketName)
 	if err != nil {
 		return nil
 	}

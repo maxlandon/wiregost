@@ -138,7 +138,7 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 		case "stack":
 			comp := &StackCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
-		case "parse_profile":
+		case "profiles", "parse_profile":
 			comp := &ProfileCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		case "user":

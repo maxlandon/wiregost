@@ -32,15 +32,56 @@ func RegisterProfileCommands() {
 
 	profiles := &Command{
 		Name: "profiles",
+		SubCommands: []string{
+			"delete",
+		},
 		Handle: func(r *Request) error {
-			fmt.Println()
-			listProfiles(r.context.Server.RPC)
+			switch length := len(r.Args); {
+			case length == 0:
+				fmt.Println()
+				listProfiles(r.context.Server.RPC)
+			case length > 1:
+				switch r.Args[0] {
+				case "delete":
+					deleteProfile(r.Args[1], r.context.Server.RPC)
+				}
+
+			}
 			return nil
 		},
 	}
 
 	AddCommand("main", profiles)
 	AddCommand("module", profiles)
+}
+
+func deleteProfile(name string, rpc RPCServer) {
+	pReq, _ := proto.Marshal(&clientpb.Profile{
+		Name: name,
+	})
+
+	resp := <-rpc(&ghostpb.Envelope{
+		Type: clientpb.MsgDeleteProfile,
+		Data: pReq,
+	}, defaultTimeout)
+
+	if resp.Err != "" {
+		fmt.Printf(RPCError+"%s\n", resp.Err)
+		return
+	}
+
+	pRes := &clientpb.Profile{}
+	err := proto.Unmarshal(resp.Data, pRes)
+	if err != nil {
+		fmt.Printf("\n"+Error+"%s\n", err.Error())
+		return
+	}
+
+	if pRes.Name == name {
+		fmt.Printf("\n"+Success+"Deleted profile %s\n", name)
+	} else {
+		fmt.Printf("\n"+Error+"%s\n", pRes.Name)
+	}
 }
 
 func listProfiles(rpc RPCServer) {
