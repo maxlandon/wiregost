@@ -25,6 +25,7 @@
                 "Website": {"name": "Website", "value": "", "required": false, "description": "Website name (placed in front of listener, takes care of snoopers)"},
                 "Certificate": {"name": "Certificate", "value": "", "required": false, "description": "PEM encoded certificate file"},
                 "Key": {"name": "Key", "value": "", "required": false, "description": "PEM encoded private key file"},
+                "Persist": {"name": "Persist", "value": "false", "required": true, "description": "Make this listener persistent (automatic spawn on server startup)"},
                 "Arch": {"name": "Arch", "value": "x64", "required": false, "description": "CPU architecture of target"},
                 "OS": {"name": "OS", "value": "windows", "required": false, "description": "Target's operating system"},
                 "Format": {"name": "Format", "value": "exe", "required": true, "description": "File format extension of the implant (exe, shared, shellcode)"},

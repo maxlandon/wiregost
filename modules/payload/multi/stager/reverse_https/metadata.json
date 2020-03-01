@@ -20,6 +20,7 @@
                 "LHostListener": {"name": "LHost", "value": "192.168.1.1", "required": true, "description": "Host address to start the staging listener on"},
                 "LPortListener": {"name": "LPort", "value": "8443", "required": true, "description": "Host port to start the staging listener on"},
                 "StageImplant": {"name": "Stage", "value": "", "required": true, "description": "The Ghost implant build name (shellcode format) that the staging listener will send to the stager"},
+                "Persist": {"name": "Persist", "value": "false", "required": true, "description": "Make this listener persistent (automatic spawn on server startup)"},
 
                 "LHostStager": {"name": "LHost", "value": "", "required": true, "description": "The Host IP/Domain the stager will callback to retrieve the stage"},
                 "LPortStager": {"name": "LPort", "value": "", "required": true, "description": "The Host Port to callback"},

@@ -27,6 +27,7 @@
                 "DomainsMTLS": {"name": "Domains (mTLS)", "value": "", "required": true, "description": "MTLS domains/addresses for the implant to callback (Use FDQN) (Comma-separated list)"},
                 "LetsEncrypt": {"name": "LetsEncrypt", "value": "false", "required": true, "description": "Attempt to provision a Let's Encrypt certificate"},
                 "Website": {"name": "Website", "value": "", "required": false, "description": "Website name (placed in front of listener, takes care of snoopers)"},
+                "Persist": {"name": "Persist", "value": "false", "required": true, "description": "Make these listeners persistent (automatic spawn on server startup)"},
                 "Certificate": {"name": "Certificate", "value": "", "required": false, "description": "PEM encoded certificate file (HTTPS listener)"},
                 "Key": {"name": "Key", "value": "", "required": false, "description": "PEM encoded private key file (HTTPS listener)"},
                 "Arch": {"name": "Arch", "value": "x64", "required": false, "description": "CPU architecture of target"},

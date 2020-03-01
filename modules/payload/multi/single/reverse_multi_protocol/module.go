@@ -84,6 +84,12 @@ func (s *ReverseMulti) CompileImplant() (result string, err error) {
 
 func (s *ReverseMulti) toListener() (result string, err error) {
 
+	// Persistence
+	persist := ""
+	if s.Options["Persist"].Value == "true" {
+		persist = fmt.Sprintf("%s[P]%s ", tui.GREEN, tui.RESET)
+	}
+
 	// MTLS ---------------------------------------------------//
 	host := s.Options["MTLSLHost"].Value
 	portUint, _ := strconv.Atoi(s.Options["MTLSLPort"].Value)
@@ -103,10 +109,18 @@ func (s *ReverseMulti) toListener() (result string, err error) {
 		job := &core.Job{
 			ID:          core.GetJobID(),
 			Name:        "mTLS",
-			Description: "Mutual TLS listener",
+			Description: fmt.Sprintf("%sMutual TLS listener", persist),
 			Protocol:    "tcp",
 			Port:        port,
 			JobCtrl:     make(chan bool),
+		}
+
+		// Save persist
+		if s.Options["Persist"].Value == "true" {
+			err := c2.PersistMTLS(job, host)
+			if err != nil {
+				s.ModuleEvent("Error saving persistence: " + err.Error())
+			}
 		}
 
 		go func() {
@@ -150,7 +164,7 @@ func (s *ReverseMulti) toListener() (result string, err error) {
 		}
 
 		server := c2.StartDNSListener(domains, enableCanaries)
-		description := fmt.Sprintf("%s (canaries %v)", strings.Join(domains, " "), enableCanaries)
+		description := fmt.Sprintf("%s%s (canaries %v)", persist, strings.Join(domains, " "), enableCanaries)
 
 		job := &core.Job{
 			ID:          core.GetJobID(),
@@ -159,6 +173,14 @@ func (s *ReverseMulti) toListener() (result string, err error) {
 			Protocol:    "udp",
 			Port:        53,
 			JobCtrl:     make(chan bool),
+		}
+
+		// Save persist
+		if s.Options["Persist"].Value == "true" {
+			err := c2.PersistDNS(job, enableCanaries, domains)
+			if err != nil {
+				s.ModuleEvent("Error saving persistence: " + err.Error())
+			}
 		}
 
 		go func() {
@@ -236,10 +258,18 @@ func (s *ReverseMulti) toListener() (result string, err error) {
 		job := &core.Job{
 			ID:          core.GetJobID(),
 			Name:        "https",
-			Description: fmt.Sprintf("HTTPS C2 server (https for domain %s)", conf.Domain),
+			Description: fmt.Sprintf("%sHTTPS C2 server (https for domain %s)", persist, conf.Domain),
 			Protocol:    "tcp",
 			Port:        port,
 			JobCtrl:     make(chan bool),
+		}
+
+		// Save persist
+		if s.Options["Persist"].Value == "true" {
+			err := c2.PersistHTTPS(job, host, certFile, keyFile, conf.Secure, conf.Domain, conf.Website, conf.ACME)
+			if err != nil {
+				s.ModuleEvent("Error saving persistence: " + err.Error())
+			}
 		}
 
 		core.Jobs.AddJob(job)

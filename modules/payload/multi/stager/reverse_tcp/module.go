@@ -84,6 +84,12 @@ func (s *ReverseTCPStager) toListener() (result string, err error) {
 		return "", errors.New("Invalid listener LPort")
 	}
 
+	// Persistence
+	persist := ""
+	if s.Options["Persist"].Value == "true" {
+		persist = fmt.Sprintf("%s[P]%s ", tui.GREEN, tui.RESET)
+	}
+
 	// Check StageImplant exists, and is the appropriate format
 	implant := s.Options["StageImplant"].Value
 	config := &generate.GhostConfig{}
@@ -132,13 +138,22 @@ func (s *ReverseTCPStager) toListener() (result string, err error) {
 
 	job := &core.Job{
 		ID:   core.GetJobID(),
-		Name: "TCP stager listener",
-		Description: fmt.Sprintf("Reverse TCP stager listener, serving %s%s%s (%s/%s) as shellcode",
-			tui.YELLOW, implant, tui.RESET, config.GOOS, config.GOARCH),
+		Name: "TCP stager",
+		Description: fmt.Sprintf("%sReverse TCP stager listener, serving %s%s%s (%s/%s) as shellcode",
+			persist, tui.YELLOW, implant, tui.RESET, config.GOOS, config.GOARCH),
 		Protocol: "tcp",
 		Port:     port,
 		JobCtrl:  make(chan bool),
 	}
+
+	// Save persist
+	if s.Options["Persist"].Value == "true" {
+		err := c2.PersistTCPStager(job, host, implant)
+		if err != nil {
+			s.ModuleEvent("Error saving persistence: " + err.Error())
+		}
+	}
+
 	go func() {
 		<-job.JobCtrl
 		modLog.Infof("Stopping TCP Stager listener (%d) ...", job.ID)

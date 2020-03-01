@@ -22,6 +22,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/evilsocket/islazy/tui"
+
 	consts "github.com/maxlandon/wiregost/client/constants"
 	pb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/c2"
@@ -97,16 +99,29 @@ func (s *ReverseDNS) toListener() (result string, err error) {
 		enableCanaries = false
 	}
 
+	// Persistence
+	persist := ""
+	if s.Options["Persist"].Value == "true" {
+		persist = fmt.Sprintf("%s[P]%s ", tui.GREEN, tui.RESET)
+	}
 	server := c2.StartDNSListener(domains, enableCanaries)
-	description := fmt.Sprintf("%s (canaries %v)", strings.Join(domains, " "), enableCanaries)
+	description := fmt.Sprintf("%s%s (canaries %v)", persist, strings.Join(domains, " "), enableCanaries)
 
 	job := &core.Job{
 		ID:          core.GetJobID(),
-		Name:        "dns",
+		Name:        "DNS",
 		Description: description,
 		Protocol:    "udp",
 		Port:        53,
 		JobCtrl:     make(chan bool),
+	}
+
+	// Save persist
+	if s.Options["Persist"].Value == "true" {
+		err := c2.PersistDNS(job, enableCanaries, domains)
+		if err != nil {
+			s.ModuleEvent("Error saving persistence: " + err.Error())
+		}
 	}
 
 	go func() {
@@ -138,7 +153,6 @@ func (s *ReverseDNS) toListener() (result string, err error) {
 	}()
 
 	return fmt.Sprintf("Reverse DNS listener started with parent domain(s) %v...", domains), nil
-
 }
 
 func (s *ReverseDNS) parseProfile(name string) (result string, err error) {

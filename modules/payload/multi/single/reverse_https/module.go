@@ -24,6 +24,7 @@ import (
 	"sync"
 
 	"github.com/evilsocket/islazy/fs"
+	"github.com/evilsocket/islazy/tui"
 
 	consts "github.com/maxlandon/wiregost/client/constants"
 	pb "github.com/maxlandon/wiregost/protobuf/client"
@@ -117,10 +118,16 @@ func (s *ReverseHTTPS) toListener() (result string, err error) {
 		return "", errors.New("HTTP Server instantiation failed")
 	}
 
+	// Persistence
+	persist := ""
+	if s.Options["Persist"].Value == "true" {
+		persist = fmt.Sprintf("%s[P]%s ", tui.GREEN, tui.RESET)
+	}
+
 	job := &core.Job{
 		ID:          core.GetJobID(),
-		Name:        "https",
-		Description: fmt.Sprintf("HTTPS C2 server (https for domain %s)", conf.Domain),
+		Name:        "HTTPS",
+		Description: fmt.Sprintf("%sHTTPS C2 server (https for domain %s)", persist, conf.Domain),
 		Protocol:    "tcp",
 		Port:        port,
 		JobCtrl:     make(chan bool),
@@ -137,6 +144,14 @@ func (s *ReverseHTTPS) toListener() (result string, err error) {
 		})
 	}
 	once := &sync.Once{}
+
+	// Save persist
+	if s.Options["Persist"].Value == "true" {
+		err := c2.PersistHTTPS(job, host, certFile, keyFile, conf.Secure, conf.Domain, conf.Website, conf.ACME)
+		if err != nil {
+			s.ModuleEvent("Error saving persistence: " + err.Error())
+		}
+	}
 
 	go func() {
 		var err error

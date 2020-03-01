@@ -26,6 +26,7 @@
                 "Save": {"name": "Save", "value": "", "required": false, "description": "Directory to save the implant"},
                 "ObfuscateSymbols": {"name": "ObfuscateSymbols", "value": "true", "required": true, "description": "Set to to true to skip symbol obfuscation"},
                 "DomainsDNSListener": {"name": "Parent domains", "value": "", "required": false, "description": "Canary DNS domains for the listener, which can handle multiple implants (Comma-separated list)"},
+                "Persist": {"name": "Persist", "value": "false", "required": true, "description": "Make this listener persistent (automatic spawn on server startup)"},
                 "DisableCanaries": {"name": "DisableCanaries", "value": "false", "required": true, "description": "Disable Canary detection for listener"},
                 "Canaries": {"name": "Canaries", "value": "", "required": false, "description": "Canary DNS domains (make sure you have/will have a DNS listener running) (Comma-separated list)"},
                 "Debug": {"name": "Debug", "value": "false", "required": false, "description": "Enable debug features"},

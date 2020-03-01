@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/evilsocket/islazy/tui"
 	consts "github.com/maxlandon/wiregost/client/constants"
 	pb "github.com/maxlandon/wiregost/protobuf/client"
 	c2 "github.com/maxlandon/wiregost/server/c2"
@@ -89,13 +90,27 @@ func (s *ReverseMTLS) toListener() (result string, err error) {
 		return "", err
 	}
 
+	// Persistence
+	persist := ""
+	if s.Options["Persist"].Value == "true" {
+		persist = fmt.Sprintf("%s[P]%s ", tui.GREEN, tui.RESET)
+	}
+
 	job := &core.Job{
 		ID:          core.GetJobID(),
 		Name:        "mTLS",
-		Description: "Mutual TLS listener",
+		Description: fmt.Sprintf("%sMutual TLS listener", persist),
 		Protocol:    "tcp",
 		Port:        port,
 		JobCtrl:     make(chan bool),
+	}
+
+	// Save persist
+	if s.Options["Persist"].Value == "true" {
+		err := c2.PersistMTLS(job, host)
+		if err != nil {
+			s.ModuleEvent("Error saving persistence: " + err.Error())
+		}
 	}
 
 	go func() {
