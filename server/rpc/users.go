@@ -71,6 +71,64 @@ func rpcAddUser(data []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
+func rpcDeleteUser(data []byte, timeout time.Duration, resp RPCResponse) {
+	userReq := &clientpb.UserReq{}
+	err := proto.Unmarshal(data, userReq)
+	if err != nil {
+		resp(data, err)
+	}
+
+	// Delete client cert
+	userRes := &clientpb.User{}
+	err = certs.RemoveCertificate("user", "ecc", userReq.User)
+	if err != nil {
+		userRes.Success = false
+		userRes.Err = err.Error()
+		data, err = proto.Marshal(userRes)
+		resp(data, err)
+		return
+	}
+	// userRes := &clientpb.User{}
+	// bucket, err := db.GetBucket("user")
+	// if err != nil {
+	//         userRes.Success = false
+	//         userRes.Err = err.Error()
+	//         data, err = proto.Marshal(userRes)
+	//         resp(data, err)
+	//         return
+	// }
+	// err = bucket.Delete(fmt.Sprintf("%s_%s.%s", "ecc", "client", userReq.User))
+	// if err != nil {
+	//         userRes.Success = false
+	//         userRes.Err = err.Error()
+	//         data, err = proto.Marshal(userRes)
+	//         resp(data, err)
+	//         return
+	// }
+
+	// Delete server cert
+	// bucket, err = db.GetBucket("user")
+	// if err != nil {
+	//         userRes.Success = false
+	//         userRes.Err = err.Error()
+	//         data, err = proto.Marshal(userRes)
+	//         resp(data, err)
+	//         return
+	// }
+	// err = bucket.Delete(fmt.Sprintf("%s_%s.%s", "ecc", "server", userReq.User))
+	// if err != nil {
+	//         userRes.Success = false
+	//         userRes.Err = err.Error()
+	//         data, err = proto.Marshal(userRes)
+	//         resp(data, err)
+	//         return
+	// }
+
+	userRes.Success = true
+	data, err = proto.Marshal(userRes)
+	resp(data, err)
+}
+
 // isPlayerOnline - Is a player connected using a given certificate
 func isPlayerOnline(cert *x509.Certificate) bool {
 	for _, client := range *core.Clients.Connections {

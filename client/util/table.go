@@ -38,17 +38,19 @@ func Table() *tablewriter.Table {
 	table.SetCenterSeparator(fmt.Sprintf("%s|%s", tui.FOREBLACK, tui.RESET))
 	table.SetColumnSeparator(fmt.Sprintf("%s|%s", tui.FOREBLACK, tui.RESET))
 	table.SetRowSeparator(tui.Dim("-"))
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorder(false)
+
+	// Format
 	table.SetAutoWrapText(false)
 	table.SetColWidth(30)
 	table.SetAutoFormatHeaders(false)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetBorder(false)
 	table.SetReflowDuringAutoWrap(false)
 
 	return table
 }
 
-// Function used for description paragraphs
+// Function used for description paragraphs and table columns
 func Wrap(text string, lineWidth int) (wrapped string) {
 	words := strings.Fields(text)
 	if len(words) == 0 {

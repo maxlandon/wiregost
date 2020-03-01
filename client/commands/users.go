@@ -35,6 +35,7 @@ func RegisterUserCommands() {
 		Name: "user",
 		SubCommands: []string{
 			"add",
+			"delete",
 		},
 		Args: []*CommandArg{
 			&CommandArg{Name: "name", Type: "string"},
@@ -47,10 +48,12 @@ func RegisterUserCommands() {
 			case length == 0:
 				fmt.Println()
 				users(r.context.Server.RPC)
-			case length >= 1:
+			case length > 1:
 				switch r.Args[0] {
 				case "add":
 					addUser(r.Args[1:], r.context.Server.RPC)
+				case "delete":
+					deleteUser(r.Args[1], r.context.Server.RPC)
 				}
 
 			}
@@ -84,6 +87,37 @@ func users(rpc RPCServer) {
 		displayUsers(users.Players)
 	} else {
 		fmt.Printf(Info + "No players currently registered")
+	}
+
+}
+
+func deleteUser(user string, rpc RPCServer) {
+
+	userReq, _ := proto.Marshal(&clientpb.UserReq{
+		User: user,
+	})
+
+	resp := <-rpc(&ghostpb.Envelope{
+		Type: clientpb.MsgDeleteUserReq,
+		Data: userReq,
+	}, defaultTimeout)
+
+	if resp.Err != "" {
+		fmt.Printf(RPCError+"%s\n", resp.Err)
+		return
+	}
+
+	userRes := &clientpb.User{}
+	err := proto.Unmarshal(resp.Data, userRes)
+	if err != nil {
+		fmt.Printf("\n"+Error+"%s\n", err.Error())
+		return
+	}
+
+	if userRes.Success {
+		fmt.Printf("\n"+Success+"Deleted user %s%s%s from server\n", tui.YELLOW, user, tui.RESET)
+	} else {
+		fmt.Printf("\n"+Error+"%s\n", userRes.Err)
 	}
 
 }

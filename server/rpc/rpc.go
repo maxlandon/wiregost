@@ -43,8 +43,9 @@ var (
 
 		// CLIENT -------------------------------------//
 		// Users
-		clientpb.MsgUser:    rpcListUsers,
-		clientpb.MsgUserReq: rpcAddUser,
+		clientpb.MsgUser:          rpcListUsers,
+		clientpb.MsgUserReq:       rpcAddUser,
+		clientpb.MsgDeleteUserReq: rpcDeleteUser,
 
 		// Stack
 		clientpb.MsgStackUse:  rpcStackUse,
@@ -61,7 +62,8 @@ var (
 		clientpb.MsgJobKill: rpcJobKill,
 
 		// Profiles
-		clientpb.MsgProfiles: rpcListProfiles,
+		clientpb.MsgProfiles:      rpcListProfiles,
+		clientpb.MsgDeleteProfile: rpcDeleteProfile,
 
 		// Builds & Canaries
 		clientpb.MsgListGhostBuilds: rpcGhostBuilds,
