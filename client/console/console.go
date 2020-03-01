@@ -31,6 +31,7 @@ import (
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/completers"
 	"github.com/maxlandon/wiregost/client/core"
+	"github.com/maxlandon/wiregost/client/util"
 	"github.com/maxlandon/wiregost/data_service/models"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
@@ -95,7 +96,6 @@ func NewConsole() *Console {
 		HistoryLimit:      5000,
 		HistorySearchFold: true,
 	})
-
 	console.Shell = shell
 
 	// Set keyboard mode
@@ -105,6 +105,17 @@ func NewConsole() *Console {
 		shell.Config.VimMode = false
 	} else {
 		shell.Config.VimMode = false
+	}
+
+	// Set Wrapper length
+	if conf.Wrap == "large" {
+		util.WrapColumns = 140
+
+	} else if conf.Wrap == "small" {
+		util.WrapColumns = 100
+
+	} else {
+		util.WrapColumns = 140
 	}
 
 	// Set Vim mode

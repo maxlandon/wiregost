@@ -150,9 +150,8 @@ func printJobs(jobs map[int32]*clientpb.Job) {
 
 	for _, k := range keys {
 		job := jobs[int32(k)]
-		description := util.Wrap(job.Description, 100)
+		description := util.Wrap(job.Description, util.WrapColumns)
 		tab.Append([]string{strconv.Itoa(int(job.ID)), job.Name, job.Protocol, strconv.Itoa(int(job.Port)), description})
-		// tab.Append([]string{strconv.Itoa(int(job.ID)), job.Name, job.Protocol, strconv.Itoa(int(job.Port)), job.Description})
 	}
 
 	tab.Render()

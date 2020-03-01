@@ -28,6 +28,8 @@ import (
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
 
+var WrapColumns int
+
 func Table() *tablewriter.Table {
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -258,7 +260,8 @@ func PrintOptions(mod *clientpb.Module) {
 			} else {
 				required = "no"
 			}
-			tab.Append([]string{mod.Options[v].Name, mod.Options[v].Value, required, mod.Options[v].Description})
+			description := Wrap(mod.Options[v].Description, WrapColumns-30)
+			tab.Append([]string{mod.Options[v].Name, mod.Options[v].Value, required, description})
 		}
 		tab.Render()
 
@@ -285,7 +288,8 @@ func PrintOptions(mod *clientpb.Module) {
 			} else {
 				required = "no"
 			}
-			tab.Append([]string{mod.Options[v].Name, mod.Options[v].Value, required, mod.Options[v].Description})
+			description := Wrap(mod.Options[v].Description, WrapColumns-30)
+			tab.Append([]string{mod.Options[v].Name, mod.Options[v].Value, required, description})
 		}
 		tab.Render()
 
@@ -312,7 +316,8 @@ func PrintOptions(mod *clientpb.Module) {
 			}
 			// Avoid printing session option again
 			if v != "Session" {
-				tab.Append([]string{mod.Options[v].Name, mod.Options[v].Value, required, mod.Options[v].Description})
+				description := Wrap(mod.Options[v].Description, WrapColumns-30)
+				tab.Append([]string{mod.Options[v].Name, mod.Options[v].Value, required, description})
 			}
 		}
 		tab.Render()
