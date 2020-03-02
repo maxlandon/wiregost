@@ -25,7 +25,7 @@ import (
 	"github.com/maxlandon/wiregost/server/generate"
 )
 
-func rpcGhostBuilds(_ []byte, timeout time.Duration, resp RPCResponse) {
+func rpcGhostBuilds(_ []byte, timeout time.Duration, resp Response) {
 	configs, err := generate.GhostConfigMap()
 	if err != nil {
 		resp([]byte{}, err)
@@ -41,7 +41,7 @@ func rpcGhostBuilds(_ []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcListCanaries(_ []byte, timeout time.Duration, resp RPCResponse) {
+func rpcListCanaries(_ []byte, timeout time.Duration, resp Response) {
 	jsonCanaries, err := generate.ListCanaries()
 	if err != nil {
 		resp([]byte{}, err)

@@ -32,6 +32,7 @@ var (
 	ServLogger = serverLogger()
 )
 
+// ServerLogger - Logs all events passing through the Server
 func ServerLogger(pkg, stream string) *logrus.Entry {
 	return ServLogger.WithFields(logrus.Fields{
 		"pkg":    pkg,

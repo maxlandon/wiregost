@@ -29,17 +29,17 @@ var (
 	rpcLog = log.ServerLogger("rpc", "server")
 )
 
-// RPCResponse - Called with response data, mapped back to ReqID
-type RPCResponse func([]byte, error)
+// Response - Called with response data, mapped back to ReqID
+type Response func([]byte, error)
 
-// RPCHandler - RPC handlers accept bytes and return bytes
-type RPCHandler func([]byte, time.Duration, RPCResponse)
+// Handler - RPC handlers accept bytes and return bytes
+type Handler func([]byte, time.Duration, Response)
 
 // TunnelHandler - Tunnel handlers join tunnels from client and server
-type TunnelHandler func(*core.Client, []byte, RPCResponse)
+type TunnelHandler func(*core.Client, []byte, Response)
 
 var (
-	rpcHandlers = &map[uint32]RPCHandler{
+	rpcHandlers = &map[uint32]Handler{
 
 		// CLIENT -------------------------------------//
 		// Users
@@ -117,7 +117,7 @@ var (
 )
 
 // GetRPCHandlers - Returns a map of server-side msg handlers
-func GetRPCHandlers() *map[uint32]RPCHandler {
+func GetRPCHandlers() *map[uint32]Handler {
 	return rpcHandlers
 }
 

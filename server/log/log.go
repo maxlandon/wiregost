@@ -32,11 +32,13 @@ const (
 
 // [ Logger Hooks ] -----------------------------------------------------//
 
+// TxtHook - A hook for logging with text formatting
 type TxtHook struct {
 	Name   string
 	logger *logrus.Logger
 }
 
+// NewTxtHook - new hook
 func NewTxtHook(name string, logger *logrus.Logger) *TxtHook {
 	hook := &TxtHook{
 		Name:   name,
@@ -45,6 +47,7 @@ func NewTxtHook(name string, logger *logrus.Logger) *TxtHook {
 	return hook
 }
 
+// Fire - triggered each time
 func (hook *TxtHook) Fire(entry *logrus.Entry) error {
 	if hook.logger == nil {
 		return errors.New("No text logger")
@@ -78,6 +81,7 @@ func (hook *TxtHook) Fire(entry *logrus.Entry) error {
 	return nil
 }
 
+// Levels - implement logrus
 func (hook *TxtHook) Levels() []logrus.Level {
 	return logrus.AllLevels
 }

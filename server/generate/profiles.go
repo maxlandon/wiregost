@@ -23,6 +23,7 @@ import (
 )
 
 const (
+	// ProfilesBucketName - DB file for implant profiles
 	ProfilesBucketName = "profiles"
 )
 

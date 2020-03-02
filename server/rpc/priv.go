@@ -28,7 +28,7 @@ import (
 	"github.com/maxlandon/wiregost/server/generate"
 )
 
-func rpcImpersonate(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcImpersonate(req []byte, timeout time.Duration, resp Response) {
 	impersonateReq := &ghostpb.ImpersonateReq{}
 	err := proto.Unmarshal(req, impersonateReq)
 	if err != nil {
@@ -48,7 +48,7 @@ func rpcImpersonate(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcRunAs(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcRunAs(req []byte, timeout time.Duration, resp Response) {
 	runAsReq := &ghostpb.RunAsReq{}
 	err := proto.Unmarshal(req, runAsReq)
 	if err != nil {
@@ -70,7 +70,7 @@ func rpcRunAs(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcRevToSelf(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcRevToSelf(req []byte, timeout time.Duration, resp Response) {
 	rst := &ghostpb.RevToSelfReq{}
 	err := proto.Unmarshal(req, rst)
 	if err != nil {
@@ -89,7 +89,7 @@ func rpcRevToSelf(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcGetSystem(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcGetSystem(req []byte, timeout time.Duration, resp Response) {
 	gsReq := &clientpb.GetSystemReq{}
 	err := proto.Unmarshal(req, gsReq)
 	if err != nil {
@@ -124,7 +124,7 @@ func rpcGetSystem(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcElevate(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcElevate(req []byte, timeout time.Duration, resp Response) {
 	elevateReq := &ghostpb.ElevateReq{}
 	err := proto.Unmarshal(req, elevateReq)
 	if err != nil {

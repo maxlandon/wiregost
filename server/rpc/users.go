@@ -29,7 +29,7 @@ import (
 	"github.com/maxlandon/wiregost/server/users"
 )
 
-func rpcListUsers(data []byte, timeout time.Duration, resp RPCResponse) {
+func rpcListUsers(data []byte, timeout time.Duration, resp Response) {
 	clientCerts := certs.UserClientListCertificates()
 
 	players := &clientpb.Players{Players: []*clientpb.Player{}}
@@ -49,7 +49,7 @@ func rpcListUsers(data []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcAddUser(data []byte, timeout time.Duration, resp RPCResponse) {
+func rpcAddUser(data []byte, timeout time.Duration, resp Response) {
 
 	userReq := &clientpb.UserReq{}
 	err := proto.Unmarshal(data, userReq)
@@ -71,7 +71,7 @@ func rpcAddUser(data []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcDeleteUser(data []byte, timeout time.Duration, resp RPCResponse) {
+func rpcDeleteUser(data []byte, timeout time.Duration, resp Response) {
 	userReq := &clientpb.UserReq{}
 	err := proto.Unmarshal(data, userReq)
 	if err != nil {

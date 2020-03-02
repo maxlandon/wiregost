@@ -25,7 +25,7 @@ import (
 	"github.com/maxlandon/wiregost/server/core"
 )
 
-func rpcIfconfig(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcIfconfig(req []byte, timeout time.Duration, resp Response) {
 	ifconfigReq := &ghostpb.IfconfigReq{}
 	err := proto.Unmarshal(req, ifconfigReq)
 	if err != nil {

@@ -27,7 +27,7 @@ import (
 	"github.com/maxlandon/wiregost/server/core"
 )
 
-func rpcModuleSetOption(data []byte, timeout time.Duration, resp RPCResponse) {
+func rpcModuleSetOption(data []byte, timeout time.Duration, resp Response) {
 	optionReq := &clientpb.SetOptionReq{}
 	err := proto.Unmarshal(data, optionReq)
 	if err != nil {
@@ -66,7 +66,7 @@ func rpcModuleSetOption(data []byte, timeout time.Duration, resp RPCResponse) {
 	}
 }
 
-func rpcModuleRun(data []byte, timeout time.Duration, resp RPCResponse) {
+func rpcModuleRun(data []byte, timeout time.Duration, resp Response) {
 	modReq := &clientpb.ModuleActionReq{}
 	err := proto.Unmarshal(data, modReq)
 	if err != nil {
@@ -104,7 +104,7 @@ func rpcModuleRun(data []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcModuleList(data []byte, timeout time.Duration, resp RPCResponse) {
+func rpcModuleList(data []byte, timeout time.Duration, resp Response) {
 	modReq := &clientpb.ModuleActionReq{}
 	err := proto.Unmarshal(data, modReq)
 	if err != nil {

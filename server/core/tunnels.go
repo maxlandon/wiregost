@@ -26,6 +26,7 @@ import (
 )
 
 var (
+	// Tunnels - ALl programmatic channels between clients and implants
 	Tunnels = tunnels{
 		tunnels: &map[uint64]*tunnel{},
 		mutex:   &sync.RWMutex{},

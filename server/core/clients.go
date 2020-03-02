@@ -25,6 +25,7 @@ import (
 )
 
 var (
+	// Clients - All consoles connected to the C2 Server
 	Clients = &clientConns{
 		Connections: &map[int]*Client{},
 		mutex:       &sync.RWMutex{},

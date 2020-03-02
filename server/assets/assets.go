@@ -81,7 +81,7 @@ func GetModulesDir() string {
 	return dir
 }
 
-// GetModulesDir - Returns the full path to the modules directory
+// GetStagersDir - Returns the full path to the stagers directory
 func GetStagersDir() string {
 	dir := path.Join(GetRootAppDir(), stagersDirName)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {

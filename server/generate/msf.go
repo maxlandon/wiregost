@@ -25,7 +25,8 @@ import (
 
 var rpcLog = log.ServerLogger("generate", "msf_stager")
 
-func GenerateMsfStage(host string, port uint16, architecture string, format string, protocol string) ([]byte, error) {
+// MsfStage - Use MSF Venom to generate MSF payloads/stagers
+func MsfStage(host string, port uint16, architecture string, format string, protocol string) ([]byte, error) {
 	// func generateMsfStage(config *clientpb.EggConfig) ([]byte, error) {
 	var (
 		stage   []byte

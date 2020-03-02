@@ -17,7 +17,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -29,6 +28,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// ServerConfig - Stores configuration variables for the Server
 type ServerConfig struct {
 	// Server address
 	LHost string
@@ -38,6 +38,7 @@ type ServerConfig struct {
 	MsfDirPath string
 }
 
+// LoadServerConfig - Reads config file for server
 func LoadServerConfig() *ServerConfig {
 	// Load a default console config, eventually parse one if found
 	conf := &ServerConfig{
@@ -67,6 +68,7 @@ func LoadServerConfig() *ServerConfig {
 
 }
 
+// SaveServerConfig - Save server config to file
 func SaveServerConfig(config *ServerConfig) error {
 	saveTo := assets.GetRootAppDir()
 	configYAML, _ := yaml.Marshal(config)
@@ -74,7 +76,7 @@ func SaveServerConfig(config *ServerConfig) error {
 	if _, err := os.Stat(saveTo); os.IsNotExist(err) {
 		err = os.MkdirAll(saveTo, os.ModePerm)
 		if err != nil {
-			return errors.New(fmt.Sprintf("Cannot write to wiregost root directory %s", err))
+			return fmt.Errorf("Cannot write to wiregost root directory %s", err)
 		}
 	}
 
@@ -86,7 +88,7 @@ func SaveServerConfig(config *ServerConfig) error {
 
 	err = ioutil.WriteFile(saveTo, configYAML, 0600)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to write config to: %s (%v) \n", saveTo, err))
+		return fmt.Errorf("Failed to write config to: %s (%v) \n", saveTo, err)
 	}
 
 	f, err := os.OpenFile(saveTo, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)

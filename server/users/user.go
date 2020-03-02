@@ -78,7 +78,7 @@ func NewUser(user, lhost string, lport uint32, isDefault bool) error {
 	if _, err := os.Stat(saveTo); os.IsNotExist(err) {
 		err = os.MkdirAll(saveTo, os.ModePerm)
 		if err != nil {
-			return errors.New(fmt.Sprintf("Cannot write to wiregost root directory %s", err))
+			return fmt.Errorf("Cannot write to wiregost root directory %s", err)
 		}
 	}
 
@@ -89,7 +89,7 @@ func NewUser(user, lhost string, lport uint32, isDefault bool) error {
 	}
 	err = ioutil.WriteFile(saveTo, configJSON, 0600)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to write config to: %s (%v) \n", saveTo, err))
+		return fmt.Errorf("Failed to write config to: %s (%v) \n", saveTo, err)
 	}
 
 	return nil
@@ -104,9 +104,8 @@ func CreateDefaultUser() error {
 		err := NewUser("wiregost", "localhost", uint32(1708), true)
 		if err != nil {
 			return err
-		} else {
-			userLog.Infoln("Created default Wiregost user config: name -> 'wiregost', lhost -> 'localhost', lport -> 1708")
 		}
+		userLog.Infoln("Created default Wiregost user config: name -> 'wiregost', lhost -> 'localhost', lport -> 1708")
 
 		filename := fmt.Sprintf("%s_%s.cfg", filepath.Base("wiregost"), filepath.Base("localhost"))
 		moveFrom := filepath.Join(assets.GetRootAppDir(), "users", filename)

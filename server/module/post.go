@@ -77,9 +77,8 @@ func (m *Module) isPost() bool {
 
 	if _, ok := m.Options["Session"]; !ok {
 		return false
-	} else {
-		return true
 	}
+	return true
 }
 
 // Upload - Upload a file on the Session's target.
@@ -111,9 +110,8 @@ func (m *Module) Upload(src string, path string, timeout time.Duration) (result 
 	data, err = sess.Request(ghostpb.MsgUploadReq, timeout, data)
 	if err != nil {
 		return "", errors.New(err.Error())
-	} else {
-		return "Uploaded", nil
 	}
+	return "Uploaded", nil
 }
 
 // Download - Download a file from the Session's target.
@@ -153,15 +151,14 @@ func (m *Module) Download(lpath string, rpath string, timeout time.Duration) (re
 	}
 	f, err := os.Create(dst)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("Failed to open local file %s: %v\n", dst, err))
+		return "", fmt.Errorf("Failed to open local file %s: %v\n", dst, err)
 	}
 	defer f.Close()
 	n, err := f.Write(download.Data)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("Failed to write data %v\n", err))
-	} else {
-		return fmt.Sprintf("Wrote %d bytes to %s\n", n, dst), nil
+		return "", fmt.Errorf("Failed to write data %v\n", err)
 	}
+	return fmt.Sprintf("Wrote %d bytes to %s\n", n, dst), nil
 }
 
 // Remove - Remove a file/directory from the Session's target.
@@ -182,19 +179,17 @@ func (m *Module) Remove(path string, timeout time.Duration) (result string, err 
 	data, err = sess.Request(ghostpb.MsgRmReq, timeout, data)
 	if err != nil {
 		return "", err
-	} else {
-		rm := &ghostpb.Rm{}
-		err := proto.Unmarshal(data, rm)
-		if err != nil {
-			errRm := fmt.Sprintf("Unmarshaling envelope error: %v\n", err)
-			return "", errors.New(errRm)
-		}
-		if rm.Success {
-			return "Deleted", nil
-		} else {
-			return "", errors.New(rm.Err)
-		}
 	}
+	rm := &ghostpb.Rm{}
+	err = proto.Unmarshal(data, rm)
+	if err != nil {
+		errRm := fmt.Sprintf("Unmarshaling envelope error: %v\n", err)
+		return "", errors.New(errRm)
+	}
+	if rm.Success {
+		return "Deleted", nil
+	}
+	return "", errors.New(rm.Err)
 }
 
 // ChangeDirectory - Change the implant session's current working directory.
@@ -215,15 +210,13 @@ func (m *Module) ChangeDirectory(dir string, timeout time.Duration) (result stri
 	data, err = sess.Request(ghostpb.MsgCdReq, timeout, data)
 	if err != nil {
 		return "", err
-	} else {
-		pwd := &ghostpb.Pwd{}
-		err := proto.Unmarshal(data, pwd)
-		if err != nil {
-			errCd := fmt.Sprintf("Unmarshaling envelope error: %v\n", err)
-			return "", errors.New(errCd)
-		}
-		return fmt.Sprintf("Changed directory: %s", pwd), nil
 	}
+	pwd := &ghostpb.Pwd{}
+	err = proto.Unmarshal(data, pwd)
+	if err != nil {
+		return "", fmt.Errorf("Unmarshaling envelope error: %v\n", err)
+	}
+	return fmt.Sprintf("Changed directory: %s", pwd), nil
 }
 
 // ListDirectory - List contents of a directory on the session's target.
@@ -244,15 +237,14 @@ func (m *Module) ListDirectory(path string, timeout time.Duration) (result strin
 	data, err = sess.Request(ghostpb.MsgLsReq, timeout, data)
 	if err != nil {
 		return "", err
-	} else {
-		dirList := &ghostpb.Ls{}
-		err := proto.Unmarshal(data, dirList)
-		if err != nil {
-			errLs := fmt.Sprintf("Unmarshaling envelope error: %v\n", err)
-			return "", errors.New(errLs)
-		}
-		return fmt.Sprintf("directory: %s", dirList), nil
 	}
+	dirList := &ghostpb.Ls{}
+	err = proto.Unmarshal(data, dirList)
+	if err != nil {
+		errLs := fmt.Sprintf("Unmarshaling envelope error: %v\n", err)
+		return "", errors.New(errLs)
+	}
+	return fmt.Sprintf("directory: %s", dirList), nil
 }
 
 // Execute - Execute a program on the session's target.
@@ -276,14 +268,13 @@ func (m *Module) Execute(path string, args []string, timeout time.Duration) (res
 	data, err = sess.Request(ghostpb.MsgExecuteReq, timeout, data)
 	if err != nil {
 		return "", err
-	} else {
-		resp := ghostpb.Execute{}
-		err := proto.Unmarshal(data, &resp)
-		if err != nil {
-			return "", err
-		}
-
-		res := fmt.Sprintf("Results:\n %s", resp.Result)
-		return res, nil
 	}
+	resp := ghostpb.Execute{}
+	err = proto.Unmarshal(data, &resp)
+	if err != nil {
+		return "", err
+	}
+
+	res := fmt.Sprintf("Results:\n %s", resp.Result)
+	return res, nil
 }

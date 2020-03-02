@@ -27,7 +27,7 @@ import (
 	"github.com/maxlandon/wiregost/server/core"
 )
 
-func rpcStackUse(data []byte, timeout time.Duration, resp RPCResponse) {
+func rpcStackUse(data []byte, timeout time.Duration, resp Response) {
 	stackReq := &clientpb.StackReq{}
 	err := proto.Unmarshal(data, stackReq)
 	if err != nil {
@@ -79,7 +79,7 @@ func rpcStackUse(data []byte, timeout time.Duration, resp RPCResponse) {
 	}
 }
 
-func rpcStackPop(data []byte, timeout time.Duration, resp RPCResponse) {
+func rpcStackPop(data []byte, timeout time.Duration, resp Response) {
 	stackReq := &clientpb.StackReq{}
 	err := proto.Unmarshal(data, stackReq)
 	if err != nil {
@@ -91,7 +91,7 @@ func rpcStackPop(data []byte, timeout time.Duration, resp RPCResponse) {
 	stack := (*core.Stacks)[wsID][stackReq.User]
 
 	if stackReq.All {
-		for k, _ := range *stack.Loaded {
+		for k := range *stack.Loaded {
 			stack.PopModule(k)
 		}
 	} else {
@@ -137,7 +137,7 @@ func rpcStackPop(data []byte, timeout time.Duration, resp RPCResponse) {
 	}
 }
 
-func rpcStackList(data []byte, timeout time.Duration, resp RPCResponse) {
+func rpcStackList(data []byte, timeout time.Duration, resp Response) {
 	stackReq := &clientpb.StackReq{}
 	err := proto.Unmarshal(data, stackReq)
 	if err != nil {

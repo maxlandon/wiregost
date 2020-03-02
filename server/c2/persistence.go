@@ -27,11 +27,14 @@ import (
 )
 
 var (
+	// ListenerBucketName - stores listeners
 	ListenerBucketName = "listeners"
-	ListenerNamespace  = "listener"
-	storageLog         = log.ServerLogger("listeners", "persistence")
+	// ListenerNamespace - Listener namespace
+	ListenerNamespace = "listener"
+	storageLog        = log.ServerLogger("listeners", "persistence")
 )
 
+// ListenerConfig - Stores the configuration for a listener
 type ListenerConfig struct {
 	// ID
 	ID int32 `json:"id"`
@@ -58,6 +61,7 @@ type ListenerConfig struct {
 	ImplantStage string `json:"implant_stage,omitempty"`
 }
 
+// PersistMTLS - mTLS listener
 func PersistMTLS(job *core.Job, lhost string) error {
 
 	listener := &ListenerConfig{
@@ -84,6 +88,7 @@ func PersistMTLS(job *core.Job, lhost string) error {
 	return bucket.Set(key, rawListener)
 }
 
+// PersistDNS - DNS
 func PersistDNS(job *core.Job, enableCanaries bool, dnsDomains []string) error {
 
 	listener := &ListenerConfig{
@@ -111,7 +116,8 @@ func PersistDNS(job *core.Job, enableCanaries bool, dnsDomains []string) error {
 	return bucket.Set(key, rawListener)
 }
 
-func PersistHTTPS(job *core.Job, lhost string, cert string, key string, secure bool, domain string, website string, lets_encrypt bool) error {
+// PersistHTTPS - HTTPS
+func PersistHTTPS(job *core.Job, lhost string, cert string, key string, secure bool, domain string, website string, letsEncrypt bool) error {
 
 	listener := &ListenerConfig{
 		ID:          rand.Int31(),
@@ -125,7 +131,7 @@ func PersistHTTPS(job *core.Job, lhost string, cert string, key string, secure b
 		Key:         key,
 		HTTPDomain:  domain,
 		Website:     website,
-		LetsEncrypt: lets_encrypt,
+		LetsEncrypt: letsEncrypt,
 	}
 
 	bucket, err := db.GetBucket(ListenerBucketName)
@@ -143,6 +149,7 @@ func PersistHTTPS(job *core.Job, lhost string, cert string, key string, secure b
 	return bucket.Set(bucketKey, rawListener)
 }
 
+// PersistTCPStager - TCP stager
 func PersistTCPStager(job *core.Job, lhost string, implantStage string) error {
 
 	listener := &ListenerConfig{
@@ -170,6 +177,7 @@ func PersistTCPStager(job *core.Job, lhost string, implantStage string) error {
 	return bucket.Set(key, rawListener)
 }
 
+// PersistHTTPStager - HTTP
 func PersistHTTPStager(job *core.Job, lhost string, implantStage string) error {
 
 	listener := &ListenerConfig{
@@ -197,6 +205,7 @@ func PersistHTTPStager(job *core.Job, lhost string, implantStage string) error {
 	return bucket.Set(key, rawListener)
 }
 
+// PersistHTTPSStager - HTTPS
 func PersistHTTPSStager(job *core.Job, lhost string, implantStage string) error {
 
 	listener := &ListenerConfig{

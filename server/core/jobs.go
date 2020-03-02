@@ -23,6 +23,7 @@ import (
 )
 
 var (
+	// Jobs - All background tasks (compilers, listeners) running on the C2 server
 	Jobs = &jobs{
 		Active: &map[int]*Job{},
 		mutex:  &sync.RWMutex{},
@@ -80,6 +81,7 @@ func (j *jobs) Job(jobID int) *Job {
 	return (*j.Active)[jobID]
 }
 
+// GetJobID - Get a new, incremental and unique ID for a job
 func GetJobID() int {
 	newID := (*jobID) + 1
 	(*jobID)++

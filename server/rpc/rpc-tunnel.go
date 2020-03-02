@@ -30,7 +30,7 @@ const (
 	tunDefaultTimeout = 30 * time.Second
 )
 
-func tunnelCreate(client *core.Client, req []byte, resp RPCResponse) {
+func tunnelCreate(client *core.Client, req []byte, resp Response) {
 	tunCreateReq := &clientpb.TunnelCreateReq{}
 	proto.Unmarshal(req, tunCreateReq)
 
@@ -44,7 +44,7 @@ func tunnelCreate(client *core.Client, req []byte, resp RPCResponse) {
 	resp(data, err)
 }
 
-func tunnelData(client *core.Client, req []byte, _ RPCResponse) {
+func tunnelData(client *core.Client, req []byte, _ Response) {
 	tunnelData := &ghostpb.TunnelData{}
 	proto.Unmarshal(req, tunnelData)
 	tunnel := core.Tunnels.Tunnel(tunnelData.TunnelID)
@@ -55,7 +55,7 @@ func tunnelData(client *core.Client, req []byte, _ RPCResponse) {
 	}
 }
 
-func tunnelClose(client *core.Client, req []byte, resp RPCResponse) {
+func tunnelClose(client *core.Client, req []byte, resp Response) {
 	tunCloseReq := &clientpb.TunnelCloseReq{}
 	proto.Unmarshal(req, tunCloseReq)
 

@@ -21,6 +21,7 @@ import (
 	"encoding/binary"
 )
 
+// EnvelopeID - Unique ID for an envelope
 func EnvelopeID() uint64 {
 	randBuf := make([]byte, 8)
 	rand.Read(randBuf)

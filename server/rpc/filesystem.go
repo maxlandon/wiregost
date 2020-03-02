@@ -25,7 +25,7 @@ import (
 	"github.com/maxlandon/wiregost/server/core"
 )
 
-func rpcLs(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcLs(req []byte, timeout time.Duration, resp Response) {
 	dirList := &ghostpb.LsReq{}
 	err := proto.Unmarshal(req, dirList)
 	if err != nil {
@@ -41,7 +41,7 @@ func rpcLs(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcRm(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcRm(req []byte, timeout time.Duration, resp Response) {
 	rmReq := &ghostpb.RmReq{}
 	err := proto.Unmarshal(req, rmReq)
 	if err != nil {
@@ -57,7 +57,7 @@ func rpcRm(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcMkdir(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcMkdir(req []byte, timeout time.Duration, resp Response) {
 	mkdirReq := &ghostpb.MkdirReq{}
 	err := proto.Unmarshal(req, mkdirReq)
 	if err != nil {
@@ -73,7 +73,7 @@ func rpcMkdir(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcCd(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcCd(req []byte, timeout time.Duration, resp Response) {
 	cdReq := &ghostpb.CdReq{}
 	err := proto.Unmarshal(req, cdReq)
 	if err != nil {
@@ -89,7 +89,7 @@ func rpcCd(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcPwd(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcPwd(req []byte, timeout time.Duration, resp Response) {
 	pwdReq := &ghostpb.PwdReq{}
 	err := proto.Unmarshal(req, pwdReq)
 	if err != nil {
@@ -103,7 +103,7 @@ func rpcPwd(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcDownload(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcDownload(req []byte, timeout time.Duration, resp Response) {
 	downloadReq := &ghostpb.DownloadReq{}
 	err := proto.Unmarshal(req, downloadReq)
 	if err != nil {
@@ -119,7 +119,7 @@ func rpcDownload(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcUpload(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcUpload(req []byte, timeout time.Duration, resp Response) {
 	uploadReq := &ghostpb.UploadReq{}
 	err := proto.Unmarshal(req, uploadReq)
 	if err != nil {

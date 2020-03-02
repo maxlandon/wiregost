@@ -25,7 +25,7 @@ import (
 	"github.com/maxlandon/wiregost/server/generate"
 )
 
-func rpcListProfiles(data []byte, timeout time.Duration, resp RPCResponse) {
+func rpcListProfiles(data []byte, timeout time.Duration, resp Response) {
 	profiles := &clientpb.Profiles{List: []*clientpb.Profile{}}
 	for name, config := range generate.Profiles() {
 		profiles.List = append(profiles.List, &clientpb.Profile{
@@ -37,7 +37,7 @@ func rpcListProfiles(data []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcDeleteProfile(data []byte, timeout time.Duration, resp RPCResponse) {
+func rpcDeleteProfile(data []byte, timeout time.Duration, resp Response) {
 
 	profileReq := &clientpb.Profile{}
 	err := proto.Unmarshal(data, profileReq)

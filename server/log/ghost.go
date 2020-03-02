@@ -72,6 +72,7 @@ func ghostTxtLogger(workspaceID uint, ghostName string) *logrus.Logger {
 
 // [ Directories ] ------------------------------------------------------//
 
+// GetGhostDir - Get directory for ghost implants
 func GetGhostDir(workspaceID uint, ghostName string) string {
 	rootDir := GetRootAppDir()
 	if _, err := os.Stat(rootDir); os.IsNotExist(err) {

@@ -27,6 +27,7 @@ import (
 )
 
 var (
+	// Wire - Stores all ghost implant sessions
 	Wire = &GhostWire{
 		Ghosts: &map[uint32]*Ghost{},
 		mutex:  &sync.RWMutex{},
@@ -155,7 +156,7 @@ func (gw *GhostWire) AddGhost(ghost *Ghost) {
 	(*gw.Ghosts)[ghost.ID] = ghost
 }
 
-// RemoveSliver - Add a sliver to the hive (atomically)
+// RemoveGhost - Add a ghost to the hive (atomically)
 func (gw *GhostWire) RemoveGhost(ghost *Ghost) {
 	gw.mutex.Lock()
 	defer gw.mutex.Unlock()

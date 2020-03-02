@@ -27,7 +27,7 @@ import (
 	"github.com/maxlandon/wiregost/server/generate"
 )
 
-func rpcPs(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcPs(req []byte, timeout time.Duration, resp Response) {
 	psReq := &ghostpb.PsReq{}
 	err := proto.Unmarshal(req, psReq)
 	if err != nil {
@@ -45,7 +45,7 @@ func rpcPs(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcProcdump(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcProcdump(req []byte, timeout time.Duration, resp Response) {
 	procdumpReq := &ghostpb.ProcessDumpReq{}
 	err := proto.Unmarshal(req, procdumpReq)
 	if err != nil {
@@ -65,7 +65,7 @@ func rpcProcdump(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcTerminate(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcTerminate(req []byte, timeout time.Duration, resp Response) {
 	terminateReq := &ghostpb.TerminateReq{}
 	err := proto.Unmarshal(req, terminateReq)
 	if err != nil {
@@ -82,7 +82,7 @@ func rpcTerminate(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcMigrate(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcMigrate(req []byte, timeout time.Duration, resp Response) {
 	migrateReq := &clientpb.MigrateReq{}
 	err := proto.Unmarshal(req, migrateReq)
 	if err != nil {

@@ -30,7 +30,7 @@ import (
 	"github.com/maxlandon/wiregost/server/msf"
 )
 
-func rpcTask(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcTask(req []byte, timeout time.Duration, resp Response) {
 	taskReq := &clientpb.TaskReq{}
 	err := proto.Unmarshal(req, taskReq)
 	if err != nil {
@@ -48,7 +48,7 @@ func rpcTask(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcExecute(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcExecute(req []byte, timeout time.Duration, resp Response) {
 	execReq := &ghostpb.ExecuteReq{}
 
 	err := proto.Unmarshal(req, execReq)
@@ -67,7 +67,7 @@ func rpcExecute(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcExecuteAssembly(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcExecuteAssembly(req []byte, timeout time.Duration, resp Response) {
 	execReq := &ghostpb.ExecuteAssemblyReq{}
 	err := proto.Unmarshal(req, execReq)
 	if err != nil {
@@ -102,7 +102,7 @@ func rpcExecuteAssembly(req []byte, timeout time.Duration, resp RPCResponse) {
 
 }
 
-func rpcSideload(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcSideload(req []byte, timeout time.Duration, resp Response) {
 	sideloadReq := &clientpb.SideloadReq{}
 	err := proto.Unmarshal(req, sideloadReq)
 	if err != nil {
@@ -131,7 +131,7 @@ func rpcSideload(req []byte, timeout time.Duration, resp RPCResponse) {
 
 }
 
-func rpcSpawnDll(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcSpawnDll(req []byte, timeout time.Duration, resp Response) {
 	spawnReq := &ghostpb.SpawnDllReq{}
 	err := proto.Unmarshal(req, spawnReq)
 	if err != nil {
@@ -143,7 +143,7 @@ func rpcSpawnDll(req []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcMsfInject(req []byte, timeout time.Duration, resp RPCResponse) {
+func rpcMsfInject(req []byte, timeout time.Duration, resp Response) {
 	msfReq := &clientpb.MSFInjectReq{}
 	err := proto.Unmarshal(req, msfReq)
 	if err != nil {

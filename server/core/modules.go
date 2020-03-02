@@ -48,19 +48,20 @@ type Module interface {
 	ToProtobuf() *pb.Module
 }
 
-// Module - Get module by path, (load it if needed)
+// GetModule - Get module by path, (load it if needed)
 func GetModule(path string) (Module, error) {
 
 	Modules.mutex.Lock()
 	defer Modules.mutex.Unlock()
 
-	if mod, ok := (*Modules.Loaded)[path]; !ok {
+	mod, ok := (*Modules.Loaded)[path]
+	if !ok {
 		return nil, errors.New("No module for given path")
-	} else {
-		return mod, nil
 	}
+	return mod, nil
 }
 
+// AddModule - Add a module to Wiregost list of available modules
 func AddModule(path string, mod Module) error {
 
 	Modules.mutex.Lock()
@@ -114,15 +115,16 @@ func (s *stack) Module(userID int32, path string) (Module, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	if mod, ok := (*s.Loaded)[path]; !ok {
+	mod, ok := (*s.Loaded)[path]
+	if !ok {
 		s.LoadModule(userID, path)
 		return (*s.Loaded)[path], nil
-	} else {
-		return mod, nil
 	}
+	return mod, nil
 
 }
 
+// LoadStacks - Inits an empty stack for each user, in each workspace (N users x N workspaces = P stacks)
 func LoadStacks() error {
 	// Users
 	clientCerts := certs.UserClientListCertificates()

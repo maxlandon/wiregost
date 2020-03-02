@@ -40,6 +40,7 @@ import (
 
 var persist = fmt.Sprintf("%s[P]%s ", tui.GREEN, tui.RESET)
 
+// SpawnPersistentListeners - Starts all listeners saved in DB
 func SpawnPersistentListeners() error {
 
 	bucket, err := db.GetBucket(ListenerBucketName)
@@ -77,6 +78,7 @@ func SpawnPersistentListeners() error {
 	return nil
 }
 
+// SpawnListener - Start an individual listener
 func SpawnListener(config *ListenerConfig) error {
 
 	switch config.Name {
@@ -121,6 +123,7 @@ func SpawnListener(config *ListenerConfig) error {
 	return nil
 }
 
+// SpawnMTLS - MTLS
 func SpawnMTLS(config *ListenerConfig) error {
 
 	ln, err := StartMutualTLSListener(config.LHost, config.LPort)
@@ -156,11 +159,13 @@ func SpawnMTLS(config *ListenerConfig) error {
 	return nil
 }
 
+// SpawnHTTP - HTTP
 func SpawnHTTP(config *ListenerConfig) error {
 
 	return nil
 }
 
+// SpawnHTTPS - HTTPS
 func SpawnHTTPS(config *ListenerConfig) error {
 
 	addr := fmt.Sprintf("%s:%d", config.LHost, config.LPort)
@@ -168,7 +173,7 @@ func SpawnHTTPS(config *ListenerConfig) error {
 	keyFile, _ := fs.Expand(config.Key)
 	cert, key, err := getLocalCertificatePair(certFile, keyFile)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to load local certificate %v", err))
+		return fmt.Errorf("Failed to load local certificate %v", err)
 	}
 
 	conf := &HTTPServerConfig{
@@ -232,6 +237,7 @@ func SpawnHTTPS(config *ListenerConfig) error {
 	return nil
 }
 
+// SpawnDNS - DNS
 func SpawnDNS(config *ListenerConfig) error {
 
 	server := StartDNSListener(config.DNSDomains, config.EnableCanaries)
@@ -278,6 +284,7 @@ func SpawnDNS(config *ListenerConfig) error {
 	return nil
 }
 
+// SpawnTCPStager - TCP Stager
 func SpawnTCPStager(config *ListenerConfig) error {
 
 	conf := &generate.GhostConfig{}
@@ -285,31 +292,29 @@ func SpawnTCPStager(config *ListenerConfig) error {
 	var err error
 	if config.ImplantStage == "" {
 		return errors.New("You must specify a Ghost implant build (shellcode/shared_lib) name")
-	} else {
-		// Find all ghost names
-		ghosts, _ := generate.GhostFiles()
-		for _, g := range ghosts {
-			ghost := strings.TrimPrefix(g, ".")
-			// If ghost is found in names...
-			if ghost == config.ImplantStage {
-				// Fetch config for checking format
-				conf, err = generate.GhostConfigByName(ghost)
-				if err != nil {
-					return errors.New("Cannot find Implant config: Impossible to check its format")
-				} else {
-					// If format is good, keep the bytes
-					if (conf.Format == pb.GhostConfig_SHARED_LIB) || (conf.Format == pb.GhostConfig_SHELLCODE) {
-						ghostBytes, err = generate.GhostFileByName(ghost)
-						break
-					} else {
-						return errors.New("Wrong format: The provided Ghost Implant Stage is of format EXECUTABLE")
-					}
-				}
+	}
+	// Find all ghost names
+	ghosts, _ := generate.GhostFiles()
+	for _, g := range ghosts {
+		ghost := strings.TrimPrefix(g, ".")
+		// If ghost is found in names...
+		if ghost == config.ImplantStage {
+			// Fetch config for checking format
+			conf, err = generate.GhostConfigByName(ghost)
+			if err != nil {
+				return errors.New("Cannot find Implant config: Impossible to check its format")
+			}
+			// If format is good, keep the bytes
+			if (conf.Format == pb.GhostConfig_SHARED_LIB) || (conf.Format == pb.GhostConfig_SHELLCODE) {
+				ghostBytes, err = generate.GhostFileByName(ghost)
+				break
+			} else {
+				return errors.New("Wrong format: The provided Ghost Implant Stage is of format EXECUTABLE")
 			}
 		}
-		if len(ghostBytes) == 0 {
-			return errors.New("The provided Implant Stage does not exist in DB")
-		}
+	}
+	if len(ghostBytes) == 0 {
+		return errors.New("The provided Implant Stage does not exist in DB")
 	}
 
 	// Generate the Shellcode to attach to stager listener
@@ -353,6 +358,7 @@ func SpawnTCPStager(config *ListenerConfig) error {
 	return nil
 }
 
+// SpawnHTTPStager - HTTP stager
 func SpawnHTTPStager(config *ListenerConfig) error {
 
 	conf := &generate.GhostConfig{}
@@ -360,31 +366,29 @@ func SpawnHTTPStager(config *ListenerConfig) error {
 	var err error
 	if config.ImplantStage == "" {
 		return errors.New("You must specify a Ghost implant build (shellcode/shared_lib) name")
-	} else {
-		// Find all ghost names
-		ghosts, _ := generate.GhostFiles()
-		for _, g := range ghosts {
-			ghost := strings.TrimPrefix(g, ".")
-			// If ghost is found in names...
-			if ghost == config.ImplantStage {
-				// Fetch config for checking format
-				conf, err = generate.GhostConfigByName(ghost)
-				if err != nil {
-					return errors.New("Cannot find Implant config: Impossible to check its format")
-				} else {
-					// If format is good, keep the bytes
-					if (conf.Format == pb.GhostConfig_SHARED_LIB) || (conf.Format == pb.GhostConfig_SHELLCODE) {
-						ghostBytes, err = generate.GhostFileByName(ghost)
-						break
-					} else {
-						return errors.New("Wrong format: The provided Ghost Implant Stage is of format EXECUTABLE")
-					}
-				}
+	}
+	// Find all ghost names
+	ghosts, _ := generate.GhostFiles()
+	for _, g := range ghosts {
+		ghost := strings.TrimPrefix(g, ".")
+		// If ghost is found in names...
+		if ghost == config.ImplantStage {
+			// Fetch config for checking format
+			conf, err = generate.GhostConfigByName(ghost)
+			if err != nil {
+				return errors.New("Cannot find Implant config: Impossible to check its format")
+			}
+			// If format is good, keep the bytes
+			if (conf.Format == pb.GhostConfig_SHARED_LIB) || (conf.Format == pb.GhostConfig_SHELLCODE) {
+				ghostBytes, err = generate.GhostFileByName(ghost)
+				break
+			} else {
+				return errors.New("Wrong format: The provided Ghost Implant Stage is of format EXECUTABLE")
 			}
 		}
-		if len(ghostBytes) == 0 {
-			return errors.New("The provided Implant Stage does not exist in DB")
-		}
+	}
+	if len(ghostBytes) == 0 {
+		return errors.New("The provided Implant Stage does not exist in DB")
 	}
 
 	// Generate the Shellcode to attach to stager listener
@@ -449,6 +453,7 @@ func SpawnHTTPStager(config *ListenerConfig) error {
 	return nil
 }
 
+// SpawnHTTPSStager - HTTPS stager
 func SpawnHTTPSStager(config *ListenerConfig) error {
 
 	conf := &generate.GhostConfig{}
@@ -456,31 +461,29 @@ func SpawnHTTPSStager(config *ListenerConfig) error {
 	var err error
 	if config.ImplantStage == "" {
 		return errors.New("You must specify a Ghost implant build (shellcode/shared_lib) name")
-	} else {
-		// Find all ghost names
-		ghosts, _ := generate.GhostFiles()
-		for _, g := range ghosts {
-			ghost := strings.TrimPrefix(g, ".")
-			// If ghost is found in names...
-			if ghost == config.ImplantStage {
-				// Fetch config for checking format
-				conf, err = generate.GhostConfigByName(ghost)
-				if err != nil {
-					return errors.New("Cannot find Implant config: Impossible to check its format")
-				} else {
-					// If format is good, keep the bytes
-					if (conf.Format == pb.GhostConfig_SHARED_LIB) || (conf.Format == pb.GhostConfig_SHELLCODE) {
-						ghostBytes, err = generate.GhostFileByName(ghost)
-						break
-					} else {
-						return errors.New("Wrong format: The provided Ghost Implant Stage is of format EXECUTABLE")
-					}
-				}
+	}
+	// Find all ghost names
+	ghosts, _ := generate.GhostFiles()
+	for _, g := range ghosts {
+		ghost := strings.TrimPrefix(g, ".")
+		// If ghost is found in names...
+		if ghost == config.ImplantStage {
+			// Fetch config for checking format
+			conf, err = generate.GhostConfigByName(ghost)
+			if err != nil {
+				return errors.New("Cannot find Implant config: Impossible to check its format")
+			}
+			// If format is good, keep the bytes
+			if (conf.Format == pb.GhostConfig_SHARED_LIB) || (conf.Format == pb.GhostConfig_SHELLCODE) {
+				ghostBytes, err = generate.GhostFileByName(ghost)
+				break
+			} else {
+				return errors.New("Wrong format: The provided Ghost Implant Stage is of format EXECUTABLE")
 			}
 		}
-		if len(ghostBytes) == 0 {
-			return errors.New("The provided Implant Stage does not exist in DB")
-		}
+	}
+	if len(ghostBytes) == 0 {
+		return errors.New("The provided Implant Stage does not exist in DB")
 	}
 
 	// Generate the Shellcode to attach to stager listener

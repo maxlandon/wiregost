@@ -31,7 +31,7 @@ import (
 	"github.com/maxlandon/wiregost/server/db"
 )
 
-func rpcJobs(_ []byte, timeout time.Duration, resp RPCResponse) {
+func rpcJobs(_ []byte, timeout time.Duration, resp Response) {
 	jobs := &clientpb.Jobs{
 		Active: []*clientpb.Job{},
 	}
@@ -53,7 +53,7 @@ func rpcJobs(_ []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcJobKill(data []byte, timeout time.Duration, resp RPCResponse) {
+func rpcJobKill(data []byte, timeout time.Duration, resp Response) {
 	jobKillReq := &clientpb.JobKillReq{}
 	err := proto.Unmarshal(data, jobKillReq)
 	if err != nil {

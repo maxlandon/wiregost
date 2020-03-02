@@ -26,7 +26,7 @@ import (
 	"github.com/maxlandon/wiregost/server/core"
 )
 
-func rpcSessions(_ []byte, timeout time.Duration, resp RPCResponse) {
+func rpcSessions(_ []byte, timeout time.Duration, resp Response) {
 
 	sessions := &clientpb.Sessions{}
 	if 0 < len(*core.Wire.Ghosts) {
@@ -41,7 +41,7 @@ func rpcSessions(_ []byte, timeout time.Duration, resp RPCResponse) {
 	resp(data, err)
 }
 
-func rpcKill(data []byte, timeout time.Duration, resp RPCResponse) {
+func rpcKill(data []byte, timeout time.Duration, resp Response) {
 
 	killReq := &ghostpb.KillReq{}
 	err := proto.Unmarshal(data, killReq)
