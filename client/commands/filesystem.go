@@ -31,12 +31,11 @@ import (
 	"gopkg.in/AlecAivazis/survey.v1"
 
 	"github.com/maxlandon/wiregost/client/spin"
-	. "github.com/maxlandon/wiregost/client/util"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/maxlandon/wiregost/util"
 )
 
-func RegisterFileSystemCommands() {
+func registerFileSystemCommands() {
 
 	ls := &Command{
 		Name: "ls",

@@ -21,10 +21,10 @@ import (
 	"fmt"
 
 	"github.com/evilsocket/islazy/tui"
+
 	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/client/transport"
-	. "github.com/maxlandon/wiregost/client/util"
 )
 
 func getDefaultServerConfig() *assets.ClientConfig {
@@ -52,11 +52,10 @@ func (c *Console) connect(config *assets.ClientConfig) error {
 	if err != nil {
 		errString := fmt.Sprintf(Errorf+"Connection to server failed: %v", err)
 		return errors.New(errString)
-	} else {
-		fmt.Printf(Success+"Connected to Wiregost server at %s:%d, as user %s%s%s",
-			config.LHost, config.LPort, tui.YELLOW, config.User, tui.RESET)
-		fmt.Println()
 	}
+	fmt.Printf(Success+"Connected to Wiregost server at %s:%d, as user %s%s%s",
+		config.LHost, config.LPort, tui.YELLOW, config.User, tui.RESET)
+	fmt.Println()
 
 	// Bind connection to server object in console
 	c.server = core.BindWiregostServer(send, recv)

@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	consts "github.com/maxlandon/wiregost/client/constants"
-	. "github.com/maxlandon/wiregost/client/util"
+	"github.com/maxlandon/wiregost/client/util"
 )
 
 var (
@@ -107,9 +107,8 @@ func GetHelpFor(cmdName string) string {
 	if 0 < len(cmdName) {
 		if helpTempl, ok := cmdHelp[cmdName]; ok {
 			return helpTempl
-		} else {
-			return fmt.Sprintf(Warn+"No help for command %s", cmdName)
 		}
+		return fmt.Sprintf(util.Warn+"No help for command %s", cmdName)
 	}
 	return ""
 }

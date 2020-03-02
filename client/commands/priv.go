@@ -26,12 +26,11 @@ import (
 	"github.com/gogo/protobuf/proto"
 
 	"github.com/maxlandon/wiregost/client/spin"
-	. "github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
-func RegisterPrivCommands() {
+func registerPrivCommands() {
 	runAs := &Command{
 		Name: "run_as",
 		Args: []*CommandArg{

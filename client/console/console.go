@@ -38,6 +38,7 @@ import (
 
 var home, _ = os.UserHomeDir()
 
+// Console - The client Shell object, storing readline, comps, commands, modules and context and so on...
 type Console struct {
 	// Shell
 	Shell   *readline.Instance
@@ -70,7 +71,7 @@ type Console struct {
 	shellContext *commands.ShellContext
 }
 
-func NewConsole() *Console {
+func newConsole() *Console {
 
 	// [ Config ]
 	conf := LoadConsoleConfig()
@@ -135,10 +136,11 @@ func NewConsole() *Console {
 	return console
 }
 
+// Start - the Shell.
 func Start() {
 
 	// Instantiate console
-	c := NewConsole()
+	c := newConsole()
 
 	// Connect to server
 	config := getDefaultServerConfig()
@@ -299,7 +301,6 @@ func (c *Console) exit() bool {
 	if (answer == "Y") || (answer == "y") {
 		c.Shell.Close()
 		return true
-	} else {
-		return false
 	}
+	return false
 }

@@ -25,12 +25,11 @@ import (
 	"github.com/olekukonko/tablewriter"
 
 	"github.com/maxlandon/wiregost/client/util"
-	. "github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
-func RegisterStackCommands() {
+func registerStackCommands() {
 
 	stack := &Command{
 		Name: "stack",
@@ -134,7 +133,7 @@ func stackList(ctx ShellContext, rpc RPCServer) {
 		return
 	}
 
-	table := Table()
+	table := util.Table()
 	table.SetHeader([]string{"Type", "Path", "Description"})
 	table.SetColWidth(60)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},

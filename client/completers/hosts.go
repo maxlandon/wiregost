@@ -26,13 +26,12 @@ import (
 	"github.com/maxlandon/wiregost/data_service/remote"
 )
 
-// AutoCompleter is the autocompletion engine
-type HostCompleter struct {
+type hostCompleter struct {
 	Command *commands.Command
 }
 
 // Do is the completion function triggered at each line
-func (hc *HostCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+func (hc *hostCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 
 	// Complete command args
 	splitLine := strings.Split(string(line), " ")
@@ -52,7 +51,7 @@ func (hc *HostCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (o
 	return options, offset
 }
 
-func (hc *HostCompleter) yieldHostValues(ctx *context.Context, line []rune, pos int) (options [][]rune, offset int) {
+func (hc *hostCompleter) yieldHostValues(ctx *context.Context, line []rune, pos int) (options [][]rune, offset int) {
 
 	hosts, err := remote.Hosts(*ctx, nil)
 	if err != nil {

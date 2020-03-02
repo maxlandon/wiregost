@@ -22,13 +22,13 @@ import (
 	"strings"
 
 	"github.com/gogo/protobuf/proto"
-	. "github.com/maxlandon/wiregost/client/util"
+	"github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/olekukonko/tablewriter"
 )
 
-func RegisterProfileCommands() {
+func registerProfileCommands() {
 
 	profiles := &Command{
 		Name: "profiles",
@@ -108,7 +108,7 @@ func listProfiles(rpc RPCServer) {
 		(*profiles)[profile.Name] = profile
 	}
 
-	table := Table()
+	table := util.Table()
 	table.SetHeader([]string{"Name", "Platform", "Format", "Command & Control", "Limitations", "Debug"})
 	table.SetColWidth(40)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},

@@ -28,8 +28,10 @@ import (
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
 
+// WrapColumns - Value for maximum shell width, used for printing tables
 var WrapColumns int
 
+// Table - Set basic settings for a table
 func Table() *tablewriter.Table {
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -50,7 +52,7 @@ func Table() *tablewriter.Table {
 	return table
 }
 
-// Function used for description paragraphs and table columns
+// Wrap - Function used for description paragraphs and table columns
 func Wrap(text string, lineWidth int) (wrapped string) {
 	words := strings.Fields(text)
 	if len(words) == 0 {
@@ -70,7 +72,7 @@ func Wrap(text string, lineWidth int) (wrapped string) {
 	return
 }
 
-// SortOptionKeys - Golang prints maps in an ever-changing order, so try at least
+// SortGenerateOptionKeys - Golang prints maps in an ever-changing order, so try at least
 // to give an order for the most important options
 func SortGenerateOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 
@@ -150,6 +152,7 @@ func SortGenerateOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 	return keys
 }
 
+// SortListenerOptionKeys - Listener-specific options
 func SortListenerOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 
 	// Single Payloads
@@ -212,10 +215,11 @@ func SortListenerOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 	return keys
 }
 
+// SortPostOptions - Post-module specific options
 func SortPostOptions(opts map[string]*clientpb.Option) (keys []string) {
 
 	options := []string{}
-	for v, _ := range opts {
+	for v := range opts {
 		options = append(options, v)
 	}
 
@@ -224,6 +228,7 @@ func SortPostOptions(opts map[string]*clientpb.Option) (keys []string) {
 	return options
 }
 
+// PrintOptions - Print options a for a module, dispatching depending on type
 func PrintOptions(mod *clientpb.Module) {
 
 	sub := strings.Join(mod.Path, "/")

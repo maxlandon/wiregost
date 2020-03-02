@@ -29,10 +29,9 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/help"
-	. "github.com/maxlandon/wiregost/client/util"
 )
 
-func RegisterCoreCommands() {
+func registerCoreCommands() {
 
 	// Shell -----------------------------------------------------------------------------------------//
 
@@ -166,7 +165,7 @@ func RegisterCoreCommands() {
 					hlength := 0
 					scanner := bufio.NewScanner(hist)
 					for scanner.Scan() {
-						hlength += 1
+						hlength++
 					}
 					hist.Close()
 
@@ -179,7 +178,7 @@ func RegisterCoreCommands() {
 						if hlength <= length+1 && hlength > 1 {
 							res.Write([]byte(scan.Text() + "\n"))
 						}
-						hlength -= 1
+						hlength--
 					}
 					fmt.Printf(Success+"Resource file created and filed with last %s commands.%s",
 						strconv.Itoa(length), tui.RESET)

@@ -17,7 +17,6 @@
 package console
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -29,7 +28,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type ConsoleConfig struct {
+// Config - Stores various configuration elements for the shell
+type Config struct {
 	Mode                  string
 	Prompt                string
 	Wrap                  string
@@ -38,9 +38,10 @@ type ConsoleConfig struct {
 	SessionPathCompletion bool
 }
 
-func LoadConsoleConfig() *ConsoleConfig {
+// LoadConsoleConfig - Loads the config file for the console and parse it
+func LoadConsoleConfig() *Config {
 	// Load a default console config, eventually parse one if found
-	conf := &ConsoleConfig{
+	conf := &Config{
 		Mode:                  "emacs",
 		Prompt:                "",
 		Wrap:                  "large",
@@ -70,14 +71,15 @@ func LoadConsoleConfig() *ConsoleConfig {
 
 }
 
-func SaveConsoleConfig(config *ConsoleConfig) error {
+// SaveConsoleConfig - Save the config to file
+func SaveConsoleConfig(config *Config) error {
 	saveTo := assets.GetRootAppDir()
 	configYAML, _ := yaml.Marshal(config)
 
 	if _, err := os.Stat(saveTo); os.IsNotExist(err) {
 		err = os.MkdirAll(saveTo, os.ModePerm)
 		if err != nil {
-			return errors.New(fmt.Sprintf("Cannot write to wiregost-client root directory %s", err))
+			return fmt.Errorf("Cannot write to wiregost-client root directory %s", err)
 		}
 	}
 
@@ -89,7 +91,7 @@ func SaveConsoleConfig(config *ConsoleConfig) error {
 
 	err = ioutil.WriteFile(saveTo, configYAML, 0600)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to write config to: %s (%v) \n", saveTo, err))
+		return fmt.Errorf("Failed to write config to: %s (%v) \n", saveTo, err)
 	}
 
 	f, err := os.OpenFile(saveTo, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)

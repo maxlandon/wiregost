@@ -17,14 +17,16 @@
 package completers
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 	"unicode"
 
+	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/client/commands"
 )
 
-// AutoCompleter is the autocompletion engine, which uses the shell context
+// AutoCompleter - The main/root autocompleter for the console.
 type AutoCompleter struct {
 	MenuContext *string
 	Context     *commands.ShellContext
@@ -121,46 +123,46 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 	case "main", "module":
 		switch cmd.Name {
 		case "cd":
-			comp := &PathCompleter{Command: cmd}
+			comp := &pathCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		case "workspace":
-			comp := &WorkspaceCompleter{Command: cmd}
+			comp := &workspaceCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		case "hosts":
-			comp := &HostCompleter{Command: cmd}
+			comp := &hostCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		case "set":
-			comp := &OptionCompleter{Command: cmd}
+			comp := &optionCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		case "use":
-			comp := &ModuleCompleter{Command: cmd}
+			comp := &moduleCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		case "stack":
-			comp := &StackCompleter{Command: cmd}
+			comp := &stackCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		case "profiles", "parse_profile":
-			comp := &ProfileCompleter{Command: cmd}
+			comp := &profileCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		case "user":
-			comp := &UserCompleter{Command: cmd}
+			comp := &userCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		case "server":
-			comp := &ServerCompleter{Command: cmd}
+			comp := &serverCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		case "sessions":
-			comp := &SessionCompleter{Command: cmd}
+			comp := &sessionCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		}
 
 	case "agent":
 		switch cmd.Name {
 		case "help":
-			comp := &AgentHelpCompleter{Command: cmd}
+			comp := &agentHelpCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		case "cd":
 			// Enable only if enabled in config
 			if ctx.SessionPathComplete {
-				comp := &ImplantPathCompleter{Command: cmd}
+				comp := &implantPathCompleter{Command: cmd}
 				options, offset = comp.Do(ctx, line, pos)
 			}
 		}
@@ -184,12 +186,12 @@ func yieldOptionompletions(ctx *commands.ShellContext, cmd *commands.Command, li
 			switch string(line) {
 
 			case "StageImplant ", "StageConfig ":
-				comp := &StagerCompleter{Command: cmd}
+				comp := &stagerCompleter{Command: cmd}
 				options, offset = comp.Do(ctx, line, pos)
 
 				// Default is: no options have been typed yet
 			default:
-				comp := &OptionCompleter{Command: cmd}
+				comp := &optionCompleter{Command: cmd}
 				options, offset = comp.Do(ctx, line, pos)
 			}
 		}
@@ -266,3 +268,30 @@ func doInternal(line []rune, pos int, lineLen int, argName []rune) (newLine [][]
 	}
 	return
 }
+
+var (
+	// Info - All normal message
+	Info = fmt.Sprintf("%s[-]%s ", tui.BLUE, tui.RESET)
+	// Warn - Errors in parameters, notifiable events in modules/sessions
+	Warn = fmt.Sprintf("%s[!]%s ", tui.YELLOW, tui.RESET)
+	// Error - Error in commands, filters, modules and implants.
+	Error = fmt.Sprintf("%s[!]%s ", tui.RED, tui.RESET)
+	// Success - Success events
+	Success = fmt.Sprintf("%s[*]%s ", tui.GREEN, tui.RESET)
+
+	// Infof - formatted
+	Infof = fmt.Sprintf("%s[-] ", tui.BLUE)
+	// Warnf - formatted
+	Warnf = fmt.Sprintf("%s[!] ", tui.YELLOW)
+	// Errorf - formatted
+	Errorf = fmt.Sprintf("%s[!] ", tui.RED)
+	// Sucessf - formatted
+	Sucessf = fmt.Sprintf("%s[*] ", tui.GREEN)
+
+	//RPCError - Errors from the server
+	RPCError = fmt.Sprintf("%s[RPC Error]%s ", tui.RED, tui.RESET)
+	// CommandError - Command input error
+	CommandError = fmt.Sprintf("%s[Command Error]%s ", tui.RED, tui.RESET)
+	// DBError - Data Service error
+	DBError = fmt.Sprintf("%s[DB Error]%s ", tui.RED, tui.RESET)
+)

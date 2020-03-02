@@ -21,7 +21,6 @@ import (
 
 	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/client/commands"
-	. "github.com/maxlandon/wiregost/client/util"
 )
 
 // ExecCmd executes a single command and provides it all the context it might need
@@ -33,10 +32,9 @@ func ExecCmd(args []string, menu string, shellContext *commands.ShellContext) er
 	command := commands.FindCommand(menu, args[0])
 	if command != nil {
 		return command.Handle(commands.NewRequest(command, args[1:], shellContext))
-	} else {
-		fmt.Println()
-		fmt.Printf(CommandError+"%s%s%s is not a valid command. \n", tui.YELLOW, args[0], tui.RESET)
 	}
+	fmt.Println()
+	fmt.Printf(CommandError+"%s%s%s is not a valid command. \n", tui.YELLOW, args[0], tui.RESET)
 
 	return nil
 }

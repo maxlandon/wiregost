@@ -76,6 +76,7 @@ func FindCommand(context, name string) *Command {
 	return commandMap[context][name]
 }
 
+// AllContextCommands - Returns all commands for a given shell context
 func AllContextCommands(context string) map[string]*Command {
 	return commandMap[context]
 }

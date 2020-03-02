@@ -27,12 +27,12 @@ import (
 
 	"github.com/maxlandon/wiregost/client/constants"
 	"github.com/maxlandon/wiregost/client/help"
-	. "github.com/maxlandon/wiregost/client/util"
+	"github.com/maxlandon/wiregost/client/util"
 	"github.com/maxlandon/wiregost/data_service/models"
 	"github.com/maxlandon/wiregost/data_service/remote"
 )
 
-func RegisterHostCommands() {
+func registerHostCommands() {
 
 	// Declare all commands, subcommands and arguments
 	hosts := &Command{
@@ -172,7 +172,7 @@ func deleteHosts(cctx *context.Context, args []string) {
 			return
 		}
 
-		for i, _ := range hosts {
+		for i := range hosts {
 			opts["host_id"] = []uint{hosts[i].ID}
 			err = remote.DeleteHosts(*cctx, opts)
 			if err != nil {
@@ -198,7 +198,7 @@ func updateHost(cctx *context.Context, args []string) {
 		ids := opts["host_id"].([]uint)
 
 		hosts, _ := remote.Hosts(*cctx, nil)
-		for i, _ := range hosts {
+		for i := range hosts {
 			for _, u := range ids {
 				if hosts[i].ID == u {
 					host = &hosts[i]
@@ -264,7 +264,7 @@ func updateHost(cctx *context.Context, args []string) {
 }
 
 func hostsTable(cctx *context.Context, hosts *[]models.Host) {
-	table := Table()
+	table := util.Table()
 	table.SetHeader([]string{"ID", "Addresses", "Name", "OS Name", "OS Flavor", "OS SP", "Arch", "Purpose", "Info", "Comments"})
 	table.SetColWidth(60)
 	table.SetColMinWidth(1, 15)
@@ -315,8 +315,8 @@ func hostFilters(args []string) (opts map[string]interface{}) {
 			ids := strings.Split(vals, ",")
 			var uIds []uint
 			for _, id := range ids {
-				uId, _ := strconv.Atoi(id)
-				uIds = append(uIds, uint(uId))
+				uID, _ := strconv.Atoi(id)
+				uIds = append(uIds, uint(uID))
 			}
 			opts["host_id"] = uIds
 		}

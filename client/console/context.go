@@ -33,7 +33,7 @@ func (c *Console) initContext() {
 	if err != nil {
 		fmt.Println(tui.Red("Failed to fetch workspaces"))
 	}
-	for i, _ := range workspaces {
+	for i := range workspaces {
 		if workspaces[i].IsDefault {
 			c.currentWorkspace = &workspaces[i]
 		}

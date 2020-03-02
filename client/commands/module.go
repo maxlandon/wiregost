@@ -24,12 +24,11 @@ import (
 	"github.com/gogo/protobuf/proto"
 
 	"github.com/maxlandon/wiregost/client/util"
-	. "github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
-func RegisterModuleCommands() {
+func registerModuleCommands() {
 
 	moduleUse := &Command{
 		Name: "use",

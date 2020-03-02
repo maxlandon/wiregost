@@ -29,10 +29,10 @@ import (
 	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/client/transport"
-	. "github.com/maxlandon/wiregost/client/util"
+	"github.com/maxlandon/wiregost/client/util"
 )
 
-func RegisterServerCommands() {
+func registerServerCommands() {
 
 	server := &Command{
 		Name: "server",
@@ -67,7 +67,7 @@ func listServers(ctx ShellContext) {
 		return
 	}
 
-	table := Table()
+	table := util.Table()
 	table.SetHeader([]string{"User Name", "LHost", "LPort", "Default", "Connected"})
 	table.SetColWidth(40)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -121,11 +121,10 @@ func connectServer(args []string, ctx ShellContext) error {
 		errString := fmt.Sprintf(Errorf+"Connection to server failed: %v", err)
 		return errors.New(errString)
 
-	} else {
-		fmt.Printf(Success+"Connected to Wiregost server at %s:%d, as user %s%s%s",
-			config.LHost, config.LPort, tui.YELLOW, config.User, tui.RESET)
-		fmt.Println()
 	}
+	fmt.Printf(Success+"Connected to Wiregost server at %s:%d, as user %s%s%s",
+		config.LHost, config.LPort, tui.YELLOW, config.User, tui.RESET)
+	fmt.Println()
 
 	// Bind connection to server object in console
 	ctx.Server = core.BindWiregostServer(send, recv)

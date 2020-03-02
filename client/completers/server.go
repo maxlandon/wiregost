@@ -24,13 +24,12 @@ import (
 	"github.com/maxlandon/wiregost/client/commands"
 )
 
-// AutoCompleter is the autocompletion engine
-type ServerCompleter struct {
+type serverCompleter struct {
 	Command *commands.Command
 }
 
 // Do is the completion function triggered at each line
-func (mc *ServerCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+func (mc *serverCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 
 	splitLine := strings.Split(string(line), " ")
 	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))

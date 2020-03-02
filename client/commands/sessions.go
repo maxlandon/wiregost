@@ -25,12 +25,12 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/olekukonko/tablewriter"
 
-	. "github.com/maxlandon/wiregost/client/util"
+	"github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
-func RegisterSessionCommands() {
+func registerSessionCommands() {
 
 	sessions := &Command{
 		Name: "sessions",
@@ -146,7 +146,7 @@ func killAllSessions(ctx ShellContext, rpc RPCServer) {
 }
 
 func printGhosts(sessions map[uint32]*clientpb.Ghost) {
-	table := Table()
+	table := util.Table()
 	table.SetHeader([]string{"WsID", "ID", "Name", "Transport", "Remote Address", "Username", "Hostname", "Operating System", "Last Check-in"})
 	table.SetColWidth(40)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -188,9 +188,8 @@ func interactGhost(args []string, ctx ShellContext, rpc RPCServer) {
 	if len(args) < 2 {
 		fmt.Printf("\n" + Error + "Provide a ghost name or session number\n")
 		return
-	} else {
-		name = args[1]
 	}
+	name = args[1]
 
 	ghost := getGhost(name, rpc)
 	if ghost != nil {
@@ -218,6 +217,7 @@ func getGhost(arg string, rpc RPCServer) *clientpb.Ghost {
 	return nil
 }
 
+// GetGhosts - Get all connected sessions
 func GetGhosts(rpc RPCServer) *clientpb.Sessions {
 	resp := <-rpc(&ghostpb.Envelope{
 		Type: clientpb.MsgSessions,
@@ -229,6 +229,7 @@ func GetGhosts(rpc RPCServer) *clientpb.Sessions {
 	return sessions
 }
 
+// GhostSessionsByName - Get a session by name
 func GhostSessionsByName(name string, rpc RPCServer) []*clientpb.Ghost {
 	resp := <-rpc(&ghostpb.Envelope{
 		Type: clientpb.MsgSessions,

@@ -25,12 +25,12 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/olekukonko/tablewriter"
 
-	. "github.com/maxlandon/wiregost/client/util"
+	"github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
-func RegisterGhostBuildsCommands() {
+func registerGhostBuildsCommands() {
 
 	ghosts := &Command{
 		Name: "ghosts",
@@ -77,7 +77,7 @@ func listGhostBuilds(ctx ShellContext, rpc RPCServer) {
 
 func displayAllGhostBuilds(configs map[string]*clientpb.GhostConfig) {
 
-	table := Table()
+	table := util.Table()
 	table.SetHeader([]string{"WsID", "Name", "Platform", "Format", "Command & Control", "Limitations", "Debug"})
 	table.SetColWidth(40)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -127,7 +127,7 @@ func listCanaries(ctx ShellContext, rpc RPCServer) {
 
 func displayCanaries(canaries []*clientpb.DNSCanary) {
 
-	table := Table()
+	table := util.Table()
 	table.SetHeader([]string{"Name", "Domain", "Triggered", "First trigger", "Latest trigger"})
 	table.SetColWidth(40)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},

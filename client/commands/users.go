@@ -23,13 +23,13 @@ import (
 
 	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
-	. "github.com/maxlandon/wiregost/client/util"
+	"github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/olekukonko/tablewriter"
 )
 
-func RegisterUserCommands() {
+func registerUserCommands() {
 
 	users := &Command{
 		Name: "user",
@@ -123,7 +123,7 @@ func deleteUser(user string, rpc RPCServer) {
 }
 
 func displayUsers(users []*clientpb.Player) {
-	table := Table()
+	table := util.Table()
 	table.SetHeader([]string{"Name", "Status"})
 	table.SetColWidth(40)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},

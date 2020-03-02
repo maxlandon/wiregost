@@ -22,13 +22,12 @@ import (
 	"github.com/maxlandon/wiregost/client/commands"
 )
 
-// AutoCompleter is the autocompletion engine
-type UserCompleter struct {
+type userCompleter struct {
 	Command *commands.Command
 }
 
 // Do is the completion function triggered at each line
-func (hc *UserCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+func (hc *userCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 
 	// Complete command args
 	splitLine := strings.Split(string(line), " ")

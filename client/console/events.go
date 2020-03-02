@@ -27,7 +27,6 @@ import (
 	"github.com/maxlandon/wiregost/client/commands"
 	consts "github.com/maxlandon/wiregost/client/constants"
 	"github.com/maxlandon/wiregost/client/core"
-	. "github.com/maxlandon/wiregost/client/util"
 )
 
 func (c *Console) eventLoop(server *core.WiregostServer) {

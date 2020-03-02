@@ -28,7 +28,7 @@ const (
 	// WiregostClientDirName - Directory storing all of the client configs/logs
 	WiregostClientDirName = ".wiregost-client"
 
-	ResourceDirName = "resource"
+	resourceDirName = "resource"
 )
 
 // GetRootAppDir - Get the Wiregost client app dir ~/.wiregost-client/
@@ -47,7 +47,7 @@ func GetRootAppDir() string {
 // GetConfigDir - Returns the path to the config dir
 func GetResourceDir() string {
 	rootDir, _ := filepath.Abs(GetRootAppDir())
-	dir := path.Join(rootDir, ResourceDirName)
+	dir := path.Join(rootDir, resourceDirName)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.MkdirAll(dir, os.ModePerm)
 		if err != nil {

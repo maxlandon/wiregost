@@ -23,11 +23,13 @@ import (
 	"github.com/evilsocket/islazy/str"
 )
 
+// Shell - Execute shell command on Linux/MacOS
 func Shell(args []string) (string, error) {
 	cmd := strings.Join(args, " ")
 	return Exec("/bin/sh", []string{"-c", cmd})
 }
 
+// Exec - Execute a program
 func Exec(executable string, args []string) (string, error) {
 	path, err := exec.LookPath(executable)
 	if err != nil {
@@ -37,7 +39,6 @@ func Exec(executable string, args []string) (string, error) {
 	raw, err := exec.Command(path, args...).CombinedOutput()
 	if err != nil {
 		return "", err
-	} else {
-		return str.Trim(string(raw)), nil
 	}
+	return str.Trim(string(raw)), nil
 }

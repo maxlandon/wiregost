@@ -22,7 +22,7 @@ import (
 	"github.com/maxlandon/wiregost/client/help"
 )
 
-func RegisterHelpCommands() {
+func registerHelpCommands() {
 
 	// Command categories
 	help := &Command{

@@ -23,19 +23,17 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/util"
-	. "github.com/maxlandon/wiregost/client/util"
 	"github.com/maxlandon/wiregost/data_service/remote"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
-// AutoCompleter is the autocompletion engine
-type OptionCompleter struct {
+type optionCompleter struct {
 	Command *commands.Command
 }
 
 // Do is the completion function triggered at each line
-func (oc *OptionCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+func (oc *optionCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 
 	// Complete command args
 	splitLine := strings.Split(string(line), " ")
@@ -59,7 +57,7 @@ func (oc *OptionCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) 
 }
 
 // Do is the completion function triggered at each line
-func (oc *OptionCompleter) yieldOptionNames(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+func (oc *optionCompleter) yieldOptionNames(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 	switch ctx.Module.Type {
 	case "payload":
 		for _, v := range util.SortListenerOptionKeys(ctx.Module.Options) {
@@ -93,7 +91,7 @@ func (oc *OptionCompleter) yieldOptionNames(ctx *commands.ShellContext, line []r
 }
 
 // Do is the completion function triggered at each line
-func (oc *OptionCompleter) yieldOptionValues(ctx *commands.ShellContext, optionName string, line []rune, pos int) (options [][]rune, offset int) {
+func (oc *optionCompleter) yieldOptionValues(ctx *commands.ShellContext, optionName string, line []rune, pos int) (options [][]rune, offset int) {
 
 	switch optionName {
 	case "StageImplant", "StageConfig":

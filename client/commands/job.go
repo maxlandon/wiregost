@@ -23,13 +23,12 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/maxlandon/wiregost/client/util"
-	. "github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/olekukonko/tablewriter"
 )
 
-func RegisterJobCommands() {
+func registerJobCommands() {
 
 	jobs := &Command{
 		Name: "jobs",
@@ -47,12 +46,11 @@ func RegisterJobCommands() {
 					if len(r.Args) == 1 {
 						fmt.Printf("\n" + Error + "Provide one or more Job IDs\n")
 						return nil
-					} else {
-						for _, arg := range r.Args[1:] {
-							idInt, _ := strconv.Atoi(arg)
-							id := int32(idInt)
-							killJob(id, r.context.Server.RPC)
-						}
+					}
+					for _, arg := range r.Args[1:] {
+						idInt, _ := strconv.Atoi(arg)
+						id := int32(idInt)
+						killJob(id, r.context.Server.RPC)
 					}
 				case "kill-all":
 					killAllJobs(r.context.Server.RPC)

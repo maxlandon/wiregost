@@ -23,18 +23,16 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/maxlandon/wiregost/client/commands"
-	. "github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
-// AutoCompleter is the autocompletion engine
-type ModuleCompleter struct {
+type moduleCompleter struct {
 	Command *commands.Command
 }
 
 // Do is the completion function triggered at each line
-func (mc *ModuleCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+func (mc *moduleCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 
 	splitLine := strings.Split(string(line), " ")
 	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))

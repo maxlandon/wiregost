@@ -23,18 +23,16 @@ import (
 	"github.com/gogo/protobuf/proto"
 
 	"github.com/maxlandon/wiregost/client/commands"
-	. "github.com/maxlandon/wiregost/client/util"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
-// AutoCompleter is the autocompletion engine
-type ProfileCompleter struct {
+type profileCompleter struct {
 	Command *commands.Command
 }
 
 // Do is the completion function triggered at each line
-func (oc *ProfileCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+func (oc *profileCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 
 	splitLine := strings.Split(string(line), " ")
 	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
@@ -66,7 +64,7 @@ func (oc *ProfileCompleter) Do(ctx *commands.ShellContext, line []rune, pos int)
 
 	switch oc.Command.Name {
 	case "parse_profile":
-		for k, _ := range *profiles {
+		for k := range *profiles {
 			search := k
 			if !hasPrefix(line, []rune(search)) {
 				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
@@ -77,7 +75,7 @@ func (oc *ProfileCompleter) Do(ctx *commands.ShellContext, line []rune, pos int)
 	case "profiles":
 		switch splitLine[0] {
 		case "delete":
-			for k, _ := range *profiles {
+			for k := range *profiles {
 				search := k
 				if !hasPrefix(line, []rune(search)) {
 					sLine, sOffset := doInternal(line, pos, len(line), []rune(search))

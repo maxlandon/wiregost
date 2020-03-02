@@ -26,12 +26,12 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	"github.com/olekukonko/tablewriter"
 
-	. "github.com/maxlandon/wiregost/client/util"
+	"github.com/maxlandon/wiregost/client/util"
 	"github.com/maxlandon/wiregost/data_service/models"
 	"github.com/maxlandon/wiregost/data_service/remote"
 )
 
-func RegisterWorkspaceCommands() {
+func registerWorkspaceCommands() {
 
 	// Declare all commands, subcommands and arguments
 	workspace := &Command{
@@ -99,7 +99,7 @@ func workspaces(currentWorkspace *models.Workspace) {
 	}
 
 	data := [][]string{}
-	for i, _ := range workspaces {
+	for i := range workspaces {
 		// Default
 		w := workspaces[i]
 		def := ""
@@ -125,10 +125,11 @@ func switchWorkspace(name string, workspace *models.Workspace, ctx *context.Cont
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	for i, _ := range workspaces {
+	for i := range workspaces {
 		if workspaces[i].Name == name {
 			*workspace = workspaces[i]
-			*ctx = context.WithValue(*ctx, "workspace_id", workspaces[i].ID)
+			const workspaceID = "workspace_id"
+			*ctx = context.WithValue(*ctx, workspaceID, workspaces[i].ID)
 			workspace = &workspaces[i]
 			fmt.Printf(Info+"Switched to workspace %s", workspaces[i].Name)
 			// Reset currentModule
@@ -171,7 +172,7 @@ func deleteWorkspaces(names []string) {
 }
 
 func printWorkspaceTable(data [][]string) {
-	table := Table()
+	table := util.Table()
 	table.SetColWidth(70)
 	table.SetHeader([]string{"Name", "Description", "Default", "Boundary", "Limit", "Updated At"})
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -197,7 +198,7 @@ func updateWorkspace(args []string) {
 	name, found := opts["workspace_id"]
 	if found {
 		workspaces, _ := remote.Workspaces(nil)
-		for i, _ := range workspaces {
+		for i := range workspaces {
 			if workspaces[i].ID == name.(uint) {
 				w = &workspaces[i]
 			}

@@ -23,13 +23,12 @@ import (
 	"github.com/maxlandon/wiregost/data_service/remote"
 )
 
-// AutoCompleter is the autocompletion engine
-type WorkspaceCompleter struct {
+type workspaceCompleter struct {
 	Command *commands.Command
 }
 
 // Do is the completion function triggered at each line
-func (wc *WorkspaceCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+func (wc *workspaceCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 
 	// Complete command args
 	splitLine := strings.Split(string(line), " ")
