@@ -21,7 +21,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -48,14 +47,14 @@ type Env struct {
 	Service *Service
 }
 
-// Database
+// Database - Holds a DB connection information
 type Database struct {
 	DbName     string `yaml:"db_name"`
 	DbUser     string `yaml:"db_user"`
 	DbPassword string `yaml:"db_password"`
 }
 
-// Web service
+// Service - Holds the Data Service HTTP API configuration
 type Service struct {
 	Address     string `yaml:"address"`
 	Port        int    `yaml:"port"`
@@ -132,7 +131,7 @@ func saveDataServiceEnv(env *Env) error {
 	if _, err := os.Stat(saveTo); os.IsNotExist(err) {
 		err = os.MkdirAll(saveTo, os.ModePerm)
 		if err != nil {
-			return errors.New(fmt.Sprintf("Cannot write to wiregost-client root directory %s", err))
+			return fmt.Errorf("Cannot write to wiregost-client root directory %s", err)
 		}
 	}
 
@@ -144,7 +143,7 @@ func saveDataServiceEnv(env *Env) error {
 
 	err = ioutil.WriteFile(saveTo, envYAML, 0600)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to write config to: %s (%v) \n", saveTo, err))
+		return fmt.Errorf("Failed to write config to: %s (%v) \n", saveTo, err)
 	}
 
 	f, err := os.OpenFile(saveTo, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)

@@ -52,7 +52,7 @@ func GetRootAppDir() string {
 	return dir
 }
 
-// GetDataDir - Returns the full path to the data directory
+// GetDataServiceDir - Returns the full path to the data service directory
 func GetDataServiceDir() string {
 	dir := path.Join(GetRootAppDir(), dataServiceDir)
 
@@ -66,7 +66,7 @@ func GetDataServiceDir() string {
 	return dir
 }
 
-// GetDataDir - Returns the full path to the data directory
+// GetDataServiceCertsDir - Returns the full path to the data service certs directory
 func GetDataServiceCertsDir() string {
 	dir := path.Join(GetDataServiceDir(), dataServiceCertsDir)
 
