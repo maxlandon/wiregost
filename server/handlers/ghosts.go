@@ -130,17 +130,14 @@ func registerHostToDB(ghost *core.Ghost) (hostID uint, err error) {
 	if ghost.WorkspaceID != 0 {
 		wsID = ghost.WorkspaceID
 	}
-	fmt.Println(wsID)
 	rootCtx := context.Background()
 	ctx := context.WithValue(rootCtx, "workspace_id", wsID)
 
 	host, err := remote.ReportHost(ctx, opts)
 	if err != nil {
 		return 0, err
-	} else {
-		fmt.Println(host.ID)
-		return host.ID, nil
 	}
+	return host.ID, nil
 }
 
 func hostFilters(ghost *core.Ghost) (opts map[string]interface{}) {
@@ -153,7 +150,6 @@ func hostFilters(ghost *core.Ghost) (opts map[string]interface{}) {
 	opts["hostname"] = ghost.Hostname
 	opts["usernames"] = ghost.Username
 	opts["alive"] = true
-	fmt.Println(opts)
 
 	return opts
 }

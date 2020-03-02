@@ -158,6 +158,7 @@ func (m *Module) ModuleEvent(event string) {
 	})
 }
 
+// Asset - Find the path of an asset in the module directory. Return an error if not found
 func (m *Module) Asset(path string) (filePath string, err error) {
 
 	modDir := filepath.Join(assets.GetModulesDir(), filepath.Join(m.Path...))
