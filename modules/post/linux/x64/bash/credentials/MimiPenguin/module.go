@@ -19,10 +19,8 @@ package MimiPenguin
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 	"time"
 
-	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/log"
 	"github.com/maxlandon/wiregost/server/module"
 )
@@ -59,7 +57,11 @@ func (s *MimiPenguin) Run(command string) (result string, err error) {
 	}
 
 	// Options
-	src := filepath.Join(assets.GetModulesDir(), strings.Join(s.Path, "/"), "src/mimipenguin.sh")
+	src, err := s.Asset("src/mimipenguin.sh")
+	if err != nil {
+		return "", err
+	}
+
 	rpath := filepath.Join(s.Options["TempDirectory"].Value, "mimipenguin.sh")
 	timeout := time.Second * 30
 

@@ -74,13 +74,6 @@ func GetRootAppDir() string {
 	return dir
 }
 
-// GetModulesDir - Returns the full path to the modules directory
-func GetModulesDir() string {
-	cwd, _ := os.Getwd()
-	dir := path.Join(cwd, "modules")
-	return dir
-}
-
 // GetStagersDir - Returns the full path to the stagers directory
 func GetStagersDir() string {
 	dir := path.Join(GetRootAppDir(), stagersDirName)
@@ -127,6 +120,7 @@ func Setup(force bool) {
 		setupCodenames(appDir)
 		setupDataPath(appDir)
 		saveAssetVersion(appDir)
+		setupModules()
 	}
 }
 

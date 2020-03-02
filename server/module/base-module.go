@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/evilsocket/islazy/tui"
 	consts "github.com/maxlandon/wiregost/client/constants"
 	pb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/assets"
@@ -155,4 +156,14 @@ func (m *Module) ModuleEvent(event string) {
 		ModuleRequestID: m.UserID,
 		Data:            []byte(event),
 	})
+}
+
+func (m *Module) Asset(path string) (filePath string, err error) {
+
+	modDir := filepath.Join(assets.GetModulesDir(), filepath.Join(m.Path...))
+	file := filepath.Join(modDir, path)
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+		return "", fmt.Errorf("Asset '%s%s%s' does not exist in module directory: check assets are unpacked", tui.YELLOW, path, tui.RESET)
+	}
+	return file, nil
 }
