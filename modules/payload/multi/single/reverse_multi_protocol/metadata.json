@@ -44,6 +44,7 @@
                 "LimitHostname": {"name": "LimitHostname", "value": "", "required": false, "description": "Limit execution to specified hostname"},
                 "LimitUsername": {"name": "LimitUsername", "value": "", "required": false, "description": "Limit execution to specified username"},
                 "LimitDatetime": {"name": "LimitDatetime", "value": "", "required": false, "description": "Limit execution to before datetime"},
-                "LimitDomainJoined": {"name": "LimitDomainJoined", "value": "false", "required": false, "description": "Limit execution to domain joined machines"}
+                "LimitDomainJoined": {"name": "LimitDomainJoined", "value": "false", "required": false, "description": "Limit execution to domain joined machines"},
+                "Workspace": {"name": "Workspace", "value": "", "required": false, "description": "Workspace in which the implant will be registered"}
         }
 }

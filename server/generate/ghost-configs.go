@@ -98,6 +98,9 @@ type GhostConfig struct {
 	IsSharedLib bool `json:"is_shared_lib"`
 
 	FileName string
+
+	// Added for DB
+	WorkspaceID uint
 }
 
 // ToProtobuf - Convert SliverConfig to protobuf equiv
@@ -124,7 +127,8 @@ func (c *GhostConfig) ToProtobuf() *clientpb.GhostConfig {
 		IsSharedLib: c.IsSharedLib,
 		Format:      c.Format,
 
-		FileName: c.FileName,
+		FileName:    c.FileName,
+		WorkspaceID: uint32(c.WorkspaceID),
 	}
 	config.C2 = []*clientpb.GhostC2{}
 	for _, c2 := range c.C2 {
@@ -164,6 +168,7 @@ func GhostConfigFromProtobuf(pbConfig *clientpb.GhostConfig) *GhostConfig {
 	cfg.DNSc2Enabled = isC2Enabled([]string{"dns"}, cfg.C2)
 
 	cfg.FileName = pbConfig.FileName
+	cfg.WorkspaceID = uint(pbConfig.WorkspaceID)
 	return cfg
 }
 

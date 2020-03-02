@@ -27,6 +27,7 @@ import (
 	"github.com/evilsocket/islazy/tui"
 
 	consts "github.com/maxlandon/wiregost/client/constants"
+	"github.com/maxlandon/wiregost/data_service/remote"
 	pb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/c2"
 	"github.com/maxlandon/wiregost/server/core"
@@ -319,6 +320,21 @@ func (s *ReverseHTTPS) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	c.LimitHostname = s.Options["LimitHostname"].Value
 	c.LimitUsername = s.Options["LimitUsername"].Value
 	c.LimitDatetime = s.Options["LimitDatetime"].Value
+
+	// Workspace
+	if s.Options["Workspace"].Value != "" {
+		workspace := ""
+		workspaces, _ := remote.Workspaces(nil)
+		for _, w := range workspaces {
+			if w.Name == s.Options["Workspace"].Value {
+				workspace = w.Name
+				c.WorkspaceID = w.ID
+			}
+		}
+		if workspace == "" {
+			return nil, fmt.Errorf("Invalid workspace: %s", s.Options["Workspace"].Value)
+		}
+	}
 
 	return c, nil
 }

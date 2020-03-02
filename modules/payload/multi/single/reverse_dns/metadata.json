@@ -34,6 +34,7 @@
                 "LimitUsername": {"name": "LimitUsername", "value": "", "required": false, "description": "Limit execution to specified username"},
                 "LimitDatetime": {"name": "LimitDatetime", "value": "", "required": false, "description": "Limit execution to before datetime"},
                 "LimitDomainJoined": {"name": "LimitDomainJoined", "value": "false", "required": false, "description": "Limit execution to domain joined machines"},
-                "FileName": {"name": "FileName", "value": "false", "required": false, "description": "File name under which to save the implant"}
+                "FileName": {"name": "FileName", "value": "false", "required": false, "description": "File name under which to save the implant"},
+                "Workspace": {"name": "Workspace", "value": "", "required": false, "description": "Workspace in which the implant will be registered"}
         }
 }
