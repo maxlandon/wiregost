@@ -217,7 +217,7 @@ func (s *ReverseHTTPStager) CompileStager() (result string, err error) {
 	}
 
 	// Create stager shellcode
-	stage, err := generate.GenerateMsfStage(host, port, arch, format, "http")
+	stage, err := generate.MsfStage(host, port, arch, format, "http")
 	if err != nil {
 		errStage := fmt.Sprintf("Failed to generate MSF stager: %s", err.Error())
 		return "", errors.New(errStage)

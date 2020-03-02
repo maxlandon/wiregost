@@ -249,7 +249,7 @@ func (s *ReverseMTLS) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	}
 
 	// MTLS C2
-	c2s := generate.ParseMTLSc2ToStruct(s.Options["DomainsMTLS"].Value)
+	c2s := generate.ParseMTLSc2(s.Options["DomainsMTLS"].Value)
 	if len(c2s) == 0 {
 		return nil, errors.New("You must specify at least one mTLS C2 endpoint")
 	}

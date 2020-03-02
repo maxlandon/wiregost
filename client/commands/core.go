@@ -29,6 +29,7 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/help"
+	"github.com/maxlandon/wiregost/client/util"
 )
 
 func registerCoreCommands() {
@@ -45,7 +46,7 @@ func registerCoreCommands() {
 				fmt.Println()
 			default:
 				fmt.Println()
-				out, err := Shell(r.Args[0:])
+				out, err := util.Shell(r.Args[0:])
 				if err != nil {
 					fmt.Printf(CommandError, "%s", err)
 				} else {

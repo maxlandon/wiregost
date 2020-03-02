@@ -294,7 +294,7 @@ func (s *ReverseHTTPS) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	}
 
 	// HTTP C2
-	c2s := generate.ParseHTTPc2ToStruct(s.Options["DomainsHTTP"].Value)
+	c2s := generate.ParseHTTPc2(s.Options["DomainsHTTP"].Value)
 	if len(c2s) == 0 {
 		return nil, errors.New("You must specify at least one HTTPS C2 endpoint")
 	}

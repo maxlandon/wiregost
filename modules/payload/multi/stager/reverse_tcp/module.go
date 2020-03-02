@@ -197,7 +197,7 @@ func (s *ReverseTCPStager) CompileStager() (result string, err error) {
 	}
 
 	// Create stager shellcode
-	stage, err := generate.GenerateMsfStage(host, port, arch, format, "tcp")
+	stage, err := generate.MsfStage(host, port, arch, format, "tcp")
 	if err != nil {
 		errStage := fmt.Sprintf("Failed to generate MSF stager: %s", err.Error())
 		return "", errors.New(errStage)

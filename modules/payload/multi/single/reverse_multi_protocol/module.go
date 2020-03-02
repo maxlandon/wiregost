@@ -461,11 +461,11 @@ func (s *ReverseMulti) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	}
 
 	// DNS C2
-	c2s := generate.ParseDNSc2ToStruct(s.Options["DomainsDNS"].Value)
+	c2s := generate.ParseDNSc2(s.Options["DomainsDNS"].Value)
 	// HTTP C2
-	c2s = append(c2s, generate.ParseHTTPc2ToStruct(s.Options["DomainsHTTP"].Value)...)
+	c2s = append(c2s, generate.ParseHTTPc2(s.Options["DomainsHTTP"].Value)...)
 	// MTLS C2
-	c2s = append(c2s, generate.ParseMTLSc2ToStruct(s.Options["DomainsMTLS"].Value)...)
+	c2s = append(c2s, generate.ParseMTLSc2(s.Options["DomainsMTLS"].Value)...)
 
 	if len(c2s) == 0 {
 		return nil, errors.New("You must specify at least one C2 endpoint (DNS, HTTP(S) or mTLS)")

@@ -273,7 +273,7 @@ func (s *ReverseDNS) ToGhostConfig() (c *generate.GhostConfig, err error) {
 	}
 
 	// DNS C2
-	c2s := generate.ParseDNSc2ToStruct(s.Options["DomainsDNS"].Value)
+	c2s := generate.ParseDNSc2(s.Options["DomainsDNS"].Value)
 	if len(c2s) == 0 {
 		return nil, errors.New("You must specify at least one DNS C2 endpoint")
 	}
