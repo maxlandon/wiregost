@@ -129,51 +129,6 @@ them in this list, I will add them.
 
 
 ______
-## TO DO & ROADMAP
-
-#### TO DO
-
-**Console**
-* Add completers for:
-    - All command options/filters in the implant menu
-    - Fix the completion for help commands, depending on menu context
-* Commands for:
-    - Deleting generated ghost implants (in DB and files)
-    - Deleting users (command done, but issue with server still accepting them)
-* Less hacky option filters for many commands, and better command help for these
-* Add/Rewrite help for:
-    - Execute-Assembly command
-    - Add examples to many command helps
-
-**C2 Server**
-* Fix connect/disconnect detections from the server
-* Check all proc/priv/execute commands.
-* Check why obfuscated implants cannot be generated at the same time without messing the namespace up
-
-* Error handling/UI:
-    - Make all errors in modules at the server level to go up to the console
-
-**Modules**
-* Add Merlin post-exploitation modules
-* If possible, uniformize Options key:value pairs for console usage
-
-**Documentation**
-* Pages for:
-    - Canaries commands
-    - Websites commands
-    - Ghosts commands
-    - Implant config
-    - Console troubleshooting
-    - Priv Commands
-    - Proc Commands
-    - Execute Commands
-    - Agent shell command
-    - Post Modules
-
-* Data Service:
-    - Host Commands
-
-
 ______
 ## Warmest Thanks
 * The **Golang Project**.
