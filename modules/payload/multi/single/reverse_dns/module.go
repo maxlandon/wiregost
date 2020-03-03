@@ -121,7 +121,7 @@ func (s *ReverseDNS) toListener() (result string, err error) {
 	if s.Options["Persist"].Value == "true" {
 		err := c2.PersistDNS(job, enableCanaries, domains)
 		if err != nil {
-			s.ModuleEvent("Error saving persistence: " + err.Error())
+			s.Event("Error saving persistence: " + err.Error())
 		}
 	}
 

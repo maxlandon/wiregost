@@ -29,12 +29,12 @@ import (
 
 // Minidump - Credentials dumper module
 type Minidump struct {
-	*module.Module
+	*module.Post
 }
 
 // New - Instantiates a Minidump module, empty.
 func New() *Minidump {
-	mod := &Minidump{&module.Module{}}
+	mod := &Minidump{module.NewPost()}
 	mod.Path = []string{"post/windows/x64/go/credentials/minidump"}
 	return mod
 }
@@ -52,8 +52,8 @@ func (s *Minidump) Run(command string) (result string, err error) {
 	}
 
 	// Check session
-	sess, err := s.GetSession()
-	if sess == nil {
+	err = s.GetSession()
+	if err != nil {
 		return "", err
 	}
 

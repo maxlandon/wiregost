@@ -157,7 +157,7 @@ func (s *ReverseHttpsStager) toListener() (result string, err error) {
 	if s.Options["Persist"].Value == "true" {
 		err := c2.PersistHTTPSStager(job, host, implant)
 		if err != nil {
-			s.ModuleEvent("Error saving persistence: " + err.Error())
+			s.Event("Error saving persistence: " + err.Error())
 		}
 	}
 

