@@ -40,16 +40,16 @@ func New(dbName string, user string, password string) (db *DB, err error) {
 	creds := fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=disable", "localhost", 5432, user, dbName, password)
 	gormDB, err := gorm.Open("postgres", creds)
 	if err != nil {
-		switch err.Error() {
+		// switch err.Error() {
 		// If role does not exist, that means the database doesn't either
-		case fmt.Sprintf("pq: role \"%s\" does not exist", user):
-			err = InitDB(dbName, user, password)
-			if err != nil {
-				return nil, err
-			} else {
-				gormDB, err = gorm.Open("postgres", creds)
-			}
+		// case fmt.Sprintf("pq: role \"%s\" does not exist", user):
+		err = InitDB(dbName, user, password)
+		if err != nil {
+			return nil, err
+		} else {
+			gormDB, err = gorm.Open("postgres", creds)
 		}
+		// }
 	}
 	db = &DB{gormDB}
 
@@ -106,6 +106,6 @@ func InitDB(dbName, user, password string) error {
 
 const sqlQueries = `CREATE DATABASE wiregost_db;
 CREATE USER wiregost;
-ALTER ROLE wiregost WITH PASSWORD 'wiregost'
-GRANT ALL PRIVILEGES ON DATABASE wiregost TO wiregost;
+ALTER ROLE wiregost WITH PASSWORD 'wiregost';
+GRANT ALL ON DATABASE wiregost_db TO wiregost;
 `

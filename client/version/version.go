@@ -1,4 +1,4 @@
 package version
 
-const GitVersion = "75f18ebdf4fe793fe76a00b5c30290c0f770e749"
+const GitVersion = "6ea52c03b3fd60bdc8057c7e2cd821309cd95302"
 const GitDirty = "Dirty"

@@ -314,7 +314,6 @@ func unzip(src string, dest string) ([]string, error) {
 			if err != nil {
 				return filenames, err
 			}
-
 		}
 	}
 	return filenames, nil

@@ -29,12 +29,12 @@ import (
 )
 
 // AutoCompleter is the autocompletion engine
-type ImplantPathCompleter struct {
+type implantPathCompleter struct {
 	Command *commands.Command
 }
 
 // Do is the completion function triggered at each line
-func (pc *ImplantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+func (pc *implantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
 
 	splitLine := strings.Split(string(line), " ")
 	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
