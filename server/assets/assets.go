@@ -40,7 +40,7 @@ const (
 	goPathDirName   = "gopath"
 	versionFileName = "version"
 	dataDirName     = "data"
-	envVarName      = "SLIVER_ROOT_DIR"
+	envVarName      = "WIREGOST_ROOT_DIR"
 	moduleDirPath   = "modules"
 	stagersDirName  = "stagers"
 )
@@ -116,10 +116,15 @@ func Setup(force bool) {
 	if force || localVer == "" || localVer != ver.GitVersion {
 		setupLog.Infof("Version mismatch %v != %v", localVer, ver.GitVersion)
 		fmt.Printf("Unpacking assets ...\n")
+		fmt.Printf("Setting up Go dependencies...\n")
 		setupGo(appDir)
+		fmt.Printf("Setting up codenames...\n")
 		setupCodenames(appDir)
+		fmt.Printf("Setting data path...\n")
 		setupDataPath(appDir)
+		fmt.Printf("Saving assets version...\n")
 		saveAssetVersion(appDir)
+		fmt.Printf("Unpacking modules...\n")
 		setupModules()
 	}
 }
@@ -142,9 +147,15 @@ func setupGo(appDir string) error {
 	setupLog.Infof("GOPATH = %s", goRootPath)
 	if _, err := os.Stat(goRootPath); !os.IsNotExist(err) {
 		setupLog.Info("Removing old go root directory")
-		os.RemoveAll(goRootPath)
+		err := os.RemoveAll(goRootPath)
+		if err != nil {
+			fmt.Println("Error removing: " + err.Error())
+		}
 	}
-	os.MkdirAll(goRootPath, os.ModePerm)
+	err := os.MkdirAll(goRootPath, os.ModePerm)
+	if err != nil {
+		fmt.Println("Error making all dirs: " + goRootPath + err.Error())
+	}
 
 	// Go compiler and stdlib
 	goZip, err := assetsBox.Find(path.Join(runtime.GOOS, "go.zip"))
@@ -286,10 +297,12 @@ func unzip(src string, dest string) ([]string, error) {
 	}
 	defer reader.Close()
 
+	fmt.Println("Starting to unzip files")
 	for _, file := range reader.File {
 
 		rc, err := file.Open()
 		if err != nil {
+			fmt.Println("Error opening file: " + err.Error())
 			return filenames, err
 		}
 		defer rc.Close()
@@ -299,12 +312,15 @@ func unzip(src string, dest string) ([]string, error) {
 
 		if file.FileInfo().IsDir() {
 			os.MkdirAll(fpath, os.ModePerm)
+			fmt.Println("Making dirs: " + fpath)
 		} else {
 			if err = os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
+				fmt.Println("Error making dir: " + fpath)
 				return filenames, err
 			}
 			outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
 			if err != nil {
+				fmt.Println("Error opening file: " + fpath)
 				return filenames, err
 			}
 			_, err = io.Copy(outFile, rc)
@@ -312,6 +328,7 @@ func unzip(src string, dest string) ([]string, error) {
 			outFile.Close()
 
 			if err != nil {
+				fmt.Println("Error copying to: " + fpath)
 				return filenames, err
 			}
 		}
