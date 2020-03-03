@@ -78,7 +78,7 @@ func listGhostBuilds(ctx ShellContext, rpc RPCServer) {
 func displayAllGhostBuilds(configs map[string]*clientpb.GhostConfig) {
 
 	table := util.Table()
-	table.SetHeader([]string{"WsID", "Name", "Platform", "Format", "Command & Control", "Limitations", "Debug"})
+	table.SetHeader([]string{"WsID", "Name", "Platform", "Format", "Command & Control", "Limits", "Debug"})
 	table.SetColWidth(40)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -99,8 +99,19 @@ func displayAllGhostBuilds(configs map[string]*clientpb.GhostConfig) {
 		if c.WorkspaceID != 0 {
 			workspace = strconv.Itoa(int(c.WorkspaceID))
 		}
+		var format string
+		if c.Format == clientpb.GhostConfig_EXECUTABLE {
+			format = "exe"
+		}
+		if c.Format == clientpb.GhostConfig_SHARED_LIB {
+			format = "shared"
+		}
+		if c.Format == clientpb.GhostConfig_SHELLCODE {
+			format = "shellcode"
+		}
+
 		limits := getLimitsString(c)
-		table.Append([]string{workspace, k, platform, c.Format.String(),
+		table.Append([]string{workspace, k, platform, format,
 			strings.Join(c2s, ","), limits, strconv.FormatBool(c.Debug)})
 	}
 

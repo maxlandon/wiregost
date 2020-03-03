@@ -73,9 +73,13 @@ func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int)
 
 	// Autocomplete commands with no subcommands but variable arguments
 	for _, c := range commands {
-		if c.Name == "set" || c.Name == "use" || c.Name == "parse_profile" || c.Name == "help" || c.Name == "cd" {
+		switch c.Name {
+		case "set", "use", "parse_profile", "help", "cd", "ls":
 			options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
 		}
+		// if c.Name == "set" || c.Name == "use" || c.Name == "parse_profile" || c.Name == "help" || c.Name == "cd"{
+		//         options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
+		// }
 	}
 
 	// Autocomplete subcommands
@@ -122,7 +126,7 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 	switch *ctx.MenuContext {
 	case "main", "module":
 		switch cmd.Name {
-		case "cd":
+		case "cd", "ls":
 			comp := &pathCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		case "workspace":
@@ -159,7 +163,7 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 		case "help":
 			comp := &agentHelpCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
-		case "cd":
+		case "cd", "ls":
 			// Enable only if enabled in config
 			if ctx.SessionPathComplete {
 				comp := &implantPathCompleter{Command: cmd}
