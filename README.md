@@ -1,5 +1,5 @@
 
-#                      <center>WireGost - Golang Implant & Post-Exploitation Framework</center> 
+#                      <center>WireGost - Implant & Post-Exploitation Framework</center> 
 ______
 
 ![Demo](./.github/images/console-greet.png)
