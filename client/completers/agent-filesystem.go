@@ -24,7 +24,6 @@ import (
 	"github.com/gogo/protobuf/proto"
 
 	"github.com/maxlandon/wiregost/client/commands"
-	. "github.com/maxlandon/wiregost/client/util"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
