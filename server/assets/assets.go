@@ -297,7 +297,6 @@ func unzip(src string, dest string) ([]string, error) {
 	}
 	defer reader.Close()
 
-	fmt.Println("Starting to unzip files")
 	for _, file := range reader.File {
 
 		rc, err := file.Open()
@@ -312,7 +311,6 @@ func unzip(src string, dest string) ([]string, error) {
 
 		if file.FileInfo().IsDir() {
 			os.MkdirAll(fpath, os.ModePerm)
-			fmt.Println("Making dirs: " + fpath)
 		} else {
 			if err = os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
 				fmt.Println("Error making dir: " + fpath)
