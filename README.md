@@ -3,7 +3,6 @@
 ______
 
 ![Demo](./.github/images/console-greet.png)
-<!-- ![Sessions-Interact](./.github/images/sessions-interact.png) -->
 
 
 The grounds for the WireGost exploitation framework project are:
@@ -31,12 +30,30 @@ and an attempt at merging [Merlin](https://github.com/Ne0nd0g/merlin) post-explo
 * [Secure C2](https://github.com/maxlandon/wiregost/wiki/Transport-Encryption) over mTLS, HTTP(S), and DNS
 * Metasploit-like workspaces
 * Mutiple consoles per user
-* Multiple users per C2 Server + seggregated workspace context (module stacks, etc)
+* Multiple users per C2 Server 
 * Let's Encrypt integration
 * [DNS Canary](https://github.com/maxlandon/wiregost/wiki/DNS-Canaries) Blue Team Detection
 
+### Console
+* Per user & per workspace [module stacks](https://github.com/maxlandon/wiregost/wiki/Stack-Commands), used as "draft tables"
+* Jobs management with various informations
+* Seggregated workspace context (module stacks, etc)
+* Transparent shell usage through the console
+* Completions for:
+    - Help
+    - Commands
+    - Options
+    - Values, with various controls to offer only valid ones. 
+    - Local & remote filesystems
+* Configurable prompts in the [main](https://github.com/maxlandon/wiregost/wiki/Console-Config) and [implant](https://github.com/maxlandon/wiregost/wiki/Implant-Config) menu, with many variables
+* [Vim & Emacs input modes](https://github.com/maxlandon/wiregost/wiki/Core-Commands)
+
+### Listeners
+* Persistent Listeners (automatic spawn at server startup)
+* Stagers & their serving listeners
+
 ### Implants
-* Multi architecture/OS implants
+* [Multi architecture/OS implants](https://github.com/maxlandon/wiregost/wiki/Payload-Modules)
 * Concurrent & Dynamic code generation
 * Compile-time obfuscation
 * Local and remote process injection
@@ -44,9 +61,10 @@ and an attempt at merging [Merlin](https://github.com/Ne0nd0g/merlin) post-explo
 * Windows process migration
 * Windows user token manipulation
 * In-memory .NET assembly execution
+* Real-time filesystem completion (configurable)
 
 ### Modules
-* Metasploit-like Modules User Interface
+* Metasploit-like [Modules User Interface](https://github.com/maxlandon/wiregost/wiki/Module-Commands)
 * Implant generation & listener spawn modules (both single and stager payloads/listeners)
 * Post-exploitation modules from Merlin (rewrited) (*work in progress*)
 * Easy interface and templates for [writing Post-exploitation modules](https://github.com/maxlandon/wiregost/wiki/Modules-Overview)
@@ -105,7 +123,7 @@ only one server capability, and no multi-client capacity either.
 #### All the others
 
 Computer security is as large a subject as computers alone. It goes the same for the number of tools related to it.
-I would gladly pay for another 30 lives so I can discover them all, but I don't have God's SWIFT account number, and again, I'm
+I would gladly pay for another 30 lives so I can discover them all, but I don't have God's SWIFT account number, and I'm
 poor as hell. If, in the context of this project, some of them are worth so much that it would be criminal not to include 
 them in this list, I will add them.
 
@@ -116,28 +134,19 @@ ______
 #### TO DO
 
 **Console**
-* Check codebase linting
 * Add completers for:
     - All command options/filters in the implant menu
-    - Filesystem completion in the implant menu
     - Fix the completion for help commands, depending on menu context
 * Commands for:
-    - Deleting generated ghost implants
-    - Deleting profiles
-    - Deleting users
+    - Deleting generated ghost implants (in DB and files)
+    - Deleting users (command done, but issue with server still accepting them)
 * Less hacky option filters for many commands, and better command help for these
 * Add/Rewrite help for:
     - Execute-Assembly command
     - Add examples to many command helps
-* Config for implant working directory completions
-* Config for MSF path, if installed from source and not with nightly installers (error with msfvenom)
 
 **C2 Server**
-* Persistent module stacks
-* Persistent listeners
 * Fix connect/disconnect detections from the server
-* Add workspace/host settings to implant modules + implant registration
-* Help for MSF listeners / eventually a separate module.
 * Check all proc/priv/execute commands.
 * Check why obfuscated implants cannot be generated at the same time without messing the namespace up
 
