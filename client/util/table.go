@@ -148,6 +148,9 @@ func SortGenerateOptionKeys(opts map[string]*clientpb.Option) (keys []string) {
 	if _, v := opts["FileName"]; v {
 		keys = append(keys, "FileName")
 	}
+	if _, v := opts["Workspace"]; v {
+		keys = append(keys, "Workspace")
+	}
 
 	return keys
 }
