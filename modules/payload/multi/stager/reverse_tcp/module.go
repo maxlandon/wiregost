@@ -228,13 +228,13 @@ func (s *ReverseTCPStager) CompileStager() (result string, err error) {
 				}
 			}
 
-			filename = fmt.Sprintf("%s_stager.bin", config.Name)
+			filename = fmt.Sprintf("%s_stager.%s", config.Name, format)
 		} else {
-			filename = fmt.Sprintf("%s_stager.bin", save)
+			filename = fmt.Sprintf("%s_stager.%s", save, format)
 		}
 
-		if !strings.HasSuffix(filename, "_stager.bin") {
-			filename = filename + "_stager.bin"
+		if !strings.HasSuffix(filename, fmt.Sprintf("_stager.%s", format)) {
+			filename = filename + fmt.Sprintf("_stager.%s", format)
 		}
 		saveTo := fmt.Sprintf(filepath.Join(assets.GetStagersDir(), filename))
 		err = ioutil.WriteFile(saveTo, stage, os.ModePerm)

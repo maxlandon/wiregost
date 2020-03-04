@@ -28,6 +28,6 @@
                 "Arch": {"name": "Arch", "value": "x86", "required": true, "description": "CPU architecture of the stager's target"},
                 "OutputFormat": {"name": "Output Format", "value": "raw", "required": true, "description": "Output format (msfvenom's style). All msfvenom's transform formats are supported (bash, c, csharp, dw, dword, hex, java, js_be, js_le, num, pl, powershell, ps1, py, python, raw, rb, ruby, sh, vbapplication, vbscript)."},
                 "OutputStdout": {"name": "Output Stdout", "value": "false", "required": true, "description": "Output the generated Stager to console stdout"},
-                "FileName": {"name": "FileName", "value": "", "required": false, "description": "Save the generated payload as '~/.wiregost/stagers/filename_stager.bin'"}
+                "FileName": {"name": "FileName", "value": "", "required": false, "description": "Save the generated payload as '~/.wiregost/stagers/filename_stager.format'"}
         }
 }
