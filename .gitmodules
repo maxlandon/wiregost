@@ -1,6 +1,3 @@
 [submodule "docs"]
 	path = docs
 	url = git://github.com/maxlandon/wiregost.wiki
-[submodule "maltego"]
-	path = maltego
-	url = git://github.com/maxlandon/EffectiveCouscous.git
