@@ -39,12 +39,7 @@ and an attempt at merging [Merlin](https://github.com/Ne0nd0g/merlin) post-explo
 * Jobs management with various informations
 * Seggregated workspace context (module stacks, etc)
 * Transparent shell usage through the console
-* Completions for:
-    - Help
-    - Commands
-    - Options
-    - Values, with various controls to offer only valid ones. 
-    - Local & remote filesystems
+* Completions for Help, Commands, Options ,Values, local & remote filesystems
 * Configurable prompts in the [main](https://github.com/maxlandon/wiregost/wiki/Console-Config) and [implant](https://github.com/maxlandon/wiregost/wiki/Implant-Config) menu, with many variables
 * [Vim & Emacs input modes](https://github.com/maxlandon/wiregost/wiki/Core-Commands)
 
@@ -68,6 +63,7 @@ and an attempt at merging [Merlin](https://github.com/Ne0nd0g/merlin) post-explo
 * Implant generation & listener spawn modules (both single and stager payloads/listeners)
 * Post-exploitation modules from Merlin (rewrited) (*work in progress*)
 * Easy interface and templates for [writing Post-exploitation modules](https://github.com/maxlandon/wiregost/wiki/Modules-Overview)
+* Many methods for interacting with sessions and performing tasks on them (priv, proc, execution, injection, etc...)
 
 
 ______
@@ -89,19 +85,6 @@ ______
 
 You can find a more through description of the code base in the [wiki page](https://github.com/maxlandon/wiregost/wiki/Code-Structure),
 or by browsing the repository: READMEs are available for pretty much all subpackages, explaining their role and contents.
-
-______
-## Sub-Repository Tools
-
-#### EffectiveCouscous
-[Maltego](https://www.paterva.com/web7/buy/maltego-clients/maltego-ce.php) is not really a tool for computer exploitation. 
-Maltego is a software that allows to graph various kinds of networks (computers, social, criminal, and many others), in a
-versatile, flexible, automated and efficient way, . It can be used for any activity having an investigative character. 
-And since computer security is the cute child of a chessboard, a magic labyrinth and an escape game, Maltego is your best friend.
-[EffectiveCouscous](https://github.com/maxlandon/EffectiveCouscous) is an attempt at interfacing various security tools with Maltego.
-
-Maltego will act as a GUI interface with visualization, inference and discovery capabilities. All data from WireGost will be used
-by Maltego.
 
 
 ______
