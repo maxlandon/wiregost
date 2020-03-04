@@ -112,7 +112,7 @@ func rpcSideload(req []byte, timeout time.Duration, resp Response) {
 	}
 	ghost := core.Wire.Ghost(sideloadReq.GhostID)
 	if ghost == nil {
-		rpcLog.Warnf("Could not find Sliver with ID: %d", sideloadReq.GhostID)
+		rpcLog.Warnf("Could not find Ghost with ID: %d", sideloadReq.GhostID)
 		resp([]byte{}, err)
 		return
 	}

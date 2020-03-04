@@ -178,7 +178,7 @@ func execute(args []string, ctx ShellContext, rpc RPCServer) {
 		return
 	}
 	if execResp.Error != "" {
-		fmt.Printf(RPCError+"%s\n", resp.Err)
+		fmt.Printf(Error+"%s\n", resp.Err)
 		return
 	}
 	if output {
