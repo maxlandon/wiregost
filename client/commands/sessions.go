@@ -147,10 +147,9 @@ func killAllSessions(ctx ShellContext, rpc RPCServer) {
 
 func printGhosts(sessions map[uint32]*clientpb.Ghost) {
 	table := util.Table()
-	table.SetHeader([]string{"WsID", "ID", "Name", "Transport", "Remote Address", "Username", "Hostname", "Operating System", "Last Check-in"})
+	table.SetHeader([]string{"WsID", "ID", "Name", "Proto", "Remote Address", "user@host", "Platform", "Last Check-in"})
 	table.SetColWidth(40)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -174,9 +173,10 @@ func printGhosts(sessions map[uint32]*clientpb.Ghost) {
 			workspace = strconv.Itoa(int(ghost.WorkspaceID))
 		}
 		os := fmt.Sprintf("%s/%s", ghost.OS, ghost.Arch)
+		userHost := fmt.Sprintf("%s@%s", ghost.Username, ghost.Hostname)
 
 		table.Append([]string{workspace, strconv.Itoa(int(ghost.ID)), ghost.Name, ghost.Transport,
-			ghost.RemoteAddress, ghost.Username, ghost.Hostname, os, ghost.LastCheckin})
+			ghost.RemoteAddress, userHost, os, ghost.LastCheckin})
 	}
 
 	table.Render()

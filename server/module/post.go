@@ -234,10 +234,10 @@ func (m *Post) ChangeDirectory(dir string, timeout time.Duration) (result string
 // ListDirectory - List contents of a directory on the session's target.
 // @path    => target directory to list content from
 // @timeout => Desired timeout for the session command
-func (m *Post) ListDirectory(path string, timeout time.Duration) (result string, err error) {
+func (m *Post) ListDirectory(path string, timeout time.Duration) (files []*ghostpb.FileInfo, err error) {
 	err = m.GetSession()
 	if err != nil {
-		return "", errors.New("Error finding ghost Session when uploading")
+		return nil, errors.New("Error finding ghost Session when uploading")
 	}
 	sess := m.Session
 
@@ -246,15 +246,16 @@ func (m *Post) ListDirectory(path string, timeout time.Duration) (result string,
 	})
 	data, err = sess.Request(ghostpb.MsgLsReq, timeout, data)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	dirList := &ghostpb.Ls{}
 	err = proto.Unmarshal(data, dirList)
 	if err != nil {
 		errLs := fmt.Sprintf("Unmarshaling envelope error: %v\n", err)
-		return "", errors.New(errLs)
+		return nil, errors.New(errLs)
 	}
-	return fmt.Sprintf("directory: %s", dirList), nil
+
+	return dirList.Files, nil
 }
 
 // -----------------------------------------------------------------------------------------------------------//
@@ -307,7 +308,7 @@ func (m *Post) Terminate(pid int, timeout time.Duration) (result string, err err
 		return "", err
 	}
 
-	return "", nil
+	return fmt.Sprintf("Program with PID %d terminated", pid), nil
 }
 
 // GetPIDByName - Get the Process ID of a process given its name. Returns -1, err if no process is found
