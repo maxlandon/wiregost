@@ -259,10 +259,10 @@ func (s *ReverseHTTPStager) CompileStager() (result string, err error) {
 		saveTo := fmt.Sprintf(filepath.Join(assets.GetStagersDir(), filename))
 		err = ioutil.WriteFile(saveTo, stage, os.ModePerm)
 		if err != nil {
-			result = fmt.Sprintf("Failed to write stager as %s\n", saveTo)
+			result = fmt.Sprintf("Failed to write stager as %s", saveTo)
 			return "", errors.New(result)
 		}
-		result = fmt.Sprintf("Reverse TCP stager saved as %s\n", saveTo)
+		result = fmt.Sprintf("Reverse TCP stager saved as %s", saveTo)
 		return result, nil
 	}
 

