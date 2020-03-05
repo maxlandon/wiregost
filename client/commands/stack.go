@@ -134,10 +134,9 @@ func stackList(ctx ShellContext, rpc RPCServer) {
 	}
 
 	table := util.Table()
-	table.SetHeader([]string{"Type", "Path", "Description"})
+	table.SetHeader([]string{"Type", "Path"})
 	table.SetColWidth(60)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 	)
 
@@ -155,10 +154,9 @@ func stackList(ctx ShellContext, rpc RPCServer) {
 					table.Rich([]string{m.Type, strings.Join(m.Path[1:], "/"), description},
 						[]tablewriter.Colors{tablewriter.Colors{tablewriter.Normal, tablewriter.FgBlueColor},
 							tablewriter.Colors{tablewriter.Normal, tablewriter.FgBlueColor},
-							tablewriter.Colors{tablewriter.Normal, tablewriter.Normal},
 						})
 				} else {
-					table.Append([]string{m.Type, strings.Join(m.Path[1:], "/"), description})
+					table.Append([]string{m.Type, strings.Join(m.Path[1:], "/")})
 				}
 			}
 		}

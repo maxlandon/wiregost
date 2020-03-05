@@ -206,10 +206,49 @@ func printGhosts(sessions map[uint32]*clientpb.Ghost, rpc RPCServer) {
 
 func interactGhost(name string, ctx ShellContext, rpc RPCServer) {
 
-	ghost := getGhost(name, rpc)
+	ghost := &clientpb.Ghost{}
+
+	resp := <-rpc(&ghostpb.Envelope{
+		Type: clientpb.MsgSessions,
+		Data: []byte{},
+	}, defaultTimeout)
+	if resp.Err != "" {
+		fmt.Printf(Error+"Impossible to establish communication with session %s\n", name)
+		return
+	}
+
+	sessions := &clientpb.Sessions{}
+	proto.Unmarshal((resp).Data, sessions)
+
+	for _, g := range sessions.Ghosts {
+		if strconv.Itoa(int(g.ID)) == name || g.Name == name {
+			ghost = g
+		}
+	}
+
 	if ghost != nil {
+		// Get cwd, and check that session is connected by the same way
+		data, _ := proto.Marshal(&ghostpb.PwdReq{
+			GhostID: ghost.ID,
+		})
+		resp := <-rpc(&ghostpb.Envelope{
+			Type: ghostpb.MsgPwdReq,
+			Data: data,
+		}, defaultTimeout)
+		if resp.Err != "" {
+			fmt.Printf("\n"+Error+"Impossible to establish communication with session %s\n", name)
+			return
+		}
+
+		pwd := &ghostpb.Pwd{}
+		err := proto.Unmarshal(resp.Data, pwd)
+		if err != nil {
+			fmt.Printf(Warn+"Unmarshaling envelope error: %v\n", err)
+			return
+		}
 		*ctx.CurrentAgent = *ghost
-		*ctx.AgentPwd = agentPwd(ghost.Name, rpc)
+		*ctx.AgentPwd = pwd.Path
+
 	} else {
 		fmt.Printf(Error+"Invalid ghost name or session number: %s", name)
 	}
@@ -286,8 +325,10 @@ func getSessionStatus(ghost *clientpb.Ghost, rpc RPCServer) string {
 	if errDur != nil {
 		fmt.Println(errDur)
 	}
+	fmt.Println(dur)
 
 	lastCheckin, err := time.Parse(time.RFC1123, ghost.LastCheckin)
+	fmt.Println(lastCheckin)
 	if err != nil {
 		fmt.Println(err)
 	}
