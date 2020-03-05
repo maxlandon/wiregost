@@ -115,6 +115,8 @@ func info(args []string, ctx ShellContext, rpc RPCServer) {
 		fmt.Printf(tui.BLUE+"       Version: %s%s\n", tui.FOREWHITE, ghost.Version)
 		fmt.Printf(tui.BLUE+"          Arch: %s%s\n", tui.FOREWHITE, ghost.Arch)
 		fmt.Printf(tui.BLUE+"Remote Address: %s%s\n", tui.FOREWHITE, ghost.RemoteAddress)
+		fmt.Printf(tui.BLUE+"  Last Checkin: %s%s\n", tui.FOREWHITE, ghost.LastCheckin)
+
 	} else {
 		fmt.Printf(Warn + "No target Ghost, see `help`\n")
 	}

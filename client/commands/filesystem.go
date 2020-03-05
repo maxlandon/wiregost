@@ -46,9 +46,17 @@ func registerFileSystemCommands() {
 				r.Args = append(r.Args, ".")
 			}
 
+			path := r.Args[0]
+			if (path == "~" || path == "~/") && r.context.CurrentAgent.OS == "linux" {
+				path = filepath.Join("/home", r.context.CurrentAgent.Username)
+			}
+			if strings.HasPrefix(path, "~") {
+				path = filepath.Join("/home", r.context.CurrentAgent.Username, strings.TrimPrefix(path, "~"))
+			}
+
 			data, _ := proto.Marshal(&ghostpb.LsReq{
 				GhostID: r.context.CurrentAgent.ID,
-				Path:    r.Args[0],
+				Path:    path,
 			})
 			resp := <-rpc(&ghostpb.Envelope{
 				Type: ghostpb.MsgLsReq,
@@ -81,9 +89,14 @@ func registerFileSystemCommands() {
 				return nil
 			}
 
+			path := r.Args[0]
+			if (path == "~" || path == "~/") && r.context.CurrentAgent.OS == "linux" {
+				path = filepath.Join("/home", r.context.CurrentAgent.Username)
+			}
+
 			data, _ := proto.Marshal(&ghostpb.CdReq{
 				GhostID: r.context.CurrentAgent.ID,
-				Path:    r.Args[0],
+				Path:    path,
 			})
 			resp := <-rpc(&ghostpb.Envelope{
 				Type: ghostpb.MsgCdReq,

@@ -53,12 +53,27 @@ func (mc *sessionCompleter) Do(ctx *commands.ShellContext, line []rune, pos int)
 		ghosts[ghost.ID] = ghost
 	}
 
-	for _, g := range ghosts {
-		search := g.Name
-		if !hasPrefix(line, []rune(search)) {
-			sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-			options = append(options, sLine...)
-			offset = sOffset
+	switch mc.Command.Name {
+	case "sessions":
+		switch splitLine[0] {
+		case "interact", "kill":
+			for _, g := range ghosts {
+				search := g.Name
+				if !hasPrefix(line, []rune(search)) {
+					sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+					options = append(options, sLine...)
+					offset = sOffset
+				}
+			}
+		}
+	case "interact":
+		for _, g := range ghosts {
+			search := g.Name
+			if !hasPrefix(line, []rune(search)) {
+				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+				options = append(options, sLine...)
+				offset = sOffset
+			}
 		}
 	}
 

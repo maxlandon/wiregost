@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
 	"github.com/olekukonko/tablewriter"
 
@@ -47,7 +48,10 @@ func registerSessionCommands() {
 			case length >= 1:
 				switch r.Args[0] {
 				case "interact":
-					interactGhost(r.Args, *r.context, r.context.Server.RPC)
+					if len(r.Args) < 2 {
+						fmt.Printf("\n" + Error + "Provide a ghost name or session number\n")
+					}
+					interactGhost(r.Args[1], *r.context, r.context.Server.RPC)
 				case "kill":
 					fmt.Println()
 					killSession(r.Args[1:], *r.context, r.context.Server.RPC)
@@ -63,6 +67,23 @@ func registerSessionCommands() {
 
 	AddCommand("main", sessions)
 	AddCommand("module", sessions)
+
+	interact := &Command{
+		Name: "interact",
+		Handle: func(r *Request) error {
+			switch length := len(r.Args); {
+			case length == 0:
+				fmt.Println()
+				fmt.Printf(Error + "Provide a session name to interact with\n")
+			case length >= 1:
+				interactGhost(r.Args[0], *r.context, r.context.Server.RPC)
+			}
+			return nil
+		},
+	}
+
+	AddCommand("main", interact)
+	AddCommand("module", interact)
 
 	background := &Command{
 		Name: "background",
@@ -95,7 +116,7 @@ func listSessions(ctx ShellContext, rpc RPCServer) {
 		ghosts[ghost.ID] = ghost
 	}
 	if 0 < len(ghosts) {
-		printGhosts(ghosts)
+		printGhosts(ghosts, rpc)
 	} else {
 		fmt.Printf(Info + "No ghosts connected\n")
 	}
@@ -145,9 +166,9 @@ func killAllSessions(ctx ShellContext, rpc RPCServer) {
 	}
 }
 
-func printGhosts(sessions map[uint32]*clientpb.Ghost) {
+func printGhosts(sessions map[uint32]*clientpb.Ghost, rpc RPCServer) {
 	table := util.Table()
-	table.SetHeader([]string{"WsID", "ID", "Name", "Proto", "Remote Address", "user@host", "Platform", "Last Check-in"})
+	table.SetHeader([]string{"WsID", "ID", "Name", "Proto", "Remote Address", "user@host", "Platform", "Status"})
 	table.SetColWidth(40)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgHiBlackColor},
@@ -175,21 +196,15 @@ func printGhosts(sessions map[uint32]*clientpb.Ghost) {
 		os := fmt.Sprintf("%s/%s", ghost.OS, ghost.Arch)
 		userHost := fmt.Sprintf("%s@%s", ghost.Username, ghost.Hostname)
 
+		status := getSessionStatus(ghost, rpc)
 		table.Append([]string{workspace, strconv.Itoa(int(ghost.ID)), ghost.Name, ghost.Transport,
-			ghost.RemoteAddress, userHost, os, ghost.LastCheckin})
+			ghost.RemoteAddress, userHost, os, status})
 	}
 
 	table.Render()
 }
 
-func interactGhost(args []string, ctx ShellContext, rpc RPCServer) {
-
-	name := ""
-	if len(args) < 2 {
-		fmt.Printf("\n" + Error + "Provide a ghost name or session number\n")
-		return
-	}
-	name = args[1]
+func interactGhost(name string, ctx ShellContext, rpc RPCServer) {
 
 	ghost := getGhost(name, rpc)
 	if ghost != nil {
@@ -245,4 +260,43 @@ func GhostSessionsByName(name string, rpc RPCServer) []*clientpb.Ghost {
 		}
 	}
 	return sessions
+}
+
+func getSessionStatus(ghost *clientpb.Ghost, rpc RPCServer) string {
+
+	resp := <-rpc(&ghostpb.Envelope{
+		Type: clientpb.MsgListGhostBuilds,
+	}, defaultTimeout)
+	if resp.Err != "" {
+		fmt.Printf(RPCError+"%s\n", resp.Err)
+		return ""
+	}
+
+	config := &clientpb.GhostConfig{}
+
+	builds := &clientpb.GhostBuilds{}
+	proto.Unmarshal(resp.Data, builds)
+	for _, b := range builds.Configs {
+		if ghost.Name == b.Name {
+			config = b
+		}
+	}
+
+	dur, errDur := time.ParseDuration(fmt.Sprintf("%ds", config.ReconnectInterval))
+	if errDur != nil {
+		fmt.Println(errDur)
+	}
+
+	lastCheckin, err := time.Parse(time.RFC1123, ghost.LastCheckin)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if lastCheckin.Add(dur).After(time.Now()) {
+		return tui.Green("Alive")
+	} else if lastCheckin.Add(dur * time.Duration(config.MaxConnectionErrors+1)).After(time.Now()) {
+		return tui.Yellow("Delayed")
+	} else {
+		return tui.Red("Dead")
+	}
 }
