@@ -149,9 +149,8 @@ func stackList(ctx ShellContext, rpc RPCServer) {
 	for _, p := range list {
 		for _, m := range stackList.Modules {
 			if strings.Join(m.Path, "/") == p {
-				description := util.Wrap(m.Description, util.WrapColumns-50)
 				if strings.Join(m.Path, "/") == *ctx.CurrentModule {
-					table.Rich([]string{m.Type, strings.Join(m.Path[1:], "/"), description},
+					table.Rich([]string{m.Type, strings.Join(m.Path[1:], "/")},
 						[]tablewriter.Colors{tablewriter.Colors{tablewriter.Normal, tablewriter.FgBlueColor},
 							tablewriter.Colors{tablewriter.Normal, tablewriter.FgBlueColor},
 						})

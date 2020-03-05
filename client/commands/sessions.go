@@ -325,10 +325,8 @@ func getSessionStatus(ghost *clientpb.Ghost, rpc RPCServer) string {
 	if errDur != nil {
 		fmt.Println(errDur)
 	}
-	fmt.Println(dur)
 
 	lastCheckin, err := time.Parse(time.RFC1123, ghost.LastCheckin)
-	fmt.Println(lastCheckin)
 	if err != nil {
 		fmt.Println(err)
 	}
