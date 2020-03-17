@@ -20,7 +20,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/maxlandon/wiregost/data_service/remote"
+	"github.com/maxlandon/wiregost/data-service/remote"
 	pb "github.com/maxlandon/wiregost/protobuf/client"
 	"github.com/maxlandon/wiregost/server/certs"
 	"github.com/maxlandon/wiregost/server/log"

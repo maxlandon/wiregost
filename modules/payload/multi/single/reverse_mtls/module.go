@@ -24,7 +24,7 @@ import (
 
 	"github.com/evilsocket/islazy/tui"
 	consts "github.com/maxlandon/wiregost/client/constants"
-	"github.com/maxlandon/wiregost/data_service/remote"
+	"github.com/maxlandon/wiregost/data-service/remote"
 	pb "github.com/maxlandon/wiregost/protobuf/client"
 	c2 "github.com/maxlandon/wiregost/server/c2"
 	"github.com/maxlandon/wiregost/server/core"

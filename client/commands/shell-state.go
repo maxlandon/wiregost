@@ -19,6 +19,7 @@ package commands
 import (
 	"context"
 
+	"github.com/chzyer/readline"
 	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/data_service/models"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
@@ -26,7 +27,8 @@ import (
 
 // ShellContext - Passes client shell variable pointers to command for read/write access
 type ShellContext struct {
-	// Context
+	// Shell
+	Shell       *readline.Instance
 	Context     context.Context
 	MenuContext *string
 	Mode        *string

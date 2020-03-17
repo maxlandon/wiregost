@@ -32,7 +32,7 @@ import (
 	"github.com/maxlandon/wiregost/client/completers"
 	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/client/util"
-	"github.com/maxlandon/wiregost/data_service/models"
+	"github.com/maxlandon/wiregost/data-service/models"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
 
@@ -241,7 +241,10 @@ func (c *Console) hardRefresh() {
 }
 
 // softRefresh does not print a new prompt, it simply updates the current one
-func (c *Console) softRefresh() {
+func (c *Console) SoftRefresh() {
+	_, m := c.prompt.render(true)
+	c.Shell.SetPrompt(m)
+	c.Shell.Refresh()
 }
 
 func (c *Console) filterInput(r rune) (rune, bool) {

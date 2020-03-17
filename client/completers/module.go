@@ -23,6 +23,7 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/maxlandon/wiregost/client/commands"
+	"github.com/maxlandon/wiregost/client/help"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
@@ -37,6 +38,7 @@ func (mc *moduleCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) 
 	splitLine := strings.Split(string(line), " ")
 	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
 
+	line = append(line, []rune(help.GetHelpFor("module"))...)
 	stack, _ := proto.Marshal(&clientpb.ModuleActionReq{
 		Action: "list",
 	})

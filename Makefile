@@ -27,19 +27,19 @@ endif
 macos: clean version pb
 	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
 	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data_service
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data-service
 
 .PHONY: linux
 linux: clean version pb
 	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
 	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data_service
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data-service
 
 .PHONY: windows
 windows: clean version pb
 	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server.exe ./server
 	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console.exe ./client
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service.exe ./data_service
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service.exe ./data-service
 
 
 #
@@ -59,7 +59,7 @@ console-macos: clean version pb
 
 .PHONY: data-service-macos
 data-service-macos: clean version pb
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data_service
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data-service
 
 # Windows
 .PHONY: static-server-windows
@@ -75,7 +75,7 @@ console-windows: clean version pb
 
 .PHONY: data-service-windows
 data-service-windows: clean version pb
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service.exe ./data_service
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service.exe ./data-service
 
 # Linux 
 .PHONY: static-server-linux
@@ -90,7 +90,7 @@ console-linux: clean version pb
 
 .PHONY: data-service-linux
 data-service-linux: clean version pb
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data_service
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data-service
 
 
 # Accessory Makes ------------------------------------------------------------------------------------------

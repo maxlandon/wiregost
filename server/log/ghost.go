@@ -21,7 +21,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/maxlandon/wiregost/data_service/remote"
+	"github.com/maxlandon/wiregost/data-service/remote"
 	"github.com/sirupsen/logrus"
 )
 

@@ -23,7 +23,7 @@ import (
 	"github.com/evilsocket/islazy/tui"
 
 	"github.com/maxlandon/wiregost/client/commands"
-	"github.com/maxlandon/wiregost/data_service/remote"
+	"github.com/maxlandon/wiregost/data-service/remote"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
 
@@ -54,6 +54,7 @@ func (c *Console) initContext() {
 	// Set ShellContext struct, passed to all commands
 	c.shellContext = &commands.ShellContext{
 		// Context
+		Shell:            c.Shell,
 		Context:          c.context,
 		MenuContext:      &c.menuContext,
 		Mode:             &c.mode,

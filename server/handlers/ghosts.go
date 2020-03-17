@@ -24,7 +24,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 
 	consts "github.com/maxlandon/wiregost/client/constants"
-	"github.com/maxlandon/wiregost/data_service/remote"
+	"github.com/maxlandon/wiregost/data-service/remote"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 	"github.com/maxlandon/wiregost/server/core"
 	"github.com/maxlandon/wiregost/server/log"

@@ -28,8 +28,8 @@ import (
 	"github.com/maxlandon/wiregost/client/constants"
 	"github.com/maxlandon/wiregost/client/help"
 	"github.com/maxlandon/wiregost/client/util"
-	"github.com/maxlandon/wiregost/data_service/models"
-	"github.com/maxlandon/wiregost/data_service/remote"
+	"github.com/maxlandon/wiregost/data-service/models"
+	"github.com/maxlandon/wiregost/data-service/remote"
 )
 
 func registerHostCommands() {

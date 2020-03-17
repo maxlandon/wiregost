@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"github.com/maxlandon/wiregost/client/commands"
-	"github.com/maxlandon/wiregost/data_service/remote"
+	"github.com/maxlandon/wiregost/data-service/remote"
 )
 
 type hostCompleter struct {
