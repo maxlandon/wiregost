@@ -23,7 +23,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/util"
-	"github.com/maxlandon/wiregost/data_service/remote"
+	"github.com/maxlandon/wiregost/data-service/remote"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )

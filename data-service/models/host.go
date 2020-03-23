@@ -64,12 +64,12 @@ type Host struct {
 	TCPSequence   TCPSequence   `xml:"tcpsequence"`
 	TCPTSSequence TCPTSSequence `xml:"tcptssequence" json:"tcp_ts_sequence"`
 	Times         Times         `xml:"times"`
-	Trace         Trace         `xml:"trace"`
+	Trace         Trace         `xml:"trace" gorm:"foreignkey:HostID"`
 	Uptime        Uptime        `xml:"uptime"`
 	Comment       string        `xml:"comment,attr"`
 	StartTime     Timestamp     `xml:"starttime,attr,omitempty"`
 	Status        Status        `xml:"status"`
-	ExtraPorts    []ExtraPort   `xml:"ports>extraports"`
+	ExtraPorts    []ExtraPort   `xml:"ports>extraports" gorm:"foreignkey:HostID"`
 	Hostnames     []Hostname    `xml:"hostnames>hostname"`
 	HostScripts   []Script      `xml:"hostscript>script"`
 	Ports         []Port        `xml:"ports>port"`
@@ -78,6 +78,31 @@ type Host struct {
 	// Timestamp
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+// Hostname is a name for a host.
+type Hostname struct {
+	ID     uint
+	HostID uint   `gorm:"not null"`
+	Name   string `xml:"name,attr"`
+	Type   string `xml:"type,attr"`
+}
+
+func (h Hostname) String() string {
+	return h.Name
+}
+
+// Status represents a host's status
+type Status struct {
+	ID        uint
+	HostID    uint    `gorm:"not null"`
+	State     string  `xml:"state,attr"`
+	Reason    string  `xml:"reason,attr"`
+	ReasonTTL float32 `xml:"reason_ttl,attr"`
+}
+
+func (s Status) String() string {
+	return s.State
 }
 
 // NewHost instantiates a Host and gives it an ID and a workspaceID

@@ -26,6 +26,8 @@ func (db *DB) MigrateSchema() error {
 
 	// Hosts
 	db.AutoMigrate(&Host{})
+	db.AutoMigrate(&Trace{}).Model(&Trace{}).AddForeignKey("host_id", "hosts(id)", "CASCADE", "CASCADE")
+	db.AutoMigrate(&Hop{}).Model(&Hop{}).AddForeignKey("trace_id", "traces(id)", "CASCADE", "CASCADE")
 	db.AutoMigrate(&Hostname{})
 	db.AutoMigrate(&Status{})
 
@@ -39,11 +41,14 @@ func (db *DB) MigrateSchema() error {
 
 	// Ports/Services
 	db.AutoMigrate(&Service{})
-	db.AutoMigrate(&Port{})
+	db.AutoMigrate(&Port{}).Model(&ExtraPort{}).AddForeignKey("host_id", "hosts(id)", "CASCADE", "CASCADE")
+	db.AutoMigrate(&ExtraPort{})
+	db.AutoMigrate(&Owner{}).Model(&Service{}).AddForeignKey("port_id", "ports(id)", "CASCADE", "CASCADE")
 	db.AutoMigrate(&State{})
 	db.AutoMigrate(&Script{})
 
 	db.Model(&Port{}).AddForeignKey("host_id", "hosts(id)", "CASCADE", "CASCADE")
+	// db.Model(&ExtraPort{}).AddForeignKey("host_id", "hosts(id)", "CASCADE", "CASCADE")
 	db.Model(&Service{}).AddForeignKey("port_id", "ports(id)", "CASCADE", "CASCADE")
 	db.Model(&State{}).AddForeignKey("port_id", "ports(id)", "CASCADE", "CASCADE")
 	db.Model(&Script{}).AddForeignKey("port_id", "ports(id)", "CASCADE", "CASCADE")

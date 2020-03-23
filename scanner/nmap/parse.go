@@ -14,40 +14,38 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package commands
+package nmap
 
 import (
-	"context"
+	"encoding/xml"
+	"strconv"
+	"time"
 
-	"github.com/chzyer/readline"
-	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/data-service/models"
-	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
 
-// ShellContext - Passes client shell variable pointers to command for read/write access
-type ShellContext struct {
-	// Shell
-	Shell       *readline.Instance
-	Context     context.Context
-	MenuContext *string
-	Mode        *string
+// Timestamp represents time as a UNIX timestamp in seconds.
+type Timestamp time.Time
 
-	CurrentModule    *string
-	Module           *clientpb.Module
-	ModuleUserID     *int32
-	CurrentWorkspace *models.Workspace
+// ParseTime converts a UNIX timestamp string to a time.Time.
+func (t *Timestamp) ParseTime(s string) error {
+	timestamp, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return err
+	}
 
-	// Server state
-	Server *core.WiregostServer
+	*t = Timestamp(time.Unix(timestamp, 0))
 
-	// Jobs
-	Listeners *int
+	return nil
+}
 
-	// Agents
-	Ghosts *int
-	// Keep for prompt, until not needed anymore
-	CurrentAgent        *clientpb.Ghost
-	AgentPwd            *string
-	SessionPathComplete bool
+// Parse takes a byte array of nmap xml data and unmarshals it into a Run struct.
+func Parse(content []byte) (*models.Run, error) {
+	r := &models.Run{
+		RawXML: content,
+	}
+
+	err := xml.Unmarshal(content, r)
+
+	return r, err
 }

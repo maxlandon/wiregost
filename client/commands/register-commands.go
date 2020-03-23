@@ -63,6 +63,9 @@ func RegisterCommands() {
 	registerPrivCommands()
 	registerProcCommands()
 	registerExecuteCommands()
+
+	// Nmap
+	registerNmapCommands()
 }
 
 var (

@@ -74,7 +74,7 @@ func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int)
 	// Autocomplete commands with no subcommands but variable arguments
 	for _, c := range commands {
 		switch c.Name {
-		case "set", "use", "parse_profile", "help", "cd", "ls", "sessions", "interact":
+		case "set", "use", "parse_profile", "help", "cd", "ls", "sessions", "interact", "nmap":
 			options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
 		}
 	}
@@ -152,6 +152,9 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 			options, offset = comp.Do(ctx, line, pos)
 		case "sessions", "interact":
 			comp := &sessionCompleter{Command: cmd}
+			options, offset = comp.Do(ctx, line, pos)
+		case "nmap", "db_nmap":
+			comp := &nmapCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
 		}
 

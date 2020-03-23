@@ -27,7 +27,7 @@ type Port struct {
 
 	// Nmap attributes
 	Protocol string   `xml:"protocol,attr"`
-	Owner    Owner    `xml:"owner"`
+	Owner    Owner    `xml:"owner" gorm:"foreignkey:PortID"`
 	Service  Service  `xml:"service" gorm:"foreignkey:PortID"`
 	State    State    `xml:"state" gorm:"foreignkey:PortID"`
 	Scripts  []Script `xml:"script" gorm:"foreignkey:PortID"`
@@ -39,16 +39,19 @@ type Port struct {
 
 // ExtraPort contains the information about the closed and filtered ports.
 type ExtraPort struct {
+	ID      uint
+	HostID  uint     `gorm:"not null"`
 	State   string   `xml:"state,attr"`
 	Count   int      `xml:"count,attr"`
-	Reasons []Reason `xml:"extrareasons"`
+	Reasons []Reason `xml:"extrareasons" gorm:"foreignkey:ExtraPortID"`
 }
 
 // Reason represents a reason why a port is closed or filtered.
 // This won't be in the scan results unless WithReason is used.
 type Reason struct {
-	Reason string `xml:"reason,attr"`
-	Count  int    `xml:"count,attr"`
+	ExtraPortID uint16 `gorm:"not null"`
+	Reason      string `xml:"reason,attr"`
+	Count       int    `xml:"count,attr"`
 }
 
 // PortStatus represents a port's state.
@@ -90,7 +93,8 @@ func (s State) String() string {
 
 // Owner contains the name of a port's owner.
 type Owner struct {
-	Name string `xml:"name,attr"`
+	PortID uint   `gorm:"not null"`
+	Name   string `xml:"name,attr"`
 }
 
 func (o Owner) String() string {

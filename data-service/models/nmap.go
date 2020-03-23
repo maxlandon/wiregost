@@ -49,17 +49,17 @@ type Run struct {
 	TaskEnd          []Task         `xml:"taskend"`
 
 	NmapErrors []string
-	rawXML     []byte
+	RawXML     []byte
 }
 
 // ToFile writes a Run as XML into the specified file path.
 func (r Run) ToFile(filePath string) error {
-	return ioutil.WriteFile(filePath, r.rawXML, 0666)
+	return ioutil.WriteFile(filePath, r.RawXML, 0666)
 }
 
 // ToReader writes the raw XML into an streamable buffer.
 func (r Run) ToReader() io.Reader {
-	return bytes.NewReader(r.rawXML)
+	return bytes.NewReader(r.RawXML)
 }
 
 // ScanInfo represents the scan information.
@@ -210,31 +210,6 @@ type Element struct {
 	Value string `xml:",innerxml" json:"value"`
 }
 
-// Status represents a host's status
-type Status struct {
-	ID        uint
-	HostID    uint    `gorm:"not null"`
-	State     string  `xml:"state,attr"`
-	Reason    string  `xml:"reason,attr"`
-	ReasonTTL float32 `xml:"reason_ttl,attr"`
-}
-
-func (s Status) String() string {
-	return s.State
-}
-
-// Hostname is a name for a host.
-type Hostname struct {
-	ID     uint
-	HostID uint   `gorm:"not null"`
-	Name   string `xml:"name,attr"`
-	Type   string `xml:"type,attr"`
-}
-
-func (h Hostname) String() string {
-	return h.Name
-}
-
 // Smurf contains responses from a smurf attack.
 type Smurf struct {
 	Responses string `xml:"responses,attr"`
@@ -272,15 +247,18 @@ type TCPTSSequence Sequence
 
 // Trace represents the trace to a host, including the hops.
 type Trace struct {
-	Proto string `xml:"proto,attr"`
-	Port  int    `xml:"port,attr"`
-	Hops  []Hop  `xml:"hop"`
+	ID     uint
+	HostID uint   `gorm:"not null"`
+	Proto  string `xml:"proto,attr"`
+	Port   int    `xml:"port,attr"`
+	Hops   []Hop  `xml:"hop" gorm:"foreignkey:TraceID"`
 }
 
 // Hop is an IP hop to a host.
 type Hop struct {
-	TTL    float32 `xml:"ttl,attr"`
-	RTT    string  `xml:"rtt,attr"`
-	IPAddr string  `xml:"ipaddr,attr"`
-	Host   string  `xml:"host,attr"`
+	TraceID uint    `gorm:"not null"`
+	TTL     float32 `xml:"ttl,attr"`
+	RTT     string  `xml:"rtt,attr"`
+	IPAddr  string  `xml:"ipaddr,attr"`
+	Host    string  `xml:"host,attr"`
 }
