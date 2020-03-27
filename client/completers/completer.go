@@ -23,91 +23,231 @@ import (
 	"unicode"
 
 	"github.com/evilsocket/islazy/tui"
+	"github.com/lmorg/readline"
 	"github.com/maxlandon/wiregost/client/commands"
 )
 
-// AutoCompleter - The main/root autocompleter for the console.
+// AutoCompleter - Handles all autocompletions and hints in Wiregost
 type AutoCompleter struct {
-	MenuContext *string
-	Context     *commands.ShellContext
+	Context *commands.ShellContext // Passes the shell context
+	Command *commands.Command      // The command currently in input
+}
+
+// Do - Entrypoint to all completions in Wiregost
+func (ac *AutoCompleter) Do(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
+
+	// Completions
+	var suggestions []string
+	listSuggestions := map[string]string{}
+
+	// Get a list of words in input
+	splitLine := strings.Split(string(line), " ")
+	last := trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+
+	// Get context commands
+	cmds := buildCommandMap(*ac.Context.Menu)
+
+	// Store Command and Subcommands
+	var command *commands.Command
+	for _, cmd := range cmds {
+		if cmd.Name == splitLine[0] {
+			command = cmd
+		}
+	}
+	var subs []string
+	if command != nil {
+		for _, sub := range command.SubCommands {
+			subs = append(subs, sub.Name)
+		}
+		sort.Strings(subs)
+	}
+
+	// Commands
+	if len(splitLine) == 0 || len(splitLine) == 1 && command == nil {
+		var verbs []string
+		for _, cmd := range cmds {
+			verbs = append(verbs, cmd.Name)
+		}
+		sort.Strings(verbs)
+
+		for i := range verbs {
+			if strings.HasPrefix(verbs[i], string(last)) {
+				suggestions = append(suggestions, verbs[i][pos:]+" ")
+			}
+		}
+	}
+
+	// SubCommands
+	if command != nil {
+		if command.SubCommands != nil && len(command.SubCommands) != 0 {
+			var verbs []string
+			for _, cmd := range command.SubCommands {
+				verbs = append(verbs, cmd.Name)
+			}
+			sort.Strings(verbs)
+
+			for i := range verbs {
+				if strings.HasPrefix(verbs[i], string(last)) {
+					suggestions = append(suggestions, verbs[i][(len(last)):]+" ")
+				}
+			}
+		}
+		// If no subcommands, check Arguments
+		if command.SubCommands == nil || len(command.SubCommands) == 0 {
+			return ac.yieldArgsCompletion(command, line, pos)
+		}
+	}
+
+	// Arguments
+	if command != nil && (command.SubCommands != nil || len(command.SubCommands) != 0) && len(splitLine) > 1 && stringInSlice(splitLine[1], subs) {
+		return ac.yieldArgsCompletion(command, line, pos)
+	}
+
+	return string(line[:pos]), suggestions, listSuggestions, readline.TabDisplayGrid
+}
+
+func (ac *AutoCompleter) yieldArgsCompletion(cmd *commands.Command, line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
+
+	// Completions
+	var suggestions []string
+	listSuggestions := map[string]string{}
+
+	switch *ac.Context.Menu {
+	case "main", "module":
+		switch cmd.Name {
+		case "cd":
+			return completeLocalPath(cmd, line, pos)
+		case "workspace":
+			return completeWorkspaces(cmd, line, pos)
+		}
+	case "agent":
+	}
+
+	return string(line[:pos]), suggestions, listSuggestions, readline.TabDisplayGrid
+}
+
+func (ac *AutoCompleter) CommandHint(line []rune, pos int) (hint []rune) {
+
+	splitLine := strings.Split(string(line), " ")
+	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+
+	commands := buildCommandMap(*ac.Context.Menu)
+
+	for _, cmd := range commands {
+		if cmd.Name == splitLine[0] {
+			// Get main command hint
+			hint = []rune(cmd.Help)
+
+			// Commands with no subcommands but with arguments
+			if len(splitLine) == 2 && splitLine[1] != "" {
+				switch cmd.Name {
+				case "cd":
+					hint = []rune("Change directory:" + " => " + splitLine[1])
+				}
+			}
+
+			// Get potential subcommands & filter hints
+			var verbs []string
+			for _, cmd := range cmd.SubCommands {
+				verbs = append(verbs, cmd.Name)
+			}
+			sort.Strings(verbs)
+			if len(splitLine) > 2 && stringInSlice(splitLine[1], verbs) {
+				for _, sub := range cmd.SubCommands {
+					if sub.Name == splitLine[1] {
+						hint = []rune(sub.Help)
+					}
+				}
+
+				// switch cmd.Name {
+				// case "hosts":
+				//         ac.Context.Shell.HintFormatting = fmt.Sprintf("%s%s", tui.YELLOW, tui.BOLD)
+				//         hint = []rune("Host filters")
+				// }
+
+			}
+		}
+	}
+
+	return
 }
 
 // Do is the completion function triggered at each line
-func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int) {
-
-	commands := buildCommandMap(*ac.MenuContext)
-
-	// Find commands
-	var verbs []string
-	for cmd := range commands {
-		verbs = append(verbs, cmd)
-	}
-
-	sort.Strings(verbs)
-
-	line = trimSpaceLeft(line[:pos])
-
-	// Auto-complete verb
-	var verbFound string
-	for _, verb := range verbs {
-		search := verb + " "
-		if !hasPrefix(line, []rune(search)) {
-			sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-			options = append(options, sLine...)
-			offset = sOffset
-		} else {
-			verbFound = verb
-			break
-		}
-	}
-	if len(verbFound) == 0 {
-		return
-	}
-
-	// Help commands need to be filtered here depending on context
-	if verbFound == "help" {
-		if *ac.Context.MenuContext == "agent" {
-			options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
-		}
-	}
-
-	// Autocomplete commands with no subcommands but variable arguments
-	for _, c := range commands {
-		switch c.Name {
-		case "set", "use", "parse_profile", "help", "cd", "ls", "sessions", "interact", "nmap":
-			options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
-		}
-	}
-
-	// Autocomplete subcommands
-	var subFound string
-	line = trimSpaceLeft(line[len(verbFound):])
-	for _, comm := range commands[verbFound].SubCommands {
-		search := comm + " "
-		if !hasPrefix(line, []rune(search)) {
-			sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-			options = append(options, sLine...)
-			offset = sOffset
-		} else {
-			subFound = comm
-			break
-		}
-	}
-
-	// Option name is found, yield option completions
-	if (len(subFound) == 0) && verbFound != "set" {
-		return
-	}
-	if subFound == "interact" {
-		options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
-	}
-
-	// Get command completer and yield options
-	options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
-
-	return options, offset
-}
-
+// func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int) {
+//
+//         commands := buildCommandMap(*ac.MenuContext)
+//
+//         // Find commands
+//         var verbs []string
+//         for cmd := range commands {
+//                 verbs = append(verbs, cmd)
+//         }
+//
+//         sort.Strings(verbs)
+//
+//         line = trimSpaceLeft(line[:pos])
+//
+//         // Auto-complete verb
+//         var verbFound string
+//         for _, verb := range verbs {
+//                 search := verb + " "
+//                 if !hasPrefix(line, []rune(search)) {
+//                         sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+//                         options = append(options, sLine...)
+//                         offset = sOffset
+//                 } else {
+//                         verbFound = verb
+//                         break
+//                 }
+//         }
+//         if len(verbFound) == 0 {
+//                 return
+//         }
+//
+//         // Help commands need to be filtered here depending on context
+//         if verbFound == "help" {
+//                 if *ac.Context.Menu == "agent" {
+//                         options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
+//                 }
+//         }
+//
+//         // Autocomplete commands with no subcommands but variable arguments
+//         for _, c := range commands {
+//                 switch c.Name {
+//                 case "set", "use", "parse_profile", "help", "cd", "ls", "sessions", "interact", "nmap":
+//                         options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
+//                 }
+//         }
+//
+//         // Autocomplete subcommands
+//         var subFound string
+//         line = trimSpaceLeft(line[len(verbFound):])
+//         for _, comm := range commands[verbFound].SubCommands {
+//                 search := comm + " "
+//                 if !hasPrefix(line, []rune(search)) {
+//                         sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+//                         options = append(options, sLine...)
+//                         offset = sOffset
+//                 } else {
+//                         subFound = comm
+//                         break
+//                 }
+//         }
+//
+//         // Option name is found, yield option completions
+//         if (len(subFound) == 0) && verbFound != "set" {
+//                 return
+//         }
+//         if subFound == "interact" {
+//                 options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
+//         }
+//
+//         // Get command completer and yield options
+//         options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
+//
+//         return options, offset
+// }
+//
 // buildCommandMap - Creates a map of commands for completion
 func buildCommandMap(ctx string) (commandMap map[string]*commands.Command) {
 	commandMap = map[string]*commands.Command{}
@@ -120,12 +260,9 @@ func buildCommandMap(ctx string) (commandMap map[string]*commands.Command) {
 // yieldCommandCompletions determines the type of command used and redirects to its completer
 func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, line []rune, pos int) (options [][]rune, offset int) {
 
-	switch *ctx.MenuContext {
+	switch *ctx.Menu {
 	case "main", "module":
 		switch cmd.Name {
-		case "cd":
-			comp := &pathCompleter{Command: cmd}
-			options, offset = comp.Do(ctx, line, pos)
 		case "workspace":
 			comp := &workspaceCompleter{Command: cmd}
 			options, offset = comp.Do(ctx, line, pos)
@@ -165,7 +302,7 @@ func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, 
 			options, offset = comp.Do(ctx, line, pos)
 		case "cd", "ls", "cat":
 			// Enable only if enabled in config
-			if ctx.SessionPathComplete {
+			if ctx.Config.SessionPathCompletion {
 				comp := &implantPathCompleter{Command: cmd}
 				options, offset = comp.Do(ctx, line, pos)
 			}
@@ -182,7 +319,7 @@ func yieldOptionompletions(ctx *commands.ShellContext, cmd *commands.Command, li
 	splitLine := strings.Split(string(line), " ")
 	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
 
-	switch *ctx.MenuContext {
+	switch *ctx.Menu {
 	case "module":
 		switch cmd.Name {
 		case "set":
@@ -271,6 +408,15 @@ func doInternal(line []rune, pos int, lineLen int, argName []rune) (newLine [][]
 		}
 	}
 	return
+}
+
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
 
 var (

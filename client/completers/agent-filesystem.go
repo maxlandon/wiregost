@@ -43,7 +43,7 @@ func (pc *implantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos 
 	// We keep a boolean for remembering which case we found
 	linePath := ""
 	lastPath := ""
-	switch ctx.CurrentAgent.OS {
+	switch ctx.Ghost.OS {
 	case "windows":
 		if strings.HasSuffix(string(line), "\\") {
 			// Trim the non needed slash
@@ -62,11 +62,11 @@ func (pc *implantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos 
 				linePath = "/"
 			} else if string(line) == "~/" {
 				// If we look for "~", we need to build the path manually
-				linePath = filepath.Join("/home", ctx.CurrentAgent.Username)
+				linePath = filepath.Join("/home", ctx.Ghost.Username)
 
 			} else if strings.HasPrefix(string(line), "~/") && string(line) != "~/" {
 				// If we used the "~" at the beginning, we still need to build the path
-				homePath := filepath.Join("/home", ctx.CurrentAgent.Username)
+				homePath := filepath.Join("/home", ctx.Ghost.Username)
 				linePath = filepath.Join(homePath, strings.TrimPrefix(string(line), "~/"))
 			} else {
 				// Trim the non needed slash
@@ -74,7 +74,7 @@ func (pc *implantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos 
 			}
 		} else if strings.HasPrefix(string(line), "~/") && string(line) != "~/" {
 			// If we used the "~" at the beginning, we still need to build the path
-			homePath := filepath.Join("/home", ctx.CurrentAgent.Username)
+			homePath := filepath.Join("/home", ctx.Ghost.Username)
 			linePath = filepath.Join(homePath, filepath.Dir(strings.TrimPrefix(string(line), "~/")))
 			lastPath = filepath.Base(string(line))
 
@@ -92,7 +92,7 @@ func (pc *implantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos 
 
 	rpc := ctx.Server.RPC
 	data, _ := proto.Marshal(&ghostpb.LsReq{
-		GhostID: ctx.CurrentAgent.ID,
+		GhostID: ctx.Ghost.ID,
 		Path:    linePath,
 	})
 	resp := <-rpc(&ghostpb.Envelope{
@@ -121,7 +121,7 @@ func (pc *implantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos 
 	case "":
 		for _, dir := range dirs {
 			search := ""
-			if ctx.CurrentAgent.OS == "windows" {
+			if ctx.Ghost.OS == "windows" {
 				search = dir + "\\"
 			} else {
 				search = dir + "/"
@@ -142,7 +142,7 @@ func (pc *implantPathCompleter) Do(ctx *commands.ShellContext, line []rune, pos 
 
 		for _, dir := range filtered {
 			search := ""
-			if ctx.CurrentAgent.OS == "windows" {
+			if ctx.Ghost.OS == "windows" {
 				search = dir + "\\"
 			} else {
 				search = dir + "/"

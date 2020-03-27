@@ -22,11 +22,83 @@ import (
 	"strings"
 
 	"github.com/evilsocket/islazy/fs"
+	"github.com/lmorg/readline"
 	"github.com/maxlandon/wiregost/client/commands"
 )
 
 type pathCompleter struct {
 	Command *commands.Command
+}
+
+func completeLocalPath(cmd *commands.Command, line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
+
+	// Completions
+	var suggestions []string
+	listSuggestions := map[string]string{}
+
+	// Get last path
+	splitLine := strings.Split(string(line), " ")
+	inputPath := trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+
+	// linePath is the curated version of the inputPath
+	var linePath string
+	// absPath is the absolute path (excluding suffix) of the inputPath
+	var absPath string
+	// lastPath is the last directory in the input path
+	var lastPath string
+
+	if strings.HasSuffix(string(inputPath), "/") {
+		// Trim the non needed slash
+		linePath = strings.TrimSuffix(string(inputPath), "/")
+		linePath = filepath.Dir(string(inputPath))
+		// Get absolute path
+		absPath, _ = fs.Expand(string(linePath))
+
+	} else if string(inputPath) == "" {
+		linePath = "."
+		absPath, _ = fs.Expand(string(linePath))
+	} else {
+		linePath = string(inputPath)
+		linePath = filepath.Dir(string(inputPath))
+		// Get absolute path
+		absPath, _ = fs.Expand(string(linePath))
+		// Save filter
+		lastPath = filepath.Base(string(inputPath))
+	}
+
+	// 2) We take the absolute path we found, and get all dirs in it.
+	var dirs []string
+	files, _ := ioutil.ReadDir(absPath)
+	for _, file := range files {
+		if file.IsDir() {
+			dirs = append(dirs, file.Name())
+		}
+	}
+
+	switch lastPath {
+	case "":
+		for _, dir := range dirs {
+			if strings.HasPrefix(dir, lastPath) || lastPath == dir {
+				suggestions = append(suggestions, dir[len(lastPath):]+"/")
+			}
+		}
+	default:
+		filtered := []string{}
+		for _, dir := range dirs {
+			if strings.HasPrefix(dir, lastPath) {
+				filtered = append(filtered, dir)
+			}
+		}
+
+		for _, dir := range filtered {
+			if !hasPrefix([]rune(lastPath), []rune(dir)) || lastPath == dir {
+				suggestions = append(suggestions, dir[len(lastPath):]+"/")
+			}
+		}
+
+	}
+
+	return string(line[:pos]), suggestions, listSuggestions, readline.TabDisplayGrid
 }
 
 // Do is the completion function triggered at each line

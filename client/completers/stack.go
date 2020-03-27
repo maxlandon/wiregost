@@ -44,7 +44,7 @@ func (mc *stackCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (
 		// Get stack modules
 		stack, _ := proto.Marshal(&clientpb.StackReq{
 			Action:      "list",
-			WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+			WorkspaceID: uint32(ctx.Workspace.ID),
 			User:        ctx.Server.Config.User,
 		})
 

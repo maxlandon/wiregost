@@ -39,13 +39,13 @@ func (hc *hostCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (o
 
 	switch splitLine[0] {
 	case "delete":
-		return hc.yieldHostValues(&ctx.Context, line, pos)
+		return hc.yieldHostValues(&ctx.DBContext, line, pos)
 	case "add":
-		return hc.yieldHostValues(&ctx.Context, line, pos)
+		return hc.yieldHostValues(&ctx.DBContext, line, pos)
 	case "update":
-		return hc.yieldHostValues(&ctx.Context, line, pos)
+		return hc.yieldHostValues(&ctx.DBContext, line, pos)
 	case "search":
-		return hc.yieldHostValues(&ctx.Context, line, pos)
+		return hc.yieldHostValues(&ctx.DBContext, line, pos)
 	}
 
 	return options, offset

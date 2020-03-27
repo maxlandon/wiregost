@@ -19,12 +19,36 @@ package completers
 import (
 	"strings"
 
+	"github.com/lmorg/readline"
+
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/data-service/remote"
 )
 
 type workspaceCompleter struct {
 	Command *commands.Command
+}
+
+func completeWorkspaces(cmd *commands.Command, line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
+	// Completions
+	var suggestions []string
+	listSuggestions := map[string]string{}
+
+	// Get last path
+	splitLine := strings.Split(string(line), " ")
+	last := trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+
+	// Get workspaces
+	workspaces, _ := remote.Workspaces(nil)
+
+	// Get completions
+	for _, ws := range workspaces {
+		if strings.HasPrefix(ws.Name, string(last)) {
+			suggestions = append(suggestions, ws.Name[len(last):])
+		}
+	}
+
+	return string(line[:pos]), suggestions, listSuggestions, readline.TabDisplayGrid
 }
 
 // Do is the completion function triggered at each line

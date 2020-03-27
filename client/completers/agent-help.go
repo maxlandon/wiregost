@@ -32,7 +32,7 @@ func (oc *agentHelpCompleter) Do(ctx *commands.ShellContext, line []rune, pos in
 	splitLine := strings.Split(string(line), " ")
 	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
 
-	commands := buildCommandMap(*ctx.MenuContext)
+	commands := buildCommandMap(*ctx.Menu)
 
 	for _, c := range commands {
 		search := c.Name
