@@ -25,8 +25,8 @@ import (
 	"strings"
 
 	// 3rd party
-	"github.com/chzyer/readline"
 	"github.com/evilsocket/islazy/tui"
+	"github.com/lmorg/readline"
 )
 
 // Prompt object
@@ -42,7 +42,7 @@ type Prompt struct {
 	multilineEmacs string
 	// Prompt variables
 	workspace     *string
-	currentModule *string
+	currentModule string
 	menu          *string
 	// Other prompt variables
 	serverIP *string
@@ -64,9 +64,9 @@ func newPrompt(c *Console, customMain string, customAgent string) Prompt {
 		multilineVim:   "{vim} > ",
 		multilineEmacs: " > ",
 		// Prompt variabes
-		workspace:     &c.currentWorkspace.Name,
-		currentModule: &c.currentModule,
-		menu:          &c.menuContext,
+		workspace:     &c.workspace.Name,
+		currentModule: strings.Join(c.module.Path, "/"),
+		menu:          &c.menu,
 	}
 	// Colors
 	prompt.effects = map[string]string{
@@ -96,12 +96,12 @@ func newPrompt(c *Console, customMain string, customAgent string) Prompt {
 	prompt.promptCallbacks = map[string]func() string{
 		// Vim mode
 		"{vim}": func() string {
-			switch c.vimMode {
-			case "insert":
-				return tui.Yellow("[I]")
-			case "normal":
-				return tui.Blue("[N]")
-			}
+			// switch c.vimMode {
+			// case "insert":
+			//         return tui.Yellow("[I]")
+			// case "normal":
+			//         return tui.Blue("[N]")
+			// }
 			return ""
 		},
 
@@ -131,7 +131,7 @@ func newPrompt(c *Console, customMain string, customAgent string) Prompt {
 		},
 		// Listeners
 		"{listeners}": func() string {
-			listeners := strconv.Itoa(c.listeners)
+			listeners := strconv.Itoa(c.jobs)
 			return listeners
 		},
 		// Agents
@@ -141,81 +141,86 @@ func newPrompt(c *Console, customMain string, customAgent string) Prompt {
 		},
 		// Current Module type
 		"{type}": func() string {
-			switch strings.Split(c.currentModule, "/")[0] {
-			case "post":
-				return "post"
-			case "exploit":
-				return "exploit"
-			case "auxiliary":
-				return "auxiliary"
-			case "payload":
-				return "payload"
+			if len(c.module.Path) != 0 {
+				switch c.module.Path[0] {
+				case "post":
+					return "post"
+				case "exploit":
+					return "exploit"
+				case "auxiliary":
+					return "auxiliary"
+				case "payload":
+					return "payload"
+				}
 			}
 			return ""
 		},
 		// CurrentModule
 		"{mod}": func() string {
-			mod := strings.Join(strings.Split(*prompt.currentModule, "/")[1:], "/")
-			return tui.Red(tui.Bold(mod)) + tui.RESET
+			if len(c.module.Path) != 0 {
+				mod := strings.Join(c.module.Path[1:], "/")
+				return tui.Red(tui.Bold(mod)) + tui.RESET
+			}
+			return ""
 			// return tui.Yellow(*prompt.currentModule) + tui.RESET
 		},
 		// Current agent
 		"{agent}": func() string {
-			return c.CurrentAgent.Name
+			return c.Ghost.Name
 		},
 		// Agent username
 		"{user}": func() string {
-			return tui.RESET + tui.Bold(c.CurrentAgent.Username)
+			return tui.RESET + tui.Bold(c.Ghost.Username)
 		},
 		// Agent hostname
 		"{host}": func() string {
-			return tui.Bold(c.CurrentAgent.Hostname) + tui.RESET
+			return tui.Bold(c.Ghost.Hostname) + tui.RESET
 		},
 		// Agent cwd
 		"{rpwd}": func() string {
-			return tui.Blue(c.AgentPwd) + tui.RESET
+			return tui.Blue(c.GhostPwd) + tui.RESET
 		},
 		// agent user ID
 		"{uid}": func() string {
-			return c.CurrentAgent.UID
+			return c.Ghost.UID
 		},
 		// agent user group ID
 		"{gid}": func() string {
-			return c.CurrentAgent.GID
+			return c.Ghost.GID
 		},
 		// agent process ID
 		"{pid}": func() string {
-			return strconv.Itoa(int(c.CurrentAgent.PID))
+			return strconv.Itoa(int(c.Ghost.PID))
 		},
 		// agent C2 protocol
 		"{transport}": func() string {
-			return c.CurrentAgent.Transport
+			return c.Ghost.Transport
 		},
 		// agent remote host:port address
 		"{address}": func() string {
-			return c.CurrentAgent.RemoteAddress
+			return c.Ghost.RemoteAddress
 		},
 		// agent target OS
 		"{os}": func() string {
-			return c.CurrentAgent.OS
+			return c.Ghost.OS
 		},
 		// agent target CPU Arch
 		"{arch}": func() string {
-			return c.CurrentAgent.Arch
+			return c.Ghost.Arch
 		},
 	}
 
 	return prompt
 }
 
-func (p Prompt) render(vimMode bool) (first string, multi string) {
+func (p Prompt) render() (first string, multi string) {
 
 	var prompt string
 
 	switch p.customMain {
 	// No custom prompt provided, use base
 	case "":
-		if *p.currentModule != "" {
+		if p.currentModule != "" {
 			prompt = p.baseMain + p.module
 		} else {
 			prompt = p.baseMain
@@ -231,7 +236,7 @@ func (p Prompt) render(vimMode bool) (first string, multi string) {
 
 	// Custom provided, use it
 	default:
-		if *p.currentModule != "" {
+		if p.currentModule != "" {
 			prompt = p.customMain + p.module
 		} else {
 			prompt = p.customMain
@@ -248,9 +253,9 @@ func (p Prompt) render(vimMode bool) (first string, multi string) {
 
 	// Set multiline based on input mode
 	multiline := p.multilineEmacs
-	if vimMode {
-		multiline = p.multilineVim
-	}
+	// if vimMode {
+	//         multiline = p.multilineVim
+	// }
 
 	for tok, effect := range p.effects {
 		prompt = strings.Replace(prompt, tok, effect, -1)
@@ -271,8 +276,8 @@ func (p Prompt) render(vimMode bool) (first string, multi string) {
 
 // Refresh prompt
 func refreshPrompt(prompt Prompt, input *readline.Instance) {
-	p, _ := prompt.render(input.IsVimMode())
-	_, m := prompt.render(input.IsVimMode())
+	p, _ := prompt.render()
+	_, m := prompt.render()
 	fmt.Println()
 	fmt.Println(p)
 	input.SetPrompt(m)

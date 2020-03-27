@@ -51,11 +51,11 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 		case consts.StackEvent:
 			data := string(event.Data)
 			current := strings.Split(data, " ")[0]
-			next := strings.Split(data, " ")[1]
+			// next := strings.Split(data, " ")[1]
 			if strings.Join(c.module.Path, "/") == current {
-				args := []string{"stack", "use", next}
-				ExecCmd(args, c.menuContext, c.shellContext)
-				c.hardRefresh()
+				// args := []string{"stack", "use", next}
+				// ExecCmd(args, c.menuContext, c.shellContext)
+				// c.hardRefresh()
 			}
 
 		// MODULE EVENTS --------------------------------------------------------------------------------------
@@ -73,9 +73,9 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 			}
 			// A module is ran, an event has been pushed
 			if event.EventSubType == "run" {
-				if event.ModuleRequestID == c.moduleUserID {
-					fmt.Println(Info + string(event.Data))
-				}
+				// if event.ModuleRequestID == c.moduleUserID {
+				// fmt.Println(Info + string(event.Data))
+				// }
 			}
 
 		// SERVER EVENTS --------------------------------------------------------------------------------------
@@ -86,10 +86,10 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 
 		case consts.JoinedEvent:
 			fmt.Printf("\n"+Info+"%s connected to the server \n", event.Client.User)
-			c.hardRefresh()
+			// c.hardRefresh()
 		case consts.LeftEvent:
 			fmt.Printf("\n"+Info+"%s disconnected from the server \n", event.Client.User)
-			c.hardRefresh()
+			// c.hardRefresh()
 
 		// JOB EVENTS ------------------------------------------------------------------------------------------
 
@@ -99,7 +99,7 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 			if job.Err != "" {
 				fmt.Printf(Info+"Reason: %s) \n", job.Err)
 			}
-			c.hardRefresh()
+			// c.hardRefresh()
 
 		// SESSION EVENTS --------------------------------------------------------------------------------------
 
@@ -107,15 +107,15 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 			ghost := event.Ghost
 			fmt.Printf("\n"+Success+"Session #%d %s - %s (%s) - %s/%s \n",
 				ghost.ID, ghost.Name, ghost.RemoteAddress, ghost.Hostname, ghost.OS, ghost.Arch)
-			c.hardRefresh()
+			// c.hardRefresh()
 
 		case consts.DisconnectedEvent:
 			ghost := event.Ghost
 			fmt.Printf("\n"+Error+"Lost session #%d %s - %s (%s) - %s/%s\n",
 				ghost.ID, ghost.Name, ghost.RemoteAddress, ghost.Hostname, ghost.OS, ghost.Arch)
-			activeGhost := c.CurrentAgent
+			activeGhost := c.Ghost
 			if activeGhost != nil && ghost.ID == activeGhost.ID {
-				c.CurrentAgent = nil
+				c.Ghost = nil
 				fmt.Printf("\n" + Error + "Active Ghost diconnected\n")
 			}
 			fmt.Println()

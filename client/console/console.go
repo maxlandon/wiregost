@@ -20,174 +20,114 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"io"
+	"log"
 	"math/rand"
 	"os"
 	"strings"
 
-	"github.com/chzyer/readline"
-	"github.com/evilsocket/islazy/fs"
+	"github.com/evilsocket/islazy/tui"
+	"github.com/lmorg/readline"
 
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/completers"
+	"github.com/maxlandon/wiregost/client/config"
 	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/client/util"
 	"github.com/maxlandon/wiregost/data-service/models"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
 
-var home, _ = os.UserHomeDir()
-
-// Console - The client Shell object, storing readline, comps, commands, modules and context and so on...
+// Console is the client console object, and stores all client-side state.
 type Console struct {
 	// Shell
-	Shell   *readline.Instance
-	prompt  Prompt
-	mode    string
-	vimMode string
-
-	// Context
-	context     context.Context
-	menuContext string
-
-	currentModule    string
-	module           *clientpb.Module
-	moduleUserID     int32
-	currentWorkspace *models.Workspace
-
-	// Server
-	server *core.WiregostServer
-
-	// Jobs
-	listeners int
-
-	// Agents
-	ghosts              int
-	CurrentAgent        *clientpb.Ghost
-	AgentPwd            string
-	SessionPathComplete bool
-
-	// CommandShellContext
-	shellContext *commands.ShellContext
+	Shell     *readline.Instance     // Console readline
+	prompt    Prompt                 // Prompt string
+	menu      string                 // Menu in which the shell is
+	config    *config.Config         // Shell configuration
+	server    *core.WiregostServer   // Wiregost Server
+	workspace *models.Workspace      // Current workspace
+	dbContext context.Context        // DB context
+	module    *clientpb.Module       // Current module
+	userID    int32                  // Unique user ID for module requests
+	jobs      int                    // Number of jobs
+	ghosts    int                    // Number of agents
+	Ghost     *clientpb.Ghost        // Current implant
+	GhostPwd  string                 // Current implant working directory
+	context   *commands.ShellContext // Passes the shell state to commands
 }
 
 func newConsole() *Console {
 
-	// [ Config ]
-	conf := LoadConsoleConfig()
-	history, _ := fs.Expand(conf.HistoryFile)
-
-	// [ New console ]
 	console := &Console{
-		menuContext:         "main",
-		SessionPathComplete: conf.SessionPathCompletion,
+		Shell:   readline.NewInstance(),
+		menu:    "main",
+		config:  config.LoadConsoleConfig(),
+		userID:  rand.Int31(),
+		module:  &clientpb.Module{}, // Needed even if empty
+		Ghost:   &clientpb.Ghost{},  // Same
+		context: &commands.ShellContext{},
 	}
-
-	// Set ModuleRequestID
-	console.moduleUserID = rand.Int31()
-
-	console.initContext()
-	console.prompt = newPrompt(console, conf.Prompt, conf.ImplantPrompt)
-
-	// [ Console input ]
-	shell, _ := readline.NewEx(&readline.Config{
-		HistoryFile:       history,
-		InterruptPrompt:   "^C",
-		EOFPrompt:         "exit",
-		HistoryLimit:      5000,
-		HistorySearchFold: true,
-	})
-	console.Shell = shell
-
-	// Set keyboard mode
-	if conf.Mode == "vim" {
-		shell.Config.VimMode = true
-	} else if conf.Mode == "emacs" {
-		shell.Config.VimMode = false
-	} else {
-		shell.Config.VimMode = false
-	}
-
-	// Set Wrapper length
-	if conf.Wrap == "large" {
-		util.WrapColumns = 140
-
-	} else if conf.Wrap == "small" {
-		util.WrapColumns = 100
-
-	} else {
-		util.WrapColumns = 140
-	}
-
-	// Set Vim mode
-	console.vimMode = "insert"
-	console.Shell.Config.FuncFilterInputRune = console.filterInput
-
-	// [ Autocompleters ]
-	completer := &completers.AutoCompleter{
-		MenuContext: &console.menuContext,
-		Context:     console.shellContext,
-	}
-	console.Shell.Config.AutoComplete = completer
-
-	// [ Commands ]
-	commands.RegisterCommands()
 
 	return console
 }
 
-// Start - the Shell.
-func Start() {
+// Setup - Set all state for the shell
+func (c *Console) Setup() {
+	// Shell & Context
+	c.initContext()
 
-	// Instantiate console
-	c := newConsole()
+	// Terminal Width
+	if c.config.Wrap == "large" {
+		util.WrapColumns = 140
 
-	// Connect to server
-	config := getDefaultServerConfig()
-	err := c.connect(config)
-
-	if err != nil {
-		fmt.Println(err.Error())
-		fmt.Println()
-		os.Exit(1)
-	} else {
-		go c.eventLoop(c.server)
+	} else if c.config.Wrap == "small" {
+		util.WrapColumns = 100
 	}
 
-	// Eventually close
-	defer c.Shell.Close()
+	// Completers & Hints
+	completer := &completers.AutoCompleter{
+		Context: c.context,
+	}
+	c.Shell.TabCompleter = completer.Do
+	c.Shell.HintText = completer.CommandHint
 
-	// Command loop
+	// Prompt
+	c.prompt = newPrompt(c, c.config.Prompt, c.config.ImplantPrompt)
+
+	// Commands
+	commands.RegisterCommands()
+}
+
+// Start - Start the Shell
+func Start() {
+
+	// Instantiate and setup
+	console := newConsole()
+	console.Setup()
+
+	// Connect to server
+	err := console.connect(getDefaultServerConfig())
+	if err != nil {
+		log.Fatal(tui.Red(err.Error()))
+	} else {
+		go console.eventLoop(console.server)
+	}
+
+	// Input loop
 	for {
-		// Refresh Vim mode each time is needed here
-		c.hardRefresh()
+		// Refresh prompt
+		fmt.Println()
+		console.hardRefresh()
 
-		line, err := c.Shell.Readline()
-		if err == readline.ErrInterrupt {
-			continue
-		} else if err == io.EOF {
-			ex := c.exit()
-			if ex {
-				break
-			}
-			continue
-		}
+		line, err := console.Shell.Readline()
 
+		// To be deleted or modified if we use the flags library
 		line = strings.TrimSpace(line)
 		if len(line) < 1 {
 			continue
 		}
 
 		unfiltered := strings.Split(line, " ")
-
-		// Handle exits
-		if unfiltered[0] == "exit" {
-			ex := c.exit()
-			if ex {
-				break
-			}
-			continue
-		}
 
 		// Sanitize input
 		var args []string
@@ -198,100 +138,35 @@ func Start() {
 		}
 
 		// Exec command
-		if err = ExecCmd(args, c.menuContext, c.shellContext); err != nil {
+		if err = ExecCmd(args, console.menu, console.context); err != nil {
 			fmt.Println(err)
 		}
 
 	}
 }
 
-// [ Generic console functions ] ---------------------------------------------------------------//
-
-// hardRefresh prints a new prompt
+// // hardRefresh prints a new prompt
 func (c *Console) hardRefresh() {
-	// Input
-	if c.mode == "vim" {
-		c.Shell.Config.VimMode = true
-		c.vimMode = "insert"
-	} else if c.mode == "emacs" {
-		c.Shell.Config.VimMode = false
-	}
-
 	// Menu context
-	if c.currentModule != "" {
-		c.menuContext = "module"
+	if len(c.module.Path) != 0 {
+		c.menu = "module"
 	} else {
-		c.menuContext = "main"
+		c.menu = "main"
 	}
-	if c.CurrentAgent.Name != "" {
-		c.menuContext = "agent"
+	if c.Ghost.Name != "" {
+		c.menu = "agent"
 	}
 
 	// Jobs
-	jobs := commands.GetJobs(c.shellContext.Server.RPC)
-	c.listeners = len(jobs.Active)
+	jobs := commands.GetJobs(c.context.Server.RPC)
+	c.jobs = len(jobs.Active)
 
 	// Sessions
-	sessions := commands.GetGhosts(c.shellContext.Server.RPC)
+	sessions := commands.GetGhosts(c.context.Server.RPC)
 	c.ghosts = len(sessions.Ghosts)
 
 	// Prompt
 	refreshPrompt(c.prompt, c.Shell)
-	c.Shell.Refresh()
-}
-
-// softRefresh does not print a new prompt, it simply updates the current one
-func (c *Console) SoftRefresh() {
-	_, m := c.prompt.render(true)
-	c.Shell.SetPrompt(m)
-	c.Shell.Refresh()
-}
-
-func (c *Console) filterInput(r rune) (rune, bool) {
-
-	switch c.Shell.IsVimMode() {
-	// If in Vim mode, apply filters
-	case true:
-		switch c.vimMode {
-		case "insert":
-			switch r {
-			case readline.CharEsc:
-				c.vimMode = "normal"
-				_, m := c.prompt.render(true)
-				c.Shell.SetPrompt(m)
-				c.Shell.Refresh()
-				return r, true
-
-			case readline.CharCtrlL:
-				readline.ClearScreen(c.Shell)
-				c.Shell.Refresh()
-				c.hardRefresh()
-				return r, false
-			}
-		case "normal":
-			switch r {
-			case 'i', 'I', 'a', 'A', 's', 'S', 'c':
-				c.vimMode = "insert"
-				_, p := c.prompt.render(true)
-				c.Shell.SetPrompt(p)
-				c.Shell.Refresh()
-				return r, true
-
-			case readline.CharCtrlL:
-				readline.ClearScreen(c.Shell)
-				c.Shell.Refresh()
-				c.hardRefresh()
-				return r, true
-			}
-		}
-		return r, true
-
-	// If in Emacs, no filters needed
-	case false:
-		return r, true
-	}
-
-	return r, true
 }
 
 func (c *Console) exit() bool {
@@ -302,7 +177,7 @@ func (c *Console) exit() bool {
 	answer := strings.TrimSpace(text)
 
 	if (answer == "Y") || (answer == "y") {
-		c.Shell.Close()
+		os.Exit(0)
 		return true
 	}
 	return false

@@ -55,15 +55,14 @@ func (c *Console) connect(config *assets.ClientConfig) error {
 	}
 	fmt.Printf(Success+"Connected to Wiregost server at %s:%d, as user %s%s%s",
 		config.LHost, config.LPort, tui.YELLOW, config.User, tui.RESET)
-	fmt.Println()
 
 	// Bind connection to server object in console
 	c.server = core.BindWiregostServer(send, recv)
 	go c.server.ResponseMapper()
 
 	// Actualize shell context with server
-	c.shellContext.Server = c.server
-	c.shellContext.Server.Config = config
+	c.context.Server = c.server
+	c.context.Server.Config = config
 
 	return nil
 }

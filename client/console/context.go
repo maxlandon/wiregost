@@ -21,13 +21,15 @@ import (
 	"fmt"
 
 	"github.com/evilsocket/islazy/tui"
-
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/data-service/remote"
-	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
 
+// initContext - Shares the console state to commands
 func (c *Console) initContext() {
+
+	// Console Context --------------------------------------------------
+
 	// Workspace
 	workspaces, err := remote.Workspaces(nil)
 	if err != nil {
@@ -35,45 +37,28 @@ func (c *Console) initContext() {
 	}
 	for i := range workspaces {
 		if workspaces[i].IsDefault {
-			c.currentWorkspace = &workspaces[i]
+			c.workspace = &workspaces[i]
 		}
 	}
 
 	// Data Service
 	rootCtx := context.Background()
-	c.context = context.WithValue(rootCtx, "workspace_id", c.currentWorkspace.ID)
+	c.dbContext = context.WithValue(rootCtx, "workspace_id", c.workspace.ID)
 
-	// Current module
-	c.currentModule = ""
-	c.module = &clientpb.Module{}
+	// Share Context --------------------------------------------------
 
-	// Agent
-
-	c.CurrentAgent = &clientpb.Ghost{}
-
-	// Set ShellContext struct, passed to all commands
-	c.shellContext = &commands.ShellContext{
-		// Context
-		Shell:            c.Shell,
-		Context:          c.context,
-		MenuContext:      &c.menuContext,
-		Mode:             &c.mode,
-		CurrentModule:    &c.currentModule,
-		ModuleUserID:     &c.moduleUserID,
-		Module:           c.module,
-		CurrentWorkspace: c.currentWorkspace,
-
-		// Server state
-		Server: c.server,
-
-		// Jobs
-		Listeners: &c.listeners,
-
-		// Agents
-		Ghosts: &c.ghosts,
-		// Keep for prompt, until not needed anymore
-		CurrentAgent:        c.CurrentAgent,
-		AgentPwd:            &c.AgentPwd,
-		SessionPathComplete: c.SessionPathComplete,
+	c.context = &commands.ShellContext{
+		Shell:     c.Shell,
+		Config:    c.config,
+		DBContext: c.dbContext,
+		Menu:      &c.menu,
+		Module:    c.module,
+		UserID:    c.userID,
+		Workspace: c.workspace,
+		Server:    c.server,
+		Jobs:      &c.jobs,
+		Ghosts:    &c.ghosts,
+		Ghost:     c.Ghost,
+		GhostPwd:  &c.GhostPwd,
 	}
 }

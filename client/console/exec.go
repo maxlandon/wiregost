@@ -34,7 +34,7 @@ func ExecCmd(args []string, menu string, shellContext *commands.ShellContext) er
 		return command.Handle(commands.NewRequest(command, args[1:], shellContext))
 	}
 	fmt.Println()
-	fmt.Printf(CommandError+"%s%s%s is not a valid command. \n", tui.YELLOW, args[0], tui.RESET)
+	fmt.Printf(CommandError+"%s%s%s is not a valid command.", tui.YELLOW, args[0], tui.RESET)
 
 	return nil
 }
