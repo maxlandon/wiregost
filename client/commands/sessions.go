@@ -35,11 +35,11 @@ func registerSessionCommands() {
 
 	sessions := &Command{
 		Name: "sessions",
-		SubCommands: []string{
-			"interact",
-			"kill",
-			"kill-all",
-		},
+		// SubCommands: []string{
+		//         "interact",
+		//         "kill",
+		//         "kill-all",
+		// },
 		Handle: func(r *Request) error {
 			switch length := len(r.Args); {
 			case length == 0:
@@ -89,7 +89,7 @@ func registerSessionCommands() {
 		Name: "background",
 		Handle: func(r *Request) error {
 			fmt.Println()
-			*r.context.CurrentAgent = clientpb.Ghost{}
+			*r.context.Ghost = clientpb.Ghost{}
 			fmt.Printf(Info + " Background ...\n")
 			return nil
 		},
@@ -162,7 +162,7 @@ func killAllSessions(ctx ShellContext, rpc RPCServer) {
 			Data: data,
 		}, 5*time.Second)
 
-		fmt.Printf(Info+"Killed %s (%d)\n", ctx.CurrentAgent.Name, ctx.CurrentAgent.ID)
+		fmt.Printf(Info+"Killed %s (%d)\n", ctx.Ghost.Name, ctx.Ghost.ID)
 	}
 }
 
@@ -246,8 +246,8 @@ func interactGhost(name string, ctx ShellContext, rpc RPCServer) {
 			fmt.Printf(Warn+"Unmarshaling envelope error: %v\n", err)
 			return
 		}
-		*ctx.CurrentAgent = *ghost
-		*ctx.AgentPwd = pwd.Path
+		*ctx.Ghost = *ghost
+		*ctx.GhostPwd = pwd.Path
 
 	} else {
 		fmt.Printf(Error+"Invalid ghost name or session number: %s", name)

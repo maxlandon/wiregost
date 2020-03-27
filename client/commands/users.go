@@ -33,15 +33,15 @@ func registerUserCommands() {
 
 	users := &Command{
 		Name: "user",
-		SubCommands: []string{
-			"add",
-			"delete",
-		},
-		Args: []*CommandArg{
-			&CommandArg{Name: "name", Type: "string"},
-			&CommandArg{Name: "lhost", Type: "string"},
-			&CommandArg{Name: "lport", Type: "uint"},
-			&CommandArg{Name: "default", Type: "boolean"},
+		// SubCommands: []string{
+		//         "add",
+		//         "delete",
+		// },
+		Args: []*Arg{
+			&Arg{Name: "name", Type: "string"},
+			&Arg{Name: "lhost", Type: "string"},
+			&Arg{Name: "lport", Type: "uint"},
+			&Arg{Name: "default", Type: "boolean"},
 		},
 		Handle: func(r *Request) error {
 			switch length := len(r.Args); {

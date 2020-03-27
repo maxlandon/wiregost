@@ -39,10 +39,10 @@ func registerProcCommands() {
 
 	ps := &Command{
 		Name: "ps",
-		Args: []*CommandArg{
-			&CommandArg{Name: "owner", Type: "string"},
-			&CommandArg{Name: "pid", Type: "string"},
-			&CommandArg{Name: "exe", Type: "boolean"},
+		Args: []*Arg{
+			&Arg{Name: "owner", Type: "string"},
+			&Arg{Name: "pid", Type: "string"},
+			&Arg{Name: "exe", Type: "boolean"},
 		},
 		Handle: func(r *Request) error {
 			fmt.Println()
@@ -54,10 +54,10 @@ func registerProcCommands() {
 
 	procdump := &Command{
 		Name: "procdump",
-		Args: []*CommandArg{
-			&CommandArg{Name: "proc", Type: "string"},
-			&CommandArg{Name: "pid", Type: "string"},
-			&CommandArg{Name: "timeout", Type: "int"},
+		Args: []*Arg{
+			&Arg{Name: "proc", Type: "string"},
+			&Arg{Name: "pid", Type: "string"},
+			&Arg{Name: "timeout", Type: "int"},
 		},
 		Handle: func(r *Request) error {
 			fmt.Println()
@@ -110,7 +110,7 @@ func ps(args []string, ctx ShellContext, rpc RPCServer) {
 		exeFilter = exe.(string)
 	}
 
-	data, _ := proto.Marshal(&ghostpb.PsReq{GhostID: ctx.CurrentAgent.ID})
+	data, _ := proto.Marshal(&ghostpb.PsReq{GhostID: ctx.Ghost.ID})
 	resp := <-rpc(&ghostpb.Envelope{
 		Type: ghostpb.MsgPsReq,
 		Data: data,
@@ -183,7 +183,7 @@ func printProcInfo(table *tabwriter.Writer, ctx ShellContext, proc *ghostpb.Proc
 	if modifyColor, ok := knownProcs[proc.Executable]; ok {
 		color = modifyColor
 	}
-	if ctx.CurrentAgent.Name != "" && proc.Pid == ctx.CurrentAgent.PID {
+	if ctx.Ghost.Name != "" && proc.Pid == ctx.Ghost.PID {
 		color = tui.GREEN
 	}
 	fmt.Fprintf(table, "%d\t%d\t%s\t%s\t\n", proc.Pid, proc.Ppid, proc.Executable, proc.Owner)
@@ -232,7 +232,7 @@ func procdump(args []string, ctx ShellContext, rpc RPCServer) {
 	ctrl := make(chan bool)
 	go spin.Until("Dumping remote process memory ...", ctrl)
 	data, _ := proto.Marshal(&ghostpb.ProcessDumpReq{
-		GhostID: ctx.CurrentAgent.ID,
+		GhostID: ctx.Ghost.ID,
 		Pid:     int32(pid),
 		Timeout: int32(timeout),
 	})
@@ -250,7 +250,7 @@ func procdump(args []string, ctx ShellContext, rpc RPCServer) {
 		return
 	}
 
-	hostname := ctx.CurrentAgent.Hostname
+	hostname := ctx.Ghost.Hostname
 	temp := path.Base(fmt.Sprintf("procdump_%s_%d_*", hostname, pid))
 	f, err := ioutil.TempFile("", temp)
 	if err != nil {
@@ -274,7 +274,7 @@ func terminate(args []string, ctx ShellContext, rpc RPCServer) {
 		return
 	}
 	data, _ := proto.Marshal(&ghostpb.TerminateReq{
-		GhostID: ctx.CurrentAgent.ID,
+		GhostID: ctx.Ghost.ID,
 		Pid:     int32(pid),
 	})
 	resp := <-rpc(&ghostpb.Envelope{
@@ -295,7 +295,7 @@ func terminate(args []string, ctx ShellContext, rpc RPCServer) {
 }
 
 func getPIDByName(name string, ctx ShellContext, rpc RPCServer) int {
-	data, _ := proto.Marshal(&ghostpb.PsReq{GhostID: ctx.CurrentAgent.ID})
+	data, _ := proto.Marshal(&ghostpb.PsReq{GhostID: ctx.Ghost.ID})
 	resp := <-rpc(&ghostpb.Envelope{
 		Type: ghostpb.MsgPsReq,
 		Data: data,
@@ -328,7 +328,7 @@ func migrate(args []string, ctx ShellContext, rpc RPCServer) {
 	data, _ := proto.Marshal(&clientpb.MigrateReq{
 		Pid:     uint32(pid),
 		Config:  config,
-		GhostID: ctx.CurrentAgent.ID,
+		GhostID: ctx.Ghost.ID,
 	})
 	resp := <-rpc(&ghostpb.Envelope{
 		Type: clientpb.MsgMigrate,

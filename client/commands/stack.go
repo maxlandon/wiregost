@@ -33,10 +33,10 @@ func registerStackCommands() {
 
 	stack := &Command{
 		Name: "stack",
-		SubCommands: []string{
-			"use",
-			"pop",
-		},
+		// SubCommands: []string{
+		//         "use",
+		//         "pop",
+		// },
 		Handle: func(r *Request) error {
 			switch length := len(r.Args); {
 			case length == 0:
@@ -52,7 +52,7 @@ func registerStackCommands() {
 					}
 				case "pop":
 					if len(r.Args) == 1 {
-						stackPop(*r.context, *r.context.CurrentModule, false, r.context.Server.RPC)
+						stackPop(*r.context, strings.Join(r.context.Module.Path, "/"), false, r.context.Server.RPC)
 					}
 					if len(r.Args) >= 2 {
 						switch r.Args[1] {
@@ -81,9 +81,9 @@ func stackUse(ctx ShellContext, module string, rpc RPCServer) {
 	mod, _ := proto.Marshal(&clientpb.StackReq{
 		Path:         strings.Split(module, "/"),
 		Action:       "use",
-		WorkspaceID:  uint32(ctx.CurrentWorkspace.ID),
+		WorkspaceID:  uint32(ctx.Workspace.ID),
 		User:         ctx.Server.Config.User,
-		ModuleUserID: *ctx.ModuleUserID,
+		ModuleUserID: ctx.UserID,
 	})
 
 	resp := <-rpc(&ghostpb.Envelope{
@@ -104,13 +104,13 @@ func stackUse(ctx ShellContext, module string, rpc RPCServer) {
 	}
 
 	*ctx.Module = *stack.Modules[0]
-	*ctx.CurrentModule = strings.Join(ctx.Module.Path, "/")
+	// *ctx.CurrentModule = strings.Join(ctx.Module.Path, "/")
 }
 
 func stackList(ctx ShellContext, rpc RPCServer) {
 	stack, _ := proto.Marshal(&clientpb.StackReq{
 		Action:      "list",
-		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		WorkspaceID: uint32(ctx.Workspace.ID),
 		User:        ctx.Server.Config.User,
 	})
 
@@ -149,7 +149,7 @@ func stackList(ctx ShellContext, rpc RPCServer) {
 	for _, p := range list {
 		for _, m := range stackList.Modules {
 			if strings.Join(m.Path, "/") == p {
-				if strings.Join(m.Path, "/") == *ctx.CurrentModule {
+				if strings.Join(m.Path, "/") == strings.Join(ctx.Module.Path, "/") {
 					table.Rich([]string{m.Type, strings.Join(m.Path[1:], "/")},
 						[]tablewriter.Colors{tablewriter.Colors{tablewriter.Normal, tablewriter.FgBlueColor},
 							tablewriter.Colors{tablewriter.Normal, tablewriter.FgBlueColor},
@@ -168,7 +168,7 @@ func stackPop(ctx ShellContext, module string, all bool, rpc RPCServer) {
 	mod, _ := proto.Marshal(&clientpb.StackReq{
 		Path:        strings.Split(module, "/"),
 		All:         all,
-		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		WorkspaceID: uint32(ctx.Workspace.ID),
 		User:        ctx.Server.Config.User,
 	})
 
@@ -190,19 +190,19 @@ func stackPop(ctx ShellContext, module string, all bool, rpc RPCServer) {
 	}
 
 	if all {
-		*ctx.CurrentModule = ""
+		// *ctx.entModule = ""
 		ctx.Module = nil
 		return
 	}
 
 	if (stack.Path != nil) && (len(stack.Path) != 0) {
-		*ctx.CurrentModule = strings.Join(stack.Path, "/")
+		// *ctx.CurrentModule = strings.Join(stack.Path, "/")
 		*ctx.Module = *stack.Modules[0]
 		return
 	}
 
 	if len(stack.Path) == 0 {
-		*ctx.CurrentModule = ""
+		// *ctx.CurrentModule = ""
 		ctx.Module = nil
 	}
 }

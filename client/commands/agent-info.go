@@ -94,8 +94,8 @@ func registerAgentInfoCommands() {
 func info(args []string, ctx ShellContext, rpc RPCServer) {
 
 	var ghost *clientpb.Ghost
-	if ctx.CurrentAgent.Name != "" {
-		ghost = ctx.CurrentAgent
+	if ctx.Ghost.Name != "" {
+		ghost = ctx.Ghost
 	} else if 0 < len(args) {
 		ghost = getGhost(args[0], rpc)
 	}
@@ -123,47 +123,47 @@ func info(args []string, ctx ShellContext, rpc RPCServer) {
 }
 
 func ping(ctx ShellContext, rpc RPCServer) {
-	if ctx.CurrentAgent.Name == "" {
+	if ctx.Ghost.Name == "" {
 		fmt.Printf(Warn + "Please select an active Ghost implant via `interact`\n")
 		return
 	}
 }
 
 func getPID(ctx ShellContext, rpc RPCServer) {
-	if ctx.CurrentAgent.Name == "" {
+	if ctx.Ghost.Name == "" {
 		fmt.Printf(Warn + "Please select an active Ghost implant via `interact`\n")
 		return
 	}
-	fmt.Printf("%d\n", ctx.CurrentAgent.PID)
+	fmt.Printf("%d\n", ctx.Ghost.PID)
 }
 
 func getUID(ctx ShellContext, rpc RPCServer) {
-	if ctx.CurrentAgent.Name == "" {
+	if ctx.Ghost.Name == "" {
 		fmt.Printf(Warn + "Please select an active Ghost implant via `interact`\n")
 		return
 	}
-	fmt.Printf("%s\n", ctx.CurrentAgent.UID)
+	fmt.Printf("%s\n", ctx.Ghost.UID)
 }
 
 func getGID(ctx ShellContext, rpc RPCServer) {
-	if ctx.CurrentAgent.Name == "" {
+	if ctx.Ghost.Name == "" {
 		fmt.Printf(Warn + "Please select an active Ghost implant via `interact`\n")
 		return
 	}
-	fmt.Printf("%s\n", ctx.CurrentAgent.GID)
+	fmt.Printf("%s\n", ctx.Ghost.GID)
 }
 
 func whoami(ctx ShellContext, rpc RPCServer) {
-	if ctx.CurrentAgent.Name == "" {
+	if ctx.Ghost.Name == "" {
 		fmt.Printf(Warn + "Please select an active Ghost implant via `interact`\n")
 		return
 	}
-	fmt.Printf("%s\n", ctx.CurrentAgent.Username)
+	fmt.Printf("%s\n", ctx.Ghost.Username)
 }
 
 func ifconfig(ctx ShellContext, rpc RPCServer) {
 
-	data, _ := proto.Marshal(&ghostpb.IfconfigReq{GhostID: ctx.CurrentAgent.ID})
+	data, _ := proto.Marshal(&ghostpb.IfconfigReq{GhostID: ctx.Ghost.ID})
 	resp := <-rpc(&ghostpb.Envelope{
 		Type: ghostpb.MsgIfconfigReq,
 		Data: data,

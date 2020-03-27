@@ -36,9 +36,9 @@ func registerServerCommands() {
 
 	server := &Command{
 		Name: "server",
-		SubCommands: []string{
-			"connect",
-		},
+		// SubCommands: []string{
+		//         "connect",
+		// },
 		Handle: func(r *Request) error {
 			switch length := len(r.Args); {
 			case length == 0:

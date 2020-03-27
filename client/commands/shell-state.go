@@ -26,7 +26,7 @@ import (
 )
 
 // ShellContext - Passes client shell variable pointers to command for read/write access
-type ShellContext struct {
+type ShellContextBis struct {
 	// Shell
 	Shell       *readline.Instance
 	Context     context.Context

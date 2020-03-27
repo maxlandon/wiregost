@@ -47,15 +47,15 @@ func registerFileSystemCommands() {
 			}
 
 			path := r.Args[0]
-			if (path == "~" || path == "~/") && r.context.CurrentAgent.OS == "linux" {
-				path = filepath.Join("/home", r.context.CurrentAgent.Username)
+			if (path == "~" || path == "~/") && r.context.Ghost.OS == "linux" {
+				path = filepath.Join("/home", r.context.Ghost.Username)
 			}
 			if strings.HasPrefix(path, "~") {
-				path = filepath.Join("/home", r.context.CurrentAgent.Username, strings.TrimPrefix(path, "~"))
+				path = filepath.Join("/home", r.context.Ghost.Username, strings.TrimPrefix(path, "~"))
 			}
 
 			data, _ := proto.Marshal(&ghostpb.LsReq{
-				GhostID: r.context.CurrentAgent.ID,
+				GhostID: r.context.Ghost.ID,
 				Path:    path,
 			})
 			resp := <-rpc(&ghostpb.Envelope{
@@ -90,12 +90,12 @@ func registerFileSystemCommands() {
 			}
 
 			path := r.Args[0]
-			if (path == "~" || path == "~/") && r.context.CurrentAgent.OS == "linux" {
-				path = filepath.Join("/home", r.context.CurrentAgent.Username)
+			if (path == "~" || path == "~/") && r.context.Ghost.OS == "linux" {
+				path = filepath.Join("/home", r.context.Ghost.Username)
 			}
 
 			data, _ := proto.Marshal(&ghostpb.CdReq{
-				GhostID: r.context.CurrentAgent.ID,
+				GhostID: r.context.Ghost.ID,
 				Path:    path,
 			})
 			resp := <-rpc(&ghostpb.Envelope{
@@ -116,7 +116,7 @@ func registerFileSystemCommands() {
 			fmt.Printf(Info+"%s\n", pwd.Path)
 
 			// Update prompt
-			*r.context.AgentPwd = pwd.Path
+			*r.context.GhostPwd = pwd.Path
 			return nil
 		},
 	}
@@ -133,7 +133,7 @@ func registerFileSystemCommands() {
 			}
 
 			data, _ := proto.Marshal(&ghostpb.RmReq{
-				GhostID: r.context.CurrentAgent.ID,
+				GhostID: r.context.Ghost.ID,
 				Path:    r.Args[0],
 			})
 			resp := <-rpc(&ghostpb.Envelope{
@@ -173,7 +173,7 @@ func registerFileSystemCommands() {
 			}
 
 			data, _ := proto.Marshal(&ghostpb.MkdirReq{
-				GhostID: r.context.CurrentAgent.ID,
+				GhostID: r.context.Ghost.ID,
 				Path:    r.Args[0],
 			})
 			resp := <-rpc(&ghostpb.Envelope{
@@ -207,7 +207,7 @@ func registerFileSystemCommands() {
 			fmt.Println(tui.RESET)
 			rpc := r.context.Server.RPC
 			data, _ := proto.Marshal(&ghostpb.PwdReq{
-				GhostID: r.context.CurrentAgent.ID,
+				GhostID: r.context.Ghost.ID,
 			})
 			resp := <-rpc(&ghostpb.Envelope{
 				Type: ghostpb.MsgPwdReq,
@@ -242,7 +242,7 @@ func registerFileSystemCommands() {
 			}
 
 			data, _ := proto.Marshal(&ghostpb.DownloadReq{
-				GhostID: r.context.CurrentAgent.ID,
+				GhostID: r.context.Ghost.ID,
 				Path:    r.Args[0],
 			})
 			resp := <-rpc(&ghostpb.Envelope{
@@ -300,7 +300,7 @@ func registerFileSystemCommands() {
 			ctrl := make(chan bool)
 			go spin.Until(fmt.Sprintf("%s -> %s", fileName, dst), ctrl)
 			data, _ := proto.Marshal(&ghostpb.DownloadReq{
-				GhostID: r.context.CurrentAgent.ID,
+				GhostID: r.context.Ghost.ID,
 				Path:    r.Args[0],
 			})
 			resp := <-rpc(&ghostpb.Envelope{
@@ -366,7 +366,7 @@ func registerFileSystemCommands() {
 			ctrl := make(chan bool)
 			go spin.Until(fmt.Sprintf("%s -> %s", src, dst), ctrl)
 			data, _ := proto.Marshal(&ghostpb.UploadReq{
-				GhostID: r.context.CurrentAgent.ID,
+				GhostID: r.context.Ghost.ID,
 				Path:    dst,
 				Data:    uploadGzip.Bytes(),
 				Encoder: "gzip",

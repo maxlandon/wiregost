@@ -29,7 +29,7 @@ func registerNmapCommands() {
 	AddCommand("module", nmap)
 
 	dbNmap := &Command{
-		Name: "nmap",
+		Name: "db_nmap",
 		Handle: func(r *Request) error {
 			return nil
 		},

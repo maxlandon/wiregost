@@ -32,10 +32,10 @@ func registerJobCommands() {
 
 	jobs := &Command{
 		Name: "jobs",
-		SubCommands: []string{
-			"kill",
-			"kill-all",
-		},
+		// SubCommands: []string{
+		//         "kill",
+		//         "kill-all",
+		// },
 		Handle: func(r *Request) error {
 			if len(r.Args) == 0 {
 				fmt.Println()

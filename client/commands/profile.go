@@ -32,9 +32,9 @@ func registerProfileCommands() {
 
 	profiles := &Command{
 		Name: "profiles",
-		SubCommands: []string{
-			"delete",
-		},
+		// SubCommands: []string{
+		//         "delete",
+		// },
 		Handle: func(r *Request) error {
 			switch length := len(r.Args); {
 			case length == 0:

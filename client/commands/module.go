@@ -164,9 +164,9 @@ func setOption(args []string, ctx ShellContext, rpc RPCServer) {
 	}
 
 	opt, _ := proto.Marshal(&clientpb.SetOptionReq{
-		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		WorkspaceID: uint32(ctx.Workspace.ID),
 		User:        ctx.Server.Config.User,
-		Path:        strings.Split(*ctx.CurrentModule, "/"),
+		Path:        ctx.Module.Path,
 		Name:        name,
 		Value:       args[1],
 	})
@@ -232,7 +232,7 @@ func runModule(action string, ctx ShellContext, rpc RPCServer) {
 	m := ctx.Module
 
 	run, _ := proto.Marshal(&clientpb.ModuleActionReq{
-		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		WorkspaceID: uint32(ctx.Workspace.ID),
 		User:        ctx.Server.Config.User,
 		Path:        m.Path,
 		Action:      action,
@@ -263,7 +263,7 @@ func parseProfile(profile string, ctx ShellContext, rpc RPCServer) {
 	m := ctx.Module
 
 	run, _ := proto.Marshal(&clientpb.ModuleActionReq{
-		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		WorkspaceID: uint32(ctx.Workspace.ID),
 		User:        ctx.Server.Config.User,
 		Path:        m.Path,
 		Action:      "parse_profile",
@@ -296,7 +296,7 @@ func toProfile(profile string, ctx ShellContext, rpc RPCServer) {
 	m := ctx.Module
 
 	run, _ := proto.Marshal(&clientpb.ModuleActionReq{
-		WorkspaceID: uint32(ctx.CurrentWorkspace.ID),
+		WorkspaceID: uint32(ctx.Workspace.ID),
 		User:        ctx.Server.Config.User,
 		Path:        m.Path,
 		Action:      "to_profile",
@@ -324,6 +324,6 @@ func toProfile(profile string, ctx ShellContext, rpc RPCServer) {
 }
 
 func backToMainMenu(ctx ShellContext) {
-	*ctx.CurrentModule = ""
+	// *ctx.CurrentModule = ""
 	ctx.Module = nil
 }

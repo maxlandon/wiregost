@@ -37,54 +37,55 @@ func registerHostCommands() {
 	// Declare all commands, subcommands and arguments
 	hosts := &Command{
 		Name: "hosts",
-		SubCommands: []string{
-			"search",
-			"add",
-			"update",
-			"delete",
-		},
-		Args: []*CommandArg{
-			&CommandArg{Name: "host-id", Type: "uint"},
-			&CommandArg{Name: "addresses", Type: "string"},
-			&CommandArg{Name: "hostnames", Type: "string"},
-			&CommandArg{Name: "os-name", Type: "string"},
-			&CommandArg{Name: "os-family", Type: "string"},
-			&CommandArg{Name: "os-flavor", Type: "string"},
-			&CommandArg{Name: "os-sp", Type: "string"},
-			&CommandArg{Name: "arch", Type: "string"},
-			&CommandArg{Name: "name", Type: "string"},
-			&CommandArg{Name: "info", Type: "string"},
-			&CommandArg{Name: "comment", Type: "string"},
-			&CommandArg{Name: "up", Type: "boolean"},
+		Help: "Manage database hosts (search/add/update/delete)",
+		// SubCommands: []string{
+		//         "search",
+		//         "add",
+		//         "update",
+		//         "delete",
+		// },
+		Args: []*Arg{
+			&Arg{Name: "host-id", Type: "uint"},
+			&Arg{Name: "addresses", Type: "string"},
+			&Arg{Name: "hostnames", Type: "string"},
+			&Arg{Name: "os-name", Type: "string"},
+			&Arg{Name: "os-family", Type: "string"},
+			&Arg{Name: "os-flavor", Type: "string"},
+			&Arg{Name: "os-sp", Type: "string"},
+			&Arg{Name: "arch", Type: "string"},
+			&Arg{Name: "name", Type: "string"},
+			&Arg{Name: "info", Type: "string"},
+			&Arg{Name: "comment", Type: "string"},
+			&Arg{Name: "up", Type: "boolean"},
 		},
 		Handle: func(r *Request) error {
 			switch length := len(r.Args); {
 			// No arguments: Print hosts
 			case length == 0:
 				fmt.Println()
-				hosts(&r.context.Context, nil)
+				hosts(&r.context.DBContext, nil)
 			// Arguments: commands entered
 			case length >= 1:
 				switch r.Args[0] {
 				case "search":
 					fmt.Println()
-					hosts(&r.context.Context, r.Args[1:])
+					hosts(&r.context.DBContext, r.Args[1:])
 				case "add":
 					fmt.Println()
-					addHost(&r.context.Context, r.Args[1:])
+					addHost(&r.context.DBContext, r.Args[1:])
 					fmt.Println()
 				case "delete":
 					fmt.Println()
-					deleteHosts(&r.context.Context, r.Args[1:])
+					deleteHosts(&r.context.DBContext, r.Args[1:])
 					fmt.Println()
 				case "update":
 					fmt.Println()
-					updateHost(&r.context.Context, r.Args[1:])
+					updateHost(&r.context.DBContext, r.Args[1:])
 					fmt.Println()
 				// No actions were asked for, list hosts with filters
 				default:
 					fmt.Println()
-					hosts(&r.context.Context, r.Args)
+					hosts(&r.context.DBContext, r.Args)
 				}
 
 			}

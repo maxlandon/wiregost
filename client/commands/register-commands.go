@@ -28,44 +28,44 @@ func RegisterCommands() {
 
 	// Core
 	registerCoreCommands()
-	registerHelpCommands()
-	registerUserCommands()
+	// registerHelpCommands()
+	// registerUserCommands()
 
 	// Server
-	registerServerCommands()
+	// registerServerCommands()
 
 	// Data Service
 	registerWorkspaceCommands()
-	registerHostCommands()
+	// registerHostCommands()
 
 	// Stack
-	registerStackCommands()
+	// registerStackCommands()
 
 	// Module
-	registerModuleCommands()
+	// registerModuleCommands()
 
 	// Jobs
-	registerJobCommands()
+	// registerJobCommands()
 
 	// Profiles
-	registerProfileCommands()
+	// registerProfileCommands()
 
 	// Builds & Canaries
-	registerGhostBuildsCommands()
+	// registerGhostBuildsCommands()
 
 	// Sessions
-	registerSessionCommands()
+	// registerSessionCommands()
 
 	// Ghosts
-	registerAgentHelpCommands()
-	registerFileSystemCommands()
-	registerAgentInfoCommands()
-	registerPrivCommands()
-	registerProcCommands()
-	registerExecuteCommands()
+	// registerAgentHelpCommands()
+	// registerFileSystemCommands()
+	// registerAgentInfoCommands()
+	// registerPrivCommands()
+	// registerProcCommands()
+	// registerExecuteCommands()
 
 	// Nmap
-	registerNmapCommands()
+	// registerNmapCommands()
 }
 
 var (

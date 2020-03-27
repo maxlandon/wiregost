@@ -34,13 +34,19 @@ type RPCServer func(*ghostpb.Envelope, time.Duration) chan *ghostpb.Envelope
 type Command struct {
 	Name        string
 	Help        string
-	SubCommands []string
-	Args        []*CommandArg
+	SubCommands []*SubCommand
+	Args        []*Arg
 	Handle      func(*Request) error
 }
 
-// CommandArg is an argument to a command/subcommand, like host-id when searching for hosts
-type CommandArg struct {
+type SubCommand struct {
+	Name string
+	Help string
+	Args []*Arg
+}
+
+// Arg is an argument to a command/subcommand, like host-id when searching for hosts
+type Arg struct {
 	Name        string
 	Type        string
 	Description string

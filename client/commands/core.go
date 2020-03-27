@@ -20,14 +20,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"path"
-	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/evilsocket/islazy/fs"
 	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/help"
 	"github.com/maxlandon/wiregost/client/util"
 )
@@ -38,19 +34,18 @@ func registerCoreCommands() {
 
 	shell := &Command{
 		Name: "!",
+		Help: "(Core) Use the operating system shell through Wiregost",
 		Handle: func(r *Request) error {
 			switch length := len(r.Args); {
 			case length == 0:
-				fmt.Println()
 				fmt.Printf(help.GetHelpFor("!"))
-				fmt.Println()
 			default:
 				fmt.Println()
 				out, err := util.Shell(r.Args[0:])
 				if err != nil {
 					fmt.Printf(CommandError, "%s", err)
 				} else {
-					fmt.Printf("%s%s\n", tui.RESET, out)
+					fmt.Printf("%s%s", tui.RESET, out)
 				}
 			}
 			return nil
@@ -61,18 +56,16 @@ func registerCoreCommands() {
 	AddCommand("main", shell)
 	AddCommand("module", shell)
 	AddCommand("ghost", shell)
-	AddCommand("compiler", shell)
 
 	// Change directory ------------------------------------------------------------------------------//
 
 	cd := &Command{
 		Name: "cd",
+		Help: "(Core) Change the client console working directory",
 		Handle: func(r *Request) error {
 			switch length := len(r.Args); {
 			case length == 0:
-				fmt.Println()
-				fmt.Printf("\n" + help.GetHelpFor("cd") + "\n")
-				fmt.Println()
+				fmt.Printf("\n" + help.GetHelpFor("cd"))
 			default:
 				fmt.Println()
 				dir, err := fs.Expand(r.Args[0])
@@ -80,7 +73,7 @@ func registerCoreCommands() {
 				if err != nil {
 					fmt.Printf(CommandError+"%s", err)
 				} else {
-					fmt.Printf(Info+"Changed directory to %s\n", dir)
+					fmt.Printf(Info+"Changed directory to %s", dir)
 				}
 			}
 			return nil
@@ -91,186 +84,208 @@ func registerCoreCommands() {
 	AddCommand("main", cd)
 	AddCommand("module", cd)
 	AddCommand("ghost", cd)
-	AddCommand("compiler", cd)
+
+	exit := &Command{
+		Name: "exit",
+		Help: "(Core) Exit the Wiregost console",
+		Handle: func(r *Request) error {
+
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Print("Confirm exit (Y/y): ")
+			text, _ := reader.ReadString('\n')
+			answer := strings.TrimSpace(text)
+
+			if (answer == "Y") || (answer == "y") {
+				os.Exit(0)
+				return nil
+			}
+			return nil
+		},
+	}
+
+	// Add exit command
+	AddCommand("main", exit)
+	AddCommand("module", exit)
+	AddCommand("ghost", exit)
 
 	// Resource file ------------------------------------------------------------------------------//
 
-	resource := &Command{
-		Name: "resource",
-		SubCommands: []string{
-			"make",
-			"load",
-		},
-		Args: []*CommandArg{
-			&CommandArg{Name: "filename", Type: "string"},
-			&CommandArg{Name: "length", Type: "int"},
-		},
-		Handle: func(r *Request) error {
-			switch length := len(r.Args); {
-			case length == 0:
-				fmt.Println()
-				fmt.Printf(help.GetHelpFor("resource"))
+	// resource := &Command{
+	//         Name: "resource",
+	//         SubCommands: []string{
+	//                 "make",
+	//                 "load",
+	//         },
+	//         Args: []*CommandArg{
+	//                 &CommandArg{Name: "filename", Type: "string"},
+	//                 &CommandArg{Name: "length", Type: "int"},
+	//         },
+	//         Handle: func(r *Request) error {
+	//                 switch length := len(r.Args); {
+	//                 case length == 0:
+	//                         fmt.Println()
+	//                         fmt.Printf(help.GetHelpFor("resource"))
+	//
+	//                 // Arguments: commands entered
+	//                 case length >= 1:
+	//                         fmt.Println()
+	//                         switch r.Args[0] {
+	//                         // Make a resource file --------------------------------------------------------------------------------------//
+	//                         case "make":
+	//                                 if len(r.Args) < 3 {
+	//                                         fmt.Printf(Warn + "Missing some parameters (type 'resource' for help)")
+	//                                         fmt.Println()
+	//                                         return nil
+	//                                 }
+	//                                 var filename string
+	//                                 var length int
+	//                                 for _, arg := range r.Args[1:] {
+	//                                         if strings.Contains(arg, "filename") {
+	//                                                 filename = strings.Split(arg, "=")[1]
+	//                                         }
+	//                                         if !strings.Contains(filename, "rc") {
+	//                                                 filename = filename + ".rc"
+	//                                         }
+	//                                         if strings.Contains(arg, "length") {
+	//                                                 l := strings.Split(arg, "=")[1]
+	//                                                 length, _ = strconv.Atoi(l)
+	//                                         }
+	//                                 }
+	//                                 if filename == "" {
+	//                                         fmt.Printf(Warn + "Missing resource filename (filename='name.rc')")
+	//                                         return nil
+	//                                 }
+	//                                 if length == 0 {
+	//                                         fmt.Printf(Warn + "Missing resource command length (length=8)")
+	//                                         return nil
+	//                                 }
+	//                                 if !strings.Contains(filename, "rc") {
+	//                                         filename = filename + ".rc"
+	//                                 }
+	//
+	//                                 // Check if resource already exists
+	//                                 file, _ := fs.Expand(path.Join(assets.GetResourceDir(), filename))
+	//                                 if fs.Exists(file) {
+	//                                         fmt.Printf(Error + "Resource file already exists. Cannot overwrite it.")
+	//                                         return nil
+	//                                 }
+	//                                 // If not, create it
+	//                                 res, err := os.Create(file)
+	//                                 if err != nil {
+	//                                         panic(err)
+	//                                 }
+	//                                 defer res.Close()
+	//
+	//                                 // Find file length, for subsequent selection
+	//                                 hist, _ := os.Open(assets.GetRootAppDir() + "/.history")
+	//                                 hlength := 0
+	//                                 scanner := bufio.NewScanner(hist)
+	//                                 for scanner.Scan() {
+	//                                         hlength++
+	//                                 }
+	//                                 hist.Close()
+	//
+	//                                 // Select last x commands in file and output them to resource file
+	//                                 hist, _ = os.Open(assets.GetRootAppDir() + "/.history")
+	//                                 defer hist.Close()
+	//                                 scan := bufio.NewScanner(hist)
+	//                                 for scan.Scan() {
+	//                                         // Needed this to adjust for last command (not needed)
+	//                                         if hlength <= length+1 && hlength > 1 {
+	//                                                 res.Write([]byte(scan.Text() + "\n"))
+	//                                         }
+	//                                         hlength--
+	//                                 }
+	//                                 fmt.Printf(Success+"Resource file created and filed with last %s commands.%s",
+	//                                         strconv.Itoa(length), tui.RESET)
+	//
+	//                                 // Load a resource file --------------------------------------------------------------------------------------//
+	//                         case "load":
+	//                                 if len(r.Args) == 1 {
+	//                                         fmt.Printf(Warn, "Missing resource filename (resource load <file>)")
+	//                                         return nil
+	//                                 }
+	//                                 filename := r.Args[1]
+	//                                 filestr, _ := fs.Expand(path.Join(assets.GetResourceDir(), filename))
+	//                                 file, _ := os.Open(filestr)
+	//                                 if filepath.Ext(filestr) != ".rc" {
+	//                                         fmt.Printf(Error + "File must be a configuration (.rc) file.")
+	//                                 }
+	//                                 defer file.Close()
+	//
+	//                                 // Need to get a copy of the context, to refresh menu context
+	//                                 updatedContext := *r.context
+	//
+	//                                 scanner := bufio.NewScanner(file)
+	//                                 for scanner.Scan() {
+	//                                         lign := scanner.Text()
+	//                                         cmds := strings.Split(lign, " ")
+	//                                         var args []string
+	//                                         for _, arg := range cmds {
+	//                                                 if arg != "" {
+	//                                                         args = append(args, arg)
+	//                                                 }
+	//                                         }
+	//                                         command := FindCommand(*r.context.MenuContext, args[0])
+	//                                         if command != nil {
+	//                                                 err := command.Handle(NewRequest(command, args[1:], &updatedContext))
+	//                                                 // Adjust for context, depending on commands
+	//                                                 if (err == nil) && (command.Name == "use") {
+	//                                                         *updatedContext.MenuContext = "module"
+	//                                                 }
+	//                                                 if (command.Name == "sessions") && (args[1] == "interact") {
+	//                                                         *updatedContext.MenuContext = "agent"
+	//                                                 }
+	//                                         } else {
+	//                                                 fmt.Printf("\n"+CommandError+"%s%s%s is not a valid command.",
+	//                                                         tui.YELLOW, cmds[0], tui.RESET)
+	//                                         }
+	//                                 }
+	//                                 if err := scanner.Err(); err != nil {
+	//                                         fmt.Printf(Error+"Error parsing resource command %s%s%s : %s",
+	//                                                 tui.YELLOW, scanner.Text(), tui.RESET, err)
+	//                                 }
+	//                         }
+	//                 }
+	//                 return nil
+	//         },
+	// }
+	//
+	// // Add resource command
+	// AddCommand("main", resource)
+	// AddCommand("module", resource)
+	// AddCommand("ghost", resource)
 
-			// Arguments: commands entered
-			case length >= 1:
-				fmt.Println()
-				switch r.Args[0] {
-				// Make a resource file --------------------------------------------------------------------------------------//
-				case "make":
-					if len(r.Args) < 3 {
-						fmt.Printf(Warn + "Missing some parameters (type 'resource' for help)")
-						fmt.Println()
-						return nil
-					}
-					var filename string
-					var length int
-					for _, arg := range r.Args[1:] {
-						if strings.Contains(arg, "filename") {
-							filename = strings.Split(arg, "=")[1]
-						}
-						if !strings.Contains(filename, "rc") {
-							filename = filename + ".rc"
-						}
-						if strings.Contains(arg, "length") {
-							l := strings.Split(arg, "=")[1]
-							length, _ = strconv.Atoi(l)
-						}
-					}
-					if filename == "" {
-						fmt.Printf(Warn + "Missing resource filename (filename='name.rc')")
-						return nil
-					}
-					if length == 0 {
-						fmt.Printf(Warn + "Missing resource command length (length=8)")
-						return nil
-					}
-					if !strings.Contains(filename, "rc") {
-						filename = filename + ".rc"
-					}
-
-					// Check if resource already exists
-					file, _ := fs.Expand(path.Join(assets.GetResourceDir(), filename))
-					if fs.Exists(file) {
-						fmt.Printf(Error + "Resource file already exists. Cannot overwrite it.")
-						return nil
-					}
-					// If not, create it
-					res, err := os.Create(file)
-					if err != nil {
-						panic(err)
-					}
-					defer res.Close()
-
-					// Find file length, for subsequent selection
-					hist, _ := os.Open(assets.GetRootAppDir() + "/.history")
-					hlength := 0
-					scanner := bufio.NewScanner(hist)
-					for scanner.Scan() {
-						hlength++
-					}
-					hist.Close()
-
-					// Select last x commands in file and output them to resource file
-					hist, _ = os.Open(assets.GetRootAppDir() + "/.history")
-					defer hist.Close()
-					scan := bufio.NewScanner(hist)
-					for scan.Scan() {
-						// Needed this to adjust for last command (not needed)
-						if hlength <= length+1 && hlength > 1 {
-							res.Write([]byte(scan.Text() + "\n"))
-						}
-						hlength--
-					}
-					fmt.Printf(Success+"Resource file created and filed with last %s commands.%s",
-						strconv.Itoa(length), tui.RESET)
-
-					// Load a resource file --------------------------------------------------------------------------------------//
-				case "load":
-					if len(r.Args) == 1 {
-						fmt.Printf(Warn, "Missing resource filename (resource load <file>)")
-						return nil
-					}
-					filename := r.Args[1]
-					filestr, _ := fs.Expand(path.Join(assets.GetResourceDir(), filename))
-					file, _ := os.Open(filestr)
-					if filepath.Ext(filestr) != ".rc" {
-						fmt.Printf(Error + "File must be a configuration (.rc) file.")
-					}
-					defer file.Close()
-
-					// Need to get a copy of the context, to refresh menu context
-					updatedContext := *r.context
-
-					scanner := bufio.NewScanner(file)
-					for scanner.Scan() {
-						lign := scanner.Text()
-						cmds := strings.Split(lign, " ")
-						var args []string
-						for _, arg := range cmds {
-							if arg != "" {
-								args = append(args, arg)
-							}
-						}
-						command := FindCommand(*r.context.MenuContext, args[0])
-						if command != nil {
-							err := command.Handle(NewRequest(command, args[1:], &updatedContext))
-							// Adjust for context, depending on commands
-							if (err == nil) && (command.Name == "use") {
-								*updatedContext.MenuContext = "module"
-							}
-							if (command.Name == "sessions") && (args[1] == "interact") {
-								*updatedContext.MenuContext = "agent"
-							}
-						} else {
-							fmt.Printf("\n"+CommandError+"%s%s%s is not a valid command.",
-								tui.YELLOW, cmds[0], tui.RESET)
-						}
-					}
-					if err := scanner.Err(); err != nil {
-						fmt.Printf(Error+"Error parsing resource command %s%s%s : %s",
-							tui.YELLOW, scanner.Text(), tui.RESET, err)
-					}
-				}
-			}
-			return nil
-		},
-	}
-
-	// Add resource command
-	AddCommand("main", resource)
-	AddCommand("module", resource)
-	AddCommand("ghost", resource)
-
-	mode := &Command{
-		Name: "mode",
-		SubCommands: []string{
-			"vim",
-			"emacs",
-		},
-		Handle: func(r *Request) error {
-			if len(r.Args) == 0 {
-				fmt.Printf(Warn + "Missing mode (vim/emacs)")
-				fmt.Println()
-				return nil
-			}
-
-			switch r.Args[0] {
-			case "vim":
-				*r.context.Mode = "vim"
-				fmt.Printf("\n"+Info+"Switched mode: %sVim%s\n", tui.YELLOW, tui.RESET)
-			case "emacs":
-				*r.context.Mode = "emacs"
-				fmt.Printf("\n"+Info+"Switched mode: %sEmacs%s\n", tui.YELLOW, tui.RESET)
-			default:
-				fmt.Printf(Error + "Invalid mode (vim/emacs)\n")
-				return nil
-			}
-
-			return nil
-		},
-	}
-
-	AddCommand("main", mode)
-	AddCommand("module", mode)
-	AddCommand("ghost", mode)
+	// mode := &Command{
+	//         Name: "mode",
+	//         SubCommands: []string{
+	//                 "vim",
+	//                 "emacs",
+	//         },
+	//         Handle: func(r *Request) error {
+	//                 if len(r.Args) == 0 {
+	//                         fmt.Printf(Warn + "Missing mode (vim/emacs)")
+	//                         fmt.Println()
+	//                         return nil
+	//                 }
+	//
+	//                 switch r.Args[0] {
+	//                 case "vim":
+	//                         *r.context.Mode = "vim"
+	//                         fmt.Printf("\n"+Info+"Switched mode: %sVim%s\n", tui.YELLOW, tui.RESET)
+	//                 case "emacs":
+	//                         *r.context.Mode = "emacs"
+	//                         fmt.Printf("\n"+Info+"Switched mode: %sEmacs%s\n", tui.YELLOW, tui.RESET)
+	//                 default:
+	//                         fmt.Printf(Error + "Invalid mode (vim/emacs)\n")
+	//                         return nil
+	//                 }
+	//
+	//                 return nil
+	//         },
+	// }
+	//
+	// AddCommand("main", mode)
+	// AddCommand("module", mode)
+	// AddCommand("ghost", mode)
 }

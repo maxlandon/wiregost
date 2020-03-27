@@ -36,48 +36,39 @@ func registerWorkspaceCommands() {
 	// Declare all commands, subcommands and arguments
 	workspace := &Command{
 		Name: "workspace",
-		SubCommands: []string{
-			"switch",
-			"add",
-			"delete",
-			"update",
-		},
-		Args: []*CommandArg{
-			&CommandArg{Name: "name", Type: "string", Required: true},
-			&CommandArg{Name: "limit-to-network", Type: "boolean", Required: false},
-			&CommandArg{Name: "boundary", Type: "string", Required: false},
-			&CommandArg{Name: "description", Type: "string", Required: false},
-		},
+		Help: "Manage workspaces (switch/add/delete/update)",
+		SubCommands: []*SubCommand{
+			&SubCommand{Name: "switch", Help: "Change to workspace in which targets and various data are saved"},
+			&SubCommand{Name: "add", Help: "Add a new workspace (provide a name)"},
+			&SubCommand{Name: "delete", Help: "Delete a workspace (provide a name)"},
+			&SubCommand{Name: "update", Help: "Update a workspace (ex: update default --boundary 192.168.1.17)",
+				Args: []*Arg{
+					&Arg{Name: "name", Type: "string", Required: true},
+					&Arg{Name: "limit-to-network", Type: "boolean", Required: false},
+					&Arg{Name: "boundary", Type: "string", Required: false},
+					&Arg{Name: "description", Type: "string", Required: false},
+				},
+			}},
 		Handle: func(r *Request) error {
 			switch length := len(r.Args); {
 			// No arguments: Print workspaces
 			case length == 0:
-				fmt.Println()
-				workspaces(r.context.CurrentWorkspace)
-				fmt.Println()
+				workspaces(r.context.Workspace)
 			// Arguments: commands entered
 			case length >= 1:
 				switch r.Args[0] {
 				case "switch":
-					fmt.Println()
 					if len(r.Args) == 2 {
-						switchWorkspace(r.Args[1], r.context.CurrentWorkspace, &r.context.Context, *r.context)
+						switchWorkspace(r.Args[1], r.context.Workspace, &r.context.DBContext, *r.context)
 					} else {
-						fmt.Printf(Error + "Provide a workspace name")
+						fmt.Printf("\n" + Error + "Provide a workspace name")
 					}
-					fmt.Println()
 				case "add":
-					fmt.Println()
 					addWorkspaces(r.Args[1:])
-					fmt.Println()
 				case "delete":
-					fmt.Println()
 					deleteWorkspaces(r.Args[1:])
-					fmt.Println()
 				case "update":
-					fmt.Println()
 					updateWorkspace(r.Args[1:])
-					fmt.Println()
 				}
 			}
 
@@ -91,6 +82,64 @@ func registerWorkspaceCommands() {
 	AddCommand("ghost", workspace)
 	AddCommand("compiler", workspace)
 }
+
+var WorkspaceOptions struct {
+	LimitToNetwork bool     `long:"limit-to-network" description:"Limit scans and other actions to a network range (--boundary)"`
+	Boundary       []string `long:"boundary" description:"Range of networks/addresses, or a list of both, to use as workspace boundaries"`
+	Description    string   `long:"description" description:"Description of the workspace"`
+}
+
+// func registerWorkspaceCommands() {
+//
+//         // Declare all commands, subcommands and arguments
+//         workspace := &Command{
+//                 Name: "workspace",
+//                 Help: "Manage workspaces (switch/add/delete/update)",
+//                 SubCommands: []*SubCommand{
+//                         &SubCommand{Name: "switch", Help: "Change to workspace in which targets and various data are saved"},
+//                         &SubCommand{Name: "add", Help: "Add a new workspace (provide a name)"},
+//                         &SubCommand{Name: "delete", Help: "Delete a workspace (provide a name)"},
+//                         &SubCommand{Name: "update", Help: "Update a workspace (ex: update default --boundary 192.168.1.17)",
+//                                 Args: []*Arg{
+//                                         &Arg{Name: "name", Type: "string", Required: true},
+//                                         &Arg{Name: "limit-to-network", Type: "boolean", Required: false},
+//                                         &Arg{Name: "boundary", Type: "string", Required: false},
+//                                         &Arg{Name: "description", Type: "string", Required: false},
+//                                 },
+//                         }},
+//                 Handle: func(r *Request) error {
+//                         switch length := len(r.Args); {
+//                         // No arguments: Print workspaces
+//                         case length == 0:
+//                                 workspaces(r.context.Workspace)
+//                         // Arguments: commands entered
+//                         case length >= 1:
+//                                 switch r.Args[0] {
+//                                 case "switch":
+//                                         if len(r.Args) == 2 {
+//                                                 switchWorkspace(r.Args[1], r.context.Workspace, &r.context.DBContext, *r.context)
+//                                         } else {
+//                                                 fmt.Printf("\n" + Error + "Provide a workspace name")
+//                                         }
+//                                 case "add":
+//                                         addWorkspaces(r.Args[1:])
+//                                 case "delete":
+//                                         deleteWorkspaces(r.Args[1:])
+//                                 case "update":
+//                                         updateWorkspace(r.Args[1:])
+//                                 }
+//                         }
+//
+//                         return nil
+//                 },
+//         }
+//
+//         // Add commands for each context
+//         AddCommand("main", workspace)
+//         AddCommand("module", workspace)
+//         AddCommand("ghost", workspace)
+//         AddCommand("compiler", workspace)
+// }
 
 func workspaces(currentWorkspace *models.Workspace) {
 	workspaces, err := remote.Workspaces(nil)
@@ -131,9 +180,9 @@ func switchWorkspace(name string, workspace *models.Workspace, ctx *context.Cont
 			const workspaceID = "workspace_id"
 			*ctx = context.WithValue(*ctx, workspaceID, workspaces[i].ID)
 			workspace = &workspaces[i]
-			fmt.Printf(Info+"Switched to workspace %s", workspaces[i].Name)
+			fmt.Printf("\n"+Info+"Switched to workspace %s", workspaces[i].Name)
 			// Reset currentModule
-			*sctx.CurrentModule = ""
+			// *sctx.CurrentModule = ""
 
 		}
 	}
