@@ -24,7 +24,6 @@ import (
 
 	"github.com/evilsocket/islazy/tui"
 
-	"github.com/maxlandon/wiregost/client/commands"
 	consts "github.com/maxlandon/wiregost/client/constants"
 	"github.com/maxlandon/wiregost/client/core"
 )
@@ -39,10 +38,10 @@ func (c *Console) eventLoop(server *core.WiregostServer) {
 
 		case consts.CanaryEvent:
 			fmt.Printf("%s[WARNING]%s %s has been burned (DNS Canary) \n", tui.YELLOW, tui.RESET, event.Ghost.Name)
-			sessions := commands.GhostSessionsByName(event.Ghost.Name, server.RPC)
-			for _, ghost := range sessions {
-				fmt.Printf("%s[!]%s \tSession #%d is compromised\n", tui.YELLOW, tui.RESET, ghost.ID)
-			}
+			// sessions := commands.GhostSessionsByName(event.Ghost.Name, server.RPC)
+			// for _, ghost := range sessions {
+			//         fmt.Printf("%s[!]%s \tSession #%d is compromised\n", tui.YELLOW, tui.RESET, ghost.ID)
+			// }
 			fmt.Println()
 
 		// STACK EVENTS --------------------------------------------------------------------------------------

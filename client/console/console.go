@@ -60,7 +60,7 @@ func newConsole() *Console {
 
 	console := &Console{
 		Shell:   readline.NewInstance(),
-		menu:    "main",
+		menu:    commands.MAIN_CONTEXT,
 		config:  config.LoadConsoleConfig(),
 		userID:  rand.Int31(),
 		module:  &clientpb.Module{}, // Needed even if empty
@@ -76,26 +76,18 @@ func (c *Console) Setup() {
 	// Shell & Context
 	c.initContext()
 
-	// Terminal Width
-	if c.config.Wrap == "large" {
-		util.WrapColumns = 140
-
-	} else if c.config.Wrap == "small" {
-		util.WrapColumns = 100
-	}
-
-	// Completers & Hints
-	completer := &completers.AutoCompleter{
-		Context: c.context,
-	}
-	c.Shell.TabCompleter = completer.Do
-	c.Shell.HintText = completer.CommandHint
+	c.Shell.TabCompleter = completers.TabCompleter
+	c.Shell.HintText = completers.HintText
+	c.Shell.SyntaxHighlighter = completers.SyntaxHighlighter
 
 	// Prompt
 	c.prompt = newPrompt(c, c.config.Prompt, c.config.ImplantPrompt)
 
 	// Commands
 	commands.RegisterCommands()
+
+	// Env
+	util.LoadSystemEnv()
 }
 
 // Start - Start the Shell
@@ -110,13 +102,13 @@ func Start() {
 	if err != nil {
 		log.Fatal(tui.Red(err.Error()))
 	} else {
+		fmt.Println()
 		go console.eventLoop(console.server)
 	}
 
 	// Input loop
 	for {
 		// Refresh prompt
-		fmt.Println()
 		console.hardRefresh()
 
 		line, err := console.Shell.Readline()
@@ -137,9 +129,19 @@ func Start() {
 			}
 		}
 
-		// Exec command
-		if err = ExecCmd(args, console.menu, console.context); err != nil {
+		// Leave a space between command and output
+		fmt.Println()
+
+		// Process tokens
+		parsed, err := ParseEnvVariables(unfiltered)
+		if err != nil {
 			fmt.Println(err)
+			continue
+		}
+
+		if err = console.ExecCommand(parsed); err != nil {
+			// For now we don't print errors here, because they appear twice because of parser
+			// fmt.Printf(err.Error())
 		}
 
 	}
@@ -158,14 +160,17 @@ func (c *Console) hardRefresh() {
 	}
 
 	// Jobs
-	jobs := commands.GetJobs(c.context.Server.RPC)
-	c.jobs = len(jobs.Active)
+	// jobs := commands.GetJobs(c.context.Server.RPC)
+	// c.jobs = len(jobs.Active)
+	c.jobs = 0
 
 	// Sessions
-	sessions := commands.GetGhosts(c.context.Server.RPC)
-	c.ghosts = len(sessions.Ghosts)
+	// sessions := commands.GetGhosts(c.context.Server.RPC)
+	// c.ghosts = len(sessions.Ghosts)
+	c.ghosts = 0
 
 	// Prompt
+	// fmt.Println()
 	refreshPrompt(c.prompt, c.Shell)
 }
 

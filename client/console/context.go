@@ -46,19 +46,16 @@ func (c *Console) initContext() {
 	c.dbContext = context.WithValue(rootCtx, "workspace_id", c.workspace.ID)
 
 	// Share Context --------------------------------------------------
-
-	c.context = &commands.ShellContext{
-		Shell:     c.Shell,
-		Config:    c.config,
-		DBContext: c.dbContext,
-		Menu:      &c.menu,
-		Module:    c.module,
-		UserID:    c.userID,
-		Workspace: c.workspace,
-		Server:    c.server,
-		Jobs:      &c.jobs,
-		Ghosts:    &c.ghosts,
-		Ghost:     c.Ghost,
-		GhostPwd:  &c.GhostPwd,
-	}
+	commands.Context.Shell = c.Shell
+	commands.Context.Config = c.config
+	commands.Context.DBContext = c.dbContext
+	commands.Context.Menu = &c.menu
+	commands.Context.Module = c.module
+	commands.Context.UserID = c.userID
+	commands.Context.Workspace = c.workspace
+	commands.Context.Server = c.server
+	commands.Context.Jobs = &c.jobs
+	commands.Context.Ghosts = &c.ghosts
+	commands.Context.Ghost = c.Ghost
+	commands.Context.GhostPwd = &c.GhostPwd
 }

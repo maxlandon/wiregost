@@ -306,6 +306,8 @@ var (
 	RPCError = fmt.Sprintf("%s[RPC Error]%s ", tui.RED, tui.RESET)
 	// CommandError - Command input error
 	CommandError = fmt.Sprintf("%s[Command Error]%s ", tui.RED, tui.RESET)
+	// ParserError - Failed to parse some tokens in the input
+	ParserError = fmt.Sprintf("%s[Parser Error]%s ", tui.RED, tui.RESET)
 	// DBError - Data Service error
 	DBError = fmt.Sprintf("%s[DB Error]%s ", tui.RED, tui.RESET)
 )

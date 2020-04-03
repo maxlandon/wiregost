@@ -23,18 +23,41 @@ import (
 	"github.com/maxlandon/wiregost/client/commands"
 )
 
-// ExecCmd executes a single command and provides it all the context it might need
-func ExecCmd(args []string, menu string, shellContext *commands.ShellContext) error {
+func (c *Console) ExecCommand(args []string) error {
 	if len(args) < 1 {
 		return nil
 	}
 
-	command := commands.FindCommand(menu, args[0])
-	if command != nil {
-		return command.Handle(commands.NewRequest(command, args[1:], shellContext))
+	// 1) Ask parser for command
+	cmd := commands.CommandParser.Find(args[0])
+	if cmd == nil {
+		return c.handleSpecialCommands(args)
 	}
-	fmt.Println()
-	fmt.Printf(CommandError+"%s%s%s is not a valid command.", tui.YELLOW, args[0], tui.RESET)
+
+	// 2) If command is found, check for context
+	_, err := commands.CommandParser.ParseArgs(args)
+	if err != nil {
+		return err // Not printed currently
+	}
 
 	return nil
+}
+
+func (c *Console) handleSpecialCommands(args []string) error {
+
+	switch c.menu {
+	// Check context for availability
+	case commands.MAIN_CONTEXT:
+		switch args[0] {
+		// ! - Use the system shell through the console
+		case "!":
+			return commands.Shell(args)
+		case "exit":
+			c.exit()
+		}
+	}
+
+	fmt.Printf(CommandError+"Invalid command: %s%s \n", tui.YELLOW, args[0])
+	return nil
+	// return fmt.Errorf(CommandError+"Invalid command: %s%s +\n", tui.YELLOW, args[0])
 }
