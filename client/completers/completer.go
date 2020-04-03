@@ -18,330 +18,208 @@ package completers
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 	"unicode"
 
 	"github.com/evilsocket/islazy/tui"
+	"github.com/jessevdk/go-flags"
 	"github.com/lmorg/readline"
 	"github.com/maxlandon/wiregost/client/commands"
 )
 
-// AutoCompleter - Handles all autocompletions and hints in Wiregost
-type AutoCompleter struct {
-	Context *commands.ShellContext // Passes the shell context
-	Command *commands.Command      // The command currently in input
+// // Do - Entrypoint to all completions in Wiregost
+func TabCompleter(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
+
+	var suggestions []string               // Selectable suggestions
+	listSuggestions := map[string]string{} // Descriptions for suggestions
+
+	args := strings.Split(string(line), " ")         // The readline input as a []string
+	last := trimSpaceLeft([]rune(args[len(args)-1])) // The last char in input
+
+	// Detect base command automatically
+	var command = detectedCommand(args)
+
+	// Propose Commands
+	if noCommandOrEmpty(args, last, command) {
+		return CompleteMenuCommands(last, pos)
+	}
+
+	// Check environment variables
+	if envVarAsked(args, last) {
+		return CompleteEnvironmentVariables(line, pos)
+	}
+
+	// Command is identified
+	if commandFound(command) {
+
+		// Check environment variables
+		if envVarAsked(args, last) {
+			return CompleteEnvironmentVariables(line, pos)
+		}
+
+		// Propose completion for args before anything else
+		if hasArgs(command) {
+			return CompleteCommandArguments(command, line, pos)
+		}
+
+		// Then propose subcommands
+		if hasSubCommands(command, args) {
+			return CompleteSubCommands(args, last, command)
+		}
+
+		// Handle subcommand if found
+		if sub, ok := subCommandFound(last, args, command); ok {
+			return HandleSubCommand(line, pos, sub)
+		}
+	}
+
+	return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 }
 
-// Do - Entrypoint to all completions in Wiregost
-func (ac *AutoCompleter) Do(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
+// [ Main Completion Functions ] -----------------------------------------------------------------------------------------------------------------
 
-	// Completions
+// CompleteMenuCommands - Selects all commands available in a given context and returns them as suggestions
+func CompleteMenuCommands(last []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
 	var suggestions []string
 	listSuggestions := map[string]string{}
 
-	// Get a list of words in input
-	splitLine := strings.Split(string(line), " ")
-	last := trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
-
-	// Get context commands
-	cmds := buildCommandMap(*ac.Context.Menu)
-
-	// Store Command and Subcommands
-	var command *commands.Command
+	cmds := commands.CommandsByContext()
 	for _, cmd := range cmds {
-		if cmd.Name == splitLine[0] {
-			command = cmd
-		}
-	}
-	var subs []string
-	if command != nil {
-		for _, sub := range command.SubCommands {
-			subs = append(subs, sub.Name)
-		}
-		sort.Strings(subs)
-	}
-
-	// Commands
-	if len(splitLine) == 0 || len(splitLine) == 1 && command == nil {
-		var verbs []string
-		for _, cmd := range cmds {
-			verbs = append(verbs, cmd.Name)
-		}
-		sort.Strings(verbs)
-
-		for i := range verbs {
-			if strings.HasPrefix(verbs[i], string(last)) {
-				suggestions = append(suggestions, verbs[i][pos:]+" ")
-			}
+		if strings.HasPrefix(cmd.Name, string(last)) {
+			suggestions = append(suggestions, cmd.Name[pos:]+" ")
 		}
 	}
 
-	// SubCommands
-	if command != nil {
-		if command.SubCommands != nil && len(command.SubCommands) != 0 {
-			var verbs []string
-			for _, cmd := range command.SubCommands {
-				verbs = append(verbs, cmd.Name)
-			}
-			sort.Strings(verbs)
-
-			for i := range verbs {
-				if strings.HasPrefix(verbs[i], string(last)) {
-					suggestions = append(suggestions, verbs[i][(len(last)):]+" ")
-				}
-			}
-		}
-		// If no subcommands, check Arguments
-		if command.SubCommands == nil || len(command.SubCommands) == 0 {
-			return ac.yieldArgsCompletion(command, line, pos)
-		}
-	}
-
-	// Arguments
-	if command != nil && (command.SubCommands != nil || len(command.SubCommands) != 0) && len(splitLine) > 1 && stringInSlice(splitLine[1], subs) {
-		return ac.yieldArgsCompletion(command, line, pos)
-	}
-
-	return string(line[:pos]), suggestions, listSuggestions, readline.TabDisplayGrid
+	return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 }
 
-func (ac *AutoCompleter) yieldArgsCompletion(cmd *commands.Command, line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
-
-	// Completions
+// CompleteCommandArguments - Completes all values for arguments to a command. Arguments here are different from command options (--option).
+func CompleteCommandArguments(cmd *flags.Command, line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
 	var suggestions []string
 	listSuggestions := map[string]string{}
 
-	switch *ac.Context.Menu {
-	case "main", "module":
+	args := strings.Split(string(line), " ")
+	last := trimSpaceLeft([]rune(args[len(args)-1]))
+
+	// Get commandArgs
+	cmdArgs := cmd.Args()
+
+	switch *commands.Context.Menu {
+	case commands.MAIN_CONTEXT, commands.MODULE_CONTEXT:
 		switch cmd.Name {
 		case "cd":
-			return completeLocalPath(cmd, line, pos)
-		case "workspace":
-			return completeWorkspaces(cmd, line, pos)
+			if len(cmdArgs) == 1 {
+				arg := cmdArgs[0]
+				switch arg.Name {
+				case "Path":
+					return completeLocalPath(line, pos)
+				}
+			}
+			// return completeLocalPath(line, pos)
+
+			// case "workspace":
+			//         return completeWorkspaces(cmd, line, pos)
 		}
 	case "agent":
 	}
 
-	return string(line[:pos]), suggestions, listSuggestions, readline.TabDisplayGrid
+	return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 }
 
-func (ac *AutoCompleter) CommandHint(line []rune, pos int) (hint []rune) {
+// CompleteSubCommands - Takes subcommands and gives them as suggestions
+func CompleteSubCommands(args []string, last []rune, command *flags.Command) (string, []string, map[string]string, readline.TabDisplayType) {
+	var suggestions []string
+	listSuggestions := map[string]string{}
 
-	splitLine := strings.Split(string(line), " ")
-	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+	for _, sub := range command.Commands() {
+		if strings.HasPrefix(sub.Name, string(last)) {
+			suggestions = append(suggestions, sub.Name[(len(last)):]+" ")
+		}
+	}
 
-	commands := buildCommandMap(*ac.Context.Menu)
+	return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
+}
 
-	for _, cmd := range commands {
-		if cmd.Name == splitLine[0] {
-			// Get main command hint
-			hint = []rune(cmd.Help)
+// HandleSubCommand - Handles completion for subcommand options and arguments, + any option value related completion
+func HandleSubCommand(line []rune, pos int, command *flags.Command) (string, []string, map[string]string, readline.TabDisplayType) {
+	var suggestions []string
+	listSuggestions := map[string]string{}
+	args := strings.Split(string(line), " ")
+	last := trimSpaceLeft([]rune(args[len(args)-1]))
+	var tabType readline.TabDisplayType
 
-			// Commands with no subcommands but with arguments
-			if len(splitLine) == 2 && splitLine[1] != "" {
-				switch cmd.Name {
-				case "cd":
-					hint = []rune("Change directory:" + " => " + splitLine[1])
+	// Check environment variables
+	if envVarAsked(args, last) {
+		return CompleteEnvironmentVariables(line, pos)
+	}
+
+	// If command has arguments, propose them first
+	if hasArgs(command) {
+		_, suggestions, listSuggestions, tabType = CompleteCommandArguments(command, line, pos)
+	}
+
+	// If user asks for completions with "-" or "--". (Note: This takes precedence on arguments, as it is evaluated after arguments)
+	if optionsAsked(args, last, command) {
+		return CompleteCommandOptions(args, last, command)
+	}
+
+	return string(last), suggestions, listSuggestions, tabType
+}
+
+// CompleteCommandOptions - Yields completion for options of a command, with various decorators
+func CompleteCommandOptions(args []string, last []rune, cmd *flags.Command) (string, []string, map[string]string, readline.TabDisplayType) {
+	var suggestions []string
+	listSuggestions := map[string]string{}
+
+	var group0 *flags.Group
+	groups := cmd.Groups()
+	if groups != nil {
+		group0 = groups[0]
+	}
+
+	if group0 != nil {
+		for _, opt := range group0.Options() {
+
+			// Check if option is already set, next option if yes
+			if optionNotRepeatable(opt) && optionIsAlreadySet(args, last, opt) {
+				continue
+			}
+
+			if strings.HasPrefix("--"+opt.LongName, string(last)) {
+				optName := "--" + opt.LongName
+				suggestions = append(suggestions, optName[(len(last)):]+" ")
+
+				var desc string
+				if opt.Required {
+					desc = fmt.Sprintf("%s%sR%s %s%s", tui.RED, tui.DIM, tui.RESET, tui.DIM, opt.Description)
+				} else {
+					desc = fmt.Sprintf("%s%sO%s %s%s", tui.GREEN, tui.DIM, tui.RESET, tui.DIM, opt.Description)
 				}
-			}
 
-			// Get potential subcommands & filter hints
-			var verbs []string
-			for _, cmd := range cmd.SubCommands {
-				verbs = append(verbs, cmd.Name)
-			}
-			sort.Strings(verbs)
-			if len(splitLine) > 2 && stringInSlice(splitLine[1], verbs) {
-				for _, sub := range cmd.SubCommands {
-					if sub.Name == splitLine[1] {
-						hint = []rune(sub.Help)
-					}
-				}
-
-				// switch cmd.Name {
-				// case "hosts":
-				//         ac.Context.Shell.HintFormatting = fmt.Sprintf("%s%s", tui.YELLOW, tui.BOLD)
-				//         hint = []rune("Host filters")
-				// }
-
+				listSuggestions[optName[(len(last)):]+" "] = tui.DIM + desc + tui.RESET
 			}
 		}
 	}
-
-	return
+	return string(last), suggestions, listSuggestions, readline.TabDisplayList
 }
 
-// Do is the completion function triggered at each line
-// func (ac *AutoCompleter) Do(line []rune, pos int) (options [][]rune, offset int) {
-//
-//         commands := buildCommandMap(*ac.MenuContext)
-//
-//         // Find commands
-//         var verbs []string
-//         for cmd := range commands {
-//                 verbs = append(verbs, cmd)
-//         }
-//
-//         sort.Strings(verbs)
-//
-//         line = trimSpaceLeft(line[:pos])
-//
-//         // Auto-complete verb
-//         var verbFound string
-//         for _, verb := range verbs {
-//                 search := verb + " "
-//                 if !hasPrefix(line, []rune(search)) {
-//                         sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-//                         options = append(options, sLine...)
-//                         offset = sOffset
-//                 } else {
-//                         verbFound = verb
-//                         break
-//                 }
-//         }
-//         if len(verbFound) == 0 {
-//                 return
-//         }
-//
-//         // Help commands need to be filtered here depending on context
-//         if verbFound == "help" {
-//                 if *ac.Context.Menu == "agent" {
-//                         options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
-//                 }
-//         }
-//
-//         // Autocomplete commands with no subcommands but variable arguments
-//         for _, c := range commands {
-//                 switch c.Name {
-//                 case "set", "use", "parse_profile", "help", "cd", "ls", "sessions", "interact", "nmap":
-//                         options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
-//                 }
-//         }
-//
-//         // Autocomplete subcommands
-//         var subFound string
-//         line = trimSpaceLeft(line[len(verbFound):])
-//         for _, comm := range commands[verbFound].SubCommands {
-//                 search := comm + " "
-//                 if !hasPrefix(line, []rune(search)) {
-//                         sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-//                         options = append(options, sLine...)
-//                         offset = sOffset
-//                 } else {
-//                         subFound = comm
-//                         break
-//                 }
-//         }
-//
-//         // Option name is found, yield option completions
-//         if (len(subFound) == 0) && verbFound != "set" {
-//                 return
-//         }
-//         if subFound == "interact" {
-//                 options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
-//         }
-//
-//         // Get command completer and yield options
-//         options, offset = yieldCommandCompletions(ac.Context, commands[verbFound], line, pos)
-//
-//         return options, offset
-// }
-//
-// buildCommandMap - Creates a map of commands for completion
-func buildCommandMap(ctx string) (commandMap map[string]*commands.Command) {
-	commandMap = map[string]*commands.Command{}
-	for _, cmd := range commands.AllContextCommands(ctx) {
-		commandMap[cmd.Name] = cmd
-	}
-	return commandMap
+// RecursiveGroupCompletion - Handles recursive completion for nested option groups
+func RecursiveGroupCompletion(args []string, last []rune, group *flags.Group) (string, []string, map[string]string, readline.TabDisplayType) {
+	var suggestions []string
+	listSuggestions := map[string]string{}
+
+	return string(last), suggestions, listSuggestions, readline.TabDisplayList
 }
 
-// yieldCommandCompletions determines the type of command used and redirects to its completer
-func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, line []rune, pos int) (options [][]rune, offset int) {
+// CompleteOptionValues - Yields values completion for an option requiring arguments, if they can be completed
+func CompleteOptionValues(args []string, last []rune, opt *flags.Option) (string, []string, map[string]string, readline.TabDisplayType) {
+	var suggestions []string
+	listSuggestions := map[string]string{}
 
-	switch *ctx.Menu {
-	case "main", "module":
-		switch cmd.Name {
-		case "workspace":
-			comp := &workspaceCompleter{Command: cmd}
-			options, offset = comp.Do(ctx, line, pos)
-		case "hosts":
-			comp := &hostCompleter{Command: cmd}
-			options, offset = comp.Do(ctx, line, pos)
-		case "set":
-			comp := &optionCompleter{Command: cmd}
-			options, offset = comp.Do(ctx, line, pos)
-		case "use":
-			comp := &moduleCompleter{Command: cmd}
-			options, offset = comp.Do(ctx, line, pos)
-		case "stack":
-			comp := &stackCompleter{Command: cmd}
-			options, offset = comp.Do(ctx, line, pos)
-		case "profiles", "parse_profile":
-			comp := &profileCompleter{Command: cmd}
-			options, offset = comp.Do(ctx, line, pos)
-		case "user":
-			comp := &userCompleter{Command: cmd}
-			options, offset = comp.Do(ctx, line, pos)
-		case "server":
-			comp := &serverCompleter{Command: cmd}
-			options, offset = comp.Do(ctx, line, pos)
-		case "sessions", "interact":
-			comp := &sessionCompleter{Command: cmd}
-			options, offset = comp.Do(ctx, line, pos)
-		case "nmap", "db_nmap":
-			comp := &nmapCompleter{Command: cmd}
-			options, offset = comp.Do(ctx, line, pos)
-		}
-
-	case "agent":
-		switch cmd.Name {
-		case "help":
-			comp := &agentHelpCompleter{Command: cmd}
-			options, offset = comp.Do(ctx, line, pos)
-		case "cd", "ls", "cat":
-			// Enable only if enabled in config
-			if ctx.Config.SessionPathCompletion {
-				comp := &implantPathCompleter{Command: cmd}
-				options, offset = comp.Do(ctx, line, pos)
-			}
-		}
-
-	}
-
-	return options, offset
+	return string(last), suggestions, listSuggestions, readline.TabDisplayList
 }
 
-// yieldCommandCompletions determines the type of command used and redirects to its completer
-func yieldOptionompletions(ctx *commands.ShellContext, cmd *commands.Command, line []rune, pos int) (options [][]rune, offset int) {
-
-	splitLine := strings.Split(string(line), " ")
-	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
-
-	switch *ctx.Menu {
-	case "module":
-		switch cmd.Name {
-		case "set":
-			// If name is identified, that means option is already typed
-			switch string(line) {
-
-			case "StageImplant ", "StageConfig ":
-				comp := &stagerCompleter{Command: cmd}
-				options, offset = comp.Do(ctx, line, pos)
-
-				// Default is: no options have been typed yet
-			default:
-				comp := &optionCompleter{Command: cmd}
-				options, offset = comp.Do(ctx, line, pos)
-			}
-		}
-	}
-
-	return options, offset
-}
-
-// Utility functions -------------------------------------------------------------------------------------------------------------//
+// // Functions from the github.com/apache-monkey -------------------------------------------------------------------------------------------------------------//
 
 func trimSpaceLeft(in []rune) []rune {
 	firstIndex := len(in)
@@ -373,51 +251,113 @@ func hasPrefix(r, prefix []rune) bool {
 	return equal(r[:len(prefix)], prefix)
 }
 
-func inArray(s string, array []string) bool {
-	for _, item := range array {
-		if s == item {
-			return true
-		}
-	}
-	return false
-}
+// // yieldCommandCompletions determines the type of command used and redirects to its completer
+// func yieldCommandCompletions(ctx *commands.ShellContext, cmd *commands.Command, line []rune, pos int) (options [][]rune, offset int) {
+//
+//         switch *ctx.Menu {
+//         case "main", "module":
+//                 switch cmd.Name {
+//                 case "workspace":
+//                         comp := &workspaceCompleter{Command: cmd}
+//                         options, offset = comp.Do(ctx, line, pos)
+//                 case "hosts":
+//                         comp := &hostCompleter{Command: cmd}
+//                         options, offset = comp.Do(ctx, line, pos)
+//                 case "set":
+//                         comp := &optionCompleter{Command: cmd}
+//                         options, offset = comp.Do(ctx, line, pos)
+//                 case "use":
+//                         comp := &moduleCompleter{Command: cmd}
+//                         options, offset = comp.Do(ctx, line, pos)
+//                 case "stack":
+//                         comp := &stackCompleter{Command: cmd}
+//                         options, offset = comp.Do(ctx, line, pos)
+//                 case "profiles", "parse_profile":
+//                         comp := &profileCompleter{Command: cmd}
+//                         options, offset = comp.Do(ctx, line, pos)
+//                 case "user":
+//                         comp := &userCompleter{Command: cmd}
+//                         options, offset = comp.Do(ctx, line, pos)
+//                 case "server":
+//                         comp := &serverCompleter{Command: cmd}
+//                         options, offset = comp.Do(ctx, line, pos)
+//                 case "sessions", "interact":
+//                         comp := &sessionCompleter{Command: cmd}
+//                         options, offset = comp.Do(ctx, line, pos)
+//                 case "nmap", "db_nmap":
+//                         comp := &nmapCompleter{Command: cmd}
+//                         options, offset = comp.Do(ctx, line, pos)
+//                 }
+//
+//         case "agent":
+//                 switch cmd.Name {
+//                 case "help":
+//                         comp := &agentHelpCompleter{Command: cmd}
+//                         options, offset = comp.Do(ctx, line, pos)
+//                 case "cd", "ls", "cat":
+//                         // Enable only if enabled in config
+//                         if ctx.Config.SessionPathCompletion {
+//                                 comp := &implantPathCompleter{Command: cmd}
+//                                 options, offset = comp.Do(ctx, line, pos)
+//                         }
+//                 }
+//
+//         }
+//
+//         return options, offset
+// }
+//
+// // yieldCommandCompletions determines the type of command used and redirects to its completer
+// func yieldOptionompletions(ctx *commands.ShellContext, cmd *commands.Command, line []rune, pos int) (options [][]rune, offset int) {
+//
+//         args := strings.Split(string(line), " ")
+//         line = trimSpaceLeft([]rune(args[len(args)-1]))
+//
+//         switch *ctx.Menu {
+//         case "module":
+//                 switch cmd.Name {
+//                 case "set":
+//                         // If name is identified, that means option is already typed
+//                         switch string(line) {
+//
+//                         case "StageImplant ", "StageConfig ":
+//                                 comp := &stagerCompleter{Command: cmd}
+//                                 options, offset = comp.Do(ctx, line, pos)
+//
+//                                 // Default is: no options have been typed yet
+//                         default:
+//                                 comp := &optionCompleter{Command: cmd}
+//                                 options, offset = comp.Do(ctx, line, pos)
+//                         }
+//                 }
+//         }
+//
+//         return options, offset
+// }
+//
 
-func lastString(array []string) string {
-	return array[len(array)-1]
-}
-
-type argOption struct {
-	Value  string
-	Detail string
-}
-
-func doInternal(line []rune, pos int, lineLen int, argName []rune) (newLine [][]rune, offset int) {
-	offset = lineLen
-	if lineLen >= len(argName) {
-		if hasPrefix(line, argName) {
-			if lineLen == len(argName) {
-				newLine = append(newLine, []rune{' '})
-			} else {
-				newLine = append(newLine, argName)
-			}
-			offset = offset - len(argName) - 1
-		}
-	} else {
-		if hasPrefix(argName, line) {
-			newLine = append(newLine, argName[offset:])
-		}
-	}
-	return
-}
-
-func stringInSlice(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
-}
+// func lastString(array []string) string {
+//         return array[len(array)-1]
+// }
+//
+// func doInternal(line []rune, pos int, lineLen int, argName []rune) (newLine [][]rune, offset int) {
+//         offset = lineLen
+//         if lineLen >= len(argName) {
+//                 if hasPrefix(line, argName) {
+//                         if lineLen == len(argName) {
+//                                 newLine = append(newLine, []rune{' '})
+//                         } else {
+//                                 newLine = append(newLine, argName)
+//                         }
+//                         offset = offset - len(argName) - 1
+//                 }
+//         } else {
+//                 if hasPrefix(argName, line) {
+//                         newLine = append(newLine, argName[offset:])
+//                 }
+//         }
+//         return
+// }
 
 var (
 	// Info - All normal message
