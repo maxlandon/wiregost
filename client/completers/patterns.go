@@ -17,8 +17,10 @@
 package completers
 
 import (
+	"os/exec"
 	"reflect"
 	"strings"
+	"unicode"
 
 	"github.com/jessevdk/go-flags"
 	"github.com/maxlandon/wiregost/client/commands"
@@ -76,6 +78,15 @@ func commandFound(command *flags.Command) bool {
 	return false
 }
 
+// Search for input in $PATH
+func commandFoundInPath(input string) bool {
+	_, err := exec.LookPath(input)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 // [ SubCommands ]
 // Does the command have subcommands ?
 func hasSubCommands(command *flags.Command, args []string) bool {
@@ -121,6 +132,52 @@ func hasArgs(command *flags.Command) bool {
 	return false
 }
 
+// argumentRequired - Analyses input and sends back the next argument name to provide completion for
+func argumentRequired(last []rune, args []string, command *flags.Command) (name string, yes bool) {
+
+	// We check if the command parameter is a root command
+	base := commands.CommandParser.Find(command.Name)
+
+	if commandFound(base) {
+		remain := args[1:]
+		// filter out options
+		remain = filterOptions(remain, base)
+
+		// We get the number of argument fields in command struct
+		switch length := len(base.Args()); {
+		case length == 1:
+			arg := base.Args()[0]
+			if arg.Required == 1 && arg.RequiredMaximum == 1 && len(remain) == 1 {
+				return arg.Name, true
+			}
+		case length > 1:
+			arg := base.Args()[0]
+			if len(remain) == 1 {
+				// if arg.Required == 1 && arg.RequiredMaximum == 1 && len(remain) == 1 {
+				return arg.Name, true
+			}
+		default:
+		}
+	} else if sub, found := subCommandFound(last, args, command); found {
+		remain := args[2:]
+		remain = filterOptions(remain, sub)
+		switch len(base.Args()) {
+		case 1:
+			arg := base.Args()[0]
+			if arg.Required == 1 && arg.RequiredMaximum == 1 && len(remain) == 1 {
+				return arg.Name, true
+			}
+		default:
+			arg := base.Args()[0]
+			if arg.Required == 1 && arg.RequiredMaximum == 1 && len(remain) == 1 {
+				return arg.Name, true
+			}
+		}
+	}
+
+	return
+}
+
 // [ Options ]
 // optionsAsked - Does the user asks for options ?
 func optionsAsked(args []string, last []rune, command *flags.Command) bool {
@@ -157,26 +214,12 @@ func optionArgRequired(args []string, last []rune, group *flags.Group) (opt *fla
 	var option *flags.Option
 
 	// Check for last two arguments in input
-	if args[len(args)-1] == "" {
-		lastItem = args[len(args)-1]
+	if strings.HasPrefix(args[len(args)-2], "-") || strings.HasPrefix(args[len(args)-2], "--") {
+		lastOption = strings.TrimPrefix(args[len(args)-2], "--")
+		lastOption = strings.TrimPrefix(lastOption, "-")
 
-		if strings.HasPrefix(args[len(args)-2], "-") || strings.HasPrefix(args[len(args)-2], "--") {
-			lastOption = strings.TrimPrefix(args[len(args)-2], "--")
-			lastOption = strings.TrimPrefix(lastOption, "-")
-
-			if opt := group.FindOptionByLongName(lastOption); opt != nil {
-				option = opt
-			}
-		}
-	} else {
-		lastItem = args[len(args)-1]
-		if strings.HasPrefix(args[len(args)-1], "-") || strings.HasPrefix(args[len(args)-1], "--") {
-			lastOption = strings.TrimPrefix(args[len(args)-1], "--")
-			lastOption = strings.TrimPrefix(lastOption, "-")
-
-			if opt := group.FindOptionByLongName(lastOption); opt != nil {
-				option = opt
-			}
+		if opt := group.FindOptionByLongName(lastOption); opt != nil {
+			option = opt
 		}
 	}
 
@@ -249,4 +292,58 @@ func envVarAsked(args []string, last []rune) bool {
 	}
 
 	return false
+}
+
+func filterOptions(args []string, command *flags.Command) (processed []string) {
+
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		if strings.HasPrefix(arg, "-") || strings.HasPrefix(arg, "--") {
+			name := strings.TrimPrefix(arg, "--")
+			name = strings.TrimPrefix(arg, "-")
+			if opt := commands.OptionByName(command.Name, "", name); opt != nil {
+				var boolean = true
+				if opt.Field().Type == reflect.TypeOf(boolean) {
+					continue
+				}
+			}
+			i++
+			continue
+		}
+		processed = append(processed, arg)
+	}
+
+	return
+}
+
+// Functions from the github.com/apache-monkey -------------------------------------------------------------------------------------------------------------//
+
+func trimSpaceLeft(in []rune) []rune {
+	firstIndex := len(in)
+	for i, r := range in {
+		if unicode.IsSpace(r) == false {
+			firstIndex = i
+			break
+		}
+	}
+	return in[firstIndex:]
+}
+
+func equal(a, b []rune) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := 0; i < len(a); i++ {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func hasPrefix(r, prefix []rune) bool {
+	if len(r) < len(prefix) {
+		return false
+	}
+	return equal(r[:len(prefix)], prefix)
 }

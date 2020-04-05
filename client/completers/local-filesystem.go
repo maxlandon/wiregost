@@ -18,19 +18,16 @@ package completers
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/evilsocket/islazy/fs"
 	"github.com/lmorg/readline"
-	"github.com/maxlandon/wiregost/client/commands"
+	"github.com/maxlandon/wiregost/client/util"
 )
 
-type pathCompleter struct {
-	Command *commands.Command
-}
-
-func completeLocalPath(cmd *commands.Command, line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
+func completeLocalPath(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
 
 	// Completions
 	var suggestions []string
@@ -38,7 +35,21 @@ func completeLocalPath(cmd *commands.Command, line []rune, pos int) (string, []s
 
 	// Get last path
 	splitLine := strings.Split(string(line), " ")
-	inputPath := trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+	last := splitLine[len(splitLine)-1]
+
+	// Any parsing error is silently ignored, for not messing the prompt
+	processedPath, _ := util.ParseEnvVariables([]string{last})
+
+	// Check if processed input is empty
+	var inputPath string
+	if len(processedPath) == 1 {
+		inputPath = processedPath[0]
+	}
+
+	// Add a slash if the raw input has one but not the processed input
+	if line[len(line)-1] == '/' {
+		inputPath += "/"
+	}
 
 	// linePath is the curated version of the inputPath
 	var linePath string
@@ -98,44 +109,62 @@ func completeLocalPath(cmd *commands.Command, line []rune, pos int) (string, []s
 
 	}
 
-	return string(line[:pos]), suggestions, listSuggestions, readline.TabDisplayGrid
+	return string(lastPath), suggestions, listSuggestions, readline.TabDisplayGrid
 }
 
-// Do is the completion function triggered at each line
-func (pc *pathCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+func completeLocalPathAndFiles(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
 
+	// Completions
+	var suggestions []string
+	listSuggestions := map[string]string{}
+
+	// Get last path
 	splitLine := strings.Split(string(line), " ")
-	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+	last := splitLine[len(splitLine)-1]
 
-	// 1) Get the absolute path. There are two cases:
-	//      - The path is "rounded" with a slash: no filter to keep.
-	//      - The path is not a slash: a filter to keep for later.
-	// We keep a boolean for remembering which case we found
-	linePath := ""
-	path := ""
-	lastPath := ""
-	if strings.HasSuffix(string(line), "/") {
+	// Any parsing error is silently ignored, for not messing the prompt
+	processedPath, _ := util.ParseEnvVariables([]string{last})
+
+	// Check if processed input is empty
+	var inputPath string
+	if len(processedPath) == 1 {
+		inputPath = processedPath[0]
+	}
+
+	// Add a slash if the raw input has one but not the processed input
+	if line[len(line)-1] == '/' {
+		inputPath += "/"
+	}
+
+	// linePath is the curated version of the inputPath
+	var linePath string
+	// absPath is the absolute path (excluding suffix) of the inputPath
+	var absPath string
+	// lastPath is the last directory in the input path
+	var lastPath string
+
+	if strings.HasSuffix(string(inputPath), "/") {
 		// Trim the non needed slash
-		linePath = strings.TrimSuffix(string(line), "/")
-		linePath = filepath.Dir(string(line))
+		linePath = strings.TrimSuffix(string(inputPath), "/")
+		linePath = filepath.Dir(string(inputPath))
 		// Get absolute path
-		path, _ = fs.Expand(string(linePath))
+		absPath, _ = fs.Expand(string(linePath))
 
-	} else if string(line) == "" {
+	} else if string(inputPath) == "" {
 		linePath = "."
-		path, _ = fs.Expand(string(linePath))
+		absPath, _ = fs.Expand(string(linePath))
 	} else {
-		linePath = string(line)
-		linePath = filepath.Dir(string(line))
+		linePath = string(inputPath)
+		linePath = filepath.Dir(string(inputPath))
 		// Get absolute path
-		path, _ = fs.Expand(string(linePath))
+		absPath, _ = fs.Expand(string(linePath))
 		// Save filter
-		lastPath = filepath.Base(string(line))
+		lastPath = filepath.Base(string(inputPath))
 	}
 
 	// 2) We take the absolute path we found, and get all dirs in it.
 	var dirs []string
-	files, _ := ioutil.ReadDir(path)
+	files, _ := ioutil.ReadDir(absPath)
 	for _, file := range files {
 		if file.IsDir() {
 			dirs = append(dirs, file.Name())
@@ -144,32 +173,34 @@ func (pc *pathCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (o
 
 	switch lastPath {
 	case "":
-		for _, dir := range dirs {
-			search := dir + "/"
-			if !hasPrefix([]rune(lastPath), []rune(search)) {
-				sLine, sOffset := doInternal([]rune(lastPath), pos, len([]rune(lastPath)), []rune(search))
-				options = append(options, sLine...)
-				offset = sOffset
+		for _, file := range files {
+			if strings.HasPrefix(file.Name(), lastPath) || lastPath == file.Name() {
+				if file.IsDir() {
+					suggestions = append(suggestions, file.Name()[len(lastPath):]+"/")
+				} else {
+					suggestions = append(suggestions, file.Name()[len(lastPath):]+" ")
+				}
 			}
 		}
 	default:
-		filtered := []string{}
-		for _, dir := range dirs {
-			if strings.HasPrefix(dir, lastPath) {
-				filtered = append(filtered, dir)
+		filtered := []os.FileInfo{}
+		for _, file := range files {
+			if strings.HasPrefix(file.Name(), lastPath) {
+				filtered = append(filtered, file)
 			}
 		}
 
-		for _, dir := range filtered {
-			search := dir + "/"
-			if !hasPrefix([]rune(lastPath), []rune(search)) {
-				sLine, sOffset := doInternal([]rune(lastPath), pos, len([]rune(lastPath)), []rune(search))
-				options = append(options, sLine...)
-				offset = sOffset
+		for _, file := range filtered {
+			if !hasPrefix([]rune(lastPath), []rune(file.Name())) || lastPath == file.Name() {
+				if file.IsDir() {
+					suggestions = append(suggestions, file.Name()[len(lastPath):]+"/")
+				} else {
+					suggestions = append(suggestions, file.Name()[len(lastPath):]+" ")
+				}
 			}
 		}
 
 	}
 
-	return options, offset
+	return string(lastPath), suggestions, listSuggestions, readline.TabDisplayGrid
 }

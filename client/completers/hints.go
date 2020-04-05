@@ -32,6 +32,7 @@ var (
 	menuCatHint    = tui.RESET + tui.DIM + tui.BOLD + " Menu  " + tui.RESET                              // Dim
 	envCatHint     = tui.RESET + tui.GREEN + tui.BOLD + " Env  " + tui.RESET + tui.DIM + tui.GREEN       // Green
 	commandCatHint = "\033[38;5;223m" + tui.BOLD + " Command  " + tui.RESET + tui.DIM + "\033[38;5;223m" // Cream
+	ExeCatHint     = tui.RESET + tui.DIM + tui.BOLD + " Shell " + tui.RESET + tui.DIM                    // Dim
 	optionCatHint  = "\033[38;5;222m" + tui.BOLD + " Options  " + tui.RESET + tui.DIM + "\033[38;5;222m" // Cream-Yellow
 	valueCatHint   = "\033[38;5;217m" + tui.BOLD + " Value  " + tui.RESET + tui.DIM + "\033[38;5;217m"   // Pink-Cream
 	argCatHint     = "\033[38;5;217m" + tui.BOLD + " Arg  " + tui.RESET + tui.DIM + "\033[38;5;217m"     // Pink-Cream
@@ -95,6 +96,10 @@ func HintText(line []rune, pos int) (hint []rune) {
 	// Handle special commands
 	if isSpecialCommand(args, command) {
 		return handleSpecialCommands(args, line)
+	}
+
+	if commandFoundInPath(args[0]) {
+		hint = []rune(ExeCatHint + util.ParseSummary(util.GetManPages(args[0])))
 	}
 
 	return
@@ -235,10 +240,7 @@ func MenuHint(args []string, current []rune) (hint []rune) {
 }
 
 func handleSpecialCommands(args []string, current []rune) (hint []rune) {
-	if args[0] == "!" {
-		hint = []rune(commandCatHint + "Use the system shell through the console")
-		return
-	} else if args[0] == "exit" {
+	if args[0] == "exit" {
 		hint = []rune(commandCatHint + "Exit the Wiregost console")
 		return
 	}
