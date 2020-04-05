@@ -76,6 +76,7 @@ func (c *Console) Setup() {
 	// Shell & Context
 	c.initContext()
 
+	// Completion, hints and syntax
 	c.Shell.TabCompleter = completers.TabCompleter
 	c.Shell.HintText = completers.HintText
 	c.Shell.SyntaxHighlighter = completers.SyntaxHighlighter
@@ -119,21 +120,16 @@ func Start() {
 			continue
 		}
 
-		unfiltered := strings.Split(line, " ")
-
-		// Sanitize input
-		var args []string
-		for _, arg := range unfiltered {
-			if arg != "" {
-				args = append(args, arg)
-			}
+		sanitized, empty := splitAndSanitize(line)
+		if empty {
+			continue
 		}
 
 		// Leave a space between command and output
 		fmt.Println()
 
 		// Process tokens
-		parsed, err := ParseEnvVariables(unfiltered)
+		parsed, err := util.ParseEnvVariables(sanitized)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -186,4 +182,29 @@ func (c *Console) exit() bool {
 		return true
 	}
 	return false
+}
+
+// splitAndSanitize - Various minor input sanitization steps
+func splitAndSanitize(input string) (sanitized []string, empty bool) {
+
+	// Assume the input is not empty
+	empty = false
+
+	// Trim last space
+	line := strings.TrimSpace(input)
+	if len(line) < 1 {
+		empty = true
+		return
+	}
+
+	unfiltered := strings.Split(line, " ")
+
+	// Catch any eventual empty items
+	for _, arg := range unfiltered {
+		if arg != "" {
+			sanitized = append(sanitized, arg)
+		}
+	}
+
+	return
 }

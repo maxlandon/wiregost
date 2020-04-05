@@ -21,6 +21,7 @@ import (
 
 	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/client/commands"
+	"github.com/maxlandon/wiregost/client/util"
 )
 
 func (c *Console) ExecCommand(args []string) error {
@@ -43,21 +44,21 @@ func (c *Console) ExecCommand(args []string) error {
 	return nil
 }
 
+// handleSpecialCommands - Handles all commands not registered to the parser
 func (c *Console) handleSpecialCommands(args []string) error {
 
 	switch c.menu {
 	// Check context for availability
 	case commands.MAIN_CONTEXT:
 		switch args[0] {
-		// ! - Use the system shell through the console
-		case "!":
-			return commands.Shell(args)
 		case "exit":
 			c.exit()
+			// Fallback: Use the system shell through the console
+		default:
+			return util.Shell(args)
 		}
 	}
 
 	fmt.Printf(CommandError+"Invalid command: %s%s \n", tui.YELLOW, args[0])
 	return nil
-	// return fmt.Errorf(CommandError+"Invalid command: %s%s +\n", tui.YELLOW, args[0])
 }
