@@ -61,9 +61,9 @@ func (s *ReverseTCPStager) Run(command string) (result string, err error) {
 	action := strings.Split(command, " ")[0]
 
 	switch action {
-	case "run":
+	case consts.ModuleRun:
 		return s.CompileStager()
-	case "to_listener":
+	case consts.ModuleToListener:
 		return s.toListener()
 	}
 

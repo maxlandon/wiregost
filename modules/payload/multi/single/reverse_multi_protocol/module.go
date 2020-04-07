@@ -60,13 +60,13 @@ func (s *ReverseMulti) Run(command string) (result string, err error) {
 	action := strings.Split(command, " ")[0]
 
 	switch action {
-	case "run":
+	case consts.ModuleRun:
 		return s.CompileImplant()
-	case "to_listener":
+	case consts.ModuleToListener:
 		return s.toListener()
-	case "parse_profile":
+	case consts.ModuleParseProfile:
 		return s.parseProfile(command)
-	case "to_profile":
+	case consts.ModuleToProfile:
 		return s.generateProfile(command)
 	}
 	return "", nil
