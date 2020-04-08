@@ -84,7 +84,7 @@ func printJobs(jobs map[int32]*clientpb.Job) {
 
 	tab := util.NewTable()
 	headers := []string{"ID", "Name", "Protocol", "Port", "Description"}
-	widths := []int{3, 10, 5, 5, 50}
+	widths := []int{3, 10, 10, 5, 50}
 	tab.SetColumns(headers, widths)
 	tab.SetColWidth(50)
 
