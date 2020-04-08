@@ -22,51 +22,50 @@ import (
 	"strings"
 
 	"github.com/gogo/protobuf/proto"
-	"github.com/maxlandon/wiregost/client/commands"
-	"github.com/maxlandon/wiregost/client/help"
+	"github.com/lmorg/readline"
+
+	. "github.com/maxlandon/wiregost/client/commands"
+	"github.com/maxlandon/wiregost/client/constants"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
-type moduleCompleter struct {
-	Command *commands.Command
-}
+func completeModulePath(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
 
-// Do is the completion function triggered at each line
-func (mc *moduleCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+	// Completions
+	var suggestions []string
+	listSuggestions := map[string]string{}
 
+	// Get last path
 	splitLine := strings.Split(string(line), " ")
-	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+	last := splitLine[len(splitLine)-1]
 
-	line = append(line, []rune(help.GetHelpFor("module"))...)
 	stack, _ := proto.Marshal(&clientpb.ModuleActionReq{
-		Action: "list",
+		Action: constants.ModuleList,
 	})
 
-	rpc := ctx.Server.RPC
+	rpc := Context.Server.RPC
 
 	resp := <-rpc(&ghostpb.Envelope{
 		Type: clientpb.MsgModuleList,
 		Data: stack,
-	}, defaultTimeout)
+	}, DefaultTimeout)
 
 	if resp.Err != "" {
 		fmt.Printf(RPCError, "%s\n", resp.Err)
-		return
+		return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 	}
 
 	modList := &clientpb.ModuleAction{}
 	proto.Unmarshal(resp.Data, modList)
 
 	sort.Strings(modList.Modules)
+
 	for _, mod := range modList.Modules {
-		search := mod
-		if !hasPrefix(line, []rune(search)) {
-			sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-			options = append(options, sLine...)
-			offset = sOffset
+		if strings.HasPrefix(mod, string(last)) {
+			suggestions = append(suggestions, mod[len(last):])
 		}
 	}
 
-	return options, offset
+	return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 }

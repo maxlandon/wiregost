@@ -21,88 +21,69 @@ import (
 	"strings"
 
 	"github.com/gogo/protobuf/proto"
-	"github.com/maxlandon/wiregost/client/commands"
-	"github.com/maxlandon/wiregost/client/util"
+	"github.com/lmorg/readline"
+
+	. "github.com/maxlandon/wiregost/client/commands"
+	"github.com/maxlandon/wiregost/client/commands/module"
 	"github.com/maxlandon/wiregost/data-service/remote"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
-type optionCompleter struct {
-	Command *commands.Command
-}
+func CompleteOptionNames(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
 
-// Do is the completion function triggered at each line
-func (oc *optionCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+	// Completions
+	var suggestions []string
+	listSuggestions := map[string]string{}
 
-	// Complete command args
+	// Get last path
 	splitLine := strings.Split(string(line), " ")
-	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+	last := splitLine[len(splitLine)-1]
 
-	moduleOptions := []string{}
-	switch ctx.Module.Type {
+	switch Context.Module.Type {
 	case "payload":
-		moduleOptions = append(moduleOptions, util.SortGenerateOptionKeys(ctx.Module.Options)...)
-		moduleOptions = append(moduleOptions, util.SortListenerOptionKeys(ctx.Module.Options)...)
-	case "post":
-		moduleOptions = append(moduleOptions, util.SortPostOptions(ctx.Module.Options)...)
-	}
-
-	switch word := splitLine[0]; {
-	case wordInOptions(word, moduleOptions):
-		return oc.yieldOptionValues(ctx, word, line, pos)
-	default:
-		return oc.yieldOptionNames(ctx, line, pos)
-	}
-}
-
-// Do is the completion function triggered at each line
-func (oc *optionCompleter) yieldOptionNames(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
-	switch ctx.Module.Type {
-	case "payload":
-		for _, v := range util.SortListenerOptionKeys(ctx.Module.Options) {
-			search := v + " "
-			if !hasPrefix(line, []rune(search)) {
-				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-				options = append(options, sLine...)
-				offset = sOffset
+		for _, v := range module.SortListenerOptionKeys(Context.Module.Options) {
+			if strings.HasPrefix(v, string(last)) {
+				suggestions = append(suggestions, v[len(last):]+" ")
 			}
 		}
 
-		for _, v := range util.SortGenerateOptionKeys(ctx.Module.Options) {
-			search := v + " "
-			if !hasPrefix(line, []rune(search)) {
-				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-				options = append(options, sLine...)
-				offset = sOffset
+		for _, v := range module.SortGenerateOptionKeys(Context.Module.Options) {
+			if strings.HasPrefix(v, string(last)) {
+				suggestions = append(suggestions, v[len(last):]+" ")
 			}
 		}
 	case "post":
-		for _, v := range util.SortPostOptions(ctx.Module.Options) {
-			search := v + " "
-			if !hasPrefix(line, []rune(search)) {
-				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-				options = append(options, sLine...)
-				offset = sOffset
+		for _, v := range module.SortPostOptions(Context.Module.Options) {
+			if strings.HasPrefix(v, string(last)) {
+				suggestions = append(suggestions, v[len(last):]+" ")
 			}
 		}
 	}
-	return options, offset
+
+	return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 }
 
-// Do is the completion function triggered at each line
-func (oc *optionCompleter) yieldOptionValues(ctx *commands.ShellContext, optionName string, line []rune, pos int) (options [][]rune, offset int) {
+func CompleteOptionValues(optionName string, line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
+
+	// Completions
+	var suggestions []string
+	listSuggestions := map[string]string{}
+
+	// Get last path
+	splitLine := strings.Split(string(line), " ")
+	last := splitLine[len(splitLine)-1]
 
 	switch optionName {
 	case "StageImplant", "StageConfig":
 		// Get ghost builds
-		rpc := ctx.Server.RPC
+		rpc := Context.Server.RPC
 		resp := <-rpc(&ghostpb.Envelope{
 			Type: clientpb.MsgListGhostBuilds,
-		}, defaultTimeout)
+		}, DefaultTimeout)
 		if resp.Err != "" {
 			fmt.Printf(RPCError+"%s\n", resp.Err)
-			return
+			return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 		}
 
 		builds := &clientpb.GhostBuilds{}
@@ -115,33 +96,27 @@ func (oc *optionCompleter) yieldOptionValues(ctx *commands.ShellContext, optionN
 		}
 
 		for _, c := range shellcodeBuilds {
-			search := c.Name
-			if !hasPrefix(line, []rune(search)) {
-				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-				options = append(options, sLine...)
-				offset = sOffset
+			if strings.HasPrefix(c.Name, string(last)) {
+				suggestions = append(suggestions, c.Name[len(last):])
 			}
 		}
 	case "Workspace":
 		workspaces, _ := remote.Workspaces(nil)
 		for _, w := range workspaces {
-			search := w.Name
-			if !hasPrefix(line, []rune(search)) {
-				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-				options = append(options, sLine...)
-				offset = sOffset
+			if strings.HasPrefix(w.Name, string(last)) {
+				suggestions = append(suggestions, w.Name[len(last):])
 			}
 		}
 	case "Session":
-		rpc := ctx.Server.RPC
+		rpc := Context.Server.RPC
 
 		resp := <-rpc(&ghostpb.Envelope{
 			Type: clientpb.MsgSessions,
 			Data: []byte{},
-		}, defaultTimeout)
+		}, DefaultTimeout)
 		if resp.Err != "" {
 			fmt.Printf(RPCError+"%s\n", resp.Err)
-			return
+			return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 		}
 		sessions := &clientpb.Sessions{}
 		proto.Unmarshal(resp.Data, sessions)
@@ -152,16 +127,13 @@ func (oc *optionCompleter) yieldOptionValues(ctx *commands.ShellContext, optionN
 		}
 
 		for _, g := range ghosts {
-			search := g.Name
-			if !hasPrefix(line, []rune(search)) {
-				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-				options = append(options, sLine...)
-				offset = sOffset
+			if strings.HasPrefix(g.Name, string(last)) {
+				suggestions = append(suggestions, g.Name[len(last):])
 			}
 		}
 	}
 
-	return options, offset
+	return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 }
 
 func wordInOptions(a string, list []string) bool {

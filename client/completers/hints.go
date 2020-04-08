@@ -24,6 +24,7 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	"github.com/jessevdk/go-flags"
 	"github.com/maxlandon/wiregost/client/commands"
+	"github.com/maxlandon/wiregost/client/constants"
 	"github.com/maxlandon/wiregost/client/util"
 )
 
@@ -68,28 +69,21 @@ func HintText(line []rune, pos int) (hint []rune) {
 			return envVarHint(args, last)
 		}
 
+		// If command has args, hint for args
+		if arg, yes := argumentRequired(last, args, command); yes {
+			hint = []rune(CommandArgumentHints(args, last, command, arg))
+			return
+		}
+
 		// Brief subcommand hint
 		if lastIsSubCommand(last, command) {
 			hint = []rune(commandCatHint + command.Find(string(last)).ShortDescription)
 			return
 		}
 
-		// If command has args, hint for args
-		if hasArgs(command) {
-			return CommandArgumentHints(args, last, command)
-		}
-
 		// Handle subcommand if found
 		if sub, ok := subCommandFound(last, args, command); ok {
 			return HandleSubcommandHints(args, last, sub)
-		}
-
-		// Handle special arguments
-		switch command.Name {
-		case "cd":
-			if len(args) > 1 && args[1] != "" {
-				hint = []rune(commandCatHint + "Change directory:" + " => " + args[1])
-			}
 		}
 	}
 
@@ -108,9 +102,10 @@ func HintText(line []rune, pos int) (hint []rune) {
 // HandleSubcommandHints - Handles hints for a subcommand and its arguments, options, etc.
 func HandleSubcommandHints(args []string, last []rune, command *flags.Command) (hint []rune) {
 
-	// If command has arguments, propose them by default
-	if hasArgs(command) {
-		hint = CommandArgumentHints(args, last, command)
+	// If command has args, hint for args
+	if arg, yes := argumentRequired(last, args, command); yes {
+		hint = []rune(CommandArgumentHints(args, last, command, arg))
+		return
 	}
 
 	// Environment variables
@@ -134,32 +129,35 @@ func HandleSubcommandHints(args []string, last []rune, command *flags.Command) (
 }
 
 // ArgumentHints - Yields hints for arguments to commands if they have some
-func CommandArgumentHints(args []string, last []rune, command *flags.Command) (hint []rune) {
+func CommandArgumentHints(args []string, last []rune, command *flags.Command, arg string) (hint []rune) {
 
-	// 1 argument
-	if len(command.Args()) == 1 && len(args) >= 2 {
-		arg := command.Args()[0]
+	found := commands.ArgumentByName(command, arg)
 
-		// Get remaining arguments (those not presumably set yet)
-		remain := getRemainingArgs(args[1:], last, command)
+	// Base Hint is just a description of the command argument
+	hint = []rune(argCatHint + found.Description)
 
-		// Hint string
-		var total string
+	switch *commands.Context.Menu {
+	case commands.MAIN_CONTEXT, commands.MODULE_CONTEXT:
 
-		// This function should be more precise, with an alert if too many arguments are given
+		switch found.Name {
+		case "Value":
+			switch command.Name {
+			case constants.ModuleSetOption:
+				// args[1] is supposed to be the option name
+				hint = ModuleOptionHints(args[1])
+			}
 
-		// Fill the indicator < 1/1 args >
-		if arg.Required > len(remain) {
-			total = fmt.Sprintf("%s%s%d/%d%s", tui.DIM, tui.RED, len(remain), arg.Required, tui.RESET)
-		} else if arg.Required <= len(remain) {
-			total = fmt.Sprintf("%s%s%d/%d%s", tui.DIM, tui.GREEN, len(remain), arg.Required, tui.RESET)
+		default: // If name is empty, return
 		}
 
-		// Processed hint
-		hintStr := fmt.Sprintf(argCatHint+"%s  %s%s(%s %sargs)", arg.Description, tui.RESET, tui.DIM, total, tui.DIM)
-		hint = []rune(hintStr)
+	case commands.GHOST_CONTEXT:
 	}
 
+	return
+}
+
+func ModuleOptionHints(opt string) (hint []rune) {
+	hint = []rune(valueCatHint + commands.Context.Module.Options[opt].Description)
 	return
 }
 
@@ -229,7 +227,7 @@ func MenuHint(args []string, current []rune) (hint []rune) {
 		tui.BLUE, commands.Context.Ghost.RemoteAddress, tui.RESET, tui.DIM)
 
 	switch *commands.Context.Menu {
-	case commands.MAIN_CONTEXT:
+	case commands.MAIN_CONTEXT, commands.MODULE_CONTEXT:
 		hint = []rune(menuCatHint + mainMenuHint)
 		return
 	case commands.GHOST_CONTEXT:
