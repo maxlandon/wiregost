@@ -58,7 +58,7 @@ func (r *ModuleRunCmd) Execute(args []string) error {
 	}, DefaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf(RPCError+"%s", resp.Err)
+		fmt.Printf(RPCError+"%s \n", resp.Err)
 		return nil
 	}
 
@@ -66,9 +66,9 @@ func (r *ModuleRunCmd) Execute(args []string) error {
 	proto.Unmarshal(resp.Data, result)
 
 	if result.Success == false {
-		fmt.Printf(Error+"%s", result.Err)
+		fmt.Printf(Error+"%s \n", result.Err)
 	} else {
-		fmt.Printf(Success+"%s", result.Result)
+		fmt.Printf(Success+"%s \n", result.Result)
 	}
 
 	return nil

@@ -41,7 +41,7 @@ func RegisterModuleParseProfile() {
 
 	pp := CommandParser.Find(constants.ModuleParseProfile)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], pp)
-	pp.ShortDescription = "parse a ghost profile into the current module settings"
+	pp.ShortDescription = "Parse a ghost profile into the current module settings"
 	pp.Args()[0].RequiredMaximum = 1
 
 }
@@ -64,7 +64,7 @@ func (pp *ModuleParseProfileCmd) Execute(args []string) error {
 	}, DefaultTimeout)
 
 	if resp.Err != "" {
-		fmt.Printf(RPCError+"%s", resp.Err)
+		fmt.Printf(RPCError+"%s \n", resp.Err)
 		return nil
 	}
 
@@ -72,10 +72,10 @@ func (pp *ModuleParseProfileCmd) Execute(args []string) error {
 	proto.Unmarshal(resp.Data, result)
 
 	if result.Success == false {
-		fmt.Printf(Error+"%s", result.Err)
+		fmt.Printf(Error+"%s \n", result.Err)
 	} else {
 		*m = *result.Updated
-		fmt.Printf(Info+"%s", result.Result)
+		fmt.Printf(Info+"%s \n", result.Result)
 	}
 
 	return nil
