@@ -29,6 +29,7 @@ import (
 	"github.com/lmorg/readline"
 
 	"github.com/maxlandon/wiregost/client/commands"
+	"github.com/maxlandon/wiregost/client/commands/jobs"
 	"github.com/maxlandon/wiregost/client/completers"
 	"github.com/maxlandon/wiregost/client/config"
 	"github.com/maxlandon/wiregost/client/core"
@@ -157,8 +158,8 @@ func (c *Console) hardRefresh() {
 	}
 
 	// Jobs
-	// jobs := commands.GetJobs(c.context.Server.RPC)
-	// c.jobs = len(jobs.Active)
+	jobs := jobs.GetJobs(c.context.Server.RPC)
+	c.jobs = len(jobs.Active)
 	c.jobs = 0
 
 	// Sessions
