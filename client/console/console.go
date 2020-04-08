@@ -85,7 +85,7 @@ func (c *Console) Setup() {
 	c.prompt = newPrompt(c, c.config.Prompt, c.config.ImplantPrompt)
 
 	// Commands
-	commands.RegisterCommands()
+	RegisterCommands()
 
 	// Env
 	util.LoadSystemEnv()
@@ -105,6 +105,7 @@ func Start() {
 	} else {
 		fmt.Println()
 		go console.eventLoop(console.server)
+		commands.Context.Server = console.server
 	}
 
 	// Input loop
@@ -147,12 +148,12 @@ func Start() {
 func (c *Console) hardRefresh() {
 	// Menu context
 	if len(c.module.Path) != 0 {
-		c.menu = "module"
+		c.menu = commands.MODULE_CONTEXT
 	} else {
-		c.menu = "main"
+		c.menu = commands.MAIN_CONTEXT
 	}
 	if c.Ghost.Name != "" {
-		c.menu = "agent"
+		c.menu = commands.GHOST_CONTEXT
 	}
 
 	// Jobs
@@ -170,7 +171,7 @@ func (c *Console) hardRefresh() {
 	refreshPrompt(c.prompt, c.Shell)
 }
 
-func (c *Console) exit() bool {
+func (c *Console) exit() {
 
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Confirm exit (Y/y): ")
@@ -179,9 +180,7 @@ func (c *Console) exit() bool {
 
 	if (answer == "Y") || (answer == "y") {
 		os.Exit(0)
-		return true
 	}
-	return false
 }
 
 // splitAndSanitize - Various minor input sanitization steps

@@ -27,6 +27,7 @@ import (
 	// 3rd party
 	"github.com/evilsocket/islazy/tui"
 	"github.com/lmorg/readline"
+	"github.com/maxlandon/wiregost/client/commands"
 )
 
 // Prompt object
@@ -56,7 +57,7 @@ func newPrompt(c *Console, customMain string, customAgent string) Prompt {
 	prompt := Prompt{
 		// Prompt strings
 		baseMain:       "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
-		module:         " =>{reset} {type}({mod})",
+		module:         " {dim}=>{reset} {type}({mod})",
 		baseAgent:      "{dim}as {user}{bold}{y}@{reset}{host}/{rpwd} {dim}in {workspace}",
 		agent:          "{bddg}{fw}agent[{lb}{agent}]{reset} ",
 		customMain:     customMain,
@@ -96,12 +97,6 @@ func newPrompt(c *Console, customMain string, customAgent string) Prompt {
 	prompt.promptCallbacks = map[string]func() string{
 		// Vim mode
 		"{vim}": func() string {
-			// switch c.vimMode {
-			// case "insert":
-			//         return tui.Yellow("[I]")
-			// case "normal":
-			//         return tui.Blue("[N]")
-			// }
 			return ""
 		},
 
@@ -213,19 +208,17 @@ func newPrompt(c *Console, customMain string, customAgent string) Prompt {
 	return prompt
 }
 
-func (p Prompt) render() (first string, multi string) {
-
-	var prompt string
+func (p Prompt) render() (prompt string, multi string) {
 
 	switch p.customMain {
 	// No custom prompt provided, use base
 	case "":
-		if p.currentModule != "" {
+		if len(commands.Context.Module.Path) != 0 {
 			prompt = p.baseMain + p.module
 		} else {
 			prompt = p.baseMain
 		}
-		if *p.menu == "agent" {
+		if *p.menu == commands.GHOST_CONTEXT {
 			// Check custom implant prompt provided
 			if p.customAgent == "" {
 				prompt = p.agent + p.baseAgent
@@ -236,12 +229,12 @@ func (p Prompt) render() (first string, multi string) {
 
 	// Custom provided, use it
 	default:
-		if p.currentModule != "" {
+		if len(commands.Context.Module.Path) != 0 {
 			prompt = p.customMain + p.module
 		} else {
 			prompt = p.customMain
 		}
-		if *p.menu == "agent" {
+		if *p.menu == commands.GHOST_CONTEXT {
 			// Check custom implant prompt provided
 			if p.customAgent == "" {
 				prompt = p.agent + p.baseAgent
@@ -253,9 +246,6 @@ func (p Prompt) render() (first string, multi string) {
 
 	// Set multiline based on input mode
 	multiline := p.multilineEmacs
-	// if vimMode {
-	//         multiline = p.multilineVim
-	// }
 
 	for tok, effect := range p.effects {
 		prompt = strings.Replace(prompt, tok, effect, -1)
