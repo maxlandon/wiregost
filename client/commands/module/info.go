@@ -43,22 +43,22 @@ func (i *ModuleInfoCmd) Execute(args []string) error {
 	m := Context.Module
 
 	// Info
-	fmt.Printf("%sModule:%s\r\t\t%s\r\n", tui.YELLOW, tui.RESET, m.Name)
-	fmt.Printf("%sPlatform:%s \t%s (%s)\r\n", tui.YELLOW, tui.RESET, m.Platform, m.Targets)
-	fmt.Printf("%sModule Authors:%s ", tui.YELLOW, tui.RESET)
+	fmt.Printf("%s%sModule:%s\r\t\t%s\r\n", tui.DIM, tui.BLUE, tui.RESET, m.Name)
+	fmt.Printf("%s%sPlatform:%s \t%s (%s)\r\n", tui.DIM, tui.BLUE, tui.RESET, m.Platform, m.Targets)
+	fmt.Printf("%s%sModule Authors:%s ", tui.DIM, tui.BLUE, tui.RESET)
 	for a := range m.Author {
 		fmt.Printf("%s ", m.Author[a])
 	}
 	fmt.Println()
-	fmt.Printf("%sCredits:%s \t", tui.YELLOW, tui.RESET)
+	fmt.Printf("%s%sCredits:%s \t", tui.DIM, tui.BLUE, tui.RESET)
 	for c := range m.Credits {
 		fmt.Printf("%s ", m.Credits[c])
 	}
 	fmt.Println()
-	fmt.Printf("%sLanguage:%s\r\t\t%s\n", tui.YELLOW, tui.RESET, m.Lang)
-	fmt.Printf("%sPriviledged:%s \t%t\n", tui.YELLOW, tui.RESET, m.Priviledged)
+	fmt.Printf("%s%sLanguage:%s\r\t\t%s\n", tui.DIM, tui.BLUE, tui.RESET, m.Lang)
+	fmt.Printf("%s%sPriviledged:%s \t%t\n", tui.DIM, tui.BLUE, tui.RESET, m.Priviledged)
 	fmt.Println()
-	fmt.Printf("%sDescription:%s\r\n", tui.YELLOW, tui.RESET)
+	fmt.Printf("%s%sDescription:%s\r\n", tui.DIM, tui.BLUE, tui.RESET)
 	fmt.Println(tui.Dim(util.Wrap(m.Description, 100)))
 	fmt.Println()
 
