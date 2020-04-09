@@ -51,7 +51,7 @@ func (su *StackUseCmd) Execute(args []string) error {
 
 	mod, _ := proto.Marshal(&clientpb.StackReq{
 		Path:         strings.Split(su.Positional.Path, "/"),
-		Action:       "use",
+		Action:       constants.StackUse,
 		WorkspaceID:  uint32(Context.Workspace.ID),
 		User:         Context.Server.Config.User,
 		ModuleUserID: Context.UserID,
