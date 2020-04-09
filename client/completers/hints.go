@@ -70,7 +70,7 @@ func HintText(line []rune, pos int) (hint []rune) {
 		}
 
 		// If command has args, hint for args
-		if arg, yes := argumentRequired(last, args, command); yes {
+		if arg, yes := argumentRequired(last, args, command, false); yes {
 			hint = []rune(CommandArgumentHints(args, last, command, arg))
 			return
 		}
@@ -103,7 +103,7 @@ func HintText(line []rune, pos int) (hint []rune) {
 func HandleSubcommandHints(args []string, last []rune, command *flags.Command) (hint []rune) {
 
 	// If command has args, hint for args
-	if arg, yes := argumentRequired(last, args, command); yes {
+	if arg, yes := argumentRequired(last, args, command, true); yes {
 		hint = []rune(CommandArgumentHints(args, last, command, arg))
 		return
 	}

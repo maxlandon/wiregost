@@ -40,16 +40,15 @@ func noCommandOrEmpty(args []string, last []rune, command *flags.Command) bool {
 
 // [ Commands ]
 // detectedCommand - Returns the base command from parser if detected, depending on context
-func detectedCommand(args []string) *flags.Command {
+func detectedCommand(args []string) (command *flags.Command) {
 
 	cmds := commands.CommandsByContext()
-	var command *flags.Command
 	for _, cmd := range cmds {
 		if cmd.Name == args[0] {
 			command = cmd
 		}
 	}
-	return command
+	return
 }
 
 // is the command a special command, usually not handled by parser ?
@@ -133,46 +132,39 @@ func hasArgs(command *flags.Command) bool {
 }
 
 // argumentRequired - Analyses input and sends back the next argument name to provide completion for
-func argumentRequired(last []rune, args []string, command *flags.Command) (name string, yes bool) {
+func argumentRequired(last []rune, args []string, command *flags.Command, isSub bool) (name string, yes bool) {
 
-	// We check if the command parameter is a root command
-	base := commands.CommandParser.Find(command.Name)
+	// Trim command and subcommand args
+	var remain []string
+	if isSub {
+		remain = args[2:]
+	} else {
+		remain = args[1:]
+	}
 
-	if commandFound(base) {
-		remain := args[1:]
-		// filter out options
-		remain = filterOptions(remain, base)
+	remain = filterOptions(remain, command)
 
-		// We get the number of argument fields in command struct
-		switch length := len(base.Args()); {
-		case length == 1:
-			arg := base.Args()[0]
-			if arg.Required == 1 && arg.RequiredMaximum == 1 && len(remain) == 1 {
-				return arg.Name, true
-			}
-		case length > 1:
-			arg := base.Args()[0]
-			if len(remain) == 1 {
-				// if arg.Required == 1 && arg.RequiredMaximum == 1 && len(remain) == 1 {
-				return arg.Name, true
-			}
-		default:
+	// We get the number of argument fields in command struct
+	switch length := len(command.Args()); {
+	case length == 1:
+		arg := command.Args()[0]
+		if arg.Required == 1 && arg.RequiredMaximum == 1 && len(remain) == 1 {
+			return arg.Name, true
 		}
-	} else if sub, found := subCommandFound(last, args, command); found {
-		remain := args[2:]
-		remain = filterOptions(remain, sub)
-		switch len(base.Args()) {
-		case 1:
-			arg := base.Args()[0]
-			if arg.Required == 1 && arg.RequiredMaximum == 1 && len(remain) == 1 {
-				return arg.Name, true
-			}
-		default:
-			arg := base.Args()[0]
-			if arg.Required == 1 && arg.RequiredMaximum == 1 && len(remain) == 1 {
-				return arg.Name, true
-			}
+		if len(remain) == 1 {
+			return arg.Name, true
 		}
+
+	case length == 2:
+		arg1 := command.Args()[0]
+		arg2 := command.Args()[1]
+		if len(remain) == 1 {
+			return arg1.Name, true
+		}
+		if len(remain) == 2 {
+			return arg2.Name, true
+		}
+	default:
 	}
 
 	return

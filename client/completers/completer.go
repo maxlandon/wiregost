@@ -58,7 +58,7 @@ func TabCompleter(line []rune, pos int) (string, []string, map[string]string, re
 		}
 
 		// Propose completion for args before anything else
-		if arg, yes := argumentRequired(last, args, command); yes {
+		if arg, yes := argumentRequired(last, args, command, false); yes {
 			return CompleteCommandArguments(command, arg, line, pos)
 		}
 
@@ -116,7 +116,15 @@ func CompleteCommandArguments(cmd *flags.Command, arg string, line []rune, pos i
 			case "ls", "cat":
 				return completeLocalPathAndFiles(line, pos)
 			case constants.ModuleUse:
-				return completeModulePath(line, pos)
+				// Check for subcommand: depends on module or stack command
+				if len(args) == 2 {
+					return completeModulePath(line, pos)
+				}
+				if len(args) == 3 {
+					return completeStackModulePath(line, pos)
+				}
+			case constants.StackPop:
+				return completeStackModulePath(line, pos)
 			}
 		case "Option":
 			switch cmd.Name {
@@ -128,6 +136,15 @@ func CompleteCommandArguments(cmd *flags.Command, arg string, line []rune, pos i
 			case constants.ModuleSetOption:
 				// args[1] is supposed to be the option name
 				return CompleteOptionValues(args[1], line, pos)
+			}
+		case "SessionID":
+			return CompleteSessionIDs(line, pos)
+		case "JobID":
+			return CompleteJobIDs(line, pos)
+		case "Name":
+			switch cmd.Name {
+			case constants.WorkspaceSwitch, constants.WorkspaceDelete, constants.WorkspaceUpdate:
+			case constants.ModuleParseProfile:
 			}
 
 		default: // If name is empty, return
@@ -167,7 +184,7 @@ func HandleSubCommand(line []rune, pos int, command *flags.Command) (string, []s
 	}
 
 	// If command has non-filled arguments, propose them first
-	if arg, yes := argumentRequired(last, args, command); yes {
+	if arg, yes := argumentRequired(last, args, command, true); yes {
 		_, suggestions, listSuggestions, tabType = CompleteCommandArguments(command, arg, line, pos)
 	}
 
