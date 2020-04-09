@@ -68,39 +68,64 @@ const (
 	// Data Service --------------------------
 
 	// Workspace
-	WorkspaceStr = "workspace"
+	Workspace       = "workspace"
+	WorkspaceSwitch = "switch"
+	WorkspaceAdd    = "add"
+	WorkspaceDelete = "delete"
+	WorkspaceUpdate = "update"
 
 	// Hosts
-	HostsStr    = "hosts"
-	HostsAdd    = "hosts add"
-	HostsDelete = "hosts delete"
-	HostsUpdate = "hosts update"
+	Hosts       = "hosts"
+	HostsAdd    = "add"
+	HostsDelete = "delete"
+	HostsUpdate = "update"
 
 	// Services
-	ServicesStr    = "services"
-	ServicesAdd    = "services add"
-	ServicesDelete = "services delete"
-	ServicesUpdate = "services update"
+	Services       = "services"
+	ServicesAdd    = "add"
+	ServicesDelete = "delete"
+	ServicesUpdate = "update"
 
 	// Groups
 	DataServiceHelpGroup = "Data Service:"
 
 	// Stack & Modules -----------------------
 	Stack              = "stack"
+	StackList          = "list"
+	StackUse           = "use"
+	StackPop           = "pop"
 	Module             = "module"
 	ModuleUse          = "use"
-	ModuleToListener   = "to_listener"
-	ModuleParseProfile = "parse_profile"
-	ModuleToProfile    = "to_profile"
+	ModuleInfo         = "info"
+	ModuleOptions      = "options"
+	ModuleSetOption    = "set"
+	ModuleList         = "list"
+	ModuleRun          = "run"
+	ModuleToListener   = "to-listener"
+	ModuleParseProfile = "parse-profile"
+	ModuleToProfile    = "to-profile"
+	ModuleBack         = "back"
 
 	// Jobs
-	Jobs = "jobs"
+	Jobs        = "jobs"
+	JobsKill    = "kill"
+	JobsKillAll = "kill-all"
 
 	// Profiles
-	Profiles = "profiles"
+	Profiles       = "profiles"
+	ProfilesDelete = "delete"
+
+	// GhostBuilds
+	Ghosts = "ghosts"
+
+	// Canaries
+	Canaries = "canaries"
 
 	// Sessions
-	Sessions = "sessions"
+	Sessions         = "sessions"
+	SessionsInteract = "interact"
+	SessionsKill     = "kill"
+	SessionsKillAll  = "kill-all"
 
 	// Ghost Implants -------------------------
 	AgentHelp         = "agent-help"
@@ -117,6 +142,6 @@ const (
 	ExecuteShellcode  = "execute-shellcode"
 	ExecuteAssembly   = "execute-assembly"
 	Sideload          = "sideload"
-	SpawnDll          = "spawn_dll"
+	SpawnDll          = "spawn-dll"
 	MsfInject         = "msf-inject"
 )
