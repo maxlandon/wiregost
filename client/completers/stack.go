@@ -19,65 +19,57 @@ package completers
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/gogo/protobuf/proto"
-	"github.com/maxlandon/wiregost/client/commands"
+	"github.com/lmorg/readline"
+
+	. "github.com/maxlandon/wiregost/client/commands"
+	"github.com/maxlandon/wiregost/client/constants"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
-var defaultTimeout = 30 * time.Second
+func completeStackModulePath(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
 
-type stackCompleter struct {
-	Command *commands.Command
-}
+	// Completions
+	var suggestions []string
+	listSuggestions := map[string]string{}
 
-// Do is the completion function triggered at each line
-func (mc *stackCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
-
+	// Get last path
 	splitLine := strings.Split(string(line), " ")
-	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+	last := splitLine[len(splitLine)-1]
 
-	switch splitLine[0] {
-	case "use", "pop":
-		// Get stack modules
-		stack, _ := proto.Marshal(&clientpb.StackReq{
-			Action:      "list",
-			WorkspaceID: uint32(ctx.Workspace.ID),
-			User:        ctx.Server.Config.User,
-		})
+	stack, _ := proto.Marshal(&clientpb.StackReq{
+		Action:      constants.StackList,
+		WorkspaceID: uint32(Context.Workspace.ID),
+		User:        Context.Server.Config.User,
+	})
 
-		rpc := ctx.Server.RPC
+	rpc := Context.Server.RPC
 
-		resp := <-rpc(&ghostpb.Envelope{
-			Type: clientpb.MsgStackList,
-			Data: stack,
-		}, defaultTimeout)
+	resp := <-rpc(&ghostpb.Envelope{
+		Type: clientpb.MsgStackList,
+		Data: stack,
+	}, DefaultTimeout)
 
-		if resp.Err != "" {
-			fmt.Printf(RPCError, "%s\n", resp.Err)
-			return
-		}
+	if resp.Err != "" {
+		fmt.Printf(RPCError, "%s\n", resp.Err)
+		return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
+	}
 
-		stackList := &clientpb.Stack{}
-		proto.Unmarshal(resp.Data, stackList)
-		if stackList.Err != "" {
-			fmt.Println()
-			fmt.Printf(Error, "%s", stackList.Err)
-			fmt.Println()
-			return
-		}
+	stackList := &clientpb.Stack{}
+	proto.Unmarshal(resp.Data, stackList)
+	if stackList.Err != "" {
+		fmt.Printf(Error, "%s\n", stackList.Err)
+		return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
+	}
 
-		for _, mod := range stackList.Modules {
-			search := strings.Join(mod.Path, "/")
-			if !hasPrefix(line, []rune(search)) {
-				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-				options = append(options, sLine...)
-				offset = sOffset
-			}
+	for _, mod := range stackList.Modules {
+		name := strings.Join(mod.Path, "/")
+		if strings.HasPrefix(name, string(last)) {
+			suggestions = append(suggestions, name[len(last):])
 		}
 	}
 
-	return options, offset
+	return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 }

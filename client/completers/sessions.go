@@ -18,33 +18,39 @@ package completers
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
+	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
-	"github.com/maxlandon/wiregost/client/commands"
+	"github.com/lmorg/readline"
+
+	. "github.com/maxlandon/wiregost/client/commands"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
-type sessionCompleter struct {
-	Command *commands.Command
-}
+func CompleteSessionIDs(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
+	// Completions
+	var suggestions []string
+	listSuggestions := map[string]string{}
 
-func (mc *sessionCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
-
+	// Get last path
 	splitLine := strings.Split(string(line), " ")
-	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+	last := splitLine[len(splitLine)-1]
 
-	rpc := ctx.Server.RPC
+	rpc := Context.Server.RPC
 
 	resp := <-rpc(&ghostpb.Envelope{
 		Type: clientpb.MsgSessions,
 		Data: []byte{},
-	}, defaultTimeout)
+	}, DefaultTimeout)
+
 	if resp.Err != "" {
 		fmt.Printf(RPCError+"%s\n", resp.Err)
-		return
+		return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 	}
+
 	sessions := &clientpb.Sessions{}
 	proto.Unmarshal(resp.Data, sessions)
 
@@ -53,29 +59,18 @@ func (mc *sessionCompleter) Do(ctx *commands.ShellContext, line []rune, pos int)
 		ghosts[ghost.ID] = ghost
 	}
 
-	switch mc.Command.Name {
-	case "sessions":
-		switch splitLine[0] {
-		case "interact", "kill":
-			for _, g := range ghosts {
-				search := g.Name
-				if !hasPrefix(line, []rune(search)) {
-					sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-					options = append(options, sLine...)
-					offset = sOffset
-				}
-			}
-		}
-	case "interact":
-		for _, g := range ghosts {
-			search := g.Name
-			if !hasPrefix(line, []rune(search)) {
-				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-				options = append(options, sLine...)
-				offset = sOffset
-			}
+	for _, g := range ghosts {
+		if strings.HasPrefix(strconv.Itoa(int(g.ID)), string(last)) {
+			suggestions = append(suggestions, strconv.Itoa(int(g.ID))[(len(last)):])
+
+			var desc string
+			desc += fmt.Sprintf("%s%s", tui.FOREWHITE, g.Name)
+			desc += fmt.Sprintf("%s at %s%s", tui.DIM, tui.BLUE, g.RemoteAddress)
+			desc += fmt.Sprintf("%s as %s%s%s@%s%s", tui.DIM, tui.FOREWHITE, g.Username, tui.BOLD, tui.RESET, g.Hostname)
+
+			listSuggestions[strconv.Itoa(int(g.ID))[(len(last)):]] = tui.RESET + tui.DIM + desc + tui.RESET
 		}
 	}
 
-	return options, offset
+	return string(last), suggestions, listSuggestions, readline.TabDisplayList
 }
