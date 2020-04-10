@@ -35,14 +35,13 @@ type CanariesCmd struct{}
 var Canaries CanariesCmd
 
 func RegisterCanaries() {
-	CommandParser.AddCommand(constants.Canaries, "", "", &Canaries)
+	MainParser.AddCommand(constants.Canaries, "", "", &Canaries)
 
-	can := CommandParser.Find(constants.Canaries)
+	can := MainParser.Find(constants.Canaries)
 	CommandMap[MAIN_CONTEXT] = append(CommandMap[MAIN_CONTEXT], can)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], can)
 	can.ShortDescription = "List DNS canaries"
 	can.SubcommandsOptional = true
-
 }
 
 // Execute - List DNS Canaries

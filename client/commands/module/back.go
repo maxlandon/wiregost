@@ -28,9 +28,9 @@ type ModuleBackCmd struct{}
 var ModuleBack ModuleBackCmd
 
 func RegisterModuleBack() {
-	CommandParser.AddCommand(constants.ModuleBack, "", "", &ModuleBack)
+	MainParser.AddCommand(constants.ModuleBack, "", "", &ModuleBack)
 
-	mb := CommandParser.Find(constants.ModuleBack)
+	mb := MainParser.Find(constants.ModuleBack)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], mb)
 	mb.ShortDescription = "Back from the current module but keep it on the stack"
 }

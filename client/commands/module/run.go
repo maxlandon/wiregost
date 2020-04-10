@@ -33,9 +33,9 @@ type ModuleRunCmd struct{}
 var ModuleRun ModuleRunCmd
 
 func RegisterModuleRun() {
-	CommandParser.AddCommand(constants.ModuleRun, "", "", &ModuleRun)
+	MainParser.AddCommand(constants.ModuleRun, "", "", &ModuleRun)
 
-	run := CommandParser.Find(constants.ModuleRun)
+	run := MainParser.Find(constants.ModuleRun)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], run)
 	run.ShortDescription = "Run the module's main function"
 }

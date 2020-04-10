@@ -35,7 +35,7 @@ type SessionsKillAllCmd struct {
 var SessionsKillAll SessionsKillAllCmd
 
 func RegisterSessionsKillAll() {
-	ses := CommandParser.Find(constants.Sessions)
+	ses := MainParser.Find(constants.Sessions)
 	ses.AddCommand(constants.SessionsKillAll, "", "", &SessionsKillAll)
 
 	kill := ses.Find(constants.SessionsKillAll)

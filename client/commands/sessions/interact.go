@@ -37,7 +37,7 @@ type SessionsInteractCmd struct {
 var SessionsInteract SessionsInteractCmd
 
 func RegisterSessionsInteract() {
-	ses := CommandParser.Find(constants.Sessions)
+	ses := MainParser.Find(constants.Sessions)
 	ses.AddCommand(constants.SessionsInteract, "", "", &SessionsInteract)
 
 	sesInt := ses.Find(constants.SessionsInteract)

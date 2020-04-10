@@ -37,9 +37,9 @@ type ModuleToProfileCmd struct {
 var ModuleToProfile ModuleToProfileCmd
 
 func RegisterModuleToProfile() {
-	CommandParser.AddCommand(constants.ModuleToProfile, "", "", &ModuleToProfile)
+	MainParser.AddCommand(constants.ModuleToProfile, "", "", &ModuleToProfile)
 
-	tp := CommandParser.Find(constants.ModuleToProfile)
+	tp := MainParser.Find(constants.ModuleToProfile)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], tp)
 	tp.ShortDescription = "Generate a ghost profile with module current settings"
 	tp.Args()[0].RequiredMaximum = 1

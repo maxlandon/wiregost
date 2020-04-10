@@ -31,9 +31,9 @@ type ModuleInfoCmd struct{}
 var ModuleInfo ModuleInfoCmd
 
 func RegisterModuleInfo() {
-	CommandParser.AddCommand(constants.ModuleInfo, "", "", &ModuleInfo)
+	MainParser.AddCommand(constants.ModuleInfo, "", "", &ModuleInfo)
 
-	mi := CommandParser.Find(constants.ModuleInfo)
+	mi := MainParser.Find(constants.ModuleInfo)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], mi)
 	mi.ShortDescription = "Show module information and options"
 }

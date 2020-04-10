@@ -35,9 +35,9 @@ type ModuleShowOptionsCmd struct{}
 var ModuleShowOptions ModuleShowOptionsCmd
 
 func RegisterModuleShowOptions() {
-	CommandParser.AddCommand(constants.ModuleOptions, "", "", &ModuleShowOptions)
+	MainParser.AddCommand(constants.ModuleOptions, "", "", &ModuleShowOptions)
 
-	opts := CommandParser.Find(constants.ModuleOptions)
+	opts := MainParser.Find(constants.ModuleOptions)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], opts)
 	opts.ShortDescription = "Show options for the current module"
 }

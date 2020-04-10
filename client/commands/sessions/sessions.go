@@ -38,9 +38,9 @@ type SessionsCmd struct{}
 var Sessions SessionsCmd
 
 func RegisterSessions() {
-	CommandParser.AddCommand(constants.Sessions, "", "", &Sessions)
+	MainParser.AddCommand(constants.Sessions, "", "", &Sessions)
 
-	ses := CommandParser.Find(constants.Sessions)
+	ses := MainParser.Find(constants.Sessions)
 	CommandMap[MAIN_CONTEXT] = append(CommandMap[MAIN_CONTEXT], ses)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], ses)
 	ses.ShortDescription = "List/interact/kill currently connected ghost implants"

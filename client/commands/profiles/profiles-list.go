@@ -36,9 +36,9 @@ type ProfilesCmd struct{}
 var Profiles ProfilesCmd
 
 func RegisterProfiles() {
-	CommandParser.AddCommand(constants.Profiles, "", "", &Profiles)
+	MainParser.AddCommand(constants.Profiles, "", "", &Profiles)
 
-	pro := CommandParser.Find(constants.Profiles)
+	pro := MainParser.Find(constants.Profiles)
 	CommandMap[MAIN_CONTEXT] = append(CommandMap[MAIN_CONTEXT], pro)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], pro)
 	pro.ShortDescription = "List ghost profiles"

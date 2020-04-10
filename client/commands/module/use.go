@@ -38,9 +38,9 @@ type ModuleUseCmd struct {
 var ModuleUse ModuleUseCmd
 
 func RegisterModuleUse() {
-	CommandParser.AddCommand(constants.ModuleUse, "", "", &ModuleUse)
+	MainParser.AddCommand(constants.ModuleUse, "", "", &ModuleUse)
 
-	use := CommandParser.Find(constants.ModuleUse)
+	use := MainParser.Find(constants.ModuleUse)
 	CommandMap[MAIN_CONTEXT] = append(CommandMap[MAIN_CONTEXT], use)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], use)
 	use.ShortDescription = "Load a module onto the stack"

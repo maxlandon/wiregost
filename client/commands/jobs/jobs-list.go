@@ -36,9 +36,9 @@ type JobsCmd struct{}
 var Jobs JobsCmd
 
 func RegisterJobs() {
-	CommandParser.AddCommand(constants.Jobs, "", "", &Jobs)
+	MainParser.AddCommand(constants.Jobs, "", "", &Jobs)
 
-	jobs := CommandParser.Find(constants.Jobs)
+	jobs := MainParser.Find(constants.Jobs)
 	CommandMap[MAIN_CONTEXT] = append(CommandMap[MAIN_CONTEXT], jobs)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], jobs)
 	jobs.ShortDescription = "List active background jobs"

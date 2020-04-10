@@ -39,13 +39,12 @@ type ListDirectoriesCmd struct {
 var ListDirectories ListDirectoriesCmd
 
 func RegisterLs() {
-	CommandParser.AddCommand("ls", "", "", &ListDirectories)
+	MainParser.AddCommand("ls", "", "", &ListDirectories)
 
-	ls := CommandParser.Find("ls")
+	ls := MainParser.Find("ls")
 	CommandMap[MAIN_CONTEXT] = append(CommandMap[MAIN_CONTEXT], ls)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], ls)
 	ls.ShortDescription = "List directory contents"
-	// ls.Namespace = MAIN_CONTEXT
 }
 
 // Execute - Command

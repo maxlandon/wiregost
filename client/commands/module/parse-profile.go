@@ -37,9 +37,9 @@ type ModuleParseProfileCmd struct {
 var ModuleParseProfile ModuleParseProfileCmd
 
 func RegisterModuleParseProfile() {
-	CommandParser.AddCommand(constants.ModuleParseProfile, "", "", &ModuleParseProfile)
+	MainParser.AddCommand(constants.ModuleParseProfile, "", "", &ModuleParseProfile)
 
-	pp := CommandParser.Find(constants.ModuleParseProfile)
+	pp := MainParser.Find(constants.ModuleParseProfile)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], pp)
 	pp.ShortDescription = "Parse a ghost profile into the current module settings"
 	pp.Args()[0].RequiredMaximum = 1

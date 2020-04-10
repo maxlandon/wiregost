@@ -36,9 +36,9 @@ type GhostsCmd struct{}
 var Ghosts GhostsCmd
 
 func RegisterGhosts() {
-	CommandParser.AddCommand(constants.Ghosts, "", "", &Ghosts)
+	MainParser.AddCommand(constants.Ghosts, "", "", &Ghosts)
 
-	ghosts := CommandParser.Find(constants.Ghosts)
+	ghosts := MainParser.Find(constants.Ghosts)
 	CommandMap[MAIN_CONTEXT] = append(CommandMap[MAIN_CONTEXT], ghosts)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], ghosts)
 	ghosts.ShortDescription = "List previously compiled ghost implant builds"

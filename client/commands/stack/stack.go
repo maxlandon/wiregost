@@ -36,9 +36,9 @@ type StackCmd struct{}
 var Stack StackCmd
 
 func RegisterStack() {
-	CommandParser.AddCommand(constants.Stack, "", "", &Stack)
+	MainParser.AddCommand(constants.Stack, "", "", &Stack)
 
-	stack := CommandParser.Find(constants.Stack)
+	stack := MainParser.Find(constants.Stack)
 	CommandMap[MAIN_CONTEXT] = append(CommandMap[MAIN_CONTEXT], stack)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], stack)
 	stack.ShortDescription = "List modules currently loaded on the stack"

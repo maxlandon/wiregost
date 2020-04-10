@@ -37,7 +37,7 @@ type JobsKillCmd struct {
 var JobsKill JobsKillCmd
 
 func RegisterJobsKill() {
-	jobs := CommandParser.Find(constants.Jobs)
+	jobs := MainParser.Find(constants.Jobs)
 	jobs.AddCommand(constants.JobsKill, "", "", &JobsKill)
 
 	kill := jobs.Find(constants.JobsKill)
@@ -55,7 +55,7 @@ type JobsKillAllCmd struct{}
 var JobsKillAll JobsKillAllCmd
 
 func RegisterJobsKillAll() {
-	jobs := CommandParser.Find(constants.Jobs)
+	jobs := MainParser.Find(constants.Jobs)
 	jobs.AddCommand(constants.JobsKillAll, "", "", &JobsKillAll)
 
 	all := jobs.Find(constants.JobsKillAll)

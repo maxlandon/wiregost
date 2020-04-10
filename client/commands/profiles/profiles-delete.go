@@ -37,7 +37,7 @@ type ProfilesDeleteCmd struct {
 var ProfilesDelete ProfilesDeleteCmd
 
 func RegisterProfilesDelete() {
-	pro := CommandParser.Find(constants.Profiles)
+	pro := MainParser.Find(constants.Profiles)
 	pro.AddCommand(constants.ProfilesDelete, "", "", &ProfilesDelete)
 	del := pro.Find(constants.ProfilesDelete)
 

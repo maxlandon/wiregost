@@ -37,7 +37,7 @@ type StackPopCmd struct {
 var StackPop StackPopCmd
 
 func RegisterStackPop() {
-	stack := CommandParser.Find(constants.Stack)
+	stack := MainParser.Find(constants.Stack)
 
 	stack.AddCommand(constants.StackPop, "", "", &StackPop)
 }

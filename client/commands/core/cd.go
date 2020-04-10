@@ -39,9 +39,9 @@ var ChangeDirectory ChangeDirectoryCmd
 
 func RegisterCd() {
 	// cd
-	CommandParser.AddCommand("cd", "", "", &ChangeDirectory)
+	MainParser.AddCommand("cd", "", "", &ChangeDirectory)
 
-	cd := CommandParser.Find("cd")
+	cd := MainParser.Find("cd")
 	CommandMap[MAIN_CONTEXT] = append(CommandMap[MAIN_CONTEXT], cd)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], cd)
 	cd.ShortDescription = "Change the client console working directory"

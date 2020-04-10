@@ -39,9 +39,9 @@ type ModuleSetOptionCmd struct {
 var ModuleSetOption ModuleSetOptionCmd
 
 func RegisterModuleSetOption() {
-	CommandParser.AddCommand(constants.ModuleSetOption, "", "", &ModuleSetOption)
+	MainParser.AddCommand(constants.ModuleSetOption, "", "", &ModuleSetOption)
 
-	set := CommandParser.Find(constants.ModuleSetOption)
+	set := MainParser.Find(constants.ModuleSetOption)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], set)
 	set.ShortDescription = "Set a module option"
 	set.Args()[0].RequiredMaximum = 1

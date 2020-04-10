@@ -33,9 +33,9 @@ type ToListenerCmd struct{}
 var ToListener ToListenerCmd
 
 func RegisterToListener() {
-	CommandParser.AddCommand(constants.ModuleToListener, "", "", &ToListener)
+	MainParser.AddCommand(constants.ModuleToListener, "", "", &ToListener)
 
-	listen := CommandParser.Find(constants.ModuleToListener)
+	listen := MainParser.Find(constants.ModuleToListener)
 	CommandMap[MODULE_CONTEXT] = append(CommandMap[MODULE_CONTEXT], listen)
 	listen.ShortDescription = "Spawn a listener based on the module's options"
 }

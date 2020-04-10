@@ -19,35 +19,26 @@ package commands
 import (
 	"context"
 
-	"github.com/chzyer/readline"
+	"github.com/lmorg/readline"
+	"github.com/maxlandon/wiregost/client/config"
 	"github.com/maxlandon/wiregost/client/core"
 	"github.com/maxlandon/wiregost/data-service/models"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 )
 
-// ShellContext - Passes client shell variable pointers to command for read/write access
-type ShellContextBis struct {
-	// Shell
-	Shell       *readline.Instance
-	Context     context.Context
-	MenuContext *string
-	Mode        *string
+var Context ShellContext
 
-	CurrentModule    *string
-	Module           *clientpb.Module
-	ModuleUserID     *int32
-	CurrentWorkspace *models.Workspace
-
-	// Server state
-	Server *core.WiregostServer
-
-	// Jobs
-	Listeners *int
-
-	// Agents
-	Ghosts *int
-	// Keep for prompt, until not needed anymore
-	CurrentAgent        *clientpb.Ghost
-	AgentPwd            *string
-	SessionPathComplete bool
+type ShellContext struct {
+	Shell     *readline.Instance   // Shell object
+	Config    *config.Config       // Shell configuration
+	DBContext context.Context      // DB queries context
+	Menu      *string              // Current shell menu
+	Module    *clientpb.Module     // Current module
+	UserID    int32                // Unique user ID for module requests
+	Workspace *models.Workspace    // Current workspace
+	Server    *core.WiregostServer // Wiregost Server
+	Jobs      *int                 // Number of jobs
+	Ghosts    *int                 // Number of connected implants
+	Ghost     *clientpb.Ghost      // Current implant
+	GhostPwd  *string              // Current working
 }

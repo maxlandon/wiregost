@@ -38,7 +38,7 @@ type StackUseCmd struct {
 var StackUse StackUseCmd
 
 func RegisterStackUse() {
-	stack := CommandParser.Find(constants.Stack)
+	stack := MainParser.Find(constants.Stack)
 
 	stack.AddCommand(constants.StackUse, "", "", &StackUse)
 	use := stack.Find(constants.StackUse)
