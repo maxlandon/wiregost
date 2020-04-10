@@ -32,20 +32,35 @@ func (c *Console) ExecCommand(args []string) error {
 
 	// 1) Check context
 	var cmd *flags.Command
-	cmds := commands.CommandsByContext()
-	for _, c := range cmds {
-		if c.Name == args[0] {
-			cmd = c
+	switch *commands.Context.Menu {
+	case commands.MAIN_CONTEXT, commands.MODULE_CONTEXT:
+		cmds := commands.CommandsByContext()
+		for _, c := range cmds {
+			if c.Name == args[0] {
+				cmd = c
+			}
 		}
+	case commands.GHOST_CONTEXT:
+		cmd = commands.GhostParser.Find(args[0])
 	}
 
+	// 2) If command is not found, handle special
 	if cmd == nil {
 		return c.handleSpecialCommands(args)
 	}
 
-	_, err := commands.CommandParser.ParseArgs(args)
-	if err != nil {
-		return err // Not printed currently
+	// 3) If command is found, handle it with appropriate parser
+	switch *commands.Context.Menu {
+	case commands.MAIN_CONTEXT, commands.MODULE_CONTEXT:
+		_, err := commands.MainParser.ParseArgs(args)
+		if err != nil {
+			return err // Not printed currently
+		}
+	case commands.GHOST_CONTEXT:
+		_, err := commands.GhostParser.ParseArgs(args)
+		if err != nil {
+			return err // Not printed currently
+		}
 	}
 
 	return nil

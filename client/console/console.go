@@ -30,6 +30,7 @@ import (
 
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/commands/jobs"
+	"github.com/maxlandon/wiregost/client/commands/sessions"
 	"github.com/maxlandon/wiregost/client/completers"
 	"github.com/maxlandon/wiregost/client/config"
 	"github.com/maxlandon/wiregost/client/core"
@@ -160,15 +161,12 @@ func (c *Console) hardRefresh() {
 	// Jobs
 	jobs := jobs.GetJobs(c.context.Server.RPC)
 	c.jobs = len(jobs.Active)
-	c.jobs = 0
 
 	// Sessions
-	// sessions := commands.GetGhosts(c.context.Server.RPC)
-	// c.ghosts = len(sessions.Ghosts)
-	c.ghosts = 0
+	sessions := sessions.GetGhosts(c.context.Server.RPC)
+	c.ghosts = len(sessions.Ghosts)
 
 	// Prompt
-	// fmt.Println()
 	refreshPrompt(c.prompt, c.Shell)
 }
 

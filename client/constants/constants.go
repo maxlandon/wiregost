@@ -122,12 +122,23 @@ const (
 	Canaries = "canaries"
 
 	// Sessions
-	Sessions         = "sessions"
-	SessionsInteract = "interact"
-	SessionsKill     = "kill"
-	SessionsKillAll  = "kill-all"
+	Sessions           = "sessions"
+	SessionsInteract   = "interact"
+	SessionsKill       = "kill"
+	SessionsKillAll    = "kill-all"
+	SessionsBackground = "background"
 
 	// Ghost Implants -------------------------
+	// FileSystem
+	GhostCd       = "cd"
+	GhostLs       = "ls"
+	GhostPwd      = "pwd"
+	GhostCat      = "cat"
+	GhostMkdir    = "mkdir"
+	GhostRm       = "rm"
+	GhostDownload = "download"
+	GhostUpload   = "upload"
+
 	AgentHelp         = "agent-help"
 	CompleteAgentHelp = "complete-agent-help"
 	FileSystem        = "filesystem"
