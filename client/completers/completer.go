@@ -155,6 +155,8 @@ func CompleteCommandArguments(cmd *flags.Command, arg string, line []rune, pos i
 			case constants.WorkspaceSwitch, constants.WorkspaceDelete, constants.WorkspaceUpdate:
 			case constants.ModuleParseProfile:
 			}
+		case "Server":
+			return CompleteServer(line, pos)
 
 		default: // If name is empty, return
 		}

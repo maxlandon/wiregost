@@ -17,89 +17,124 @@
 package commands
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/evilsocket/islazy/tui"
+	flags "github.com/jessevdk/go-flags"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
 var (
-	defaultTimeout   = 30 * time.Second
-	stdinReadTimeout = 10 * time.Millisecond
+	// CommandMap - keeps a map of all commands available in a given menu context
+	CommandMap = map[string][]*flags.Command{}
+
+	// CommandParser - Parses inputs and execute appropriate commands
+	MainParser = flags.NewParser(&globalOptions, flags.Default)
+	// GhostCommands - Ghost context commands
+	GhostParser = flags.NewParser(&globalOptions, flags.Default)
+
+	// Timeouts
+	DefaultTimeout   = 30 * time.Second
+	StdinReadTimeout = 10 * time.Millisecond
 )
+
+// Menu Contexts
+const (
+	// MAIN_CONTEXT - Available only in main menu
+	MAIN_CONTEXT = "main"
+	// MODULE_CONTEXT - Available only when a module is loaded
+	MODULE_CONTEXT = "module"
+	// GHOST_CONTEXT - Available only when interacting with a ghost implant
+	GHOST_CONTEXT = "ghost"
+)
+
+// GlobalOptions - All options applying to all commands
+type GlobalOptions struct{}
+
+var globalOptions GlobalOptions
 
 // RPCServer - Function used to send/recv envelopes
 type RPCServer func(*ghostpb.Envelope, time.Duration) chan *ghostpb.Envelope
 
-// Command is a set of commands dedicated to a single function (workspace, agents, etc)
-type Command struct {
-	Name        string
-	Help        string
-	SubCommands []*SubCommand
-	Args        []*Arg
-	Handle      func(*Request) error
+// CommandsByContext - Returns all commands available to a context
+func CommandsByContext() []*flags.Command {
+	return CommandMap[*Context.Menu]
 }
 
-type SubCommand struct {
-	Name string
-	Help string
-	Args []*Arg
-}
+// OptionByName - Returns an option for a command or a subcommand, identified by name
+func OptionByName(context string, command, subCommand, option string) *flags.Option {
 
-// Arg is an argument to a command/subcommand, like host-id when searching for hosts
-type Arg struct {
-	Name        string
-	Type        string
-	Description string
-	Required    bool
-	Length      int
-}
+	var cmd *flags.Command
 
-// commandMap maps commands to an appropriate menu context
-var commandList = map[string]*Command{}
-var commandMap = map[string]map[string]*Command{}
-
-// Request creates a request from a command, passing it all necessary shell context
-type Request struct {
-	// Command
-	Command *Command
-	Args    []string
-
-	// Shell context
-	context *ShellContext
-}
-
-// NewRequest creates a request, with the shell context
-func NewRequest(cmd *Command, args []string, shellContext *ShellContext) *Request {
-	return &Request{
-		Command: cmd,
-		Args:    args,
-		context: shellContext,
-	}
-}
-
-// FindCommand finds a commmand for a given menu context
-func FindCommand(context, name string) *Command {
-	return commandMap[context][name]
-}
-
-// AllContextCommands - Returns all commands for a given shell context
-func AllContextCommands(context string) map[string]*Command {
-	return commandMap[context]
-}
-
-// AddCommand adds a command/set to a menu context
-func AddCommand(context string, cmd *Command) {
-
-	// Check context list exists
-	if commandMap == nil {
-		commandMap = make(map[string]map[string]*Command)
+	switch context {
+	case MAIN_CONTEXT, MODULE_CONTEXT:
+		cmd = MainParser.Find(command)
+	case GHOST_CONTEXT:
+		cmd = GhostParser.Find(command)
 	}
 
-	// Check map for each context exists
-	if commandMap[context] == nil {
-		commandMap[context] = map[string]*Command{}
+	// Base command is found
+	if cmd != nil {
+		// If options are for a subcommand
+		if subCommand != "" && len(cmd.Commands()) != 0 {
+			sub := cmd.Find(subCommand)
+			if sub != nil {
+				for _, opt := range sub.Options() {
+					if opt.LongName == option {
+						return opt
+					}
+				}
+				return nil
+			}
+			return nil
+		}
+		// If subcommand is not asked, return opt for base
+		for _, opt := range cmd.Options() {
+			if opt.LongName == option {
+				return opt
+			}
+		}
+	}
+	return nil
+}
+
+func ArgumentByName(command *flags.Command, name string) *flags.Arg {
+	args := command.Args()
+	for _, arg := range args {
+		if arg.Name == name {
+			return arg
+		}
 	}
 
-	// Add to context list
-	commandMap[context][cmd.Name] = cmd
+	return nil
 }
+
+var (
+	// Info - All normal message
+	Info = fmt.Sprintf("%s[-]%s ", tui.BLUE, tui.RESET)
+	// Warn - Errors in parameters, notifiable events in modules/sessions
+	Warn = fmt.Sprintf("%s[!]%s ", tui.YELLOW, tui.RESET)
+	// Error - Error in commands, filters, modules and implants.
+	Error = fmt.Sprintf("%s[!]%s ", tui.RED, tui.RESET)
+	// Success - Success events
+	Success = fmt.Sprintf("%s[*]%s ", tui.GREEN, tui.RESET)
+
+	// Infof - formatted
+	Infof = fmt.Sprintf("%s[-] ", tui.BLUE)
+	// Warnf - formatted
+	Warnf = fmt.Sprintf("%s[!] ", tui.YELLOW)
+	// Errorf - formatted
+	Errorf = fmt.Sprintf("%s[!] ", tui.RED)
+	// Sucessf - formatted
+	Sucessf = fmt.Sprintf("%s[*] ", tui.GREEN)
+
+	//RPCError - Errors from the server
+	RPCError = fmt.Sprintf("%s[RPC Error]%s ", tui.RED, tui.RESET)
+	// CommandError - Command input error
+	CommandError = fmt.Sprintf("%s[Command Error]%s ", tui.RED, tui.RESET)
+	// ParserError - Failed to parse some tokens in the input
+	ParserError = fmt.Sprintf("%s[Parser Error]%s ", tui.RED, tui.RESET)
+	// DBError - Data Service error
+	DBError = fmt.Sprintf("%s[DB Error]%s ", tui.RED, tui.RESET)
+)

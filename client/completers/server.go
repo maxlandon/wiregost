@@ -20,32 +20,29 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/lmorg/readline"
 	"github.com/maxlandon/wiregost/client/assets"
-	"github.com/maxlandon/wiregost/client/commands"
 )
 
-type serverCompleter struct {
-	Command *commands.Command
-}
+func CompleteServer(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
 
-// Do is the completion function triggered at each line
-func (mc *serverCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+	// Completions
+	var suggestions []string
+	listSuggestions := map[string]string{}
 
+	// Get last path
 	splitLine := strings.Split(string(line), " ")
-	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+	last := splitLine[len(splitLine)-1]
 
 	// Get configs
 	configs := assets.GetConfigs()
 
 	for _, c := range configs {
-		conf := fmt.Sprintf("%s:%d as %s", c.LHost, c.LPort, c.User)
-		search := conf
-		if !hasPrefix(line, []rune(search)) {
-			sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-			options = append(options, sLine...)
-			offset = sOffset
+		conf := fmt.Sprintf("%s@%s:%d", c.User, c.LHost, c.LPort)
+		if strings.HasPrefix(conf, string(last)) {
+			suggestions = append(suggestions, conf[len(last):])
 		}
 	}
 
-	return options, offset
+	return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 }

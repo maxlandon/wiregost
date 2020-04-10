@@ -60,7 +60,8 @@ const (
 	Resource = "resource"
 
 	// Server
-	Server = "server"
+	Server        = "server"
+	ServerConnect = "connect"
 
 	// User
 	User = "user"
