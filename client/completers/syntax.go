@@ -22,6 +22,7 @@ import (
 
 	"github.com/evilsocket/islazy/tui"
 	"github.com/jessevdk/go-flags"
+	"github.com/maxlandon/wiregost/client/commands"
 )
 
 // SyntaxHighlighter - Entrypoint to all syntax highlights in Wiregost
@@ -33,7 +34,7 @@ func SyntaxHighlighter(input []rune) (line string) {
 	// Remain is all arguments that have not been highlighted, we need it for completing long commands
 	var remain = args
 
-	var command = detectedCommand(args)
+	var command = detectedCommand(args, *commands.Context.Menu)
 
 	if noCommandOrEmpty(remain, last, command) {
 		return string(input)

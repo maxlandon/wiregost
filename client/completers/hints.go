@@ -47,7 +47,7 @@ func HintText(line []rune, pos int) (hint []rune) {
 	last := trimSpaceLeft([]rune(args[len(args)-1]))
 
 	// Detect base command automatically
-	var command = detectedCommand(args)
+	var command = detectedCommand(args, *commands.Context.Menu)
 
 	// Menu hints
 	if noCommandOrEmpty(args, last, command) {
@@ -70,7 +70,7 @@ func HintText(line []rune, pos int) (hint []rune) {
 		}
 
 		// If command has args, hint for args
-		if arg, yes := argumentRequired(last, args, command, false); yes {
+		if arg, yes := argumentRequired(last, args, *commands.Context.Menu, command, false); yes {
 			hint = []rune(CommandArgumentHints(args, last, command, arg))
 			return
 		}
@@ -103,7 +103,7 @@ func HintText(line []rune, pos int) (hint []rune) {
 func HandleSubcommandHints(args []string, last []rune, command *flags.Command) (hint []rune) {
 
 	// If command has args, hint for args
-	if arg, yes := argumentRequired(last, args, command, true); yes {
+	if arg, yes := argumentRequired(last, args, *commands.Context.Menu, command, true); yes {
 		hint = []rune(CommandArgumentHints(args, last, command, arg))
 		return
 	}

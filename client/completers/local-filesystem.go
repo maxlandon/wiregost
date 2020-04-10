@@ -27,7 +27,7 @@ import (
 	"github.com/maxlandon/wiregost/client/util"
 )
 
-func completeLocalPath(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
+func CompleteLocalPath(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
 
 	// Completions
 	var suggestions []string

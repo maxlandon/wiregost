@@ -37,7 +37,7 @@ func TabCompleter(line []rune, pos int) (string, []string, map[string]string, re
 	last := trimSpaceLeft([]rune(args[len(args)-1])) // The last char in input
 
 	// Detect base command automatically
-	var command = detectedCommand(args)
+	var command = detectedCommand(args, *commands.Context.Menu)
 
 	// Propose Commands
 	if noCommandOrEmpty(args, last, command) {
@@ -58,7 +58,7 @@ func TabCompleter(line []rune, pos int) (string, []string, map[string]string, re
 		}
 
 		// Propose completion for args before anything else
-		if arg, yes := argumentRequired(last, args, command, false); yes {
+		if arg, yes := argumentRequired(last, args, *commands.Context.Menu, command, false); yes {
 			return CompleteCommandArguments(command, arg, line, pos)
 		}
 
@@ -83,10 +83,19 @@ func CompleteMenuCommands(last []rune, pos int) (string, []string, map[string]st
 	var suggestions []string
 	listSuggestions := map[string]string{}
 
-	cmds := commands.CommandsByContext()
-	for _, cmd := range cmds {
-		if strings.HasPrefix(cmd.Name, string(last)) {
-			suggestions = append(suggestions, cmd.Name[pos:]+" ")
+	switch *commands.Context.Menu {
+	case commands.MAIN_CONTEXT, commands.MODULE_CONTEXT:
+		for _, cmd := range commands.CommandsByContext() {
+			// for _, cmd := range commands.MainParser.Commands() {
+			if strings.HasPrefix(cmd.Name, string(last)) {
+				suggestions = append(suggestions, cmd.Name[pos:]+" ")
+			}
+		}
+	case commands.GHOST_CONTEXT:
+		for _, cmd := range commands.GhostParser.Commands() {
+			if strings.HasPrefix(cmd.Name, string(last)) {
+				suggestions = append(suggestions, cmd.Name[pos:]+" ")
+			}
 		}
 	}
 
@@ -112,7 +121,7 @@ func CompleteCommandArguments(cmd *flags.Command, arg string, line []rune, pos i
 			// Completion might differ slightly depending on the command
 			switch cmd.Name {
 			case constants.Cd:
-				return completeLocalPath(line, pos)
+				return CompleteLocalPath(line, pos)
 			case "ls", "cat":
 				return completeLocalPathAndFiles(line, pos)
 			case constants.ModuleUse:
@@ -151,6 +160,24 @@ func CompleteCommandArguments(cmd *flags.Command, arg string, line []rune, pos i
 		}
 
 	case commands.GHOST_CONTEXT:
+		switch found.Name {
+		case "Path", "OtherPath", "RemotePath":
+			// Completion might differ slightly depending on the command
+			switch cmd.Name {
+			case constants.GhostCd, constants.GhostLs, constants.GhostMkdir:
+				return CompleteRemotePath(line, pos)
+			case constants.GhostCat, constants.GhostDownload, constants.GhostUpload, constants.GhostRm:
+				return CompleteRemotePathAndFiles(line, pos)
+			}
+		case "LocalPath":
+			switch cmd.Name {
+			case constants.GhostUpload:
+				return completeLocalPathAndFiles(line, pos)
+			case constants.GhostDownload:
+				return CompleteLocalPath(line, pos)
+			}
+		default: // If name is empty, return
+		}
 	}
 
 	return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
@@ -184,7 +211,7 @@ func HandleSubCommand(line []rune, pos int, command *flags.Command) (string, []s
 	}
 
 	// If command has non-filled arguments, propose them first
-	if arg, yes := argumentRequired(last, args, command, true); yes {
+	if arg, yes := argumentRequired(last, args, *commands.Context.Menu, command, true); yes {
 		_, suggestions, listSuggestions, tabType = CompleteCommandArguments(command, arg, line, pos)
 	}
 

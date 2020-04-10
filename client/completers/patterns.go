@@ -40,14 +40,20 @@ func noCommandOrEmpty(args []string, last []rune, command *flags.Command) bool {
 
 // [ Commands ]
 // detectedCommand - Returns the base command from parser if detected, depending on context
-func detectedCommand(args []string) (command *flags.Command) {
+func detectedCommand(args []string, context string) (command *flags.Command) {
 
-	cmds := commands.CommandsByContext()
-	for _, cmd := range cmds {
-		if cmd.Name == args[0] {
-			command = cmd
+	switch context {
+	case commands.MAIN_CONTEXT, commands.MODULE_CONTEXT:
+		cmds := commands.CommandsByContext() // Need for context here
+		for _, cmd := range cmds {
+			if cmd.Name == args[0] {
+				command = cmd
+			}
 		}
+	case commands.GHOST_CONTEXT:
+		command = commands.GhostParser.Find(args[0])
 	}
+
 	return
 }
 
@@ -132,7 +138,7 @@ func hasArgs(command *flags.Command) bool {
 }
 
 // argumentRequired - Analyses input and sends back the next argument name to provide completion for
-func argumentRequired(last []rune, args []string, command *flags.Command, isSub bool) (name string, yes bool) {
+func argumentRequired(last []rune, args []string, context string, command *flags.Command, isSub bool) (name string, yes bool) {
 
 	// Trim command and subcommand args
 	var remain []string
@@ -142,7 +148,7 @@ func argumentRequired(last []rune, args []string, command *flags.Command, isSub 
 		remain = args[1:]
 	}
 
-	remain = filterOptions(remain, command)
+	remain = filterOptions(remain, context, command)
 
 	// We get the number of argument fields in command struct
 	switch length := len(command.Args()); {
@@ -286,14 +292,14 @@ func envVarAsked(args []string, last []rune) bool {
 	return false
 }
 
-func filterOptions(args []string, command *flags.Command) (processed []string) {
+func filterOptions(args []string, context string, command *flags.Command) (processed []string) {
 
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		if strings.HasPrefix(arg, "-") || strings.HasPrefix(arg, "--") {
 			name := strings.TrimPrefix(arg, "--")
 			name = strings.TrimPrefix(arg, "-")
-			if opt := commands.OptionByName(command.Name, "", name); opt != nil {
+			if opt := commands.OptionByName(context, command.Name, "", name); opt != nil {
 				var boolean = true
 				if opt.Field().Type == reflect.TypeOf(boolean) {
 					continue
