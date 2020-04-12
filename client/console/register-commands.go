@@ -23,6 +23,7 @@ import (
 	"github.com/maxlandon/wiregost/client/commands/ghosts"
 	"github.com/maxlandon/wiregost/client/commands/jobs"
 	"github.com/maxlandon/wiregost/client/commands/module"
+	"github.com/maxlandon/wiregost/client/commands/proc"
 	"github.com/maxlandon/wiregost/client/commands/profiles"
 	"github.com/maxlandon/wiregost/client/commands/server"
 	"github.com/maxlandon/wiregost/client/commands/sessions"
@@ -30,10 +31,11 @@ import (
 )
 
 // RegisterCommands - Registers all commands to the parser
-// Needs to be here to avoid circular import, and because init funcs don't work.
+// Needs to be here to avoid circular imports, and because init funcs don't work.
 func RegisterCommands() {
 
 	// Main Context ------------------------------------------------------------
+
 	// Core
 	core.RegisterCd() // cd
 	core.RegisterLs() // ls
@@ -83,6 +85,7 @@ func RegisterCommands() {
 	sessions.RegisterSessionBackground() // background
 
 	// Ghost Context ------------------------------------------------------------
+
 	// Filesystem
 	filesystem.RegisterGhostCd()       // cd
 	filesystem.RegisterGhostLs()       // ls
@@ -95,9 +98,15 @@ func RegisterCommands() {
 
 	// Info
 
-	// Priv
-
 	// Proc
+	proc.RegisterPs()        // ps
+	proc.RegisterTerminate() // terminate
+	proc.RegisterProcDump()  // procdump
+	proc.RegisterMigrate()   // migrate
+
+	// Network
+
+	// Priv
 
 	// Execute
 }
