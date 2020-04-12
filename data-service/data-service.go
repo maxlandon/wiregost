@@ -62,39 +62,3 @@ func StartDataService() {
 		fmt.Println(err.Error())
 	}
 }
-
-// func main() {
-//         // Setup DB and environment -------------------------------
-//
-//         // Load DB credentials and data-service parameters
-//         env := handlers.LoadEnv()
-//
-//         // AutoMigrate Schema
-//         err := env.DB.MigrateSchema()
-//         if err != nil {
-//                 log.Printf("%s*%s Error: Could not migrate database schema: %s", tui.RED, tui.RESET, err.Error())
-//
-//         }
-//
-//         mux := http.NewServeMux()
-//
-//         // Register handlers ---------------------------------------
-//         wh := &handlers.WorkspaceHandler{env}
-//         mux.Handle(handlers.WorkspaceAPIPath, wh)
-//
-//         hh := &handlers.HostHandler{env}
-//         mux.Handle(handlers.HostAPIPath, hh)
-//
-//         sh := &handlers.ServiceHandler{env}
-//         mux.Handle(handlers.ServiceAPIPath, sh)
-//         //
-//         // ch := &handlers.CredentialHandler{env}
-//         // mux.Handle(handlers.CredentialAPIPath, ch)
-//         //
-//         // Start server --------------------------------------------
-//         log.Printf("%s*%s Wiregost Data Service listening for requests...", tui.GREEN, tui.RESET)
-//         err = http.ListenAndServeTLS(env.Service.Address+":"+strconv.Itoa(env.Service.Port), env.Service.Certificate, env.Service.Key, mux)
-//         if err != nil {
-//                 fmt.Println(err.Error())
-//         }
-// }

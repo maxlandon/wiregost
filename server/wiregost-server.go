@@ -75,9 +75,7 @@ func main() {
 
 	// Start Data Service
 	go db.StartDataService()
-
-	// Give time to data-service for starting
-	time.Sleep(time.Second * 2)
+	time.Sleep(time.Second * 2) // Give time to data-service for starting
 
 	// Initialize Module Stacks
 	load.LoadModules()
@@ -89,7 +87,6 @@ func main() {
 		fmt.Println(err)
 	}
 
-	fmt.Println(true)
 	// Start client listener
 	listener, err := transport.StartClientListener(servConf.LHost, uint16(servConf.LPort))
 	if err != nil {
