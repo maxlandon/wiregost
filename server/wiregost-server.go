@@ -22,10 +22,12 @@ import (
 	"log"
 	"os"
 	"path"
+	"time"
 
 	"github.com/evilsocket/islazy/tui"
 
 	"github.com/maxlandon/wiregost/client/version"
+	db "github.com/maxlandon/wiregost/data-service"
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/c2"
 	"github.com/maxlandon/wiregost/server/certs"
@@ -71,6 +73,12 @@ func main() {
 		log.Println(err.Error())
 	}
 
+	// Start Data Service
+	go db.StartDataService()
+
+	// Give time to data-service for starting
+	time.Sleep(time.Second * 2)
+
 	// Initialize Module Stacks
 	load.LoadModules()
 	core.LoadStacks()
@@ -81,6 +89,7 @@ func main() {
 		fmt.Println(err)
 	}
 
+	fmt.Println(true)
 	// Start client listener
 	listener, err := transport.StartClientListener(servConf.LHost, uint16(servConf.LPort))
 	if err != nil {
