@@ -52,6 +52,11 @@ func TabCompleter(line []rune, pos int) (string, []string, map[string]string, re
 	// Command is identified
 	if commandFound(command) {
 
+		// If user asks for completions with "-" or "--". (Note: This takes precedence on arguments, as it is evaluated after arguments)
+		if optionsAsked(args, last, command) {
+			return CompleteCommandOptions(args, last, command)
+		}
+
 		// Check environment variables
 		if envVarAsked(args, last) {
 			return CompleteEnvironmentVariables(line, pos)
@@ -178,6 +183,9 @@ func CompleteCommandArguments(cmd *flags.Command, arg string, line []rune, pos i
 			case constants.GhostDownload:
 				return CompleteLocalPath(line, pos)
 			}
+		case "PID":
+			commands.Context.Shell.MaxTabCompleterRows = 10
+			return CompleteProcesses(line, pos)
 		default: // If name is empty, return
 		}
 	}
@@ -282,9 +290,6 @@ func RecursiveGroupCompletion(args []string, last []rune, group *flags.Group) (s
 //                 case "hosts":
 //                         comp := &hostCompleter{Command: cmd}
 //                         options, offset = comp.Do(ctx, line, pos)
-//                 case "stack":
-//                         comp := &stackCompleter{Command: cmd}
-//                         options, offset = comp.Do(ctx, line, pos)
 //                 case "profiles", "parse_profile":
 //                         comp := &profileCompleter{Command: cmd}
 //                         options, offset = comp.Do(ctx, line, pos)
@@ -293,9 +298,6 @@ func RecursiveGroupCompletion(args []string, last []rune, group *flags.Group) (s
 //                         options, offset = comp.Do(ctx, line, pos)
 //                 case "server":
 //                         comp := &serverCompleter{Command: cmd}
-//                         options, offset = comp.Do(ctx, line, pos)
-//                 case "sessions", "interact":
-//                         comp := &sessionCompleter{Command: cmd}
 //                         options, offset = comp.Do(ctx, line, pos)
 //                 case "nmap", "db_nmap":
 //                         comp := &nmapCompleter{Command: cmd}

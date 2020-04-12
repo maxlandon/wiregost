@@ -179,7 +179,7 @@ func argumentRequired(last []rune, args []string, context string, command *flags
 // [ Options ]
 // optionsAsked - Does the user asks for options ?
 func optionsAsked(args []string, last []rune, command *flags.Command) bool {
-	if len(args) > 2 && (strings.HasPrefix(string(last), "-") || strings.HasPrefix(string(last), "--")) {
+	if len(args) >= 2 && (strings.HasPrefix(string(last), "-") || strings.HasPrefix(string(last), "--")) {
 		return true
 	}
 	return false
