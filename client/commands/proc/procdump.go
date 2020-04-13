@@ -48,7 +48,7 @@ func RegisterProcDump() {
 	GhostParser.AddCommand(constants.ProcDump, "", "", &ProcDump)
 
 	pd := GhostParser.Find(constants.ProcDump)
-	pd.ShortDescription = "Dump the memory of a process identified by its PID"
+	pd.ShortDescription = "(Windows only) Dump the memory of a process identified by its PID"
 	pd.Args()[0].RequiredMaximum = 1
 }
 

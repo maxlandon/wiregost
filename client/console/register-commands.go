@@ -21,6 +21,7 @@ import (
 	"github.com/maxlandon/wiregost/client/commands/core"
 	"github.com/maxlandon/wiregost/client/commands/filesystem"
 	"github.com/maxlandon/wiregost/client/commands/ghosts"
+	"github.com/maxlandon/wiregost/client/commands/help"
 	"github.com/maxlandon/wiregost/client/commands/jobs"
 	"github.com/maxlandon/wiregost/client/commands/module"
 	"github.com/maxlandon/wiregost/client/commands/proc"
@@ -35,6 +36,9 @@ import (
 func RegisterCommands() {
 
 	// Main Context ------------------------------------------------------------
+
+	// Help
+	help.RegisterHelp() // help
 
 	// Core
 	core.RegisterCd() // cd
