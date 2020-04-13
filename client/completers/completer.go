@@ -157,8 +157,9 @@ func CompleteCommandArguments(cmd *flags.Command, arg string, line []rune, pos i
 			return CompleteJobIDs(line, pos)
 		case "Name":
 			switch cmd.Name {
-			case constants.WorkspaceSwitch, constants.WorkspaceDelete, constants.WorkspaceUpdate:
-			case constants.ModuleParseProfile:
+			case constants.WorkspaceSwitch, constants.WorkspaceUpdate:
+			case constants.ModuleParseProfile, constants.ProfilesDelete:
+				return CompleteProfileNames(line, pos)
 			}
 		case "Server":
 			return CompleteServer(line, pos)

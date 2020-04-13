@@ -140,20 +140,41 @@ const (
 	GhostDownload = "download"
 	GhostUpload   = "upload"
 
+	// Info
+	GetUID = "getuid"
+	GetPID = "getpid"
+	GetGID = "getgid"
+	Whoami = "whoami"
+
+	// Network
+	IfConfig = "ifconfig"
+	Netstat  = "netstat"
+
+	// Proc
+	Ps        = "ps"
+	ProcDump  = "procdump"
+	Terminate = "terminate"
+	Migrate   = "migrate"
+
+	// Priv
+	RunAs       = "run-as"
+	Impersonate = "impersonate"
+	Elevate     = "elevate"
+	GetSystem   = "getsystem"
+	Rev2Self    = "rev-to-self"
+
+	// Execute
+	Execute          = "execute"
+	ExecuteShellcode = "execute-shellcode"
+	ExecuteAssembly  = "execute-assembly"
+	Sideload         = "sideload"
+	SpawnDll         = "spawn-dll"
+	MsfInject        = "msf-inject"
+
+	// Shell
+	SystemShell = "shell"
+
+	// Help
 	AgentHelp         = "agent-help"
 	CompleteAgentHelp = "complete-agent-help"
-	FileSystem        = "filesystem"
-	Info              = "info"
-	Priv              = "priv"
-	RunAs             = "run_as"
-	Impersonate       = "impersonate"
-	Proc              = "proc"
-	ProcDump          = "procdump"
-	AgentShell        = "shell"
-	Execute           = "execute"
-	ExecuteShellcode  = "execute-shellcode"
-	ExecuteAssembly   = "execute-assembly"
-	Sideload          = "sideload"
-	SpawnDll          = "spawn-dll"
-	MsfInject         = "msf-inject"
 )

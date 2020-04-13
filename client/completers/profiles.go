@@ -20,33 +20,35 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/evilsocket/islazy/tui"
 	"github.com/gogo/protobuf/proto"
+	"github.com/lmorg/readline"
 
-	"github.com/maxlandon/wiregost/client/commands"
+	. "github.com/maxlandon/wiregost/client/commands"
 	clientpb "github.com/maxlandon/wiregost/protobuf/client"
 	ghostpb "github.com/maxlandon/wiregost/protobuf/ghost"
 )
 
-type profileCompleter struct {
-	Command *commands.Command
-}
+func CompleteProfileNames(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
 
-// Do is the completion function triggered at each line
-func (oc *profileCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+	// Completions
+	var suggestions []string
+	listSuggestions := map[string]string{}
 
+	// Get last path
 	splitLine := strings.Split(string(line), " ")
-	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+	last := splitLine[len(splitLine)-1]
 
 	// Get profiles
-	rpc := ctx.Server.RPC
+	rpc := Context.Server.RPC
 
 	resp := <-rpc(&ghostpb.Envelope{
 		Type: clientpb.MsgProfiles,
-	}, defaultTimeout)
+	}, DefaultTimeout)
 
 	if resp.Err != "" {
 		fmt.Printf(RPCError, "%s\n", resp.Err)
-		return
+		return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 	}
 
 	pbProfiles := &clientpb.Profiles{}
@@ -54,37 +56,94 @@ func (oc *profileCompleter) Do(ctx *commands.ShellContext, line []rune, pos int)
 	if err != nil {
 		fmt.Println()
 		fmt.Printf(Error, "%s", err.Error())
-		return
+		return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
 	}
 
-	profiles := &map[string]*clientpb.Profile{}
-	for _, profile := range pbProfiles.List {
-		(*profiles)[profile.Name] = profile
-	}
+	for _, p := range pbProfiles.List {
+		if strings.HasPrefix(p.Name, string(last)) {
+			suggestions = append(suggestions, p.Name[(len(last)):])
 
-	switch oc.Command.Name {
-	case "parse_profile":
-		for k := range *profiles {
-			search := k
-			if !hasPrefix(line, []rune(search)) {
-				sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-				options = append(options, sLine...)
-				offset = sOffset
-			}
-		}
-	case "profiles":
-		switch splitLine[0] {
-		case "delete":
-			for k := range *profiles {
-				search := k
-				if !hasPrefix(line, []rune(search)) {
-					sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-					options = append(options, sLine...)
-					offset = sOffset
-				}
-			}
+			os := osPad(p.Config, pbProfiles)
+			format := formatPad(p.Config, pbProfiles)
+			c2s := c2Pad(p.Config, pbProfiles)
+			desc := tui.Dim(os + " - " + format + " - " + c2s)
+			listSuggestions[p.Name[(len(last)):]] = desc
 		}
 	}
 
-	return options, offset
+	return string(last), suggestions, listSuggestions, readline.TabDisplayList
+}
+
+func osPad(p *clientpb.GhostConfig, profs *clientpb.Profiles) string {
+	var max int
+	for _, prof := range profs.List {
+		if len(prof.Config.GOOS+"/"+prof.Config.GOARCH) > max {
+			max = len(prof.Config.GOOS + "/" + prof.Config.GOARCH)
+		}
+	}
+	var pad string
+	for i := 0; i < max-len(p.GOOS+"/"+p.GOARCH); i++ {
+		pad += " "
+	}
+
+	return p.GOOS + "/" + p.GOARCH + pad
+}
+
+func formatPad(p *clientpb.GhostConfig, profs *clientpb.Profiles) string {
+	var max int
+	var pFormat string
+	for _, prof := range profs.List {
+		var format string
+		switch prof.Config.Format {
+		case clientpb.GhostConfig_EXECUTABLE:
+			format = "exe"
+		case clientpb.GhostConfig_SHARED_LIB:
+			format = "shared"
+		case clientpb.GhostConfig_SHELLCODE:
+			format = "shellcode"
+		}
+		if len(format) > max {
+			max = len(format)
+		}
+	}
+	switch p.Format {
+	case clientpb.GhostConfig_EXECUTABLE:
+		pFormat = "exe"
+	case clientpb.GhostConfig_SHARED_LIB:
+		pFormat = "shared"
+	case clientpb.GhostConfig_SHELLCODE:
+		pFormat = "shellcode"
+	}
+
+	var pad string
+	for i := 0; i < max-len(pFormat); i++ {
+		pad += " "
+	}
+
+	return pFormat + pad
+}
+
+func c2Pad(p *clientpb.GhostConfig, profs *clientpb.Profiles) string {
+	var max int
+	for _, prof := range profs.List {
+		var c2s string
+		for _, c2 := range prof.Config.C2 {
+			c2s += "| " + c2.URL
+		}
+		if len(c2s) > max {
+			max = len(c2s)
+		}
+	}
+
+	var pc2s string
+	for _, c2 := range p.C2 {
+		pc2s += "| " + c2.URL
+	}
+
+	var pad string
+	for i := 0; i < max-len(pc2s); i++ {
+		pad += " "
+	}
+
+	return pc2s + pad
 }
