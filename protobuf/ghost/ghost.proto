@@ -376,3 +376,62 @@ message SpawnDll {
         string Result = 2;
 }
 
+message NetstatRequest {
+        bool TCP = 1;
+        bool UDP = 2;
+        bool IP4 = 3;
+        bool IP6 = 5;
+        bool Listening = 6;
+        uint32 GhostID = 9;
+}
+
+message SockTabEntry {
+        message SockAddr {
+                string Ip = 1;
+                uint32 Port = 2;
+        }
+        SockAddr LocalAddr = 1;
+        SockAddr RemoteAddr = 2;
+        string SkState = 3;
+        uint32 UID = 4;
+        Process Proc = 5;
+        string Proto = 6;
+}
+
+message NetstatResponse { repeated SockTabEntry Entries = 1; }
+
+message ScreenshotReq {
+        bytes Data = 1;
+        uint32 GhostID = 9;
+}
+
+message Screenshot {
+        bytes Data = 1;
+        uint32 GhostID = 9;
+}
+
+message NamedPipesReq {
+        string PipeName = 16;
+        uint32 GhostID = 9;
+}
+
+message NamedPipes {
+        bool Success = 1;
+        string Err = 2;
+}
+
+message PivotOpen {
+        uint32 PivotID = 12;
+        string PivotType = 13;
+        string RemoteAddress = 14;
+}
+
+message PivotClose {
+        uint32 PivotID = 12;
+        string Err = 2;
+}
+
+message PivotData {
+        uint32 PivotID = 12;
+        bytes Data = 2;
+}

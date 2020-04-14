@@ -32,13 +32,38 @@ func rpcIfconfig(req []byte, timeout time.Duration, resp Response) {
 		resp([]byte{}, err)
 		return
 	}
-	sliver := (*core.Wire.Ghosts)[ifconfigReq.GhostID]
-	if sliver == nil {
+	ghost := (*core.Wire.Ghosts)[ifconfigReq.GhostID]
+	if ghost == nil {
 		resp([]byte{}, err)
 		return
 	}
 
 	data, _ := proto.Marshal(&ghostpb.IfconfigReq{})
-	data, err = sliver.Request(ghostpb.MsgIfconfigReq, timeout, data)
+	data, err = ghost.Request(ghostpb.MsgIfconfigReq, timeout, data)
+	resp(data, err)
+}
+
+func rpcNetstat(req []byte, timeout time.Duration, resp Response) {
+	netstatReq := &ghostpb.NetstatReq{}
+	err := proto.Unmarshal(req, netstatReq)
+	if err != nil {
+		resp([]byte{}, err)
+		return
+	}
+
+	ghost := (*core.Wire.Ghosts)[netstatReq.GhostID]
+	if ghost == nil {
+		resp([]byte{}, err)
+		return
+	}
+	data, _ := proto.Marshal(&ghostpb.NetstatRequest{
+		TCP:       netstatReq.TCP,
+		UDP:       netstatReq.UDP,
+		IP4:       netstatReq.IP4,
+		IP6:       netstatReq.IP6,
+		Listening: netstatReq.Listening,
+	})
+
+	data, err = ghost.Request(ghostpb.MsgNetstatReq, timeout, data)
 	resp(data, err)
 }

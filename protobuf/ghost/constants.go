@@ -30,7 +30,7 @@ const (
 	// MsgKill - Kill request to the ghost process
 	MsgKill
 
-	// BASE COMMANDS -----------------------------------------------------------------------//
+	// FILESYSTEM COMMANDS -----------------------------------------------------------------------//
 
 	// MsgLsReq - Request a directory listing from the remote system
 	MsgLsReq
@@ -77,6 +77,13 @@ const (
 	// MsgShell - Response on starting shell
 	MsgShell
 
+	// INFO COMMANDS -------------------------------------------------------------------//
+
+	// MsgNetstatReq - Netstat request
+	MsgNetstatReq
+	// MsgIfconfigReq - Ifconfig (network interface config) request
+	MsgIfconfigReq
+
 	// MODULES ----------------------------------------------------------------------------//
 
 	// MsgExecuteReq - Execute a command on the remote system, like Merlin's Modules
@@ -100,6 +107,11 @@ const (
 	MsgPivotReq
 	// MsgPivot - Success/failure of pivot creation
 	MsgPivot
+
+	// MsgNamedPipesReq - Request to create a new named pipe listener
+	MsgNamedPipesReq
+	// MsgNamedPipes - Response with the result
+	MsgNamedPipes
 
 	// PROCESS ----------------------------------------------------------------------------//
 
@@ -148,6 +160,10 @@ const (
 	MsgSpawnDllReq
 	// MsgSpawnDll - Reflective DLL injection output
 	MsgSpawnDll
-	// MsgIfconfigReq - Ifconfig (network interface config) request
-	MsgIfconfigReq
+
+	// OTHER COMMANDS ---------------------------------------------------------------------------//
+	// MsgScreenshotReq - Request to take a screenshot
+	MsgScreenshotReq
+	// MsgScreenshot - Response to screenshot request
+	MsgScreenshot
 )

@@ -87,6 +87,7 @@ var (
 
 		// Info
 		ghostpb.MsgIfconfigReq: rpcIfconfig,
+		ghostpb.MsgNetstatReq:  rpcNetstat,
 
 		// Priv
 		ghostpb.MsgElevate:       rpcElevate,
@@ -102,6 +103,8 @@ var (
 		clientpb.MsgMigrate:       rpcMigrate,
 
 		// Shell
+		ghostpb.MsgShellReq: rpcShell,
+
 		// Execute
 		clientpb.MsgTask:               rpcTask,
 		ghostpb.MsgExecuteReq:          rpcExecute,
