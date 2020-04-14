@@ -22,12 +22,14 @@ import (
 	"github.com/maxlandon/wiregost/client/commands/filesystem"
 	"github.com/maxlandon/wiregost/client/commands/ghosts"
 	"github.com/maxlandon/wiregost/client/commands/help"
+	"github.com/maxlandon/wiregost/client/commands/info"
 	"github.com/maxlandon/wiregost/client/commands/jobs"
 	"github.com/maxlandon/wiregost/client/commands/module"
 	"github.com/maxlandon/wiregost/client/commands/proc"
 	"github.com/maxlandon/wiregost/client/commands/profiles"
 	"github.com/maxlandon/wiregost/client/commands/server"
 	"github.com/maxlandon/wiregost/client/commands/sessions"
+	"github.com/maxlandon/wiregost/client/commands/shell"
 	"github.com/maxlandon/wiregost/client/commands/stack"
 )
 
@@ -109,8 +111,12 @@ func RegisterCommands() {
 	proc.RegisterMigrate()   // migrate
 
 	// Network
+	info.RegisterNetstat() // netstat
 
 	// Priv
 
 	// Execute
+
+	// Shell
+	shell.RegisterInteractiveShell() // shell
 }

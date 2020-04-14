@@ -172,7 +172,7 @@ const (
 	MsfInject        = "msf-inject"
 
 	// Shell
-	SystemShell = "shell"
+	InteractiveShell = "shell"
 
 	// Help
 	AgentHelp         = "agent-help"

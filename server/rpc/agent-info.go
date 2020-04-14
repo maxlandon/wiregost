@@ -44,7 +44,7 @@ func rpcIfconfig(req []byte, timeout time.Duration, resp Response) {
 }
 
 func rpcNetstat(req []byte, timeout time.Duration, resp Response) {
-	netstatReq := &ghostpb.NetstatReq{}
+	netstatReq := &ghostpb.NetstatRequest{}
 	err := proto.Unmarshal(req, netstatReq)
 	if err != nil {
 		resp([]byte{}, err)

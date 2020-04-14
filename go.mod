@@ -8,6 +8,7 @@ require (
 	github.com/chzyer/logex v1.1.10 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1 // indirect
+	github.com/d4l3k/go-pry v0.0.0-20181122210047-3e3af674fe57
 	github.com/dgraph-io/badger v1.6.0
 	github.com/evilsocket/islazy v1.10.6
 	github.com/gobuffalo/packr v1.30.1
@@ -20,12 +21,15 @@ require (
 	github.com/jinzhu/gorm v1.9.12
 	github.com/kr/pty v1.1.8 // indirect
 	github.com/lib/pq v1.1.1
+	github.com/lmorg/murex v0.0.0-20200211112034-e4e41ac6743f
 	github.com/lmorg/readline v0.0.0-20190310235027-80486cdafb40
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.11 // indirect
 	github.com/mattn/go-runewidth v0.0.8 // indirect
+	github.com/mattn/go-tty v0.0.3 // indirect
 	github.com/miekg/dns v1.1.27
 	github.com/olekukonko/tablewriter v0.0.4
+	github.com/phayes/permbits v0.0.0-20190612203442-39d7c581d2ee
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20200210222208-86ce3cb69678
