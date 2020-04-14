@@ -38,9 +38,9 @@ type MigrateCmd struct {
 var Migrate MigrateCmd
 
 func RegisterMigrate() {
-	GhostParser.AddCommand(constants.ProcDump, "", "", &ProcDump)
+	GhostParser.AddCommand(constants.Migrate, "", "", &Migrate)
 
-	pd := GhostParser.Find(constants.ProcDump)
+	pd := GhostParser.Find(constants.Migrate)
 	pd.ShortDescription = "(Windows only) Migrate the ghost implant to a different process"
 	pd.Args()[0].RequiredMaximum = 1
 }

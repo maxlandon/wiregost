@@ -30,7 +30,6 @@ var (
 		consts.Help:     helpHelp,
 		consts.Core:     coreHelp,
 		consts.Shell:    shellHelp,
-		consts.Cd:       cdHelp,
 		consts.Resource: resourceHelp,
 
 		// [ Server ]
@@ -41,19 +40,19 @@ var (
 
 		// [ Data Service ]
 		// Workspace
-		consts.WorkspaceStr: workspaceHelp,
+		consts.Workspace: workspaceHelp,
 
 		// Hosts
-		consts.HostsStr:    hostsHelp,
+		consts.Hosts:       hostsHelp,
 		consts.HostsAdd:    hostsAdd,
 		consts.HostsDelete: hostsDelete,
 		consts.HostsUpdate: hostsUpdate,
 
 		// Services
-		consts.ServicesStr:    serviceHelp,
-		consts.ServicesAdd:    servicesAdd,
-		consts.ServicesDelete: servicesDelete,
-		consts.ServicesUpdate: servicesUpdate,
+		// consts.ServicesStr:    serviceHelp,
+		// consts.ServicesAdd:    servicesAdd,
+		// consts.ServicesDelete: servicesDelete,
+		// consts.ServicesUpdate: servicesUpdate,
 
 		// [ Stack & Modules ]
 		consts.Stack:  stackHelp,
@@ -75,22 +74,22 @@ var (
 		consts.CompleteAgentHelp: completeAgentHelp,
 
 		// FileSystem
-		consts.FileSystem: filesystemHelp,
+		// consts.FileSystem: filesystemHelp,
 
 		// Info
-		consts.Info: infoHelp,
+		// consts.Info: infoHelp,
 
 		// Priv
-		consts.Priv:        privHelp,
+		// consts.Priv:        privHelp,
 		consts.RunAs:       runasHelp,
 		consts.Impersonate: impersonateHelp,
 
 		// Proc
-		consts.Proc:     procHelp,
+		// consts.Proc:     procHelp,
 		consts.ProcDump: procdumpHelp,
 
 		// Shell
-		consts.AgentShell: agentShellHelp,
+		// consts.AgentShell: agentShellHelp,
 
 		// Execute
 		consts.Execute:          executeHelp,

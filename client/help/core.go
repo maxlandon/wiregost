@@ -87,13 +87,6 @@ var (
 		tui.DIM, tui.RESET,
 	)
 
-	cdHelp = fmt.Sprintf(`%s%s Command:%s cd <dir>%s
-
-%s About:%s Change the client shell's working directory.`,
-		tui.BLUE, tui.BOLD, tui.FOREWHITE, tui.RESET,
-		tui.YELLOW, tui.RESET,
-	)
-
 	resourceHelp = fmt.Sprintf(`%s%s Command:%s resource <verb> <args>%s
 
 %s About:%s Make a resource file with past <int> commands in history, or load and execute commands of a file.

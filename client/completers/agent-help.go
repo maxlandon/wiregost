@@ -16,32 +16,32 @@
 
 package completers
 
-import (
-	"strings"
-
-	"github.com/maxlandon/wiregost/client/commands"
-)
-
-type agentHelpCompleter struct {
-	Command *commands.Command
-}
-
-// Do is the completion function triggered at each line
-func (oc *agentHelpCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
-
-	splitLine := strings.Split(string(line), " ")
-	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
-
-	commands := buildCommandMap(*ctx.Menu)
-
-	for _, c := range commands {
-		search := c.Name
-		if !hasPrefix(line, []rune(search)) {
-			sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-			options = append(options, sLine...)
-			offset = sOffset
-		}
-	}
-
-	return options, offset
-}
+// import (
+//         "strings"
+//
+//         "github.com/maxlandon/wiregost/client/commands"
+// )
+//
+// type agentHelpCompleter struct {
+//         Command *commands.Command
+// }
+//
+// // Do is the completion function triggered at each line
+// func (oc *agentHelpCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+//
+//         splitLine := strings.Split(string(line), " ")
+//         line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+//
+//         commands := buildCommandMap(*ctx.Menu)
+//
+//         for _, c := range commands {
+//                 search := c.Name
+//                 if !hasPrefix(line, []rune(search)) {
+//                         sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+//                         options = append(options, sLine...)
+//                         offset = sOffset
+//                 }
+//         }
+//
+//         return options, offset
+// }

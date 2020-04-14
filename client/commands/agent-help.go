@@ -16,34 +16,34 @@
 
 package commands
 
-import (
-	"fmt"
-
-	"github.com/maxlandon/wiregost/client/help"
-)
-
-func registerAgentHelpCommands() {
-
-	// Command categories
-	help := &Command{
-		Name: "help",
-		Handle: func(r *Request) error {
-			switch length := len(r.Args); {
-			case length == 0:
-				fmt.Println()
-				// One page help with all commands
-				fmt.Printf(help.GetHelpFor("complete-agent-help"))
-				// Multi page command categories
-				// fmt.Printf(help.GetHelpFor("agent-help"))
-				fmt.Println()
-			default:
-				fmt.Println()
-				fmt.Println(help.GetHelpFor(r.Args[0]))
-			}
-			return nil
-		},
-	}
-
-	// Finally register commands
-	AddCommand("agent", help)
-}
+// import (
+//         "fmt"
+//
+//         "github.com/maxlandon/wiregost/client/help"
+// )
+//
+// func registerAgentHelpCommands() {
+//
+//         // Command categories
+//         help := &Command{
+//                 Name: "help",
+//                 Handle: func(r *Request) error {
+//                         switch length := len(r.Args); {
+//                         case length == 0:
+//                                 fmt.Println()
+//                                 // One page help with all commands
+//                                 fmt.Printf(help.GetHelpFor("complete-agent-help"))
+//                                 // Multi page command categories
+//                                 // fmt.Printf(help.GetHelpFor("agent-help"))
+//                                 fmt.Println()
+//                         default:
+//                                 fmt.Println()
+//                                 fmt.Println(help.GetHelpFor(r.Args[0]))
+//                         }
+//                         return nil
+//                 },
+//         }
+//
+//         // Finally register commands
+//         AddCommand("agent", help)
+// }

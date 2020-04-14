@@ -16,34 +16,34 @@
 
 package completers
 
-import (
-	"fmt"
-	"strings"
-
-	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/wiregost/client/commands"
-)
-
-type nmapCompleter struct {
-	Command *commands.Command
-}
-
-// Do is the completion function triggered at each line
-func (mc *nmapCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
-
-	splitLine := strings.Split(string(line), " ")
-	line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
-
-	responses := []string{"response", "probe", "scan"}
-
-	for _, mod := range responses {
-		search := mod
-		if !hasPrefix(line, []rune(search)) {
-			fmt.Printf("\n %sOptions%s\n", tui.YELLOW, tui.RESET)
-			sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
-			options = append(options, sLine...)
-			offset = sOffset
-		}
-	}
-	return options, offset
-}
+// import (
+//         "fmt"
+//         "strings"
+//
+//         "github.com/evilsocket/islazy/tui"
+//         "github.com/maxlandon/wiregost/client/commands"
+// )
+//
+// type nmapCompleter struct {
+//         Command *commands.Command
+// }
+//
+// // Do is the completion function triggered at each line
+// func (mc *nmapCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
+//
+//         splitLine := strings.Split(string(line), " ")
+//         line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
+//
+//         responses := []string{"response", "probe", "scan"}
+//
+//         for _, mod := range responses {
+//                 search := mod
+//                 if !hasPrefix(line, []rune(search)) {
+//                         fmt.Printf("\n %sOptions%s\n", tui.YELLOW, tui.RESET)
+//                         sLine, sOffset := doInternal(line, pos, len(line), []rune(search))
+//                         options = append(options, sLine...)
+//                         offset = sOffset
+//                 }
+//         }
+//         return options, offset
+// }

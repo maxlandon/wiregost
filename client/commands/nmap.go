@@ -16,25 +16,25 @@
 
 package commands
 
-func registerNmapCommands() {
-
-	nmap := &Command{
-		Name: "nmap",
-		Handle: func(r *Request) error {
-			return nil
-		},
-	}
-
-	AddCommand("main", nmap)
-	AddCommand("module", nmap)
-
-	dbNmap := &Command{
-		Name: "db_nmap",
-		Handle: func(r *Request) error {
-			return nil
-		},
-	}
-
-	AddCommand("main", dbNmap)
-	AddCommand("module", dbNmap)
-}
+// func registerNmapCommands() {
+//
+//         nmap := &Command{
+//                 Name: "nmap",
+//                 Handle: func(r *Request) error {
+//                         return nil
+//                 },
+//         }
+//
+//         AddCommand("main", nmap)
+//         AddCommand("module", nmap)
+//
+//         dbNmap := &Command{
+//                 Name: "db_nmap",
+//                 Handle: func(r *Request) error {
+//                         return nil
+//                 },
+//         }
+//
+//         AddCommand("main", dbNmap)
+//         AddCommand("module", dbNmap)
+// }

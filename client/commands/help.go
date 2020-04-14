@@ -16,57 +16,57 @@
 
 package commands
 
-import (
-	"fmt"
-
-	"github.com/maxlandon/wiregost/client/help"
-)
-
-func registerHelpCommands() {
-
-	// Command categories
-	help := &Command{
-		Name: "help",
-		// Needed for completion
-		// SubCommands: []string{
-		//         "core",
-		//         "workspace",
-		//         "hosts",
-		//         "server",
-		//         "user",
-		//         "profiles",
-		//         "jobs",
-		//         "module",
-		//         "stack",
-		//         "sessions",
-		// },
-		Args: []*Arg{
-			&Arg{Name: "core"},
-			&Arg{Name: "workspace"},
-			&Arg{Name: "hosts"},
-			&Arg{Name: "server"},
-			&Arg{Name: "user"},
-			&Arg{Name: "profiles"},
-			&Arg{Name: "jobs"},
-			&Arg{Name: "module"},
-			&Arg{Name: "stack"},
-			&Arg{Name: "sessions"},
-		},
-		Handle: func(r *Request) error {
-			switch length := len(r.Args); {
-			case length == 0:
-				fmt.Println()
-				fmt.Printf(help.GetHelpFor("help"))
-				fmt.Println()
-			default:
-				fmt.Println()
-				fmt.Println(help.GetHelpFor(r.Args[0]))
-			}
-			return nil
-		},
-	}
-
-	// Finally register commands
-	AddCommand("main", help)
-	AddCommand("module", help)
-}
+// import (
+//         "fmt"
+//
+//         "github.com/maxlandon/wiregost/client/help"
+// )
+//
+// func registerHelpCommands() {
+//
+//         // Command categories
+//         help := &Command{
+//                 Name: "help",
+//                 // Needed for completion
+//                 // SubCommands: []string{
+//                 //         "core",
+//                 //         "workspace",
+//                 //         "hosts",
+//                 //         "server",
+//                 //         "user",
+//                 //         "profiles",
+//                 //         "jobs",
+//                 //         "module",
+//                 //         "stack",
+//                 //         "sessions",
+//                 // },
+//                 Args: []*Arg{
+//                         &Arg{Name: "core"},
+//                         &Arg{Name: "workspace"},
+//                         &Arg{Name: "hosts"},
+//                         &Arg{Name: "server"},
+//                         &Arg{Name: "user"},
+//                         &Arg{Name: "profiles"},
+//                         &Arg{Name: "jobs"},
+//                         &Arg{Name: "module"},
+//                         &Arg{Name: "stack"},
+//                         &Arg{Name: "sessions"},
+//                 },
+//                 Handle: func(r *Request) error {
+//                         switch length := len(r.Args); {
+//                         case length == 0:
+//                                 fmt.Println()
+//                                 fmt.Printf(help.GetHelpFor("help"))
+//                                 fmt.Println()
+//                         default:
+//                                 fmt.Println()
+//                                 fmt.Println(help.GetHelpFor(r.Args[0]))
+//                         }
+//                         return nil
+//                 },
+//         }
+//
+//         // Finally register commands
+//         AddCommand("main", help)
+//         AddCommand("module", help)
+// }
