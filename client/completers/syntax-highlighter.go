@@ -15,3 +15,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package completers
+
+// SyntaxHighlighter - Entrypoint to all input syntax highlighting in the Wiregost console
+func SyntaxHighlighter(input []rune) (line string) {
+	return
+}

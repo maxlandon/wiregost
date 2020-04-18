@@ -15,3 +15,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package completers
+
+import "github.com/lmorg/readline"
+
+// TabCompleter - Entrypoint to all tab completions in the Wiregost console.
+func TabCompleter(line []rune, pos int) (last string, suggestions []string, descriptions map[string]string, tabType readline.TabDisplayType) {
+	return
+}

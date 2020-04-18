@@ -16,3 +16,8 @@ func handleCuratedVar(arg []string) (value string) {
 func handleEmbeddedVar(arg []string) (value string) {
 	return
 }
+
+// LoadClientEnv - Loads all user environment variables
+func LoadClientEnv() error {
+	return nil
+}

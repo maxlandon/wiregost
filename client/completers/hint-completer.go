@@ -15,3 +15,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package completers
+
+// HintCompleter - Entrypoint to all hints in the Wiregost console
+func HintCompleter(line []rune, pos int) (hint []rune) {
+	return
+}
