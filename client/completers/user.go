@@ -1,4 +1,4 @@
-// Wiregost - Golang Exploitation Framework
+// Wiregost - Post-Exploitation & Implant Framework
 // Copyright © 2020 Para
 //
 // This program is free software: you can redistribute it and/or modify
@@ -15,51 +15,3 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package completers
-
-// import (
-//         "strings"
-//
-//         "github.com/maxlandon/wiregost/client/commands"
-// )
-//
-// type userCompleter struct {
-//         Command *commands.Command
-// }
-//
-// // Do is the completion function triggered at each line
-// func (hc *userCompleter) Do(ctx *commands.ShellContext, line []rune, pos int) (options [][]rune, offset int) {
-//
-//         // Complete command args
-//         splitLine := strings.Split(string(line), " ")
-//         line = trimSpaceLeft([]rune(splitLine[len(splitLine)-1]))
-//
-//         for _, arg := range hc.Command.Args {
-//                 search := arg.Name
-//                 if !hasPrefix(line, []rune(search)) {
-//                         sLine, sOffset := doInternal(line, pos, len(line), []rune(search+"="))
-//                         options = append(options, sLine...)
-//                         offset = sOffset
-//                 } else {
-//                         words := strings.Split(string(line), "=")
-//                         argInput := lastString(words)
-//
-//                         // For some arguments, the split results in a last empty item.
-//                         if words[len(words)-1] == "" {
-//                                 argInput = words[0]
-//                         }
-//
-//                         // All boolean values
-//                         if arg.Type == "boolean" {
-//                                 for _, search := range []string{"true ", "false "} {
-//                                         offset = 0
-//                                         if strings.HasPrefix(search, argInput) {
-//                                                 options = append(options, []rune(search[len(argInput):]))
-//                                                 offset = len(argInput)
-//                                         }
-//                                 }
-//                                 return
-//                         }
-//                 }
-//         }
-//         return options, offset
-// }

@@ -15,3 +15,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package console
+
+// ExecuteCommand - Dispatches an input line to its appropriate command.
+func (c *Console) ExecuteCommand(args []string) error {
+	return nil
+}
+
+// ExecuteSpecialCommand - Handles all commands not registered to command parsers.
+func (c *Console) ExecuteSpecialCommand(args []string) error {
+	return nil
+}

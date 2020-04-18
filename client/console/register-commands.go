@@ -1,4 +1,4 @@
-// Wiregost - Golang Exploitation Framework
+// Wiregost - Post-Exploitation & Implant Framework
 // Copyright © 2020 Para
 //
 // This program is free software: you can redistribute it and/or modify
@@ -16,107 +16,7 @@
 
 package console
 
-import (
-	"github.com/maxlandon/wiregost/client/commands/canaries"
-	"github.com/maxlandon/wiregost/client/commands/core"
-	"github.com/maxlandon/wiregost/client/commands/filesystem"
-	"github.com/maxlandon/wiregost/client/commands/ghosts"
-	"github.com/maxlandon/wiregost/client/commands/help"
-	"github.com/maxlandon/wiregost/client/commands/info"
-	"github.com/maxlandon/wiregost/client/commands/jobs"
-	"github.com/maxlandon/wiregost/client/commands/module"
-	"github.com/maxlandon/wiregost/client/commands/proc"
-	"github.com/maxlandon/wiregost/client/commands/profiles"
-	"github.com/maxlandon/wiregost/client/commands/server"
-	"github.com/maxlandon/wiregost/client/commands/sessions"
-	"github.com/maxlandon/wiregost/client/commands/shell"
-	"github.com/maxlandon/wiregost/client/commands/stack"
-)
-
-// RegisterCommands - Registers all commands to the parser
-// Needs to be here to avoid circular imports, and because init funcs don't work.
+// RegisterCommands - Binds all commands to the console
 func RegisterCommands() {
 
-	// Main Context ------------------------------------------------------------
-
-	// Help
-	help.RegisterHelp() // help
-
-	// Core
-	core.RegisterCd() // cd
-	core.RegisterLs() // ls
-
-	// DB
-
-	// Server
-	server.RegisterServer()        // server
-	server.RegisterServerConnect() // connect
-
-	// Module
-	module.RegisterModuleUse()          // use
-	module.RegisterModuleInfo()         // info
-	module.RegisterModuleShowOptions()  // options
-	module.RegisterModuleSetOption()    // set
-	module.RegisterToListener()         // to-listener
-	module.RegisterModuleParseProfile() // parse-profile
-	module.RegisterModuleToProfile()    // to-profile
-	module.RegisterModuleRun()          // run
-	module.RegisterModuleBack()         // back
-
-	// Stack
-	stack.RegisterStack()    // stack
-	stack.RegisterStackUse() // use
-	stack.RegisterStackPop() // pop
-
-	// Profiles
-	profiles.RegisterProfiles()       // profiles
-	profiles.RegisterProfilesDelete() // delete
-
-	// Ghosts
-	ghosts.RegisterGhosts() // ghosts
-
-	// Canaries
-	canaries.RegisterCanaries() // canaries
-
-	// Jobs
-	jobs.RegisterJobs()        // jobs
-	jobs.RegisterJobsKill()    // kill
-	jobs.RegisterJobsKillAll() // kill-all
-
-	// Sessions
-	sessions.RegisterSessions()          // sessions
-	sessions.RegisterSessionsInteract()  // interact
-	sessions.RegisterSessionsKill()      // kill
-	sessions.RegisterSessionsKillAll()   // kill-all
-	sessions.RegisterSessionBackground() // background
-
-	// Ghost Context ------------------------------------------------------------
-
-	// Filesystem
-	filesystem.RegisterGhostCd()       // cd
-	filesystem.RegisterGhostLs()       // ls
-	filesystem.RegisterGhostCat()      // cat
-	filesystem.RegisterGhostPwd()      // pwd
-	filesystem.RegisterGhostRm()       // rm
-	filesystem.RegisterGhostMkdir()    // mkdir
-	filesystem.RegisterGhostDownload() // download
-	filesystem.RegisterGhostUpload()   // upload
-
-	// Info
-
-	// Proc
-	proc.RegisterPs()        // ps
-	proc.RegisterTerminate() // terminate
-	proc.RegisterProcDump()  // procdump
-	proc.RegisterMigrate()   // migrate
-
-	// Network
-	info.RegisterNetstat() // netstat
-
-	// Priv
-
-	// Execute
-
-	// Shell
-	shell.RegisterInteractiveShell() // shell
 }

@@ -1,4 +1,4 @@
-// Wiregost - Golang Exploitation Framework
+// Wiregost - Post-Exploitation & Implant Framework
 // Copyright © 2020 Para
 //
 // This program is free software: you can redistribute it and/or modify
@@ -15,34 +15,3 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package completers
-
-import (
-	"fmt"
-	"strings"
-
-	"github.com/lmorg/readline"
-	"github.com/maxlandon/wiregost/client/assets"
-)
-
-func CompleteServer(line []rune, pos int) (string, []string, map[string]string, readline.TabDisplayType) {
-
-	// Completions
-	var suggestions []string
-	listSuggestions := map[string]string{}
-
-	// Get last path
-	splitLine := strings.Split(string(line), " ")
-	last := splitLine[len(splitLine)-1]
-
-	// Get configs
-	configs := assets.GetConfigs()
-
-	for _, c := range configs {
-		conf := fmt.Sprintf("%s@%s:%d", c.User, c.LHost, c.LPort)
-		if strings.HasPrefix(conf, string(last)) {
-			suggestions = append(suggestions, conf[len(last):])
-		}
-	}
-
-	return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
-}
