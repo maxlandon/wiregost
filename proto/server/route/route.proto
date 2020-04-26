@@ -6,6 +6,7 @@ package route;
 // Route - A chain of nodes to use as proxies for a communication
 message Route {}
 
+// Start a route
 message OpenRouteRequest {}
 
 message OpenRouteResponse {}
