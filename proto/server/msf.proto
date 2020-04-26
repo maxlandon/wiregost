@@ -1,0 +1,4 @@
+syntax = "proto3";
+
+package msf;
+// option go_package = "server/msf";

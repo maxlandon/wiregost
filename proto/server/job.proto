@@ -1,0 +1,4 @@
+syntax = "proto3";
+
+package jobs;
+// option go_package = "server/jobs";

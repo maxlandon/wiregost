@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package core;
+// option go_package = "ghost/core";
+
+
+// ps
+message Process {} // Process is a process running on the target
+
+message PsRequest {}
+
+message Ps {}
+
+// terminate
+message TerminateRequest {}
+
+message Terminate {}
+
+// procdump
+message ProcessDumpRequest {}
+
+message ProcessDump {}
+
+// migrate
+message MigrateRequest {}
+
+message Migrate {}

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package route;
+// option go_package = "server/transport/route";
+
+// Route - A chain of nodes to use as proxies for a communication
+message Route {}
+
+message OpenRouteRequest {}
+
+message OpenRouteResponse {}
+
+message CloseRouteRequest {}
+
+message CloseRouteResponse {}

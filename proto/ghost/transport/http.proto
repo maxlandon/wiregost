@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package transport;
+// option go_package = "ghost/transport";
+
+message StartHTTPListenerRequest {}
+
+message StartHTTPListener {}
+
+
+message StopHTTPListenerRequest {}
+
+message StopHTTPListener {}
+
+// HTTPSessionInit - Sends the key bytes for authentication.
+message HTTPSessionInit {}

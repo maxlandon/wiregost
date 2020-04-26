@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package core;
+// option go_package = "ghost/core";
+
+// run-as
+message RunAsRequest {}
+
+message RunAs {}
+
+// impersonate
+message ImpersonateRequest {}
+
+message Impersonate {}
+
+// rev-to-self
+message RevertToSelfRequest {}
+
+message RevertToSelf {}
+
+// getsystem
+message GetSystemRequest {}
+
+message GetSystem {}
+
+// elevate
+message ElevateRequest {}
+
+message Elevate
+

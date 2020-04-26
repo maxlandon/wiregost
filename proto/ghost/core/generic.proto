@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package core;
+// option go_package = "ghost/core";
+
+// Register - Used when ghost implants calls back to C2 Server
+message Register {}
+
+// Ping - Test ghost connection
+message Ping {}
+
+// KillRequest - Kills the ghost executable and connection 
+message KillRequest {} 
+
+

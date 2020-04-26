@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package transport;
+// option go_package = "ghost/transport";
+
+message StartDNSListenerRequest {}
+
+message StartDNSListener {}
+
+
+message StopDNSListenerRequest {}
+
+message StopDNSListener {}

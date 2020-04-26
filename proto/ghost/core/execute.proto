@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package core;
+// option go_package = "ghost/core";
+
+// task
+message Task {}
+
+message RemoteTask {}
+
+// execute
+message ExecuteRequest {}
+
+message Execute {}
+
+// execute-assembly
+message ExecuteAssemblyRequest {}
+
+message ExecuteAssembly {}
+
+// sideload-dll
+message SideloadDllRequest {}
+
+message SideloadDll {}
+
+// spawn-dll
+message SpawnDllRequest {}
+
+message SpawnDll {}
+
+

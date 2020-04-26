@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package builds;
+// option go_package = "server/builds";
+
+// GhostConfig stores all configuration elements needed to compile an implant.
+message GhostConfig {}
+
+// GhostBuilds - Configs of previously built ghosts
+message GhostBuilds {}

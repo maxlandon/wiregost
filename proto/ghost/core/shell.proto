@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package core;
+// option go_package = "ghost/core";
+
+message ShellRequest {}
+
+message Shell {}

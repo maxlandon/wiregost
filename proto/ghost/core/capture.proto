@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package core;
+// option go_package = "ghost/core";
+
+// Screenshot
+message ScreenshotRequest {}
+
+message Screenshot {}

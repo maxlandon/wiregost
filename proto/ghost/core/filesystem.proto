@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package core;
+// option go_package = "ghost/core";
+
+message File {}
+
+// ls 
+message LsRequest {}
+
+message Ls{}
+
+message FileInfo {}
+
+// pwd
+message PwdRequest {}
+
+message Pwd{}
+
+// cd
+message CdRequest {}
+
+message Cd {}
+
+// rm
+message RmRequest {}
+
+message Rm {}
+
+// mkdir
+message MkdirRequest {}
+
+message Mkdir {}
+
+// download
+message DownloadRequest {}
+
+message Download {}
+
+// upload
+message UploadRequest {}
+
+message Upload {}

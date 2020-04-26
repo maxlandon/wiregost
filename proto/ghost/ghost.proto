@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package ghost;
+// option go_package = "ghost";
+
+// Ghost - Server-side object representing a ghost implant.
+message Ghost {}
