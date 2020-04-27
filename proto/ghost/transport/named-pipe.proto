@@ -1,4 +1,16 @@
 syntax = "proto3";
 
 package transport;
-// option go_package = "ghost/transport";
+option go_package = "ghost/transport";
+
+// NamedPipeRequest - Start a name pipe listener
+message NamedPipeListenerRequest {
+        uint32 GhostID = 1;
+
+        string PipeName = 2;
+}
+
+message NamedPipeListener {
+        bool Success = 1;
+        string Err = 2;
+}

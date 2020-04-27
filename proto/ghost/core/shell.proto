@@ -1,8 +1,19 @@
 syntax = "proto3";
 
 package core;
-// option go_package = "ghost/core";
+option go_package = "ghost/core";
 
-message ShellRequest {}
+message ShellRequest { 
+        uint32 GhostID = 1;
+        string Path = 2;
+        bool EnablePTY = 3;
 
-message Shell {}
+        uint64 TunnelID = 9;
+}
+
+message Shell {
+        bool Success = 1;
+        string Err = 2;
+
+        uint64 TunnelID = 9;
+}

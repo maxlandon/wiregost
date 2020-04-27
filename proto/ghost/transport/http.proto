@@ -1,16 +1,43 @@
 syntax = "proto3";
 
 package transport;
-// option go_package = "ghost/transport";
+option go_package = "ghost/transport";
 
-message StartHTTPListenerRequest {}
+// HTTPListenerRequest - Start a HTTP listener for incoming ghost connections
+message HTTPListenerRequest {
+        string Domain = 1;
+        string LHost = 2;
+        int32 LPort = 3;
+        bool Secure = 4;    // Enable HTTPS
+        string Website = 5;
+        bytes Cert = 6;
+        bytes Key = 7;
+        bool ACME = 8;
+}
 
-message StartHTTPListener {}
+message HTTPListener {
+        bool Success = 1;
+        int32 JobID = 2;
+        // Job BackgroundJob = 3;           // Pass an entire job object.
+}
 
+// HTTPBindRequest - Connect to a ghost implant running remotely
+message HTTPBindRequest {
+        string Domain = 1;
+        string RHost = 2;
+        int32 RPort = 3;
+        bool Secure = 4;    // Enable HTTPS
+        bytes Cert = 6;
+        bytes Key = 7;      // Maybe not needed
+}
 
-message StopHTTPListenerRequest {}
-
-message StopHTTPListener {}
+message HTTPBind {
+       bool Success = 1;
+       string Err = 2;
+       // Add needed fields here, like registration
+}
 
 // HTTPSessionInit - Sends the key bytes for authentication.
-message HTTPSessionInit {}
+message HTTPSessionInit {
+        bytes Key = 1;
+}

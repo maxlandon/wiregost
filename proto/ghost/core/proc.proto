@@ -1,27 +1,56 @@
 syntax = "proto3";
 
 package core;
-// option go_package = "ghost/core";
+option go_package = "ghost/core";
 
+// Process is a process running on the target
+message Process {
+        int32 PID = 1;
+        int32 PPID = 2;
+        string Executable = 3;
+        string Owner = 4;
+} 
 
 // ps
-message Process {} // Process is a process running on the target
+message PsRequest {
+        uint32 GhostID = 1;
+}
 
-message PsRequest {}
-
-message Ps {}
+message Ps {
+        repeated Process Processes = 1;
+}
 
 // terminate
-message TerminateRequest {}
+message TerminateRequest {
+        uint32 GhostID = 1;
+        int32 PID = 2;
 
-message Terminate {}
+}
+
+message Terminate {
+        string Err = 1;
+}
 
 // procdump
-message ProcessDumpRequest {}
+message ProcessDumpRequest {
+        uint32 GhostID = 1; 
+        int32 PID = 2;
+        int32 Timeout = 3;
+}
 
-message ProcessDump {}
+message ProcessDump {
+        bytes Data = 1;
+        string Err = 2;
+}
 
 // migrate
-message MigrateRequest {}
+message MigrateRequest {
+        uint32 GhostID = 1;
+        int32 PID = 2;
+        bytes Data = 3;
+}
 
-message Migrate {}
+message Migrate {
+        bool Success = 1;
+        string Err = 2;
+}

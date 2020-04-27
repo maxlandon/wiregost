@@ -1,30 +1,63 @@
 syntax = "proto3";
 
 package core;
-// option go_package = "ghost/core";
+option go_package = "ghost/core";
 
 // run-as
-message RunAsRequest {}
+message RunAsRequest {
+        uint32 GhostID = 1;
 
-message RunAs {}
+        string Username = 2;
+        string Process = 3;
+        repeated string Args = 4;
+}
+
+message RunAs {
+        string Output = 1;
+        string Err = 2;
+}
 
 // impersonate
-message ImpersonateRequest {}
+message ImpersonateRequest {
+        uint32 GhostID = 1;
 
-message Impersonate {}
+        string Username = 2;
+}
+
+message Impersonate {
+        string Err = 1;
+}
 
 // rev-to-self
-message RevertToSelfRequest {}
+message RevertToSelfRequest {
+        uint32 GhostID = 1;
+}
 
-message RevertToSelf {}
+message RevertToSelf {
+        string Err = 1;
+}
 
 // getsystem
-message GetSystemRequest {}
+message GetSystemRequest {
+        uint32 GhostID = 1;
 
-message GetSystem {}
+        string HostingProcess = 2;
+        bytes Data = 3;
+}
+
+message GetSystem {
+        string Output = 1;
+}
 
 // elevate
-message ElevateRequest {}
+message ElevateRequest {
+        uint32 GhostID = 1;
 
-message Elevate
+        int32 Timeout = 2;
+}
+
+message Elevate {
+        bool Success = 1;
+        string Err = 2;
+}
 

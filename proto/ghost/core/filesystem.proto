@@ -1,43 +1,93 @@
 syntax = "proto3";
 
 package core;
-// option go_package = "ghost/core";
+option go_package = "ghost/core";
 
 message File {}
 
 // ls 
-message LsRequest {}
+message LsRequest {
+        uint32 GhostID =1;
+        string Path = 2;
+}
 
-message Ls{}
+message Ls{
+        string Path = 1;
+        bool Exists = 2;
+        repeated FileInfo Files = 3;
+}
 
-message FileInfo {}
+message FileInfo {
+        string Name = 1;
+        bool IsDir = 2;
+        int64 Size = 3;
+        int32 FileMode = 4;         // User and permission bits
+        string ModTime = 5;         // Last modification timestamp
+}
 
 // pwd
-message PwdRequest {}
+message PwdRequest {
+        uint32 GhostID = 1;
+}
 
-message Pwd{}
+message Pwd{
+        string Path = 1;
+        string Err = 2;
+}
 
 // cd
-message CdRequest {}
-
-message Cd {}
+message CdRequest {
+        uint32 GhostID = 1;
+       string Path = 2;
+}
 
 // rm
-message RmRequest {}
+message RmRequest {
+        uint32 GhostID = 1;
+        string Path = 2;
+}
 
-message Rm {}
+message Rm {
+        bool Success = 1;
+        string Path = 2;
+        string Err = 3;
+}
 
 // mkdir
-message MkdirRequest {}
+message MkdirRequest {
+        uint32 GhostID = 1;
+        string Path = 2;
+}
 
-message Mkdir {}
+message Mkdir {
+        bool Success = 1;
+        string Path = 2;
+        string Err = 3;
+}
 
 // download
-message DownloadRequest {}
+message DownloadRequest {
+        uint32 GhostID = 1;
+        string Path = 2;
+}
 
-message Download {}
+message Download {
+        string Path = 1;
+        string Encoder = 2;
+        bool Exists = 3;
+        bytes Data = 9;
+}
 
 // upload
-message UploadRequest {}
+message UploadRequest {
+        uint32 GhostID = 1;
+        string Path = 2;
+        string Encoder = 3;
+        bytes Data = 4;
+}
 
-message Upload {}
+message Upload {
+        bool Success = 1;
+        string Path = 2;
+        string Err = 3;
+}

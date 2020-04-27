@@ -1,31 +1,75 @@
 syntax = "proto3";
 
 package core;
-// option go_package = "ghost/core";
+option go_package = "ghost/core";
 
-// task
-message Task {}
+// shellcode task
+message Task {
+        string Encoder = 1;
+        bool RWXPages = 2;
+        uint32 PID = 3;
+        bytes Data = 4;
+}
 
-message RemoteTask {}
+message RemoteTask {
+        string Encoder = 1;
+        bool RWXPages = 2;
+        uint32 PID = 3;
+        bytes Data = 4;
+}
 
 // execute
-message ExecuteRequest {}
+message ExecuteRequest {
+        uint32 GhostID = 1;
+        string Path = 2;
+        repeated string Args = 3;
+        bool output = 4;
+}
 
-message Execute {}
+message Execute {
+        string Error = 1;
+        string Result = 2;
+}
 
 // execute-assembly
-message ExecuteAssemblyRequest {}
+message ExecuteAssemblyRequest {
+        uint32 GhostID = 1;
+        bytes HostingDLL = 2;
+        bytes Assembly = 3;
+        repeated string Arguments = 4;
+        string Process = 5;
+        int32 Timeout = 6;
+}
 
-message ExecuteAssembly {}
+message ExecuteAssembly {
+        string Output = 1;
+        string Error = 2;
+}
 
 // sideload-dll
-message SideloadDllRequest {}
+message SideloadDllRequest {
+        uint32 GhostID = 1;
+        bytes Data = 2;
+        string Process = 3;
+}
 
-message SideloadDll {}
+message SideloadDll {
+        string Output = 1;
+        string Error = 2;
+}
 
 // spawn-dll
-message SpawnDllRequest {}
+message SpawnDllRequest {
+        uint32 GhostID = 1;
+        bytes Data = 2;
+        string Process = 3;
+        string Offset = 4;
+        repeated string Args = 5;
+}
 
-message SpawnDll {}
+message SpawnDll {
+        string Output = 1;
+        string Error = 2;
+}
 
 

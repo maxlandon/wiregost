@@ -1,13 +1,30 @@
 syntax = "proto3";
 
 package transport;
-// option go_package = "ghost/transport";
+option go_package = "ghost/transport";
 
-message StartDNSListenerRequest {}
+// StartDNSListenerRequest - Start a DNS listener for implant C2
+message StartDNSListenerRequest {
+        repeated string Domains = 1;
+        bool Canaries = 2;
+}
 
-message StartDNSListener {}
+message StartDNSListener {
+        bool Success = 1;
+        int32 JobID = 2;
+        // Job BackgroundJob = 3;           // Pass an entire job object.
+}
 
+// DNSSessionInit - Sends the key bytes for authentication.
+message DNSSessionInit {
+        bytes Key = 1;
+}
 
-message StopDNSListenerRequest {}
+message DNSPoll {
+        repeated DNSBlockHeader Blocks = 1;
+}
 
-message StopDNSListener {}
+message DNSBlockHeader {
+        string ID = 1;
+        uint32 Size = 2;
+}

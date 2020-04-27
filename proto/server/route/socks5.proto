@@ -2,3 +2,11 @@ syntax = "proto3";
 
 package route;
 // option go_package = "server/transport/route";
+
+message OpenSocks5Request {}
+
+message OpenSocks5 {}
+
+message CloseSocks5Request {}
+
+message CloseSocks5 {}

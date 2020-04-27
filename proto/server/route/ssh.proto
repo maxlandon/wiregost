@@ -2,3 +2,11 @@ syntax = "proto3";
 
 package route;
 // option go_package = "server/transport/route";
+
+message OpenSSHRequest {}
+
+message OpenSSH {}
+
+message CloseSSHRequest {}
+
+message CloseSSH {}
