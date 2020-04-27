@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package clients;
+option go_package = "server/clients";
+
+import "server/user.proto";
+
+// Client - A client console connected to the Wiregost server
+message Client {
+        int64 ID = 1;
+        string Token = 2;
+        users.User User = 3;
+}
+
+// ConnectionRequest - Sent by the console upon connection, with user credentials
+message ConnectionRequest {
+        Client Client = 1;
+}
+
+// Connection - Details sent back in connection are later used by the console for request contexts 
+message Connection {
+        bool Success = 1;
+        string Err = 2;
+        int64 ID = 3;       // Same for ID 
+        string Token = 4;   // Token is sent back by the server, and the console stores it in context
+}
