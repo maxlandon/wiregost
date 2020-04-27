@@ -32,7 +32,7 @@ message Transport {
 message ChangeTransportRequest {
         uint32 GhostID = 1;
 
-        Transport Transp = 2
+        Transport Transport = 2
         bool Force = 5;
 }
 

@@ -3,6 +3,7 @@ syntax = "proto3";
 package ghost.core;
 option go_package = "ghost/core";       // Include the package ghost/core at compile time.
 
+import "ghost/transport/transport.proto"
 
 // Register - Implant calls back to C2 Server and sends its information.
 message Register {
@@ -32,7 +33,7 @@ message Info {
 
         string Name = 1;
         HostName hostName = 2;
-        UserName Username = 3;
+        UserName Username = 3;                          
         string UID = 4;
         string GID = 5;
         string OS = 6;
@@ -43,11 +44,13 @@ message Info {
         string CurrentDir = 11;                 
         uint32 WorkspaceID = 12; 
 
-        repeated NetInterface Interfaces = 15;  // Network
-        string CurrentDir = 16;                 // Current working directory
-        repeated User Users = 17;               // Get all users on host.
+        repeated transport.Transport Transports = 14;   // Available C2 transports
 
-        repeated SocketTabEntry Netstat = 18;   // Maybe we can use this to automatically devise some better ports to use for routing/etc
+        repeated NetInterface Interfaces = 15;          // Network
+        string CurrentDir = 16;                         // Current working directory
+        repeated User Users = 17;                       // Get all users on host.
 
-        // repeated Route Routes = 19;          // We might send current route listeners, in case.
+        repeated SocketTabEntry Netstat = 18;           // Maybe we can use this to automatically devise some better ports to use for routing/etc
+
+        // repeated Route Routes = 19;                  // We might send current route listeners, in case.
 }

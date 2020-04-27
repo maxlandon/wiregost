@@ -1,7 +1,25 @@
 syntax = "proto3";
 
 package ghost;
-// option go_package = "ghost";
+option go_package = "ghost";
+
+import "ghost/transport/transport.proto";
 
 // Ghost - Server-side object representing a ghost implant.
-message Ghost {}
+message Ghost {
+        uint32 ID = 1;
+        string Name = 2;
+        Host Hostname = 3;                          // Either this or a HostID or a string
+        User Username = 4;                          // Same here
+        string UID = 5;
+        string GID = 6;
+        string OS = 7;
+        string Arch = 8;
+        int32 PID = 9;
+        string Filename = 10;
+        string LastCheckin = 11;
+        string Version = 12;
+        uint32 WorkspaceID = 13;
+
+        repeated transport.Transport Transports = 14; // Find a way to get the active one
+}

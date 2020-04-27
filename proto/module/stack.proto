@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package module;
+option go_package = "server/module";
+
+// Stacks do not need DB storage = no tags
+
+// StackUseRequest - Load a module onto the stack
+message StackUseRequest {
+        string Path = 1;
+}
+
+message StackUse {
+        Module Loaded = 1;
+        string Err = 2;
+}
+
+// StackPopRequest - Pop one or more modules from the user stack
+message StackPopRequest {
+        repeated string Path = 3;
+        bool All = 4;                   // Pop all modules from stack
+}
+
+message StackPop {
+        Module Next = 1;                // Sends next module on stack: empty if none left
+        string Err = 2;
+}
