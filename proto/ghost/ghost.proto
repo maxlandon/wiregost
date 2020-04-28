@@ -5,7 +5,7 @@ option go_package = "ghost";
 
 import "ghost/transport/transport.proto";
 
-// Ghost - Server-side object representing a ghost implant.
+// Ghost - Server-side object representing a connected ghost implant.
 message Ghost {
         uint32 ID = 1;
         string Name = 2;
@@ -21,5 +21,25 @@ message Ghost {
         string Version = 12;
         uint32 WorkspaceID = 13;
 
-        repeated transport.Transport Transports = 14; // Find a way to get the active one
+        repeated transport.Transport Transports = 14;   // Find a way to get the active one
+        Permissions Permissions = 15;                   // Ownership permissions on the implant 
+}
+
+
+// Permissions - Who has the right to interact/kill an implant
+enum Permissions {
+        OWNER = 0;
+        ADMIN = 1;
+        ALL = 2;
+}
+
+// ChangePermissionsRequest - Change the permissions of an implant at runtime
+message ChangePermissionsRequest {
+        uint32 GhostID = 1;
+        Permissions Permissions = 2;
+}
+
+message ChangePermissions {
+        bool Success = 1;
+        string Err = 2;
 }
