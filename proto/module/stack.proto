@@ -3,6 +3,7 @@ syntax = "proto3";
 package module;
 option go_package = "server/module";
 
+import "module.proto";
 // Stacks do not need DB storage = no tags
 
 // StackUseRequest - Load a module onto the stack
