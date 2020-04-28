@@ -6,7 +6,7 @@ option go_package = "server/module";       // Include the package ghost/core at 
 // Modules do not need DB storage = no tags
 
 // Module Types
-enum ModuleType {
+enum Type {
         PAYLOAD = 0;
         AUXILIARY = 1;
         EXPLOIT = 2;
@@ -17,7 +17,7 @@ enum ModuleType {
 // Module - A module object, with properties and options
 message Module {
         string Name = 1;                // Module Name
-        ModuleType Type = 2;            // Type of module
+        Type Type = 2;                  // Type of module
         string Path = 3;                // Path to module in modules directory
         string Description = 4;         // A description for this module
         string Notes = 5;               // Additional notes
