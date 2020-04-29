@@ -1,0 +1,92 @@
+// Wiregost - Golang Exploitation Framework
+// Copyright © 2020 Para
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package ghost.core;
+
+option go_package = "corepb";
+
+// shellcode task
+message Task {
+        string Encoder = 1;
+        bool RWXPages = 2;
+        uint32 PID = 3;
+        bytes Shellcode = 4;
+}
+
+message RemoteTask {
+        string Encoder = 1;
+        bool RWXPages = 2;
+        uint32 PID = 3;
+        bytes Shellcode = 4;
+}
+
+// execute
+message ExecuteRequest {
+        uint32 GhostID = 1;
+        string Path = 2;
+        repeated string Args = 3;
+        bool output = 4;
+}
+
+message Execute {
+        string Error = 1;
+        string Result = 2;
+}
+
+// execute-assembly
+message ExecuteAssemblyRequest {
+        uint32 GhostID = 1;
+        bytes HostingDLL = 2;
+        bytes Assembly = 3;
+        repeated string Arguments = 4;
+        string Process = 5;
+        int32 Timeout = 6;
+}
+
+message ExecuteAssembly {
+        string Output = 1;
+        string Error = 2;
+}
+
+// sideload-dll
+message SideloadDllRequest {
+        uint32 GhostID = 1;
+        bytes DLL = 2;
+        string Process = 3;
+}
+
+message SideloadDll {
+        string Output = 1;
+        string Error = 2;
+}
+
+// spawn-dll
+message SpawnDllRequest {
+        uint32 GhostID = 1;
+        bytes DLL = 2;
+        string Process = 3;
+        string Offset = 4;
+        repeated string Args = 5;
+}
+
+message SpawnDll {
+        string Output = 1;
+        string Error = 2;
+}
+
+

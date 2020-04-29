@@ -1,0 +1,43 @@
+// Wiregost - Golang Exploitation Framework
+// Copyright © 2020 Para
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package transport.route;
+
+option go_package = "routepb";
+
+// Node - A route node, member of a proxy chain.
+// Used by implants to send back active routes.
+//          DB to save current routes
+message Node {
+        int32 ID = 1;
+        uint32 GhostID = 2;         // Not saved to DB, only for live stuff
+        string GhostName = 3;       // Each node in a route is served by a ghost implant process, we just use the name
+        string LocalAddr = 4;       // host:port on which the router listens
+        string RemoteAddr = 5;      // Used for port forwarding
+        string Host = 6;
+        string Transport = 7;
+
+       repeated Connection ActiveConns = 10;    // Connections currently passing through the node
+       repeated string Pivots = 11;             // How many ghost are pivoted through this node: 1 ghost = 1 connection
+}
+
+message Connection {
+        string LocalAddr = 3;
+        string RemoteAddr = 4;
+        string Transport = 6;
+}

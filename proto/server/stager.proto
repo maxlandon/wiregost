@@ -1,4 +1,0 @@
-syntax = "proto3";
-
-package stagers;
-// option go_package = "server/stagers";

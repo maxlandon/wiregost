@@ -1,0 +1,73 @@
+// Wiregost - Golang Exploitation Framework
+// Copyright © 2020 Para
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package ghost.core;
+
+option go_package = "corepb";
+
+// Process is a process running on the target
+message Process {
+        int32 PID = 1;
+        int32 PPID = 2;
+        string Executable = 3;
+        string Owner = 4;
+} 
+
+// ps
+message PsRequest {
+        uint32 GhostID = 1;
+}
+
+message Ps {
+        repeated Process Processes = 1;
+}
+
+// terminate
+message TerminateRequest {
+        uint32 GhostID = 1;
+        int32 PID = 2;
+
+}
+
+message Terminate {
+        string Err = 1;
+}
+
+// procdump
+message ProcessDumpRequest {
+        uint32 GhostID = 1; 
+        int32 PID = 2;
+        int32 Timeout = 3;
+}
+
+message ProcessDump {
+        bytes Memory = 1;
+        string Err = 2;
+}
+
+// migrate
+message MigrateRequest {
+        uint32 GhostID = 1;
+        int32 PID = 2;
+        bytes Shellcode = 3;
+}
+
+message Migrate {
+        bool Success = 1;
+        string Err = 2;
+}

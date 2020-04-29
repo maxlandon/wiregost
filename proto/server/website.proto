@@ -1,4 +1,0 @@
-syntax = "proto3";
-
-package website;
-// option go_package = "server/website";
