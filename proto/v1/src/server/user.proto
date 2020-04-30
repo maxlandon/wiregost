@@ -1,0 +1,52 @@
+// Wiregost - Golang Exploitation Framework
+// Copyright © 2020 Para
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package server;
+option go_package = "serverpb";
+
+// Users are stored in DB = tags.
+
+// User - A Wiregost user
+message User {
+        string Name = 1;
+        bool Online = 2;
+        bytes Password = 3;
+        bool Admin = 4;
+}
+
+// AddUserRequest - Add a new user to Wiregost and save it to DB
+message AddUserRequest {
+        User User = 1;
+}
+
+message AddUser {
+        bool Success = 1;
+        string Err = 2;
+}
+
+// DeleteUserRequest - Delete a user from DB, and optionally disconnect all his consoles
+message DeleteUserRequest {
+        User User = 1;
+        bool Disconnect = 2;
+}
+
+message DeleteUser {
+        bool Success = 1;
+        bool Disconnected = 2;
+        string Err = 3;
+}

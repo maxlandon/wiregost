@@ -8,13 +8,14 @@ There are several aims to be fulfilled with Protobuf in this project:
 - Separate functionality based on Protobuf API version.
 - Enable development for implants in other languages.
 - Enable easier RPC development, given the wide RPC support of Protocol Buffers.
+- Implement a language-agnostic data model oriented toward security purposes. 
 
 ----
 ### Protobuf management
 
 For managing the Protobuf file repository, we use [uber/prototool](https://github.com/uber/prototool).
 This tool allows an easier way of dealing with compilation, linting (coding standards), default fields, etc...
-Thanks to the `prototool.yaml` configuration file present in each version directory (`wiregost/proto/v1`, `wiregost/proto/v2`),
+Thanks to the `prototool.yaml` configuration file present in each version source directory (`wiregost/proto/v1/src`, `wiregost/proto/v2/src`),
 we can easily manage, on a per-version basis:
 
 - Language output & import options
@@ -27,7 +28,9 @@ As you will see in their documentation, there is support at least for Vim, which
 
 
 ----
-### Directory contents
+### Source files 
+
+In the V1 source code directory (`proto/v1/src/`):
 
 - `client/`     - All objects needed by the client
 - `db/`         - All objects that do not belong to other directories, but need storage
@@ -36,10 +39,27 @@ As you will see in their documentation, there is support at least for Vim, which
 - `server/`     - All objects needed by the server (users, events, clients, etc...)
 - `transport/`  - Transport objects as a whole (listeners, binders, routes, protocols, etc...) 
 
+- prototool.yaml    - Protobuf project management file
+- file-header.txt   - Header for `prototool create file.proto` tool
 
 ----
 
-### Files
+### Generated Language Files
 
-- prototool.yaml    - Protobuf project management file
-- file-header.txt   - Header for `prototool create file.proto` tool
+Generated code for any language in any version is output in `proto/version/gen/language/`. 
+For example, Go generated source V1 is output to `proto/v1/gen/go/`.
+
+----
+
+### Go Tags 
+
+We use struct tags for easier parsing in various cases:
+- XML Parsing used for Nmap scans
+- GORM tags. They are used by the ORM layer we use (GORM).
+
+We make use of [https://github.com/favadi/protoc-go-inject-tag] for injecting tags directly on the 
+generated `.pb.go` files. We place comments like  `// @inject_tag: gorm"not null" xml:"name"` in our
+Protobuf source files.
+
+When running `make tags` from the repo root, it will recursively generate the appropriate struct tags
+for each .pb.go file in the `proto/` directory.

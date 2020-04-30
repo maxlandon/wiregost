@@ -1,0 +1,80 @@
+// Wiregost - Golang Exploitation Framework
+// Copyright © 2020 Para
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package db;
+
+option go_package = "dbpb";
+
+import "db/os_families.proto";
+
+// OS - An operating system identified by NMAP, with fingerprint information
+message OS {
+        // @inject_tag: xml:"portused"
+        repeated PortUsed PortsUsed = 1;
+        // @inject_tag: xml:"osmatch"
+        repeated OSMatch Matches = 2;
+        // @inject_tag: xml:"osfingerprint"
+        repeated OSFingerprint Fingerprints = 3;
+}
+
+// OSMatch - Contains detailed information regarding an Operating System fingerprint
+message OSMatch {
+        // @inject_tag: xml:"name,attr"
+        string Name = 1;
+        // @inject_tag: xml:"accurary,attr"
+        int32 Accuracy = 2;
+        // @inject_tag: xml:"line,attr"
+        int32 Line = 3;
+        // @inject_tag: xml:"osclass,attr"
+        repeated OSClass Classes = 4;
+}
+
+// PortUsed - The port used to fingerprint the operating system
+message PortUsed {
+        // @inject_tag: xml:"portid,attr"
+        uint32 ID = 1;
+        uint32 OsID = 2;
+        // @inject_tag: xml:"state,attr"
+        string State = 3;
+        // @inject_tag: xml:"proto,attr"
+        string Protocol = 4;
+}
+
+// OSFingerprint - The actual fingerprint string of an operating system
+message OSFingerprint {
+        // @inject_tag: xml:"fingerprint,attr"
+        string Fingerprint = 1;
+} 
+
+
+// OSClass - Contains vendor information about an operating system
+message OSClass {
+        // @inject_tag: xml:"vendor,attr"
+        string Vendor = 1;
+        // @inject_tag: xml:"osgen,attr"
+        string OSGeneration = 2;
+        // @inject_tag: xml:"type,attr"
+        string Type = 3;
+        // @inject_tag: xml:"accurary,attr"
+        int32 Accuracy = 4;
+        // @inject_tag: xml:"osfamily,attr"
+        db.OSFamily Family = 5;
+        // @inject_tag: xml:"cpe"
+        repeated string CPEs = 6;        // "Common Platform Enumeration" is standardized way to name software applications, OSs and Hardware platforms
+}
+

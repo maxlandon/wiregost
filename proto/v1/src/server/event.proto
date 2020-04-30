@@ -1,0 +1,52 @@
+// Wiregost - Golang Exploitation Framework
+// Copyright © 2020 Para
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package server;
+option go_package = "serverpb";
+
+import "server/client.proto";
+
+// EventType - Events can range from user connect/disconnect, job cancellation, to session registering.
+enum EventType {
+        JOB = 0;
+        LISTENER = 1;
+        MODULE = 2;
+        STACK = 3;
+        SESSION = 4;
+        USER = 5;
+        CANARY = 6;
+}
+
+// Event - Any asynchronous event to be pushed to one or more consoles
+message Event {
+        EventType Type = 1; 
+        // Job Job = 2;
+        // Ghost Ghost = 3;
+        server.Client Client = 4;
+
+        uint64 RequestID = 6; 
+        string Message = 7;
+        bytes Details = 8;
+        string Err = 9;
+
+        bool Pending = 15;      // This could be used to determine how to handle printing/refresh on the console, like:
+        //                         [*] Module downloading file... Done          (if pending)
+
+        //                         [*] Module downloading ...                   (if not pending)
+        //                         [*] Done
+}

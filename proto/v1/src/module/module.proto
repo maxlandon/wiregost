@@ -1,0 +1,95 @@
+// Wiregost - Golang Exploitation Framework
+// Copyright © 2020 Para
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package module;
+
+option go_package = "modulepb";       // Include the package ghost/core at compile time.
+
+// Modules do not need DB storage = no tags
+
+// Module Types
+enum Type {
+        PAYLOAD = 0;
+        AUXILIARY = 1;
+        EXPLOIT = 2;
+        POST = 3;
+        HANDLER = 4;
+}
+
+// Module - A module object, with properties and options
+message Module {
+        string Name = 1;                // Module Name
+        Type Type = 2;                  // Type of module
+        string Path = 3;                // Path to module in modules directory
+        string Description = 4;         // A description for this module
+        string Notes = 5;               // Additional notes
+        repeated string References = 6; // Any reference useful to the user
+        repeated string Authors = 7;    // Module authors
+        repeated string Credits = 8;    // Other credits
+        repeated string Targets = 9;    // A list of operating systems on which the module can be run
+        string Arch = 10;               // Supported architecture
+        string Lang = 11;               // Implementation language of the module
+        bool Priviledged = 12;          // Does the module requires administrator privileges to be run ?
+
+        map<string, Option> Options = 13;   // All options for this module
+
+        // repeated Option Options = 14;    // Alternative: use list, and make a method like m.SetOption("name", "value")
+        //                                                                                   m.GetOption("name")
+        // This will preserve order for options, which might be useful
+}
+
+
+// Option - An option used by the module
+message Option {
+        string Name = 1;            // Option name
+        string Value = 2;           // Option value, is always a string and converted later if needed
+        bool Required = 3;          // Is this option required ? If yes it should already have a value
+        string Flag = 4;            // Sometimes the option value is used as a flag in a command line, so it might have a different form.
+        string Description = 5;     // A description for this option.
+}
+
+
+// ModuleActionRequest - Run the one of the functions of the module
+message ModuleActionRequest {
+        uint64 RequestID = 1;       // Uniquely identify the request, so that any further module output is redirected to the good console
+        uint32 WorkspaceID = 2;
+        string Path = 3;            // Module Path
+        string Action = 4;          // Do we use Enum here or just dynamic string ? dynamic allows for any new command
+        string Options = 5;         // Any option or argument need, such as profile name
+}
+
+message ModuleAction {
+        bool Success = 1;
+        string Result = 2;
+        string Err = 3;
+        Module Updated = 5;         // used when parsing profiles
+}
+
+
+// ModuleSetOptionRequest - Set an option for the module
+message ModuleSetOptionRequest {
+        uint32 WorkspaceID = 1;
+        string Path = 2; 
+        string Name = 3;
+        string Value = 4;
+}
+
+message ModuleSetOption {
+        bool Success = 1;
+        string Err = 2;
+}

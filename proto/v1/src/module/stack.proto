@@ -1,0 +1,45 @@
+// Wiregost - Golang Exploitation Framework
+// Copyright © 2020 Para
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package module;
+
+option go_package = "modulepb";
+
+import "module/module.proto";
+// Stacks do not need DB storage = no tags
+
+// StackUseRequest - Load a module onto the stack
+message StackUseRequest {
+        string Path = 1;
+}
+
+message StackUse {
+        Module Loaded = 1;
+        string Err = 2;
+}
+
+// StackPopRequest - Pop one or more modules from the user stack
+message StackPopRequest {
+        repeated string Path = 3;
+        bool All = 4;                   // Pop all modules from stack
+}
+
+message StackPop {
+        Module Next = 1;                // Sends next module on stack: empty if none left
+        string Err = 2;
+}
