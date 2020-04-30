@@ -32,8 +32,8 @@ server/assets/version.go
 # Protobuf ----------------------------------------------------
 
 # *.pb.go
-./proto/gen/     # Ignore all per-language Protobuf generated code
-./.tmp/          # Ignore uber/prototool binaries
+proto/gen/     # Ignore all per-language Protobuf generated code
+.tmp/          # Ignore uber/prototool binaries
 
 
 # Go toolchain (Zip files for releases) -----------------------
