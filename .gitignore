@@ -27,8 +27,11 @@ assets/*.go
 client/version/version.go 
 server/assets/version.go
 
-# Protobuf
-*.pb.go
+# Protobuf --------------------------------------------
+# *.pb.go
+./proto/gen             # Ignore all per-language Protobuf generated code
+./.tmp                  # Ignore uber/prototool binaries
+
 
 # Packer files generated during static builds
 server/assets/a_assets-packr.go
