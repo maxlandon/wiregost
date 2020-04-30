@@ -26,6 +26,10 @@ This tool will further ease development of Wiregost server/implant functionality
 As you will see in their documentation, there is support at least for Vim, which works well. 
 (You'll need [ALE](https://github.com/dense-analysis/ale), but the whole is very simple to install).
 
+----
+### Wiregost Protobuf Objects versions
+
+- `v1`      - First iteration build around GORM DB usage, with a Nmap-like object model for DB many objects
 
 ----
 ### Example Directory Structure (V1)
@@ -59,7 +63,7 @@ We use struct tags for easier parsing in various cases:
 
 We make use of [https://github.com/favadi/protoc-go-inject-tag] for injecting tags directly on the 
 generated `.pb.go` files. We place comments like  `// @inject_tag: gorm"not null" xml:"name"` in our
-Protobuf source files.
+Protobuf source files, and the binary parses them and outputs the corresponding struct tag.
 
-When running `make tags` from the repo root, it will recursively generate the appropriate struct tags
-for each .pb.go file in the `proto/` directory.
+When running `make tags` from the repo root, it will recursively generate struct tags
+for each .pb.go file in the `proto/` directory, with the `generate-go-tags.sh` script.
