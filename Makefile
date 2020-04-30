@@ -136,9 +136,9 @@ SHELL := /bin/bash -o pipefail
 UNAME_OS := $(shell uname -s)
 UNAME_ARCH := $(shell uname -m)
 
-TMP_BASE := .tmp
+TMP_BASE := ./proto/bin
 TMP := $(TMP_BASE)/$(UNAME_OS)/$(UNAME_ARCH)
-TMP_BIN = $(TMP)/bin
+TMP_BIN = $(TMP)
 TMP_VERSIONS := $(TMP)/versions
 
 export GO111MODULE := on
@@ -157,7 +157,6 @@ $(PROTOTOOL):
 	$(eval PROTOTOOL_TMP := $(shell mktemp -d))
 	cd $(PROTOTOOL_TMP); go get github.com/uber/prototool/cmd/prototool@$(PROTOTOOL_VERSION); 
 	cd $(PROTOTOOL_TMP); go get google.golang.org/protobuf/cmd/protoc-gen-go
-	# cd $(PROTOTOOL_TMP); go get google.golang.org/protobuf/cmd/protoc-gen-go@$(PROTOC_GEN_VERSION);
 	@rm -rf $(PROTOTOOL_TMP)
 	@rm -rf $(dir $(PROTOTOOL))
 	@mkdir -p $(dir $(PROTOTOOL))
@@ -169,4 +168,4 @@ $(PROTOTOOL):
 # locally installed prototool.
 .PHONY: proto
 proto: $(PROTOTOOL)
-	prototool generate
+	cd proto/; prototool generate
