@@ -21,19 +21,15 @@ package transport;
 option go_package = "transportpb";
 
 import "transport/transport.proto";
+import "server/user.proto";
+import "google/protobuf/timestamp.proto";
 
 
 // Start a listener either on the server, or on an implant
 message StartReverseHandlerRequest {
-        transport.Protocol Protocol = 1;
-        string LHost = 2;
-        uint32 LPort = 3; 
-        enum Type {             // Does listener delivers a stage ?
-                STAGED = 0;
-                STAGER = 1;
-        }
-        bytes Stage = 5;        // If stager, this is the payload
+        Listener Listener = 1;
 
+        // Protocol-specific
         // HTTP HTTP = 10;      // HTTP listener options
         // DNS DNS = 11;        // DNS listener options
         // MTLS = 12;           // MTLS listener options
@@ -52,4 +48,40 @@ message StopReverseHandlerRequest {
 message StopReverseHandler {
         bool Success = 1;
         string Err = 2;
+}
+
+
+// Bind to a reverse listener runned by an implant
+message StartBindHandlerRequest {
+        transport.Protocol Protocol = 1;
+        string RHost = 2;
+        uint32 RPort = 3;
+        uint32 GhostID = 4;     // In case two same addresses for two ghosts
+}
+
+message StartBindHandler {
+        bool Success = 1;
+        string Err = 2;
+}
+
+// Listener - A reverse handler, for any protocol and source
+message Listener {
+        transport.Protocol Protocol = 1;
+        string LHost = 2;
+        uint32 LPort = 3;
+        string RHost = 4;
+        uint32 RPort = 5;
+        uint32 GhostID = 6;     // In case two same addresses for two ghosts
+        server.User Owner = 7;
+        Permissions Permissions  = 8;
+        // Timestamp
+        google.protobuf.Timestamp CreatedAt = 38;
+        google.protobuf.Timestamp UpdatedAt = 39;
+}
+
+// Permissions - Who has the right to kill a listener 
+enum Permissions {
+        OWNER = 0;
+        ADMIN = 1;
+        ALL = 2;
 }

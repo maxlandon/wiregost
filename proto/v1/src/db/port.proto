@@ -29,12 +29,14 @@ message Port {
         // General
         uint32 ID = 1;
         uint32 Number = 2;
+        // @inject_tag: gorm:"not null"
         uint32 HostID = 3;
+
         // Nmap
         // @inject_tag: xml:"protocol"
         string Protocol = 4;
         // @inject_tag: xml:"owner"
-        Owner Owner = 5;
+        string Owner = 5;
         // @inject_tag: xml:"service"
         db.Service Service = 6;
         // @inject_tag: xml:"state"
@@ -50,6 +52,7 @@ message Port {
 // ExtraPort - Reasons for why a port is closed/filtered
 message ExtraPort {
         uint32 ID = 1;
+        // @inject_tag: gorm:"not null"
         uint32 HostID = 2;
         // @inject_tag: xml:"state"
         string State = 3;
@@ -62,6 +65,7 @@ message ExtraPort {
 // Reason - Extra information on a closed/filtered port
 message Reason {
         uint32 ID = 1;
+        // @inject_tag: gorm:"not null"
         uint32 ExtraPortID = 2;
         // @inject_tag: xml:"reason"
         string Reason = 3;
@@ -80,6 +84,7 @@ enum PortStatus {
 // State - Contains information about a given's port status
 message State {
         uint32 ID = 1;
+        // @inject_tag: gorm:"not null"
         uint32 PortID = 2;
         // Nmap
         // @inject_tag: xml:"state,attr"
@@ -94,5 +99,3 @@ message State {
         google.protobuf.Timestamp CreatedAt = 38;
         google.protobuf.Timestamp UpdatedAt = 39;
 }
-
-message Owner {}

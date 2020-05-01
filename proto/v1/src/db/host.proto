@@ -53,6 +53,7 @@ message Host {
         string VirtualHost = 14;
         repeated Address Addresses = 15;
         repeated string Users = 16;
+        uint32 IPNetworkID = 17;                // Might belong to a given subnet
         
         // Nmap
         // @inject_tag: xml:"hostnames>hostname"
@@ -97,6 +98,7 @@ message Host {
 // A hostname for a host.
 message Hostname {
         uint32 ID = 1;
+        // @inject_tag: gorm:"not null"
         uint32 HostID = 2;
         string Name = 3;
         string Type = 4;

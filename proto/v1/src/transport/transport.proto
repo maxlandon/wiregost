@@ -50,6 +50,8 @@ message Transport {
 
 
 // ChangeTransportRequest - Request an implant to connect with new transport settings
+// At the server, we should check the transport type, and if reverse, check a listener is running, otherwise
+// return error and do not ask implant to change its transport.
 message ChangeTransportRequest {
         uint32 GhostID = 1;
 

@@ -16,21 +16,23 @@
 
 syntax = "proto3";
 
-package transport;
+package db;
 
-option go_package = "transportpb";
+option go_package = "dbpb";
 
-import "transport/transport.proto";
+import "google/protobuf/timestamp.proto";
 
-// Bind to a reverse listener runned by an implant
-message StartBindHandlerRequest {
-        transport.Protocol Protocol = 1;
-        string RHost = 2;
-        uint32 RPort = 3;
-        uint32 GhostID = 4;     // In case two same addresses for two ghosts
-}
+// We can devise a new, more elaborated form of Workspace for Wiregost.
 
-message StartBindHandler {
-        bool Success = 1;
-        string Err = 2;
+// Workspace - Revisited concept of a Wiregost workspace
+message Workspace {
+        uint32 ID = 1;
+        string Name = 2;
+        repeated string Boundaries = 3;
+        bool LimitToNetwork = 4;
+        bool Default = 5;
+
+        // Timestamp
+        google.protobuf.Timestamp CreatedAt = 38;
+        google.protobuf.Timestamp UpdatedAt = 39;
 }

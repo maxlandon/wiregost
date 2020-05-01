@@ -18,7 +18,7 @@ Go ecosystem, while retaining good operability and maintanability.
 
 At the same time, the increasing set of RPC frameworks available in Go (some of them being almost transport-agnostic) 
 ultimately called for an object/capacity model defined with Protobuf, so as to provide easy code generation for RPC frameworks, 
-but also to give promote cross-language implant/tool development. Therefore, Protobuf is one of the pillars of Wiregost, as 
+but also to promote cross-language implant/tool development. Therefore, Protobuf is one of the pillars of Wiregost, as 
 explained in the [proto/ directory](https://github.com/maxlandon/wiregost/tree/v1.0.0/proto/).
 
 The combination of Go as a language, as a rich library ecosystem providing various networking capabilities, cross-platform functionality 
@@ -27,7 +27,7 @@ and execution, is a solid ground for developing a powerful, robust, extensible, 
 
 ## Architecture
 
-Wiregost architecture rests on several pillars, aims and technologies: 
+Wiregost's architecture rests on several pillars, aims and technologies: 
 
 - Protobuf for API definitions, PostgreSQL for storage, Go for runtime.
 - Go for simplicity, modularity, robustness and maintainability. 
@@ -54,10 +54,8 @@ or by browsing the repository: READMEs are available for pretty much all subpack
 ## Install
 
 Assuming two classes of persons:
-- Users of the tool will find either ready-to-run binaries for their platform.
+- Users of the tool can download [ready-to-run binaries](https://github.com/maxlandon/wiregost/releases) for their platform.
 - Developers can [install for development](https://github.com/maxlandon/wiregost/wiki/Development-Setup)
-
-In any case, it *is stronly advised* to go through the documentation first before running the server and console.
 
 
 ## Documentation
