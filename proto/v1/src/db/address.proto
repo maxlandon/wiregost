@@ -24,7 +24,10 @@ option go_package = "dbpb";
 message Address {
         uint32 ID = 1;
         uint32 HostID = 2;
-        string IP = 3;          // xml:addr
-        string Type = 4;        // xml:addrtype
-        string Vendor = 5;
+        // @inject_tag: xml:"addr,attr"
+        string IP = 3;          
+        // @inject_tag: xml:"addrtype,attr"
+        string Type = 4;        
+        // @inject_tag: xml:"vendor,attr"
+        string Vendor = 5;      
 }

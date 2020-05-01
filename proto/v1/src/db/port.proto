@@ -95,6 +95,4 @@ message State {
         google.protobuf.Timestamp UpdatedAt = 39;
 }
 
-message Owner {
-                
-}
+message Owner {}

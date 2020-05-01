@@ -44,8 +44,9 @@ In the V1 source code directory (`proto/v1/src/`):
 - `transport/`  - Transport objects as a whole (listeners, binders, routes, protocols, etc...) 
 
 ----
-- prototool.yaml    - Protobuf project management file
-- file-header.txt   - Header for `prototool create file.proto` tool
+- `prototool.yaml`    - Protobuf project management file
+- `file-header.txt`   - Header for `prototool create file.proto` tool
+
 
 ----
 

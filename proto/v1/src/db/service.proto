@@ -20,5 +20,49 @@ package db;
 
 option go_package = "dbpb";
 
+import "google/protobuf/timestamp.proto";
+
 // Service - A service running behind a port
-message Service {}
+message Service {
+        // General
+        uint32 ID = 1;
+        // @inject_tag: gorm:"not null"
+        uint32 PortID = 2;
+        // @inject_tag: xml:"proto,attr"
+        string Protocol = 3;
+        // @inject_tag: xml:"name,attr"
+        string Name = 4;
+        // @inject_tag: xml:"extrainfo,attr"
+        string ExtraInfo = 5;
+
+        // Nmap
+        // @inject_tag: xml:"devicetype,attr"
+        string DeviceType = 10;
+        // @inject_tag: xml:"hostname,attr"
+        string Hostname = 12;
+        // @inject_tag: xml:"method,attr"
+        string Method = 14;
+        // @inject_tag: xml:"ostype,attr"
+        string OSType = 15;
+        // @inject_tag: xml:"product,attr"
+        string Product = 16;
+        // @inject_tag: xml:"rpcnum,attr"
+        string RPCNum = 17;
+        // @inject_tag: xml:"servicefp,attr"
+        string ServiceFP = 18;
+        // @inject_tag: xml:"tunnel,attr"
+        string Tunnel = 19;
+        // @inject_tag: xml:"lowver,attr"
+        string LowVersion = 13;
+        // @inject_tag: xml:"highver,attr"
+        string HighVersion = 11;
+        // @inject_tag: xml:"version,attr"
+        string Version = 20;
+        // @inject_tag: xml:"conf,attr"
+        int32 Configuration = 21;
+        // @inject_tag: xml:"cpe"
+        repeated string CPEs = 6;        // "Common Platform Enumeration" is standardized way to name software applications, OSs and Hardware platforms
+        // Timestamp
+        google.protobuf.Timestamp CreatedAt = 38;
+        google.protobuf.Timestamp UpdatedAt = 39;
+}

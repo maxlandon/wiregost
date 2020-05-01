@@ -49,9 +49,12 @@ type Address struct {
 
 	ID     uint32 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	HostID uint32 `protobuf:"varint,2,opt,name=HostID,proto3" json:"HostID,omitempty"`
-	IP     string `protobuf:"bytes,3,opt,name=IP,proto3" json:"IP,omitempty"`     // xml:addr
-	Type   string `protobuf:"bytes,4,opt,name=Type,proto3" json:"Type,omitempty"` // xml:addrtype
-	Vendor string `protobuf:"bytes,5,opt,name=Vendor,proto3" json:"Vendor,omitempty"`
+	// @inject_tag: xml:"addr,attr"
+	IP string `protobuf:"bytes,3,opt,name=IP,proto3" json:"IP,omitempty" xml:"addr,attr"`
+	// @inject_tag: xml:"addrtype,attr"
+	Type string `protobuf:"bytes,4,opt,name=Type,proto3" json:"Type,omitempty" xml:"addrtype,attr"`
+	// @inject_tag: xml:"vendor,attr"
+	Vendor string `protobuf:"bytes,5,opt,name=Vendor,proto3" json:"Vendor,omitempty" xml:"vendor,attr"`
 }
 
 func (x *Address) Reset() {

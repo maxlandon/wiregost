@@ -23,6 +23,7 @@ option go_package = "dbpb";
 import "db/address.proto";
 import "db/port.proto";
 import "db/os.proto";
+import "scanner/nmap.proto";
 import "google/protobuf/timestamp.proto";
 
 // The host object is shared by many tools: implants, nmap, db, etc.
@@ -58,37 +59,37 @@ message Host {
         // @inject_tag: xml:"hostnames>hostname"
         repeated Hostname Hostnames = 34;
         // @inject_tag: xml:"ports>port"
-        repeated Port Ports = 36;
+        repeated db.Port Ports = 36;
         // @inject_tag: xml:"ports>extraports"
-        repeated ExtraPort ExtraPorts = 33;
+        repeated db.ExtraPort ExtraPorts = 33;
         // @inject_tag: xml:"os"
         OS OS = 24; 
         // @inject_tag: xml:"status"
-        // Status Status = 32;
-        // // @inject_tag: xml:"distance"
-        // Distance Distance = 20;
-        // // @inject_tag: xml:"endtime,attr,omitempty"
-        // google.protobuf.Timestamp EndTime = 22;
-        // // @inject_tag: xml:"ipidsequence"
-        // IPIDSequence IPIDSequence = 23;
-        // // @inject_tag: xml:"tcpsequence"
-        // TCPSequence TCPSequence = 25;
-        // // @inject_tag: xml:"tcptssequence"
-        // TCPTSSequence TCPTSSequence = 26;
-        // // @inject_tag: xml:"times"
-        // Times Times = 27;
-        // // @inject_tag: xml:"trace"
-        // Trace Trace = 28;
-        // // @inject_tag: xml:"uptime"
-        // Uptime Uptime = 29;
-        // // @inject_tag: xml:"comment,attr"
-        // string Comment = 30;
-        // // @inject_tag: xml:"starttime,attr,omitempty"
-        // google.protobuf.Timestamp StartTime = 31;
-        // // @inject_tag: xml:"hostscript>script"
-        // repeated HostScript HostScripts = 35;
-        // // @inject_tag: xml:"smurf"
-        // repeated Smurf Smurfs = 37;
+        db.PortStatus Status = 32;
+        // @inject_tag: xml:"distance"
+        Distance Distance = 20;
+        // @inject_tag: xml:"endtime,attr,omitempty"
+        google.protobuf.Timestamp EndTime = 22;         // Might have issues here with XML unmarshalling
+        // @inject_tag: xml:"ipidsequence"
+        scanner.IPIDSequence IPIDSequence = 23;
+        // @inject_tag: xml:"tcpsequence"
+        scanner.TCPSequence TCPSequence = 25;
+        // @inject_tag: xml:"tcptssequence"
+        scanner.TCPTSSequence TCPTSSequence = 26;
+        // @inject_tag: xml:"times"
+        scanner.Times Times = 27;
+        // @inject_tag: xml:"trace"
+        scanner.Trace Trace = 28;
+        // @inject_tag: xml:"uptime"
+        Uptime Uptime = 29;
+        // @inject_tag: xml:"comment,attr"
+        string Comment = 30;
+        // @inject_tag: xml:"starttime,attr,omitempty"
+        google.protobuf.Timestamp StartTime = 31;
+        // @inject_tag: xml:"hostscript>script"
+        repeated scanner.NmapScript HostScripts = 35;
+        // @inject_tag: xml:"smurf"
+        repeated scanner.Smurf Smurfs = 37;
 
         google.protobuf.Timestamp CreatedAt = 38;
         google.protobuf.Timestamp UpdatedAt = 39;
@@ -100,4 +101,18 @@ message Hostname {
         uint32 HostID = 2;
         string Name = 3;
         string Type = 4;
+}
+
+// Distance - The number of hops before reaching the host
+message Distance {
+        // @inject_tag: xml:"value,attr"
+        int32 Value = 1;
+}
+
+// Uptime - The amount of time the host has been up
+message Uptime {
+        // @inject_tag: xml:"seconds,attr"
+        int32 Seconds = 1;
+        // @inject_tag: xml:"lastboot,attr"
+        string LastBoot = 2;
 }
