@@ -28,7 +28,6 @@ import "google/protobuf/timestamp.proto";
 
 // The host object is shared by many tools: implants, nmap, db, etc.
 // Each tool needs only certain fields.
-// All fields don't need to be saved, especially some Nmap fields.
 
 // @inject_tag: tag:"value"
 // - XML (Nmap)
