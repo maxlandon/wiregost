@@ -62,6 +62,7 @@ message Service {
         int32 Configuration = 21;
         // @inject_tag: xml:"cpe"
         repeated string CPEs = 6;        // "Common Platform Enumeration" is standardized way to name software applications, OSs and Hardware platforms
+
         // Timestamp
         google.protobuf.Timestamp CreatedAt = 38;
         google.protobuf.Timestamp UpdatedAt = 39;

@@ -14,13 +14,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-syntax = "proto3";
+package models
 
-package server;
-option go_package = "serverpb";
+import "github.com/jinzhu/gorm"
 
-// GhostConfig stores all configuration elements needed to compile an implant.
-message GhostConfig {}
+// This file defines the GORM DB instance used to query Wiregost' PostgreSQL Database
 
-// GhostBuilds - Configs of previously built ghosts
-message GhostBuilds {}
+// DB - The GORM DB instance
+var DB *gorm.DB
+
+// ConnectDatabase - Connect to PostgreSQL
+func ConnectDatabase(name, user, password string) (db *gorm.DB, err error) {
+
+	return
+}
+
+// InitDatabase - Initialize the PostgreSQL database, with default settings
+func InitDatabase() error {
+
+	return nil
+}

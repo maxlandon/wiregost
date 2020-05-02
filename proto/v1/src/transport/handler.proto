@@ -28,6 +28,7 @@ import "google/protobuf/timestamp.proto";
 // Start a listener either on the server, or on an implant
 message StartReverseHandlerRequest {
         Listener Listener = 1;
+        bool Persist = 2;
 
         // Protocol-specific
         // HTTP HTTP = 10;      // HTTP listener options

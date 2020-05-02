@@ -53,6 +53,10 @@ message Host {
         string VirtualHost = 14;
         repeated Address Addresses = 15;
         repeated string Users = 16;
+
+        // We might have two subnets 192.168.1.1/24. How to know, when adding a host,
+        // to which subnet it belongs ? We need to check a few things:
+        // - Gateway for each address
         uint32 IPNetworkID = 17;                // Might belong to a given subnet
         
         // Nmap
