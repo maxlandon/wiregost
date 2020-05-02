@@ -20,8 +20,31 @@ package server;
 
 option go_package = "serverpb";
 
-// GhostConfig stores all configuration elements needed to compile an implant.
-message GhostBuild {}
+import "ghost/ghost.proto";
+import "transport/transport.proto";
+
+// GhostConfig - Stores all configuration elements needed to compile an implant.
+message GhostBuild {
+
+        uint32 ID = 1;
+        string Name = 2;
+        string Hostname = 3;        // If set, restrict to some host 
+        string Username = 4;        // If set, restrict to some user on target
+        string OS = 7;
+        string Arch = 8;
+        string Filename = 10;       // Where to output binary
+        uint32 WorkspaceID = 13;
+
+        enum Format {
+                EXECUTABLE = 0;
+                SHARED_LIB = 1;
+                SHELLCODE = 2;
+        }
+
+        repeated transport.Transport Transports = 14;   // Find a way to get the active one
+        ghost.Permissions Permissions = 15;             // Ownership permissions on the implant 
+}
+
 
 // GhostBuildsRequest - Get Configs of previously built ghosts
 message GhostBuildsRequest {}

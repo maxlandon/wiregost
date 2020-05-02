@@ -41,6 +41,7 @@ message Transport {
         string RHost = 5;
         int32 RPort = 6;
         Protocol Protocol = 7;
+        bool Default = 10;
 
         enum Type {                 // Do we start a listener on the implant, or do we reach back another address ?
                 REVERSE = 0;
