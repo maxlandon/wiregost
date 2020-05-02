@@ -51,40 +51,40 @@ type Service struct {
 	// General
 	ID uint32 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	// @inject_tag: gorm:"not null"
-	PortID uint32 `protobuf:"varint,2,opt,name=PortID,proto3" json:"PortID,omitempty" gorm:"not null"`
+	PortID uint32 `protobuf:"varint,2,opt,name=PortID,proto3" json:"PortID,omitempty"`
 	// @inject_tag: xml:"proto,attr"
-	Protocol string `protobuf:"bytes,3,opt,name=Protocol,proto3" json:"Protocol,omitempty" xml:"proto,attr"`
+	Protocol string `protobuf:"bytes,3,opt,name=Protocol,proto3" json:"Protocol,omitempty"`
 	// @inject_tag: xml:"name,attr"
-	Name string `protobuf:"bytes,4,opt,name=Name,proto3" json:"Name,omitempty" xml:"name,attr"`
+	Name string `protobuf:"bytes,4,opt,name=Name,proto3" json:"Name,omitempty"`
 	// @inject_tag: xml:"extrainfo,attr"
-	ExtraInfo string `protobuf:"bytes,5,opt,name=ExtraInfo,proto3" json:"ExtraInfo,omitempty" xml:"extrainfo,attr"`
+	ExtraInfo string `protobuf:"bytes,5,opt,name=ExtraInfo,proto3" json:"ExtraInfo,omitempty"`
 	// Nmap
 	// @inject_tag: xml:"devicetype,attr"
-	DeviceType string `protobuf:"bytes,10,opt,name=DeviceType,proto3" json:"DeviceType,omitempty" xml:"devicetype,attr"`
+	DeviceType string `protobuf:"bytes,10,opt,name=DeviceType,proto3" json:"DeviceType,omitempty"`
 	// @inject_tag: xml:"hostname,attr"
-	Hostname string `protobuf:"bytes,12,opt,name=Hostname,proto3" json:"Hostname,omitempty" xml:"hostname,attr"`
+	Hostname string `protobuf:"bytes,12,opt,name=Hostname,proto3" json:"Hostname,omitempty"`
 	// @inject_tag: xml:"method,attr"
-	Method string `protobuf:"bytes,14,opt,name=Method,proto3" json:"Method,omitempty" xml:"method,attr"`
+	Method string `protobuf:"bytes,14,opt,name=Method,proto3" json:"Method,omitempty"`
 	// @inject_tag: xml:"ostype,attr"
-	OSType string `protobuf:"bytes,15,opt,name=OSType,proto3" json:"OSType,omitempty" xml:"ostype,attr"`
+	OSType string `protobuf:"bytes,15,opt,name=OSType,proto3" json:"OSType,omitempty"`
 	// @inject_tag: xml:"product,attr"
-	Product string `protobuf:"bytes,16,opt,name=Product,proto3" json:"Product,omitempty" xml:"product,attr"`
+	Product string `protobuf:"bytes,16,opt,name=Product,proto3" json:"Product,omitempty"`
 	// @inject_tag: xml:"rpcnum,attr"
-	RPCNum string `protobuf:"bytes,17,opt,name=RPCNum,proto3" json:"RPCNum,omitempty" xml:"rpcnum,attr"`
+	RPCNum string `protobuf:"bytes,17,opt,name=RPCNum,proto3" json:"RPCNum,omitempty"`
 	// @inject_tag: xml:"servicefp,attr"
-	ServiceFP string `protobuf:"bytes,18,opt,name=ServiceFP,proto3" json:"ServiceFP,omitempty" xml:"servicefp,attr"`
+	ServiceFP string `protobuf:"bytes,18,opt,name=ServiceFP,proto3" json:"ServiceFP,omitempty"`
 	// @inject_tag: xml:"tunnel,attr"
-	Tunnel string `protobuf:"bytes,19,opt,name=Tunnel,proto3" json:"Tunnel,omitempty" xml:"tunnel,attr"`
+	Tunnel string `protobuf:"bytes,19,opt,name=Tunnel,proto3" json:"Tunnel,omitempty"`
 	// @inject_tag: xml:"lowver,attr"
-	LowVersion string `protobuf:"bytes,13,opt,name=LowVersion,proto3" json:"LowVersion,omitempty" xml:"lowver,attr"`
+	LowVersion string `protobuf:"bytes,13,opt,name=LowVersion,proto3" json:"LowVersion,omitempty"`
 	// @inject_tag: xml:"highver,attr"
-	HighVersion string `protobuf:"bytes,11,opt,name=HighVersion,proto3" json:"HighVersion,omitempty" xml:"highver,attr"`
+	HighVersion string `protobuf:"bytes,11,opt,name=HighVersion,proto3" json:"HighVersion,omitempty"`
 	// @inject_tag: xml:"version,attr"
-	Version string `protobuf:"bytes,20,opt,name=Version,proto3" json:"Version,omitempty" xml:"version,attr"`
+	Version string `protobuf:"bytes,20,opt,name=Version,proto3" json:"Version,omitempty"`
 	// @inject_tag: xml:"conf,attr"
-	Configuration int32 `protobuf:"varint,21,opt,name=Configuration,proto3" json:"Configuration,omitempty" xml:"conf,attr"`
+	Configuration int32 `protobuf:"varint,21,opt,name=Configuration,proto3" json:"Configuration,omitempty"`
 	// @inject_tag: xml:"cpe"
-	CPEs []string `protobuf:"bytes,6,rep,name=CPEs,proto3" json:"CPEs,omitempty" xml:"cpe"` // "Common Platform Enumeration" is standardized way to name software applications, OSs and Hardware platforms
+	CPEs []string `protobuf:"bytes,6,rep,name=CPEs,proto3" json:"CPEs,omitempty"` // "Common Platform Enumeration" is standardized way to name software applications, OSs and Hardware platforms
 	// Timestamp
 	CreatedAt *timestamp.Timestamp `protobuf:"bytes,38,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`
 	UpdatedAt *timestamp.Timestamp `protobuf:"bytes,39,opt,name=UpdatedAt,proto3" json:"UpdatedAt,omitempty"`

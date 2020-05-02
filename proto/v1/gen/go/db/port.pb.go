@@ -106,18 +106,18 @@ type Port struct {
 	ID     uint32 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	Number uint32 `protobuf:"varint,2,opt,name=Number,proto3" json:"Number,omitempty"`
 	// @inject_tag: gorm:"not null"
-	HostID uint32 `protobuf:"varint,3,opt,name=HostID,proto3" json:"HostID,omitempty" gorm:"not null"`
+	HostID uint32 `protobuf:"varint,3,opt,name=HostID,proto3" json:"HostID,omitempty"`
 	// Nmap
 	// @inject_tag: xml:"protocol"
-	Protocol string `protobuf:"bytes,4,opt,name=Protocol,proto3" json:"Protocol,omitempty" xml:"protocol"`
+	Protocol string `protobuf:"bytes,4,opt,name=Protocol,proto3" json:"Protocol,omitempty"`
 	// @inject_tag: xml:"owner"
-	Owner string `protobuf:"bytes,5,opt,name=Owner,proto3" json:"Owner,omitempty" xml:"owner"`
+	Owner string `protobuf:"bytes,5,opt,name=Owner,proto3" json:"Owner,omitempty"`
 	// @inject_tag: xml:"service"
-	Service *Service `protobuf:"bytes,6,opt,name=Service,proto3" json:"Service,omitempty" xml:"service"`
+	Service *Service `protobuf:"bytes,6,opt,name=Service,proto3" json:"Service,omitempty"`
 	// @inject_tag: xml:"state"
-	State *State `protobuf:"bytes,7,opt,name=State,proto3" json:"State,omitempty" xml:"state"`
+	State *State `protobuf:"bytes,7,opt,name=State,proto3" json:"State,omitempty"`
 	// @inject_tag: xml:"script"
-	Scripts []*scanner.NmapScript `protobuf:"bytes,8,rep,name=Scripts,proto3" json:"Scripts,omitempty" xml:"script"`
+	Scripts []*scanner.NmapScript `protobuf:"bytes,8,rep,name=Scripts,proto3" json:"Scripts,omitempty"`
 	// Timestamp
 	CreatedAt *timestamp.Timestamp `protobuf:"bytes,38,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`
 	UpdatedAt *timestamp.Timestamp `protobuf:"bytes,39,opt,name=UpdatedAt,proto3" json:"UpdatedAt,omitempty"`
@@ -233,13 +233,13 @@ type ExtraPort struct {
 
 	ID uint32 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	// @inject_tag: gorm:"not null"
-	HostID uint32 `protobuf:"varint,2,opt,name=HostID,proto3" json:"HostID,omitempty" gorm:"not null"`
+	HostID uint32 `protobuf:"varint,2,opt,name=HostID,proto3" json:"HostID,omitempty"`
 	// @inject_tag: xml:"state"
-	State string `protobuf:"bytes,3,opt,name=State,proto3" json:"State,omitempty" xml:"state"`
+	State string `protobuf:"bytes,3,opt,name=State,proto3" json:"State,omitempty"`
 	// @inject_tag: xml:"count"
-	Count int32 `protobuf:"varint,4,opt,name=Count,proto3" json:"Count,omitempty" xml:"count"`
+	Count int32 `protobuf:"varint,4,opt,name=Count,proto3" json:"Count,omitempty"`
 	// @inject_tag: xml:"extrareasons"
-	Reasons []*Reason `protobuf:"bytes,5,rep,name=Reasons,proto3" json:"Reasons,omitempty" xml:"extrareasons"`
+	Reasons []*Reason `protobuf:"bytes,5,rep,name=Reasons,proto3" json:"Reasons,omitempty"`
 }
 
 func (x *ExtraPort) Reset() {
@@ -317,11 +317,11 @@ type Reason struct {
 
 	ID uint32 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	// @inject_tag: gorm:"not null"
-	ExtraPortID uint32 `protobuf:"varint,2,opt,name=ExtraPortID,proto3" json:"ExtraPortID,omitempty" gorm:"not null"`
+	ExtraPortID uint32 `protobuf:"varint,2,opt,name=ExtraPortID,proto3" json:"ExtraPortID,omitempty"`
 	// @inject_tag: xml:"reason"
-	Reason string `protobuf:"bytes,3,opt,name=Reason,proto3" json:"Reason,omitempty" xml:"reason"`
+	Reason string `protobuf:"bytes,3,opt,name=Reason,proto3" json:"Reason,omitempty"`
 	// @inject_tag: xml:"count"
-	Count int32 `protobuf:"varint,4,opt,name=Count,proto3" json:"Count,omitempty" xml:"count"`
+	Count int32 `protobuf:"varint,4,opt,name=Count,proto3" json:"Count,omitempty"`
 }
 
 func (x *Reason) Reset() {
@@ -392,16 +392,16 @@ type State struct {
 
 	ID uint32 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	// @inject_tag: gorm:"not null"
-	PortID uint32 `protobuf:"varint,2,opt,name=PortID,proto3" json:"PortID,omitempty" gorm:"not null"`
+	PortID uint32 `protobuf:"varint,2,opt,name=PortID,proto3" json:"PortID,omitempty"`
 	// Nmap
 	// @inject_tag: xml:"state,attr"
-	State string `protobuf:"bytes,3,opt,name=State,proto3" json:"State,omitempty" xml:"state,attr"`
+	State string `protobuf:"bytes,3,opt,name=State,proto3" json:"State,omitempty"`
 	// @inject_tag: xml:"reason,attr"
-	Reason string `protobuf:"bytes,4,opt,name=Reason,proto3" json:"Reason,omitempty" xml:"reason,attr"`
+	Reason string `protobuf:"bytes,4,opt,name=Reason,proto3" json:"Reason,omitempty"`
 	// @inject_tag: xml:"reason_ip,attr"
-	ReasonIP string `protobuf:"bytes,5,opt,name=ReasonIP,proto3" json:"ReasonIP,omitempty" xml:"reason_ip,attr"`
+	ReasonIP string `protobuf:"bytes,5,opt,name=ReasonIP,proto3" json:"ReasonIP,omitempty"`
 	// @inject_tag: xml:"reason_ttl,attr"
-	ReasonTTL float32 `protobuf:"fixed32,6,opt,name=ReasonTTL,proto3" json:"ReasonTTL,omitempty" xml:"reason_ttl,attr"`
+	ReasonTTL float32 `protobuf:"fixed32,6,opt,name=ReasonTTL,proto3" json:"ReasonTTL,omitempty"`
 	// Timestamp
 	CreatedAt *timestamp.Timestamp `protobuf:"bytes,38,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`
 	UpdatedAt *timestamp.Timestamp `protobuf:"bytes,39,opt,name=UpdatedAt,proto3" json:"UpdatedAt,omitempty"`

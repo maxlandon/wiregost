@@ -50,11 +50,11 @@ type Address struct {
 	ID     uint32 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	HostID uint32 `protobuf:"varint,2,opt,name=HostID,proto3" json:"HostID,omitempty"`
 	// @inject_tag: xml:"addr,attr"
-	IP string `protobuf:"bytes,3,opt,name=IP,proto3" json:"IP,omitempty" xml:"addr,attr"`
+	IP string `protobuf:"bytes,3,opt,name=IP,proto3" json:"IP,omitempty"`
 	// @inject_tag: xml:"addrtype,attr"
-	Type string `protobuf:"bytes,4,opt,name=Type,proto3" json:"Type,omitempty" xml:"addrtype,attr"`
+	Type string `protobuf:"bytes,4,opt,name=Type,proto3" json:"Type,omitempty"`
 	// @inject_tag: xml:"vendor,attr"
-	Vendor string `protobuf:"bytes,5,opt,name=Vendor,proto3" json:"Vendor,omitempty" xml:"vendor,attr"`
+	Vendor string `protobuf:"bytes,5,opt,name=Vendor,proto3" json:"Vendor,omitempty"`
 	// We might have two subnets 192.168.1.1/24. How to know, when adding a host,
 	// to which subnet it belongs ? We need to check a few things:
 	// - Gateway for each address

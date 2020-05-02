@@ -105,13 +105,13 @@ type Credential struct {
 
 	ID uint32 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	// @inject_tag: gorm:"not null"
-	OriginID   uint32 `protobuf:"varint,2,opt,name=OriginID,proto3" json:"OriginID,omitempty" gorm:"not null"`    // A credential core has one origin
+	OriginID   uint32 `protobuf:"varint,2,opt,name=OriginID,proto3" json:"OriginID,omitempty"`    // A credential core has one origin
 	OriginType string `protobuf:"bytes,3,opt,name=OriginType,proto3" json:"OriginType,omitempty"` // For polymorphic associations
 	PrivateID  uint32 `protobuf:"varint,4,opt,name=PrivateID,proto3" json:"PrivateID,omitempty"`
 	PublicID   uint32 `protobuf:"varint,5,opt,name=PublicID,proto3" json:"PublicID,omitempty"`
 	RealmID    uint32 `protobuf:"varint,6,opt,name=RealmID,proto3" json:"RealmID,omitempty"`
 	// @inject_tag: gorm:"not null"
-	WorkspaceID uint32 `protobuf:"varint,7,opt,name=WorkspaceID,proto3" json:"WorkspaceID,omitempty" gorm:"not null"`
+	WorkspaceID uint32 `protobuf:"varint,7,opt,name=WorkspaceID,proto3" json:"WorkspaceID,omitempty"`
 	LoginsCount int32  `protobuf:"varint,8,opt,name=LoginsCount,proto3" json:"LoginsCount,omitempty"`
 	// Timestamp
 	CreatedAt *timestamp.Timestamp `protobuf:"bytes,38,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`
@@ -228,9 +228,9 @@ type CredentialPublic struct {
 
 	ID uint32 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	// @inject_tag: gorm:"not null"
-	Username string `protobuf:"bytes,2,opt,name=Username,proto3" json:"Username,omitempty" gorm:"not null"`
+	Username string `protobuf:"bytes,2,opt,name=Username,proto3" json:"Username,omitempty"`
 	// @inject_tag: gorm:"not null"
-	Type string `protobuf:"bytes,3,opt,name=Type,proto3" json:"Type,omitempty" gorm:"not null"`
+	Type string `protobuf:"bytes,3,opt,name=Type,proto3" json:"Type,omitempty"`
 	// Timestamp
 	CreatedAt *timestamp.Timestamp `protobuf:"bytes,38,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`
 	UpdatedAt *timestamp.Timestamp `protobuf:"bytes,39,opt,name=UpdatedAt,proto3" json:"UpdatedAt,omitempty"`
@@ -310,9 +310,9 @@ type CredentialPrivate struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: gorm:"not null"
-	Type string `protobuf:"bytes,1,opt,name=Type,proto3" json:"Type,omitempty" gorm:"not null"`
+	Type string `protobuf:"bytes,1,opt,name=Type,proto3" json:"Type,omitempty"`
 	// @inject_tag: gorm:"not null"
-	Value     string `protobuf:"bytes,2,opt,name=Value,proto3" json:"Value,omitempty" gorm:"not null"`
+	Value     string `protobuf:"bytes,2,opt,name=Value,proto3" json:"Value,omitempty"`
 	JTRFormat string `protobuf:"bytes,3,opt,name=JTRFormat,proto3" json:"JTRFormat,omitempty"`
 	// Timestamp
 	CreatedAt *timestamp.Timestamp `protobuf:"bytes,38,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`
@@ -395,9 +395,9 @@ type CredentialRealm struct {
 
 	ID uint32 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	// @inject_tag: gorm:"not null"
-	Key string `protobuf:"bytes,2,opt,name=Key,proto3" json:"Key,omitempty" gorm:"not null"`
+	Key string `protobuf:"bytes,2,opt,name=Key,proto3" json:"Key,omitempty"`
 	// @inject_tag: gorm:"not null"
-	Value string `protobuf:"bytes,3,opt,name=Value,proto3" json:"Value,omitempty" gorm:"not null"`
+	Value string `protobuf:"bytes,3,opt,name=Value,proto3" json:"Value,omitempty"`
 	// Timestamp
 	CreatedAt *timestamp.Timestamp `protobuf:"bytes,38,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`
 	UpdatedAt *timestamp.Timestamp `protobuf:"bytes,39,opt,name=UpdatedAt,proto3" json:"UpdatedAt,omitempty"`

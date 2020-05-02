@@ -52,7 +52,7 @@ type Host struct {
 	// General
 	ID uint32 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	// @inject_tag: gorm:"not null"
-	WorkspaceID uint32     `protobuf:"varint,2,opt,name=WorkspaceID,proto3" json:"WorkspaceID,omitempty" gorm:"not null"`
+	WorkspaceID uint32     `protobuf:"varint,2,opt,name=WorkspaceID,proto3" json:"WorkspaceID,omitempty"`
 	MAC         string     `protobuf:"bytes,3,opt,name=MAC,proto3" json:"MAC,omitempty"`
 	Comm        string     `protobuf:"bytes,4,opt,name=Comm,proto3" json:"Comm,omitempty"`
 	OSName      string     `protobuf:"bytes,5,opt,name=OSName,proto3" json:"OSName,omitempty"`
@@ -73,39 +73,39 @@ type Host struct {
 	IPNetworkID uint32 `protobuf:"varint,17,opt,name=IPNetworkID,proto3" json:"IPNetworkID,omitempty"` // Might belong to a given subnet
 	// Nmap
 	// @inject_tag: xml:"hostnames>hostname"
-	Hostnames []*Hostname `protobuf:"bytes,34,rep,name=Hostnames,proto3" json:"Hostnames,omitempty" xml:"hostnames>hostname"`
+	Hostnames []*Hostname `protobuf:"bytes,34,rep,name=Hostnames,proto3" json:"Hostnames,omitempty"`
 	// @inject_tag: xml:"ports>port"
-	Ports []*Port `protobuf:"bytes,36,rep,name=Ports,proto3" json:"Ports,omitempty" xml:"ports>port"`
+	Ports []*Port `protobuf:"bytes,36,rep,name=Ports,proto3" json:"Ports,omitempty"`
 	// @inject_tag: xml:"ports>extraports"
-	ExtraPorts []*ExtraPort `protobuf:"bytes,33,rep,name=ExtraPorts,proto3" json:"ExtraPorts,omitempty" xml:"ports>extraports"`
+	ExtraPorts []*ExtraPort `protobuf:"bytes,33,rep,name=ExtraPorts,proto3" json:"ExtraPorts,omitempty"`
 	// @inject_tag: xml:"os"
-	OS *OS `protobuf:"bytes,24,opt,name=OS,proto3" json:"OS,omitempty" xml:"os"`
+	OS *OS `protobuf:"bytes,24,opt,name=OS,proto3" json:"OS,omitempty"`
 	// @inject_tag: xml:"status"
-	Status PortStatus `protobuf:"varint,32,opt,name=Status,proto3,enum=db.PortStatus" json:"Status,omitempty" xml:"status"`
+	Status PortStatus `protobuf:"varint,32,opt,name=Status,proto3,enum=db.PortStatus" json:"Status,omitempty"`
 	// @inject_tag: xml:"distance"
-	Distance *Distance `protobuf:"bytes,20,opt,name=Distance,proto3" json:"Distance,omitempty" xml:"distance"`
+	Distance *Distance `protobuf:"bytes,20,opt,name=Distance,proto3" json:"Distance,omitempty"`
 	// @inject_tag: xml:"endtime,attr,omitempty"
-	EndTime *timestamp.Timestamp `protobuf:"bytes,22,opt,name=EndTime,proto3" json:"EndTime,omitempty" xml:"endtime,attr,omitempty"` // Might have issues here with XML unmarshalling
+	EndTime *timestamp.Timestamp `protobuf:"bytes,22,opt,name=EndTime,proto3" json:"EndTime,omitempty"` // Might have issues here with XML unmarshalling
 	// @inject_tag: xml:"ipidsequence"
-	IPIDSequence *scanner.IPIDSequence `protobuf:"bytes,23,opt,name=IPIDSequence,proto3" json:"IPIDSequence,omitempty" xml:"ipidsequence"`
+	IPIDSequence *scanner.IPIDSequence `protobuf:"bytes,23,opt,name=IPIDSequence,proto3" json:"IPIDSequence,omitempty"`
 	// @inject_tag: xml:"tcpsequence"
-	TCPSequence *scanner.TCPSequence `protobuf:"bytes,25,opt,name=TCPSequence,proto3" json:"TCPSequence,omitempty" xml:"tcpsequence"`
+	TCPSequence *scanner.TCPSequence `protobuf:"bytes,25,opt,name=TCPSequence,proto3" json:"TCPSequence,omitempty"`
 	// @inject_tag: xml:"tcptssequence"
-	TCPTSSequence *scanner.TCPTSSequence `protobuf:"bytes,26,opt,name=TCPTSSequence,proto3" json:"TCPTSSequence,omitempty" xml:"tcptssequence"`
+	TCPTSSequence *scanner.TCPTSSequence `protobuf:"bytes,26,opt,name=TCPTSSequence,proto3" json:"TCPTSSequence,omitempty"`
 	// @inject_tag: xml:"times"
-	Times *scanner.Times `protobuf:"bytes,27,opt,name=Times,proto3" json:"Times,omitempty" xml:"times"`
+	Times *scanner.Times `protobuf:"bytes,27,opt,name=Times,proto3" json:"Times,omitempty"`
 	// @inject_tag: xml:"trace"
-	Trace *scanner.Trace `protobuf:"bytes,28,opt,name=Trace,proto3" json:"Trace,omitempty" xml:"trace"`
+	Trace *scanner.Trace `protobuf:"bytes,28,opt,name=Trace,proto3" json:"Trace,omitempty"`
 	// @inject_tag: xml:"uptime"
-	Uptime *Uptime `protobuf:"bytes,29,opt,name=Uptime,proto3" json:"Uptime,omitempty" xml:"uptime"`
+	Uptime *Uptime `protobuf:"bytes,29,opt,name=Uptime,proto3" json:"Uptime,omitempty"`
 	// @inject_tag: xml:"comment,attr"
-	Comment string `protobuf:"bytes,30,opt,name=Comment,proto3" json:"Comment,omitempty" xml:"comment,attr"`
+	Comment string `protobuf:"bytes,30,opt,name=Comment,proto3" json:"Comment,omitempty"`
 	// @inject_tag: xml:"starttime,attr,omitempty"
-	StartTime *timestamp.Timestamp `protobuf:"bytes,31,opt,name=StartTime,proto3" json:"StartTime,omitempty" xml:"starttime,attr,omitempty"`
+	StartTime *timestamp.Timestamp `protobuf:"bytes,31,opt,name=StartTime,proto3" json:"StartTime,omitempty"`
 	// @inject_tag: xml:"hostscript>script"
-	HostScripts []*scanner.NmapScript `protobuf:"bytes,35,rep,name=HostScripts,proto3" json:"HostScripts,omitempty" xml:"hostscript>script"`
+	HostScripts []*scanner.NmapScript `protobuf:"bytes,35,rep,name=HostScripts,proto3" json:"HostScripts,omitempty"`
 	// @inject_tag: xml:"smurf"
-	Smurfs    []*scanner.Smurf     `protobuf:"bytes,37,rep,name=Smurfs,proto3" json:"Smurfs,omitempty" xml:"smurf"`
+	Smurfs    []*scanner.Smurf     `protobuf:"bytes,37,rep,name=Smurfs,proto3" json:"Smurfs,omitempty"`
 	CreatedAt *timestamp.Timestamp `protobuf:"bytes,38,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`
 	UpdatedAt *timestamp.Timestamp `protobuf:"bytes,39,opt,name=UpdatedAt,proto3" json:"UpdatedAt,omitempty"`
 }
@@ -402,7 +402,7 @@ type Hostname struct {
 
 	ID uint32 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	// @inject_tag: gorm:"not null"
-	HostID uint32 `protobuf:"varint,2,opt,name=HostID,proto3" json:"HostID,omitempty" gorm:"not null"`
+	HostID uint32 `protobuf:"varint,2,opt,name=HostID,proto3" json:"HostID,omitempty"`
 	Name   string `protobuf:"bytes,3,opt,name=Name,proto3" json:"Name,omitempty"`
 	Type   string `protobuf:"bytes,4,opt,name=Type,proto3" json:"Type,omitempty"`
 }
@@ -474,7 +474,7 @@ type Distance struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"value,attr"
-	Value int32 `protobuf:"varint,1,opt,name=Value,proto3" json:"Value,omitempty" xml:"value,attr"`
+	Value int32 `protobuf:"varint,1,opt,name=Value,proto3" json:"Value,omitempty"`
 }
 
 func (x *Distance) Reset() {
@@ -523,9 +523,9 @@ type Uptime struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"seconds,attr"
-	Seconds int32 `protobuf:"varint,1,opt,name=Seconds,proto3" json:"Seconds,omitempty" xml:"seconds,attr"`
+	Seconds int32 `protobuf:"varint,1,opt,name=Seconds,proto3" json:"Seconds,omitempty"`
 	// @inject_tag: xml:"lastboot,attr"
-	LastBoot string `protobuf:"bytes,2,opt,name=LastBoot,proto3" json:"LastBoot,omitempty" xml:"lastboot,attr"`
+	LastBoot string `protobuf:"bytes,2,opt,name=LastBoot,proto3" json:"LastBoot,omitempty"`
 }
 
 func (x *Uptime) Reset() {

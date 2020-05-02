@@ -243,15 +243,15 @@ type ScanInfo struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"numservices,attr"
-	NumServices int32 `protobuf:"varint,1,opt,name=NumServices,proto3" json:"NumServices,omitempty" xml:"numservices,attr"`
+	NumServices int32 `protobuf:"varint,1,opt,name=NumServices,proto3" json:"NumServices,omitempty"`
 	// @inject_tag: xml:"protocol,attr"
-	Protocol string `protobuf:"bytes,2,opt,name=Protocol,proto3" json:"Protocol,omitempty" xml:"protocol,attr"`
+	Protocol string `protobuf:"bytes,2,opt,name=Protocol,proto3" json:"Protocol,omitempty"`
 	// @inject_tag: xml:"scanflags,attr"
-	ScanFlags string `protobuf:"bytes,3,opt,name=ScanFlags,proto3" json:"ScanFlags,omitempty" xml:"scanflags,attr"`
+	ScanFlags string `protobuf:"bytes,3,opt,name=ScanFlags,proto3" json:"ScanFlags,omitempty"`
 	// @inject_tag: xml:"services,attr"
-	Services string `protobuf:"bytes,4,opt,name=Services,proto3" json:"Services,omitempty" xml:"services,attr"`
+	Services string `protobuf:"bytes,4,opt,name=Services,proto3" json:"Services,omitempty"`
 	// @inject_tag: xml:"type,attr"
-	Type string `protobuf:"bytes,5,opt,name=Type,proto3" json:"Type,omitempty" xml:"type,attr"`
+	Type string `protobuf:"bytes,5,opt,name=Type,proto3" json:"Type,omitempty"`
 }
 
 func (x *ScanInfo) Reset() {
@@ -328,7 +328,7 @@ type Verbose struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"level,attr"
-	Level int32 `protobuf:"varint,1,opt,name=Level,proto3" json:"Level,omitempty" xml:"level,attr"`
+	Level int32 `protobuf:"varint,1,opt,name=Level,proto3" json:"Level,omitempty"`
 }
 
 func (x *Verbose) Reset() {
@@ -377,7 +377,7 @@ type Debugging struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"level,attr"
-	Level int32 `protobuf:"varint,1,opt,name=Level,proto3" json:"Level,omitempty" xml:"level,attr"`
+	Level int32 `protobuf:"varint,1,opt,name=Level,proto3" json:"Level,omitempty"`
 }
 
 func (x *Debugging) Reset() {
@@ -426,11 +426,11 @@ type Task struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"time,attr"
-	Time *timestamp.Timestamp `protobuf:"bytes,5,opt,name=Time,proto3" json:"Time,omitempty" xml:"time,attr"`
+	Time *timestamp.Timestamp `protobuf:"bytes,5,opt,name=Time,proto3" json:"Time,omitempty"`
 	// @inject_tag: xml:"task,attr"
-	Task string `protobuf:"bytes,2,opt,name=Task,proto3" json:"Task,omitempty" xml:"task,attr"`
+	Task string `protobuf:"bytes,2,opt,name=Task,proto3" json:"Task,omitempty"`
 	// @inject_tag: xml:"extrainfo,attr"
-	ExtraInfo string `protobuf:"bytes,3,opt,name=ExtraInfo,proto3" json:"ExtraInfo,omitempty" xml:"extrainfo,attr"`
+	ExtraInfo string `protobuf:"bytes,3,opt,name=ExtraInfo,proto3" json:"ExtraInfo,omitempty"`
 }
 
 func (x *Task) Reset() {
@@ -493,15 +493,15 @@ type TaskProgress struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"percent,attr"
-	Percent float32 `protobuf:"fixed32,1,opt,name=Percent,proto3" json:"Percent,omitempty" xml:"percent,attr"`
+	Percent float32 `protobuf:"fixed32,1,opt,name=Percent,proto3" json:"Percent,omitempty"`
 	// @inject_tag: xml:"remaining,attr"
-	Remaining int32 `protobuf:"varint,2,opt,name=Remaining,proto3" json:"Remaining,omitempty" xml:"remaining,attr"`
+	Remaining int32 `protobuf:"varint,2,opt,name=Remaining,proto3" json:"Remaining,omitempty"`
 	// @inject_tag: xml:"task,attr"
-	Task string `protobuf:"bytes,3,opt,name=Task,proto3" json:"Task,omitempty" xml:"task,attr"`
+	Task string `protobuf:"bytes,3,opt,name=Task,proto3" json:"Task,omitempty"`
 	// @inject_tag: xml:"etc,attr"
-	Etc *timestamp.Timestamp `protobuf:"bytes,4,opt,name=Etc,proto3" json:"Etc,omitempty" xml:"etc,attr"`
+	Etc *timestamp.Timestamp `protobuf:"bytes,4,opt,name=Etc,proto3" json:"Etc,omitempty"`
 	// @inject_tag: xml:"time,attr"
-	Time *timestamp.Timestamp `protobuf:"bytes,5,opt,name=Time,proto3" json:"Time,omitempty" xml:"time,attr"`
+	Time *timestamp.Timestamp `protobuf:"bytes,5,opt,name=Time,proto3" json:"Time,omitempty"`
 }
 
 func (x *TaskProgress) Reset() {
@@ -580,11 +580,11 @@ type Target struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"specification,attr"
-	Specification string `protobuf:"bytes,1,opt,name=Specification,proto3" json:"Specification,omitempty" xml:"specification,attr"`
+	Specification string `protobuf:"bytes,1,opt,name=Specification,proto3" json:"Specification,omitempty"`
 	// @inject_tag: xml:"status,attr"
-	Status string `protobuf:"bytes,2,opt,name=Status,proto3" json:"Status,omitempty" xml:"status,attr"`
+	Status string `protobuf:"bytes,2,opt,name=Status,proto3" json:"Status,omitempty"`
 	// @inject_tag: xml:"reason,attr"
-	Reason string `protobuf:"bytes,3,opt,name=Reason,proto3" json:"Reason,omitempty" xml:"reason,attr"`
+	Reason string `protobuf:"bytes,3,opt,name=Reason,proto3" json:"Reason,omitempty"`
 }
 
 func (x *Target) Reset() {
@@ -647,9 +647,9 @@ type Stats struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"finished"
-	Finished *Finished `protobuf:"bytes,1,opt,name=Finished,proto3" json:"Finished,omitempty" xml:"finished"`
+	Finished *Finished `protobuf:"bytes,1,opt,name=Finished,proto3" json:"Finished,omitempty"`
 	// @inject_tag: xml:"hosts"
-	Hosts *HostStats `protobuf:"bytes,2,opt,name=Hosts,proto3" json:"Hosts,omitempty" xml:"hosts"`
+	Hosts *HostStats `protobuf:"bytes,2,opt,name=Hosts,proto3" json:"Hosts,omitempty"`
 }
 
 func (x *Stats) Reset() {
@@ -704,17 +704,17 @@ type Finished struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"time,attr"
-	Time *timestamp.Timestamp `protobuf:"bytes,1,opt,name=Time,proto3" json:"Time,omitempty" xml:"time,attr"`
+	Time *timestamp.Timestamp `protobuf:"bytes,1,opt,name=Time,proto3" json:"Time,omitempty"`
 	// @inject_tag: xml:"timestr,attr"
-	TimeStr string `protobuf:"bytes,2,opt,name=TimeStr,proto3" json:"TimeStr,omitempty" xml:"timestr,attr"`
+	TimeStr string `protobuf:"bytes,2,opt,name=TimeStr,proto3" json:"TimeStr,omitempty"`
 	// @inject_tag: xml:"elapsed,attr"
-	Elapsed float32 `protobuf:"fixed32,3,opt,name=Elapsed,proto3" json:"Elapsed,omitempty" xml:"elapsed,attr"`
+	Elapsed float32 `protobuf:"fixed32,3,opt,name=Elapsed,proto3" json:"Elapsed,omitempty"`
 	// @inject_tag: xml:"summary,attr"
-	Summary string `protobuf:"bytes,4,opt,name=Summary,proto3" json:"Summary,omitempty" xml:"summary,attr"`
+	Summary string `protobuf:"bytes,4,opt,name=Summary,proto3" json:"Summary,omitempty"`
 	// @inject_tag: xml:"exit,attr"
-	Exit string `protobuf:"bytes,5,opt,name=Exit,proto3" json:"Exit,omitempty" xml:"exit,attr"`
+	Exit string `protobuf:"bytes,5,opt,name=Exit,proto3" json:"Exit,omitempty"`
 	// @inject_tag: xml:"errormsg,attr"
-	ErrorMsg string `protobuf:"bytes,6,opt,name=ErrorMsg,proto3" json:"ErrorMsg,omitempty" xml:"errormsg,attr"`
+	ErrorMsg string `protobuf:"bytes,6,opt,name=ErrorMsg,proto3" json:"ErrorMsg,omitempty"`
 }
 
 func (x *Finished) Reset() {
@@ -798,11 +798,11 @@ type HostStats struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"up,attr"
-	Up int32 `protobuf:"varint,1,opt,name=Up,proto3" json:"Up,omitempty" xml:"up,attr"`
+	Up int32 `protobuf:"varint,1,opt,name=Up,proto3" json:"Up,omitempty"`
 	// @inject_tag: xml:"down,attr"
-	Down int32 `protobuf:"varint,2,opt,name=Down,proto3" json:"Down,omitempty" xml:"down,attr"`
+	Down int32 `protobuf:"varint,2,opt,name=Down,proto3" json:"Down,omitempty"`
 	// @inject_tag: xml:"total,attr"
-	Total int32 `protobuf:"varint,3,opt,name=Total,proto3" json:"Total,omitempty" xml:"total,attr"`
+	Total int32 `protobuf:"varint,3,opt,name=Total,proto3" json:"Total,omitempty"`
 }
 
 func (x *HostStats) Reset() {
@@ -869,11 +869,11 @@ type NmapScript struct {
 	ID     uint32 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	PortID uint32 `protobuf:"varint,2,opt,name=PortID,proto3" json:"PortID,omitempty"`
 	// @inject_tag: xml:"output,attr"
-	Output string `protobuf:"bytes,3,opt,name=Output,proto3" json:"Output,omitempty" xml:"output,attr"`
+	Output string `protobuf:"bytes,3,opt,name=Output,proto3" json:"Output,omitempty"`
 	// @inject_tag: xml:"elem,omitempty"
-	Elements []*Element `protobuf:"bytes,4,rep,name=Elements,proto3" json:"Elements,omitempty" xml:"elem,omitempty"`
+	Elements []*Element `protobuf:"bytes,4,rep,name=Elements,proto3" json:"Elements,omitempty"`
 	// @inject_tag: xml:"table,omitempty"
-	Tables []*Table `protobuf:"bytes,5,rep,name=Tables,proto3" json:"Tables,omitempty" xml:"table,omitempty"`
+	Tables []*Table `protobuf:"bytes,5,rep,name=Tables,proto3" json:"Tables,omitempty"`
 	// Timestamp
 	CreatedAt *timestamp.Timestamp `protobuf:"bytes,38,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`
 	UpdatedAt *timestamp.Timestamp `protobuf:"bytes,39,opt,name=UpdatedAt,proto3" json:"UpdatedAt,omitempty"`
@@ -967,9 +967,9 @@ type Element struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"key,attr,omitempty"
-	Key string `protobuf:"bytes,1,opt,name=Key,proto3" json:"Key,omitempty" xml:"key,attr,omitempty"`
+	Key string `protobuf:"bytes,1,opt,name=Key,proto3" json:"Key,omitempty"`
 	// @inject_tag: xml:",innerxml"
-	Value string `protobuf:"bytes,2,opt,name=Value,proto3" json:"Value,omitempty" xml:",innerxml"`
+	Value string `protobuf:"bytes,2,opt,name=Value,proto3" json:"Value,omitempty"`
 }
 
 func (x *Element) Reset() {
@@ -1025,11 +1025,11 @@ type Table struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"key,attr,omitempty"
-	Key string `protobuf:"bytes,1,opt,name=Key,proto3" json:"Key,omitempty" xml:"key,attr,omitempty"`
+	Key string `protobuf:"bytes,1,opt,name=Key,proto3" json:"Key,omitempty"`
 	// @inject_tag: xml:"table,omitempty"
-	Tables []*Table `protobuf:"bytes,2,rep,name=Tables,proto3" json:"Tables,omitempty" xml:"table,omitempty"`
+	Tables []*Table `protobuf:"bytes,2,rep,name=Tables,proto3" json:"Tables,omitempty"`
 	// @inject_tag: xml:"elem,omitempty"
-	Elements []*Element `protobuf:"bytes,3,rep,name=Elements,proto3" json:"Elements,omitempty" xml:"elem,omitempty"`
+	Elements []*Element `protobuf:"bytes,3,rep,name=Elements,proto3" json:"Elements,omitempty"`
 }
 
 func (x *Table) Reset() {
@@ -1092,9 +1092,9 @@ type Sequence struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"class,attr"
-	Class string `protobuf:"bytes,1,opt,name=Class,proto3" json:"Class,omitempty" xml:"class,attr"`
+	Class string `protobuf:"bytes,1,opt,name=Class,proto3" json:"Class,omitempty"`
 	// @inject_tag: xml:"values,attr"
-	Values string `protobuf:"bytes,2,opt,name=Values,proto3" json:"Values,omitempty" xml:"values,attr"`
+	Values string `protobuf:"bytes,2,opt,name=Values,proto3" json:"Values,omitempty"`
 }
 
 func (x *Sequence) Reset() {
@@ -1150,11 +1150,11 @@ type TCPSequence struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"index,attr"
-	Index int32 `protobuf:"varint,1,opt,name=Index,proto3" json:"Index,omitempty" xml:"index,attr"`
+	Index int32 `protobuf:"varint,1,opt,name=Index,proto3" json:"Index,omitempty"`
 	// @inject_tag: xml:"difficulty,attr"
-	Difficulty string `protobuf:"bytes,2,opt,name=Difficulty,proto3" json:"Difficulty,omitempty" xml:"difficulty,attr"`
+	Difficulty string `protobuf:"bytes,2,opt,name=Difficulty,proto3" json:"Difficulty,omitempty"`
 	// @inject_tag: xml:"values,attr"
-	Values string `protobuf:"bytes,3,opt,name=Values,proto3" json:"Values,omitempty" xml:"values,attr"`
+	Values string `protobuf:"bytes,3,opt,name=Values,proto3" json:"Values,omitempty"`
 }
 
 func (x *TCPSequence) Reset() {
@@ -1217,11 +1217,11 @@ type IPIDSequence struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"index,attr"
-	Index int32 `protobuf:"varint,1,opt,name=Index,proto3" json:"Index,omitempty" xml:"index,attr"`
+	Index int32 `protobuf:"varint,1,opt,name=Index,proto3" json:"Index,omitempty"`
 	// @inject_tag: xml:"difficulty,attr"
-	Difficulty string `protobuf:"bytes,2,opt,name=Difficulty,proto3" json:"Difficulty,omitempty" xml:"difficulty,attr"`
+	Difficulty string `protobuf:"bytes,2,opt,name=Difficulty,proto3" json:"Difficulty,omitempty"`
 	// @inject_tag: xml:"values,attr"
-	Values string `protobuf:"bytes,3,opt,name=Values,proto3" json:"Values,omitempty" xml:"values,attr"`
+	Values string `protobuf:"bytes,3,opt,name=Values,proto3" json:"Values,omitempty"`
 }
 
 func (x *IPIDSequence) Reset() {
@@ -1284,11 +1284,11 @@ type TCPTSSequence struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"index,attr"
-	Index int32 `protobuf:"varint,1,opt,name=Index,proto3" json:"Index,omitempty" xml:"index,attr"`
+	Index int32 `protobuf:"varint,1,opt,name=Index,proto3" json:"Index,omitempty"`
 	// @inject_tag: xml:"difficulty,attr"
-	Difficulty string `protobuf:"bytes,2,opt,name=Difficulty,proto3" json:"Difficulty,omitempty" xml:"difficulty,attr"`
+	Difficulty string `protobuf:"bytes,2,opt,name=Difficulty,proto3" json:"Difficulty,omitempty"`
 	// @inject_tag: xml:"values,attr"
-	Values string `protobuf:"bytes,3,opt,name=Values,proto3" json:"Values,omitempty" xml:"values,attr"`
+	Values string `protobuf:"bytes,3,opt,name=Values,proto3" json:"Values,omitempty"`
 }
 
 func (x *TCPTSSequence) Reset() {
@@ -1351,11 +1351,11 @@ type Times struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"srtt,attr"
-	SRTT string `protobuf:"bytes,1,opt,name=SRTT,proto3" json:"SRTT,omitempty" xml:"srtt,attr"`
+	SRTT string `protobuf:"bytes,1,opt,name=SRTT,proto3" json:"SRTT,omitempty"`
 	// @inject_tag: xml:"rttvar,attr"
-	RTT string `protobuf:"bytes,2,opt,name=RTT,proto3" json:"RTT,omitempty" xml:"rttvar,attr"`
+	RTT string `protobuf:"bytes,2,opt,name=RTT,proto3" json:"RTT,omitempty"`
 	// @inject_tag: xml:"to,attr"
-	To string `protobuf:"bytes,3,opt,name=To,proto3" json:"To,omitempty" xml:"to,attr"`
+	To string `protobuf:"bytes,3,opt,name=To,proto3" json:"To,omitempty"`
 }
 
 func (x *Times) Reset() {
@@ -1418,11 +1418,11 @@ type Trace struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"proto,attr"
-	Protocol string `protobuf:"bytes,1,opt,name=Protocol,proto3" json:"Protocol,omitempty" xml:"proto,attr"`
+	Protocol string `protobuf:"bytes,1,opt,name=Protocol,proto3" json:"Protocol,omitempty"`
 	// @inject_tag: xml:"port,attr"
-	Port int32 `protobuf:"varint,2,opt,name=Port,proto3" json:"Port,omitempty" xml:"port,attr"`
+	Port int32 `protobuf:"varint,2,opt,name=Port,proto3" json:"Port,omitempty"`
 	// @inject_tag: xml:"hop"
-	Hops []*Hop `protobuf:"bytes,3,rep,name=Hops,proto3" json:"Hops,omitempty" xml:"hop"`
+	Hops []*Hop `protobuf:"bytes,3,rep,name=Hops,proto3" json:"Hops,omitempty"`
 }
 
 func (x *Trace) Reset() {
@@ -1485,13 +1485,13 @@ type Hop struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"ttl,attr"
-	TTL float32 `protobuf:"fixed32,1,opt,name=TTL,proto3" json:"TTL,omitempty" xml:"ttl,attr"`
+	TTL float32 `protobuf:"fixed32,1,opt,name=TTL,proto3" json:"TTL,omitempty"`
 	// @inject_tag: xml:"rtt,attr"
-	RTT string `protobuf:"bytes,2,opt,name=RTT,proto3" json:"RTT,omitempty" xml:"rtt,attr"`
+	RTT string `protobuf:"bytes,2,opt,name=RTT,proto3" json:"RTT,omitempty"`
 	// @inject_tag: xml:"ipaddr,attr"
-	IPAddr string `protobuf:"bytes,3,opt,name=IPAddr,proto3" json:"IPAddr,omitempty" xml:"ipaddr,attr"`
+	IPAddr string `protobuf:"bytes,3,opt,name=IPAddr,proto3" json:"IPAddr,omitempty"`
 	// @inject_tag: xml:"host,attr"
-	Host string `protobuf:"bytes,4,opt,name=Host,proto3" json:"Host,omitempty" xml:"host,attr"`
+	Host string `protobuf:"bytes,4,opt,name=Host,proto3" json:"Host,omitempty"`
 }
 
 func (x *Hop) Reset() {
@@ -1561,7 +1561,7 @@ type Smurf struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @inject_tag: xml:"responses,attr"
-	Responses string `protobuf:"bytes,1,opt,name=Responses,proto3" json:"Responses,omitempty" xml:"responses,attr"`
+	Responses string `protobuf:"bytes,1,opt,name=Responses,proto3" json:"Responses,omitempty"`
 }
 
 func (x *Smurf) Reset() {
