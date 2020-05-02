@@ -31,10 +31,15 @@ server/assets/version.go
 
 # Protobuf ----------------------------------------------------
 
-# *.pb.go
-proto/v1/gen/    # Ignore all per-language Protobuf generated code
-proto/bin/       # All binaries necessary for Protobuf generation.
+# For some reason my Vim does not ignore when giving the directory
+# Binaries
+proto/bin/Linux/x86_64/versions/prototool/v1.9.0       
+proto/bin/Linux/x86_64/prototool       
+proto/bin/Linux/x86_64/protoc-gen-go
 
+# Ignore all per-language Protobuf generated code
+**.pb.go    
+proto/v1/gen 
 
 # Go toolchain (Zip files for releases) -----------------------
 
