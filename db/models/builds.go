@@ -27,11 +27,6 @@ func GhostBuilds(GhostBuild serverpb.GhostBuild) (GhostBuilds []serverpb.GhostBu
 	return
 }
 
-// GhostBuildByID - Return a GhostBuild identified with an ID
-func GhostBuildByID(id uint32) (GhostBuild serverpb.GhostBuild) {
-	return
-}
-
 // CREATE ----------------------------------------------------------------------
 
 // AddGhostBuild - Add a GhostBuild to the database, if no existing GhostBuild matches it.
