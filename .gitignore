@@ -32,8 +32,8 @@ server/assets/version.go
 # Protobuf ----------------------------------------------------
 
 # *.pb.go
-proto/v1/gen/    # Ignore all per-language Protobuf generated code
-proto/bin/       # All binaries necessary for Protobuf generation.
+proto/v1/gen/*    # Ignore all per-language Protobuf generated code
+proto/bin/*       # All binaries necessary for Protobuf generation.
 
 
 # Go toolchain (Zip files for releases) -----------------------
