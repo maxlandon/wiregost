@@ -20,7 +20,6 @@ package server;
 
 option go_package = "serverpb";
 
-import "ghost/ghost.proto";
 import "transport/transport.proto";
 
 // GhostConfig - Stores all configuration elements needed to compile an implant.
@@ -42,7 +41,12 @@ message GhostBuild {
         }
 
         repeated transport.Transport Transports = 14;   // Find a way to get the active one
-        ghost.Permissions Permissions = 15;             // Ownership permissions on the implant 
+
+        enum Permissions {
+                OWNER = 0;
+                ADMIN = 1;
+                ALL = 2;
+        }
 }
 
 

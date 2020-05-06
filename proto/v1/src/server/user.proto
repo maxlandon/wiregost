@@ -17,16 +17,18 @@
 syntax = "proto3";
 
 package server;
+
 option go_package = "serverpb";
 
 // Users are stored in DB = tags.
 
 // User - A Wiregost user
 message User {
-        string Name = 1;
-        bool Online = 2;
-        bytes Password = 3;
-        bool Admin = 4;
+        uint32 ID = 1;
+        string Name = 2;
+        bool Online = 3;
+        bytes Password = 4;
+        bool Admin = 5;
 }
 
 // AddUserRequest - Add a new user to Wiregost and save it to DB

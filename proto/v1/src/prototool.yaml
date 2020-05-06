@@ -189,14 +189,75 @@ generate:
   go_options:
     # The base import path. This should be the go path of the prototool.yaml file.
     # This is required if you have any go plugins.
-
     # Wiregost:
     # protoc-gen-go is automatically installed with prototool
     # when running 'make proto' from Wiregost' repository root
     import_path: .
 
     # Extra modifiers to include with Mfile=package.
-#    extra_modifiers:
+    
+    # Wiregost:
+    # Because there is still no way for protoc to detect the Go Module setup
+    # protoc produces Go files that use relative imports when the underlying
+    # proto definitions are importing each other. This is not compatible for
+    # our project, so the following modifiers tell protoc to replace the relative
+    # imports strings (ex: import "../gen/go/db") with absolute paths.
+    # We unfortunatly have to specify it for EACH Protobuf source file.
+    extra_modifiers:
+    # DB
+      db/address.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/db
+      db/credential.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/db
+      db/host.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/db
+      db/os.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/db
+      db/os_families.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/db
+      db/port.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/db
+      db/service.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/db
+      db/workspace.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/db
+    # Client
+      client/*.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/client
+    # Module
+      module/module.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/module
+      module/stack.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/module
+    # Scanner
+      scanner/nmap.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/scanner
+    # Ghost
+      ghost/ghost.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost 
+      ghost/core/base.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core
+      ghost/core/capture.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core
+      ghost/core/execute.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core
+      ghost/core/filesystem.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core
+      ghost/core/ghost.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core
+      ghost/core/net.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core
+      ghost/core/priv.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core
+      ghost/core/proc.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core
+      ghost/core/shell.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core
+    # Server
+      server/client.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
+      server/event.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
+      server/ghost_build.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
+      server/job.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
+      server/msf.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
+      server/stager.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
+      server/user.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
+      server/website.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
+    # Transport
+      transport/dns.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport
+      transport/envelope.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport
+      transport/handler.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport
+      transport/http.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport
+      transport/mtls.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport
+      transport/named-pipe.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport
+      transport/transport.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport
+      # Transport/Route
+      transport/route/h2.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport/route
+      transport/route/node.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport/route
+      transport/route/quic.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport/route
+      transport/route/route.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport/route
+      transport/route/shadow-socks.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport/route
+      transport/route/socks5.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport/route
+      transport/route/ssh.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport/route
+      transport/route/udp.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport/route
+
 #      google/api/annotations.proto: google.golang.org/genproto/googleapis/api/annotations
 #      google/api/http.proto: google.golang.org/genproto/googleapis/api/annotations
 

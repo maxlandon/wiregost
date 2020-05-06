@@ -21,7 +21,7 @@ package transport;
 option go_package = "transportpb";
 
 import "transport/transport.proto";
-import "server/user.proto";
+// import "server/user.proto";
 import "google/protobuf/timestamp.proto";
 
 
@@ -73,7 +73,8 @@ message Listener {
         string RHost = 4;
         uint32 RPort = 5;
         uint32 GhostID = 6;     // In case two same addresses for two ghosts
-        server.User Owner = 7;
+        uint32 OwnerID = 7;
+        // server.User Owner = 7;
         Permissions Permissions  = 8;
         // Timestamp
         google.protobuf.Timestamp CreatedAt = 38;
