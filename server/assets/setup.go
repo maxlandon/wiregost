@@ -28,6 +28,11 @@ func AssetVersion() (version string) {
 	return
 }
 
+// SetupModules - Unpacks all Wiregost modules source code.
+func SetupModules() error {
+	return nil
+}
+
 // SetupGoToolchain - Downloads and/or unpacks the Go toolchain for major OS/arch.
 func SetupGoToolchain() error {
 	return nil

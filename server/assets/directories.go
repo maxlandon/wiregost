@@ -35,3 +35,8 @@ func GetDataDir() (dir string) {
 func GetDatabaseDir() (dir string) {
 	return
 }
+
+// GetModulesDir - Returns the directory where all unpacked module source code is stored.
+func GetModulesDir() (dir string) {
+	return
+}
