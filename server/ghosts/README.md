@@ -3,7 +3,7 @@
 
 ### Implants are living behind an Interface
 
-Similar to the [module structure](https://github.com/maxlandon/wiregost/server/modules/README.md), implants in Wiregost
+Similar to the [module structure](https://github.com/maxlandon/wiregost/tree/v1.0.0/server/modules/README.md), implants in Wiregost
 are first and foremost defined through the following interface:
 
 ```go
