@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/evilsocket/islazy v1.10.6
+	github.com/gobuffalo/packr v1.30.1
 	github.com/golang/protobuf v1.4.0-rc.4.0.20200313231945-b860323f09d0
 	github.com/google/addlicense v0.0.0-20200422172452-68a83edd47bc // indirect
 	github.com/jinzhu/gorm v1.9.12
