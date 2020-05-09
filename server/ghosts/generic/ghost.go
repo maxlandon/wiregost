@@ -1,4 +1,4 @@
-package ghosts
+package generic
 
 import (
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
@@ -10,7 +10,7 @@ import (
 // This means its the bare minimum to identify and interact with an implant, and it
 // does not include any core capability.
 type Ghost struct {
-	Base *ghostpb.Ghost
+	Proto *ghostpb.Ghost
 }
 
 // NewGhost - Returns a ghost object, instantiated after an implant has registered.

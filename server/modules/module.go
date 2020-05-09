@@ -22,12 +22,6 @@ import (
 	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 )
 
-// Modules - Map of all modules available in Wiregost (map["path/to/module"] = Module)
-var Modules = &modules{
-	Loaded: &map[string]Module{},
-	mutex:  &sync.Mutex{},
-}
-
 // Module - All modules in Wiregost must implement this interface.
 type Module interface {
 	ParseMetadata() error                         // Parse module metadata
@@ -37,6 +31,12 @@ type Module interface {
 	CheckRequiredOptions() (ok bool, err error)   // Check all required options have a value
 	Event(event string, pending bool)             // Send an event/message back to the console running the module
 	Asset(string) (filePath string, err error)    // Find the path of an asset in the module directory.
+}
+
+// Modules - Map of all modules available in Wiregost (map["path/to/module"] = Module)
+var Modules = &modules{
+	Loaded: &map[string]Module{},
+	mutex:  &sync.Mutex{},
 }
 
 // modules - A struct to handle all registered modules

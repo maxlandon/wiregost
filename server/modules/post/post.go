@@ -17,7 +17,6 @@
 package post
 
 import (
-	// ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
 	"github.com/maxlandon/wiregost/server/ghosts"
 	"github.com/maxlandon/wiregost/server/modules/base"
 )
@@ -25,8 +24,7 @@ import (
 // Post - A module dedicated to post-exploitation activities
 type Post struct {
 	*base.Module
-	Session ghosts.Session
-	// Session *ghostpb.Ghost // Might have to change this for a core type
+	Session ghosts.Session // Session is an interface accepting different implants
 }
 
 // NewPost - Instantiates a new post, and handles base module intanstantion

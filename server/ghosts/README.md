@@ -32,13 +32,17 @@ that will trigger the remote method (yes, an RPC). Thus, because the server-side
 people can write non-trivial post-exploitation modules. In addition, these methods belong to some type like `MSF::Post::Windows_x86`.
 
 
-### The ghosts.Base type
+### The `generic.Ghost` type
 
 Thus, Wiregost has a server-side object for each connected implant, and this server side object is a type that automatically implements
-the `Session` interface, because it embeds the `Base` type you will find in `ghosts/base.go`.
+the `Session` interface, because it embeds the `Ghost` type you will find in `ghosts/generic/ghost.go`.
 
-This type merely implements the `Session` interface, and nothing more. This means you can embed this type in any other custom type, and it
-will automatically be considered a ghost session. This, in addition, permits an implant API that is OS-specific, but transport-agnostic.
+This type has two main roles:
+- It implements the `Session` interface, so that any type embedding it will automatically considered a valid ghost session.
+- It provides all cross-platform functionality, such as filesystem methods. These methods, generally implemented with the Go standard library,
+  will work on any Operating System and architecture.
+
+This architecture, in addition, permits an implant API that is OS-specific, but transport-agnostic.
 
 
 ### Types of implants in Wiregost
@@ -49,6 +53,20 @@ The aim of Wiregost, in a first round, is two provide 3 different OS-specific ty
 - `ghosts/linux/ghost.go`
 
 You will notice in the code that all types are called `Ghost`. That is not an issue though, because Go knowns these types are different
-because they belong to a different package.
+because they belong to a different package. They also embed the `generic.Ghost` type, so that they automatically provide generic methods
+such as filesystem manipulation.
 
 In each of these packages, we will define server-side methods for executing functions on the remote ghost implant.
+
+
+### Details on each implant type
+
+All server-side code (thus, requests) pertaining to a certain Operating System/Architecture will live into one of these subdirectories:
+- `linux/` for Linux post methods
+- `darwin/` for MacOS post methods
+- `windows/` for Windows post methods.
+
+Note that each of the ghost types declared in these packages may have specific attributes, so that it is easy to access all the "ecosystem"
+pertaining to a target. Because these ghost types always include the `generic.Base` type, they are still valid server-side ghost objects.
+
+Go check these subdirectories for more ! They have their own documentation.
