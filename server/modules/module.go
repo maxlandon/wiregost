@@ -25,6 +25,7 @@ import (
 // Module - All modules in Wiregost must implement this interface.
 type Module interface {
 	ParseMetadata() error                         // Parse module metadata
+	SetLogger()                                   // Initializes logging for the module
 	ToProtobuf() *modulepb.Module                 // When consoles request a copy of the module
 	Run(action string) (result string, err error) // Run one of the module's functions
 	Option(name string) (opt *modulepb.Option)    // Get an option of this module

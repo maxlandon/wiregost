@@ -18,11 +18,16 @@ package base
 
 import (
 	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
+	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
+	"github.com/maxlandon/wiregost/server/log"
+	"github.com/sirupsen/logrus"
 )
 
 // Module - The base module, embedding a protobuf object
 type Module struct {
-	Proto *modulepb.Module
+	Proto  *modulepb.Module // Base module information
+	User   *serverpb.User   // The user who loaded the module
+	Logger *logrus.Entry    // Each module logs its ouput to the user's log file
 }
 
 // Option - Returns one of the module's options, by name
@@ -35,12 +40,18 @@ func (m *Module) ParseMetadata() error {
 	return nil
 }
 
+// SetLogger - Initializes logging for the module
+func (m *Module) SetLogger() {
+	m.Logger = log.UserLogger(m.User.Name, m.User.ID, m.Proto.Path, "module")
+}
+
 // CheckRequiredOptions - Checks that all required options have a value
 func (m *Module) CheckRequiredOptions() (ok bool, err error) {
 	return
 }
 
 // Event - Pushes an event message (ex: for status) back to the console running the module.
+// It also logs the event to the module user's log file.
 func (m *Module) Event(event string, pending bool) {
 }
 

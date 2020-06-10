@@ -11,6 +11,7 @@ require (
 	github.com/lmorg/readline v0.0.0-20190310235027-80486cdafb40
 	github.com/mattn/go-runewidth v0.0.8 // indirect
 	github.com/olekukonko/tablewriter v0.0.4
+	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a // indirect
 	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
 	google.golang.org/protobuf v1.21.0

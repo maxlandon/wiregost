@@ -40,3 +40,8 @@ func GetDatabaseDir() (dir string) {
 func GetModulesDir() (dir string) {
 	return
 }
+
+// GetGhostDir - Each ghost has its own directory for binaries, log and other data. Find it.
+func GetGhostDir(workspaceID uint32, ghostName string) (dir string) {
+	return
+}

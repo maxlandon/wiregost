@@ -16,7 +16,10 @@
 
 package main
 
-import "github.com/maxlandon/wiregost/server/assets"
+import (
+	"github.com/maxlandon/wiregost/server/assets"
+	"github.com/maxlandon/wiregost/server/modules"
+)
 
 func main() {
 
@@ -24,6 +27,7 @@ func main() {
 	assets.LoadServerConfiguration()
 
 	// Check assets presence/unpacking
+	assets.SetupAssets()
 
 	// Setup logging
 
@@ -32,6 +36,10 @@ func main() {
 	// Load certificates
 
 	// Load modules
+	modules.RegisterModules()
+
+	// Init users module stacks
+	modules.InitStacks()
 
 	// Start Persistent implants
 

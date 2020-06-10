@@ -17,6 +17,7 @@ complexity, to Wiregost, as long as they implement this interface:
 ```go
 type Module interface {
 	ParseMetadata() error                         // Parse module metadata
+	SetLogger()                                   // Initializes logging for the module
 	ToProtobuf() *modulepb.Module                 // When consoles request a copy of the module
 	Run(action string) (result string, err error) // Run one of the module's functions
 	Option(name string) (opt *modulepb.Option)    // Get an option of this module
@@ -44,6 +45,7 @@ the `Module` interface, and nothing more. This means:
 
 A few explanations on these base methods in the snippet above:
 - Module valid targets, authors, descriptions, options, etc are defined in a JSON file. `ParseMetadata()` loads it.
+- `SetLogger()` Initializes the logging infrastructure for the module.
 - Wiregost uses gRPC & Protobuf for console-server communications. To this effect, The `Base` type embeds a protobuf Module object. 
   `ToProtobuf()` handles serialization.
 - `Run(action string)` is triggers the module, with an optional parameter describing which action to perform.
