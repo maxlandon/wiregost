@@ -16,23 +16,30 @@
 
 syntax = "proto3";
 
-package server;
+package ghost;
 
-option go_package = "serverpb";
+option go_package = "ghostpb";
 
-import "server/user.proto";
+// SetLogLevelRequest - Set the level of logging/debugging for an implant
+message SetLogLevelRequest {
+        uint32 GhostID = 1;
 
-// Job - A background job running in Wiregost
-message Job {
-        uint32 ID = 1;
-        string Name = 2;
-        string Description = 3;
-        string Err = 4;
-        server.User Owner = 5;
+        bool EnableLocal = 2;       // Enable printing messages to target console
+        LogLevel LocalLevel = 3;    // Set level for printed messages
 
-        enum Permissions {  // Who has control over this job
-                OWNER = 0;
-                ADMIN = 1;
-                ALL = 2;
-        }
-} 
+        bool EnableRemote = 4;      // Enable sending messages back to server
+        LogLevel RemoteLevel = 5;   // Set level for network messages
+}
+
+message SetLogLevel {
+        bool Success = 1;
+        string Err = 2;
+}
+
+// LogLevel - Set logging levels
+enum LogLevel {
+        DEBUG = 0;
+        INFO = 1;
+        WARNING = 2;
+        ERROR = 3;
+}

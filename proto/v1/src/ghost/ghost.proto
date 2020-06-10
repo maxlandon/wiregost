@@ -17,6 +17,7 @@
 syntax = "proto3";
 
 package ghost;
+
 option go_package = "ghostpb";
 
 import "transport/transport.proto";
@@ -57,7 +58,6 @@ message ChangePermissionsRequest {
         Permissions Permissions = 2;
 }
 
-// this is a sentence
 message ChangePermissions {
         bool Success = 1;
         string Err = 2;

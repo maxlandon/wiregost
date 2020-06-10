@@ -222,6 +222,7 @@ generate:
       scanner/nmap.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/scanner
     # Ghost
       ghost/ghost.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost 
+      ghost/log.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost 
       ghost/core/base.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core
       ghost/core/capture.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core
       ghost/core/execute.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core
