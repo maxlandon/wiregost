@@ -38,6 +38,7 @@ message Ghost {
         string LastCheckin = 11;
         string Version = 12;                        // Should include various things (git comm, buildVer, protoVer)
         uint32 WorkspaceID = 13;
+        string Pwd = 18;
 
         repeated transport.Transport Transports = 14;     // Find a way to get the active one
         Permissions Permissions = 15;                           // Ownership permissions on the implant 

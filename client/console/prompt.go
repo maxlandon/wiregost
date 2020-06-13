@@ -15,3 +15,52 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package console
+
+var (
+	// Prompt - The prompt object used by the console
+	Prompt prompt
+)
+
+// prompt - Stores all variables necessary to the console prompt
+type prompt struct {
+	// Strings
+	Base struct { // Non custom prompt
+		Main  string
+		Ghost string
+	}
+	Custom struct { // Custom prompt
+		Main  string
+		Ghost string
+	}
+	Multiline struct { // Multiline prompts
+		Vim   string
+		Emacs string
+	}
+	// Variables
+	Workspace *string
+	Module    *string
+	Menu      *string
+	ServerIP  *string
+	// Callbacks & Colors
+	Callbacks map[string]func() string
+	Effects   map[string]string
+}
+
+// newPrompt - Initializes the Prompt object
+func newPrompt(c *Console) {
+
+	Prompt = prompt{} // Initialize
+	setCallbacks(Prompt)
+
+	return
+}
+
+// setCallbacks - Initializes all callbacks for prompt
+func setCallbacks(prompt prompt) {
+
+}
+
+// render - Computes all variables and outputs prompt
+func (p *prompt) render() (prompt string, multi string) {
+	return
+}
