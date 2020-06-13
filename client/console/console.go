@@ -26,6 +26,7 @@ import (
 	// "github.com/maxlandon/wiregost/client/core"
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
 	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
+	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 )
 
 var (
@@ -36,6 +37,7 @@ var (
 // Console - Central object of the client UI
 type console struct {
 	ClientID uuid.UUID             // Unique identifier for this console
+	User     *serverpb.User        // User information sent back after auth
 	Shell    *readline.Instance    // Console readline input
 	Config   *assets.ConsoleConfig // Console configuration
 	// Server   *core.WiregostServer  // Server connection infrastructure
@@ -57,6 +59,21 @@ func newConsole() *console {
 	return console
 }
 
+// Connect - The console loads the server configuration, connects to it and atempts user authentication
+func (c *console) Connect() {
+
+	// Load server connection configuration (check files in ~/.wiregost first, then binary)
+
+	// Connect to server
+
+	// Authenticate (5 tries)
+
+	// Receive various infos sent by server when authenticated (ClientID, messages, users, etc)
+
+	// Setup
+	c.Setup()
+}
+
 // Setup - Setup various elements of the console.
 func (c *console) Setup() {
 
@@ -71,21 +88,6 @@ func (c *console) Setup() {
 	// Env
 
 	// Share context
-}
-
-// Connect - The console loads the server configuration, connects to it and atempts user authentication
-func (c *console) Connect() {
-
-	// Load server connection configuration (check files in ~/.wiregost first, then binary)
-
-	// Connect to server
-
-	// Authenticate (5 tries)
-
-	// Receive various infos sent by server when authenticated (ClientID, messages, users, etc)
-
-	// Setup
-	c.Setup()
 }
 
 // ShareContext - The console exposes its context to other packages
