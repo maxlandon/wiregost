@@ -40,11 +40,11 @@ type console struct {
 	User     *serverpb.User        // User information sent back after auth
 	Shell    *readline.Instance    // Console readline input
 	Config   *assets.ConsoleConfig // Console configuration
+	Module   *modulepb.Module      // Module currently on stack
+	Ghost    *ghostpb.Ghost        // Current ghost implant
+	Ghosts   int
+	Jobs     int
 	// Server   *core.WiregostServer  // Server connection infrastructure
-	Module *modulepb.Module // Module currently on stack
-	Ghost  *ghostpb.Ghost   // Current ghost implant
-	Ghosts int
-	Jobs   int
 }
 
 // newConsole - Instantiates a console with some default behavior
@@ -70,8 +70,6 @@ func (c *console) Connect() {
 
 	// Receive various infos sent by server when authenticated (ClientID, messages, users, etc)
 
-	// Setup
-	c.Setup()
 }
 
 // Setup - Setup various elements of the console.

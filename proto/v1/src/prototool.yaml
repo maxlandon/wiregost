@@ -216,6 +216,7 @@ generate:
     # Client
       client/*.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/client
       client/console-config.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/client
+      client/connection.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/client
     # Module
       module/module.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/module
       module/stack.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/module

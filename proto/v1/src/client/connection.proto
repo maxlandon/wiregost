@@ -16,11 +16,13 @@
 
 syntax = "proto3";
 
-package server;
+package client;
 
-option go_package = "serverpb";
+option go_package = "clientpb";
 
 import "server/user.proto";
+import "db/workspace.proto";
+import "client/console-config.proto";
 
 // Client - A client console connected to the Wiregost server
 message Client {
@@ -29,15 +31,30 @@ message Client {
         server.User User = 3;
 }
 
-// ConnectionRequest - Sent by the console upon connection, with user credentials
-message ConnectionRequest {
-        Client Client = 1;
+
+// AuthenticationRequest - Send user name & password
+message AuthenticationRequest {
+        string Username = 1;
+        string Password = 2;
 }
 
-// Connection - Details sent back in connection are later used by the console for request contexts 
-message Connection {
+// Confirm/deny authentication, and send client ID & token
+message Authentication {
         bool Success = 1;
-        string Err = 2;
-        int64 ID = 3;       // Same for ID 
-        string Token = 4;   // Token is sent back by the server, and the console stores it in context
+        Client Client = 2;
+}
+
+
+// ConnectionRequest - Empty message to ask for further information
+message ConnectionDetailsRequest {}
+
+// ConnectionDetails - Further information needed by the client
+message ConnectionDetails {
+        client.ConsoleConfig ConsoleConfig = 1;
+        int32 Messages = 2;
+        int32 ActiveUsers = 3;
+        // Useful
+        db.Workspace Workspace = 5;
+        int32 Ghosts = 6;
+        int32 Jobs = 7;
 }
