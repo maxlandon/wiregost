@@ -34,10 +34,12 @@ message Client {
 
 // ConnectionRPC - All requests to connect a client and send information to it.
 service ConnectionRPC {
-
-        // Authentication Request/Response
-        
-        // Configuration & Info Request/Response
+        // Authentication Request/Response.
+        rpc Authenticate(AuthenticationRequest) returns (Authentication);
+        // Configuration & Info Request/Response.
+        rpc GetConnectionInfo(ConnectionInfoRequest) returns (ConnectionInfo);
+        // Version information.
+        rpc GetVersion(Empty) returns (Version);
 }
 
 // AuthenticationRequest - Send user name & password
@@ -53,16 +55,29 @@ message Authentication {
 }
 
 
-// ConnectionRequest - Empty message to ask for further information
-message ConnectionDetailsRequest {}
+// ConnectionInfoRequest - Empty message to ask for further information
+message ConnectionInfoRequest {}
 
 // ConnectionDetails - Further information needed by the client
-message ConnectionDetails {
+message ConnectionInfo{
         client.ConsoleConfig ConsoleConfig = 1;
-        int32 Messages = 2;
-        int32 ActiveUsers = 3;
+
         // Useful
-        db.Workspace Workspace = 5;
+        db.Workspace Workspace = 3;
+        int32 Messages = 4;
+        int32 ActiveUsers = 5;
         int32 Ghosts = 6;
         int32 Jobs = 7;
+}
+
+// Empty - Used for requests which not need data
+message Empty {}
+
+// Version - Version information
+message Version {
+       string ServerMajor = 1;
+       string ServerMinor = 2;
+       string ServerCommitTag = 3;
+       string ClientMajor = 4;
+       string ClientMinor = 5;
 }

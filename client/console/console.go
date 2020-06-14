@@ -66,7 +66,9 @@ func (c *console) Connect() {
 
 	// Authenticate (5 tries)
 
-	// Receive various infos sent by server when authenticated (ClientID, messages, users, etc)
+	// Receive various infos sent by server when authenticated (ClientID, messages, users, version information, etc)
+
+	// Print banner, user and client/server version information
 
 	// Listen for incoming server/implant events
 	c.StartEventListener()

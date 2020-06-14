@@ -33,6 +33,12 @@ enum EventType {
         CANARY = 6;
 }
 
+// EventRPC - A stream of events from server to client.
+service EventRPC {
+        // Events - Receive events from the server.
+        rpc Events(client.Empty) returns (stream Event);
+}
+
 // Event - Any asynchronous event to be pushed to one or more consoles
 message Event {
         EventType Type = 1; 
@@ -50,10 +56,4 @@ message Event {
 
         //                         [*] Module downloading ...                   (if not pending)
         //                         [*] Done
-}
-
-
-// EventRPC - A stream of events from server to client.
-service EventRPC {
-        
 }

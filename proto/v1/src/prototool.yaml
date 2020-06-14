@@ -127,6 +127,9 @@ lint:
     # RPC Services
       - SERVICE_NAMES_API_SUFFIX
       - SERVICE_NAMES_MATCH_FILE_NAME
+      - REQUEST_RESPONSE_NAMES_MATCH_RPC
+      - REQUEST_RESPONSE_TYPES_ONLY_IN_FILE
+      - REQUEST_RESPONSE_TYPES_IN_SAME_FILE
     # Other
       - PACKAGE_MAJOR_BETA_VERSIONED 
       - FILE_NAMES_LOWER_SNAKE_CASE
@@ -222,6 +225,7 @@ generate:
       client/connection.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/client
     # Module
       module/module.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/module
+      module/module_rpc.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/module
       module/stack.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/module
     # Scanner
       scanner/nmap.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/scanner
