@@ -51,3 +51,9 @@ message Event {
         //                         [*] Module downloading ...                   (if not pending)
         //                         [*] Done
 }
+
+
+// EventRPC - A stream of events from server to client.
+service EventRPC {
+        
+}

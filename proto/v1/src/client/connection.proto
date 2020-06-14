@@ -32,6 +32,14 @@ message Client {
 }
 
 
+// ConnectionRPC - All requests to connect a client and send information to it.
+service ConnectionRPC {
+
+        // Authentication Request/Response
+        
+        // Configuration & Info Request/Response
+}
+
 // AuthenticationRequest - Send user name & password
 message AuthenticationRequest {
         string Username = 1;
