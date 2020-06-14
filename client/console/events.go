@@ -17,6 +17,29 @@
 package console
 
 // StartEventListener - Listens for events coming from the server/ghosts.
-func (c *Console) StartEventListener() {
+func (c *console) StartEventListener() {
 
+	// Listen for RPC events
+
+	for {
+		// Switch event type
+
+		// Call function for this event
+	}
 }
+
+// ModuleEvent - Console behavior upon module event reception.
+func ModuleEvent() {
+	// If pending
+
+	// If non-pending
+}
+
+// ImplantEvent - Console behavior upon ghost implant event reception.
+func ImplantEvent() {}
+
+// CanaryEvent - Console behavior upon canary alert reception.
+func CanaryEvent() {}
+
+// UserEvent - Console behavior upon user event reception (connections, disconnections, etc)
+func UserEvent() {}

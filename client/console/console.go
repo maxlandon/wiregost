@@ -23,7 +23,6 @@ import (
 	"github.com/lmorg/readline"
 
 	"github.com/maxlandon/wiregost/client/assets"
-	// "github.com/maxlandon/wiregost/client/core"
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
 	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
@@ -44,7 +43,6 @@ type console struct {
 	Ghost    *ghostpb.Ghost        // Current ghost implant
 	Ghosts   int
 	Jobs     int
-	// Server   *core.WiregostServer  // Server connection infrastructure
 }
 
 // newConsole - Instantiates a console with some default behavior
@@ -52,8 +50,8 @@ func newConsole() *console {
 
 	console := &console{
 		Shell:  readline.NewInstance(),
-		Module: &modulepb.Module{},
-		Ghost:  &ghostpb.Ghost{},
+		Module: &modulepb.Module{}, // Avoid nil dereference
+		Ghost:  &ghostpb.Ghost{},   // Avoid nil dereference
 	}
 
 	return console
@@ -70,6 +68,8 @@ func (c *console) Connect() {
 
 	// Receive various infos sent by server when authenticated (ClientID, messages, users, etc)
 
+	// Listen for incoming server/implant events
+	c.StartEventListener()
 }
 
 // Setup - Setup various elements of the console.
@@ -116,6 +116,8 @@ func (c *console) Start() {
 		// Process tokens
 
 		// Execute the command input
+
+		// Reset variables for command options (go-flags)
 	}
 }
 

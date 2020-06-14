@@ -27,5 +27,4 @@ type ConsoleContext struct {
 	Jobs      *int                  // Number of jobs
 	Ghosts    *int                  // Number of connected implants
 	// DBContext context.Context      // DB queries context
-	// Server    *core.WiregostServer // Wiregost Server
 }
