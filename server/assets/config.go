@@ -16,8 +16,13 @@
 
 package assets
 
+var (
+	// ServerConfiguration - The server configuration object
+	ServerConfiguration = &serverConfiguration{}
+)
+
 // ServerConfiguration - Holds all configuration information for the server and the database
-type ServerConfiguration struct {
+type serverConfiguration struct {
 	// Server
 	ServerHost        string
 	ServerPort        int
@@ -27,7 +32,8 @@ type ServerConfiguration struct {
 	DBUser     string
 	DBPassword string
 	// Database as Service
-	DatabaseRPCAddress  string
+	DatabaseRPCHost     string
+	DatabaseRPCPort     uint
 	DatabaseRESTAddress string
 }
 

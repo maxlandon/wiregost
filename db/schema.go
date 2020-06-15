@@ -16,22 +16,28 @@
 
 package db
 
-import "github.com/jinzhu/gorm"
+import (
+	"crypto/x509"
+
+	"github.com/jinzhu/gorm"
+
+	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
+)
 
 // MigrateShema - Migrates all object definitions to Wiregost's PostgreSQL database.
 func MigrateShema(db *gorm.DB) error {
 
-	// DB Options
-	db.Set("gorm:auto_preload", true) // Always load relationships for an object.
-
 	// Log level
 	db.LogMode(true)
 
-	// User, Server & Implant Certificates
+	// DB Options
+	db.Set("gorm:auto_preload", true) // Always load relationships for an object.
 
 	// Wiregost Users
+	db.AutoMigrate(serverpb.User{})
 
-	// Ghost Implant builds
+	// User, Server & Implant Certificates
+	db.AutoMigrate(x509.Certificate{})
 
 	// Workspaces
 
@@ -46,6 +52,8 @@ func MigrateShema(db *gorm.DB) error {
 	// Routes
 
 	// Listeners
+
+	// Ghost Implant builds
 
 	return nil
 }

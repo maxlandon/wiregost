@@ -23,7 +23,7 @@ import serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 // Users - Given a user model, this function checks all fields and builds a
 // query that may match one or more users, and returns them.
 // Some fields will automatically return only one user, such as ID
-func Users(user serverpb.User) (users []serverpb.User) {
+func Users(user *serverpb.User) (users []serverpb.User) {
 	return
 }
 
@@ -35,14 +35,14 @@ func UserByID(id uint32) (user serverpb.User) {
 // CREATE ----------------------------------------------------------------------
 
 // AddUser - Add a user to the database, if no existing user matches it.
-func AddUser(user serverpb.User) (added serverpb.User) {
+func AddUser(user *serverpb.User) (added serverpb.User) {
 	return
 }
 
 // UPDATE ----------------------------------------------------------------------
 
 // UpdateUser - Update a user provided with an ID (we thus know it already exists).
-func UpdateUser(user serverpb.User) (updated serverpb.User) {
+func UpdateUser(user *serverpb.User) (updated serverpb.User) {
 	return
 }
 
@@ -52,7 +52,7 @@ func UpdateUser(user serverpb.User) (updated serverpb.User) {
 // query that may match one or more users, and deletes the ones found.
 // For instance, if the user has an ID, this one only will be deleted, but if it has
 // several addresses, all matches will be deleted at once.
-func DeleteUsers(user serverpb.User) (deleted []serverpb.User) {
+func DeleteUsers(user *serverpb.User) (deleted []serverpb.User) {
 	return
 }
 

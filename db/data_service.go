@@ -16,7 +16,10 @@
 
 package db
 
-import "github.com/maxlandon/wiregost/db/models"
+import (
+	"github.com/maxlandon/wiregost/db/models"
+	"github.com/maxlandon/wiregost/db/server"
+)
 
 // Start - Starts one or more components of the Data Service
 func Start() error {
@@ -34,9 +37,8 @@ func Start() error {
 	// Migrate Schema
 	MigrateShema(db)
 
-	// Register gRPC services
-
-	// Start listening components (gRPC and/or REST)
+	// Register & Start gRPC services (blocking)
+	server.RegisterRPCServices()
 
 	return nil
 }

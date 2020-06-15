@@ -17,6 +17,7 @@
 package main
 
 import (
+	"github.com/maxlandon/wiregost/db"
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/modules"
 )
@@ -32,6 +33,7 @@ func main() {
 	// Setup logging
 
 	// Setup Database, Start & Test Connection
+	db.Start()
 
 	// Load certificates
 
