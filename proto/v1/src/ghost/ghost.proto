@@ -21,7 +21,7 @@ package ghost;
 option go_package = "ghostpb";
 
 import "transport/transport.proto";
-import "server/user.proto";
+import "db/user.proto";
 
 // Ghost - Server-side object representing a connected ghost implant.
 message Ghost {
@@ -42,7 +42,7 @@ message Ghost {
 
         repeated transport.Transport Transports = 14;     // Find a way to get the active one
         Permissions Permissions = 15;                           // Ownership permissions on the implant 
-        server.User Owner = 16;                           // User who owns this ghost implant
+        db.User Owner = 16;                           // User who owns this ghost implant
 }
 
 

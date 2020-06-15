@@ -218,9 +218,9 @@ generate:
       db/os_families.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/db
       db/port.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/db
       db/service.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/db
+      db/user.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/db
       db/workspace.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/db
     # Client
-      client/*.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/client
       client/console-config.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/client
       client/connection.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/client
     # Module
@@ -273,28 +273,34 @@ generate:
 
   # The list of plugins.
   plugins:
+    # GRPC // Using github.com/grpc/grpc-go/cmd/protoc-gen-go-grpc
+    - name: go-grpc
+      type: go
+      output: ../gen/go
+
       # The plugin name. This will go to protoc with --name_out, so it either needs
       # to be a built-in name (like java), or a plugin name with a binary
       # protoc-gen-name.
-    - name: go
+    # - name: go
 
       # The type, if any. Valid types are go, gogo.
       # Use go if your plugin is a standard Golang plugin
       # that uses github.com/golang/protobuf imports, use gogo
       # if it uses github.com/gogo/protobuf imports. For protoc-gen-go
       # use go, For protoc-gen-gogo, protoc-gen-gogoslick, etc, use gogo.
-      type: go
+      # type: go
 
       # Extra flags to specify.
       # The only flag you will generally set is plugins=grpc for Golang.
       # The Mfile=package flags are automatically set.
       # ** Otherwise, generally do not set this unless you know what you are doing. **
-#      flags: plugins=grpc
+      # flags: plugins=grpc,paths=source_relative
+      # flags: plugins=grpc:../gen/go
 
       # The path to output generated files to.
       # If the directory does not exist, it will be created when running generation.
       # This needs to be a relative path.
-      output: ../gen/go
+      # output: ../gen/go
 
       # Optional override for the plugin path. For example, if you set set path to
       # /usr/local/bin/gogo_plugin", prototool will add the
@@ -317,6 +323,10 @@ generate:
 #    - name: grpc-gateway
 #      type: go
 #      output: ../../.gen/proto/go
+   # - name: grpc
+   #    flags: go-grpc_out=../gen/go
+   #    type: go
+   #    output: ../gen/go 
 
 #    - name: java
 #      output: ../../.gen/proto/java

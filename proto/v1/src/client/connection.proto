@@ -20,7 +20,7 @@ package client;
 
 option go_package = "clientpb";
 
-import "server/user.proto";
+import "db/user.proto";
 import "db/workspace.proto";
 import "client/console-config.proto";
 
@@ -28,7 +28,7 @@ import "client/console-config.proto";
 message Client {
         int64 ID = 1;
         string Token = 2;
-        server.User User = 3;
+        db.User User = 3;
 }
 
 

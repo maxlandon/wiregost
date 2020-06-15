@@ -20,7 +20,7 @@ package server;
 
 option go_package = "serverpb";
 
-import "server/user.proto";
+import "db/user.proto";
 
 // Job - A background job running in Wiregost
 message Job {
@@ -28,7 +28,7 @@ message Job {
         string Name = 2;
         string Description = 3;
         string Err = 4;
-        server.User Owner = 5;
+        db.User Owner = 5;
 
         enum Permissions {  // Who has control over this job
                 OWNER = 0;
