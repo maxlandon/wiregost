@@ -8,7 +8,7 @@ import (
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 )
 
-// Authenticate - Perform full authentication process to server
+// Authenticate - Perform full authentication process with server
 func Authenticate(conn *grpc.ClientConn) (cli client.ConnectionRPCClient, user *dbpb.User, clientID uuid.UUID) {
 
 	// Register ConnectionRPC client to connection

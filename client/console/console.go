@@ -40,7 +40,7 @@ type console struct {
 	ClientID uuid.UUID             // Unique identifier for this console
 	User     *dbpb.User            // User information sent back after auth
 	Shell    *readline.Instance    // Console readline input
-	Config   *assets.ConsoleConfig // Console configuration
+	Config   *client.ConsoleConfig // Console configuration
 	Module   *modulepb.Module      // Module currently on stack
 	Ghost    *ghostpb.Ghost        // Current ghost implant
 	Ghosts   int
@@ -59,10 +59,11 @@ func newConsole() *console {
 	return console
 }
 
-// Connect - The console loads the server configuration, connects to it and atempts user authentication
+// Connect - The console loads the server configuration, connects to it and attempts user authentication
 func (c *console) Connect() (err error) {
 
 	// Load server connection configuration (check files in ~/.wiregost first, then binary)
+	c.Config = assets.LoadConsoleConfig()
 
 	// Connect to server via TLS
 	conn, err := connection.ConnectTLS()

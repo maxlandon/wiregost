@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/maxlandon/wiregost/client/console"
+	client "github.com/maxlandon/wiregost/client/console"
 )
 
 // Console executable entry
 func main() {
 
-	console.Console.Start()
-
+	// Start the client console. Configuration loading, authentication, and connection info fetching is handled by this function.
+	client.Console.Start()
 }

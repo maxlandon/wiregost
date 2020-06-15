@@ -1,15 +1,16 @@
 package assets
 
-// ConsoleConfig - Stores various customizable elements for the console
-type ConsoleConfig struct{}
+import (
+	client "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
+)
 
 // LoadConsoleConfig - Loads the config file for the console and parse it
-func LoadConsoleConfig() (config *ConsoleConfig) {
+func LoadConsoleConfig() (config *client.ConsoleConfig) {
 	return
 }
 
 // SaveConsoleConfig - Save the configuration to disk
-func SaveConsoleConfig(config *ConsoleConfig) (err error) {
+func SaveConsoleConfig(config *client.ConsoleConfig) (err error) {
 	return
 }
 
