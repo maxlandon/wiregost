@@ -17,11 +17,11 @@
 package console
 
 // ExecuteCommand - Dispatches an input line to its appropriate command.
-func (c *Console) ExecuteCommand(args []string) error {
+func (c *console) ExecuteCommand(args []string) error {
 	return nil
 }
 
 // ExecuteSpecialCommand - Handles all commands not registered to command parsers.
-func (c *Console) ExecuteSpecialCommand(args []string) error {
+func (c *console) ExecuteSpecialCommand(args []string) error {
 	return nil
 }

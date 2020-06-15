@@ -23,9 +23,11 @@ import (
 	"github.com/lmorg/readline"
 
 	"github.com/maxlandon/wiregost/client/assets"
+	"github.com/maxlandon/wiregost/client/connection"
+	client "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
+	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
 	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
-	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 )
 
 var (
@@ -36,7 +38,7 @@ var (
 // Console - Central object of the client UI
 type console struct {
 	ClientID uuid.UUID             // Unique identifier for this console
-	User     *serverpb.User        // User information sent back after auth
+	User     *dbpb.User            // User information sent back after auth
 	Shell    *readline.Instance    // Console readline input
 	Config   *assets.ConsoleConfig // Console configuration
 	Module   *modulepb.Module      // Module currently on stack
@@ -58,20 +60,30 @@ func newConsole() *console {
 }
 
 // Connect - The console loads the server configuration, connects to it and atempts user authentication
-func (c *console) Connect() {
+func (c *console) Connect() (err error) {
 
 	// Load server connection configuration (check files in ~/.wiregost first, then binary)
 
-	// Connect to server
+	// Connect to server via TLS
+	conn, err := connection.ConnectTLS()
 
 	// Authenticate (5 tries)
+	var cli client.ConnectionRPCClient
+	cli, c.User, c.ClientID = connection.Authenticate(conn)
 
 	// Receive various infos sent by server when authenticated (ClientID, messages, users, version information, etc)
+	c.GetConnectionInfo(cli)
 
 	// Print banner, user and client/server version information
+	c.PrintBanner()
+
+	// Register all gRPC clients to connection
+	connection.RegisterRPCClients(conn)
 
 	// Listen for incoming server/implant events
 	c.StartEventListener()
+
+	return nil
 }
 
 // Setup - Setup various elements of the console.
@@ -88,6 +100,15 @@ func (c *console) Setup() {
 	// Env
 
 	// Share context
+}
+
+// GetConnectionInfo - Get all information necessary to console upon connection
+func (c *console) GetConnectionInfo(cli client.ConnectionRPCClient) {
+
+	// Version Request
+	// cli.GetVersion(ctx, in, opts)
+
+	// Set fields
 }
 
 // ShareContext - The console exposes its context to other packages
@@ -148,4 +169,9 @@ func Sanitize(line string) (sanitized []string, empty bool) {
 	// Catch eventual empty items
 
 	return
+}
+
+// PrintBanner - Print Wiregost banner, client & server information, etc.
+func (c *console) PrintBanner() {
+
 }

@@ -47,7 +47,7 @@ type prompt struct {
 }
 
 // newPrompt - Initializes the Prompt object
-func newPrompt(c *Console) {
+func newPrompt(c *console) {
 
 	Prompt = prompt{} // Initialize
 	setCallbacks(Prompt)
