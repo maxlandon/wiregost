@@ -10,9 +10,6 @@ import (
 )
 
 var (
-	// ContextRPC - The context object used with gRPC
-	ContextRPC RPCContext
-
 	base = context.Background()
 )
 
@@ -32,22 +29,16 @@ type RPCContext struct {
 
 // NewContextRPC - Set the context used by gRPC calls
 func NewContextRPC() (ctx context.Context) {
-	*ContextRPC.ClientID = Context.ClientID
-	ContextRPC.Workspace = Context.Workspace
-	ContextRPC.User = Context.User
-	ContextRPC.Menu = Context.Menu
-	ContextRPC.Ghost = Context.Ghost
 
-	ctx = context.WithValue(base, MetadataKey, ContextRPC)
+	new := RPCContext{
+		ClientID:  &Context.ClientID,
+		Workspace: Context.Workspace,
+		User:      Context.User,
+		Menu:      Context.Menu,
+		Ghost:     Context.Ghost,
+	}
+
+	ctx = context.WithValue(base, MetadataKey, new)
 
 	return
-}
-
-// SetContextRPC - Set the context used by gRPC calls
-func SetContextRPC() {
-	*ContextRPC.ClientID = Context.ClientID
-	ContextRPC.Workspace = Context.Workspace
-	ContextRPC.User = Context.User
-	ContextRPC.Menu = Context.Menu
-	ContextRPC.Ghost = Context.Ghost
 }

@@ -13,7 +13,7 @@ import (
 
 var (
 	// Context - The console context object
-	Context ConsoleContext
+	Context = newContext()
 )
 
 // ConsoleContext - Stores all variables needed for console context
@@ -30,26 +30,32 @@ type ConsoleContext struct {
 	Ghosts    *int                    // Number of connected implants
 }
 
-// SetConsoleContext - Set the context used by commands
-func SetConsoleContext() {
+func newContext() (ctx *ConsoleContext) {
 
+	ctx = &ConsoleContext{}
+	ctx.User = &dbpb.User{}
+	ctx.Config = &clientpb.ConsoleConfig{}
+	ctx.Workspace = &dbpb.Workspace{}
+	ctx.Module = &modulepb.Module{}
+	ctx.Ghost = &ghostpb.Ghost{}
+
+	return
 }
 
-// GetContext - Get all information necessary to console upon connection
-func GetContext(cli clientpb.ConnectionRPCClient) {
+// SetConsoleContext - Set the context used by commands & shell
+func SetConsoleContext(cli clientpb.ConnectionRPCClient) {
 
 	// Info Request
-	info, _ := cli.GetConnectionInfo(ctx, &clientpb.ConnectionInfoRequest{}, grpc.EmptyCallOption{})
+	info, _ := cli.GetConnectionInfo(base, &clientpb.ConnectionInfoRequest{}, grpc.EmptyCallOption{})
 
 	// Set fields
 	Context.Workspace = info.Workspace
 	*Context.Jobs = int(info.Jobs)
 	*Context.Ghosts = int(info.Ghosts)
-
 }
 
 // GetVersion - Get client & server version information upon connection
 func GetVersion(cli clientpb.ConnectionRPCClient) (info *clientpb.Version) {
-	info, _ = cli.GetVersion(ctx, &clientpb.Empty{}, grpc.EmptyCallOption{})
+	info, _ = cli.GetVersion(base, &clientpb.Empty{}, grpc.EmptyCallOption{})
 	return
 }

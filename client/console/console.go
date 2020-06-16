@@ -76,7 +76,7 @@ func (c *console) Connect() (err error) {
 	c.PrintBanner(context.GetVersion(cli))
 
 	// Receive various infos sent by server when authenticated (ClientID, messages, users, version information, etc)
-	context.GetContext(cli)
+	context.SetConsoleContext(cli)
 
 	// Register all gRPC clients with the connection
 	connection.RegisterRPCClients(conn)
@@ -103,12 +103,6 @@ func (c *console) Setup() {
 
 	// Env
 	util.LoadClientEnv()
-
-	// Set context for commands and shell
-	context.SetConsoleContext()
-
-	// Set context for RPC calls to server/implants
-	context.SetContextRPC()
 
 	// Commands
 	commands.Bind()
