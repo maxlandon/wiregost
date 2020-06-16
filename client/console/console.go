@@ -19,7 +19,6 @@ package console
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/lmorg/readline"
 
 	"github.com/maxlandon/wiregost/client/assets"
@@ -29,9 +28,6 @@ import (
 	"github.com/maxlandon/wiregost/client/context"
 	"github.com/maxlandon/wiregost/client/util"
 	client "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
-	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
-	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
-	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 )
 
 var (
@@ -41,23 +37,23 @@ var (
 
 // Console - Central object of the client UI
 type console struct {
-	ClientID uuid.UUID             // Unique identifier for this console
-	User     *dbpb.User            // User information sent back after auth
-	Shell    *readline.Instance    // Console readline input
-	Config   *client.ConsoleConfig // Console configuration
-	Module   *modulepb.Module      // Module currently on stack
-	Ghost    *ghostpb.Ghost        // Current ghost implant
-	Ghosts   int
-	Jobs     int
+	// ClientID uuid.UUID             // Unique identifier for this console
+	// User     *dbpb.User            // User information sent back after auth
+	Shell  *readline.Instance    // Console readline input
+	Config *client.ConsoleConfig // Console configuration
+	// Module   *modulepb.Module      // Module currently on stack
+	// Ghost    *ghostpb.Ghost        // Current ghost implant
+	// Ghosts   int
+	// Jobs     int
 }
 
 // newConsole - Instantiates a console with some default behavior
 func newConsole() *console {
 
 	console := &console{
-		Shell:  readline.NewInstance(),
-		Module: &modulepb.Module{}, // Avoid nil dereference
-		Ghost:  &ghostpb.Ghost{},   // Avoid nil dereference
+		Shell: readline.NewInstance(),
+		// Module: &modulepb.Module{}, // Avoid nil dereference
+		// Ghost:  &ghostpb.Ghost{},   // Avoid nil dereference
 	}
 
 	return console
@@ -74,13 +70,13 @@ func (c *console) Connect() (err error) {
 
 	// Authenticate (5 tries)
 	var cli client.ConnectionRPCClient
-	cli, c.User, c.ClientID = connection.Authenticate(conn)
-
-	// Receive various infos sent by server when authenticated (ClientID, messages, users, version information, etc)
-	c.GetConnectionInfo(cli)
+	cli, context.Context.User, context.Context.ClientID = connection.Authenticate(conn)
 
 	// Print banner, user and client/server version information
-	c.PrintBanner()
+	c.PrintBanner(context.GetVersion(cli))
+
+	// Receive various infos sent by server when authenticated (ClientID, messages, users, version information, etc)
+	context.GetContext(cli)
 
 	// Register all gRPC clients with the connection
 	connection.RegisterRPCClients(conn)
@@ -175,11 +171,6 @@ func (c *console) Readline() (line string, err error) {
 	return
 }
 
-// Exit - Kill the current client console
-func (c *console) Exit() {
-
-}
-
 // Sanitize - Trims spaces and other unwished elements from the input line
 func Sanitize(line string) (sanitized []string, empty bool) {
 
@@ -190,7 +181,7 @@ func Sanitize(line string) (sanitized []string, empty bool) {
 	return
 }
 
-// PrintBanner - Print Wiregost banner, client & server information, etc.
-func (c *console) PrintBanner() {
+// Exit - Kill the current client console
+func (c *console) Exit() {
 
 }

@@ -1,16 +1,19 @@
 package context
 
 import (
+	"context"
+
 	"github.com/google/uuid"
 
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
-	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 )
 
 var (
 	// ContextRPC - The context object used with gRPC
 	ContextRPC RPCContext
+
+	base = context.Background()
 )
 
 const (
@@ -22,12 +25,29 @@ const (
 type RPCContext struct {
 	ClientID  *uuid.UUID      // Unique number per console instance (for running modules, etc)
 	Workspace *dbpb.Workspace // Current workspace
-	User      *serverpb.User  // User owning the process context
+	User      *dbpb.User      // User owning the process context
 	Menu      *string         // Current shell menu
 	Ghost     *ghostpb.Ghost  // Current implant
 }
 
+// NewContextRPC - Set the context used by gRPC calls
+func NewContextRPC() (ctx context.Context) {
+	*ContextRPC.ClientID = Context.ClientID
+	ContextRPC.Workspace = Context.Workspace
+	ContextRPC.User = Context.User
+	ContextRPC.Menu = Context.Menu
+	ContextRPC.Ghost = Context.Ghost
+
+	ctx = context.WithValue(base, MetadataKey, ContextRPC)
+
+	return
+}
+
 // SetContextRPC - Set the context used by gRPC calls
 func SetContextRPC() {
-
+	*ContextRPC.ClientID = Context.ClientID
+	ContextRPC.Workspace = Context.Workspace
+	ContextRPC.User = Context.User
+	ContextRPC.Menu = Context.Menu
+	ContextRPC.Ghost = Context.Ghost
 }
