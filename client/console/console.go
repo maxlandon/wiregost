@@ -27,6 +27,7 @@ import (
 	"github.com/maxlandon/wiregost/client/connection"
 	"github.com/maxlandon/wiregost/client/context"
 	"github.com/maxlandon/wiregost/client/util"
+	dbcli "github.com/maxlandon/wiregost/db/client"
 	client "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 )
 
@@ -68,7 +69,12 @@ func (c *console) Connect() (err error) {
 	c.PrintBanner(context.GetVersion(cli))
 
 	// Receive various infos sent by server when authenticated (ClientID, messages, users, version information, etc)
+	// info := context.SetConsoleContext(cli)
 	context.SetConsoleContext(cli)
+
+	// Connect to database on another connection
+	dbcli.ConnectToDatabase("", 9000, "", "")
+	// dbcli.ConnectToDatabase(info.DBHost, int(info.DBPort), info.PublicKeyDB, info.PrivateKeyDB)
 
 	// Register all gRPC clients with the connection
 	connection.RegisterRPCClients(conn)

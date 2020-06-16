@@ -16,7 +16,11 @@
 
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"crypto/x509"
+
+	"github.com/jinzhu/gorm"
+)
 
 // This file defines the GORM DB instance used to query Wiregost' PostgreSQL Database
 
@@ -25,6 +29,31 @@ var DB *gorm.DB
 
 // ConnectDatabase - Connect to PostgreSQL
 func ConnectDatabase(name, user, password string) (db *gorm.DB, err error) {
+
+	// Check for DB in ~/.wiregost filesystem, init it if not present
+	if DatabaseNotSet() {
+		InitDatabase()
+	}
+
+	// Connect with insecure, retrieve certificates for DB
+	cert := ConnectInsecure()
+
+	// Restart PostgreSQL with secure TLS credentials
+	ConnectSecure(cert)
+
+	return
+}
+
+// ConnectInsecure - Connect to DB with default or no encryption, retrieve certificates
+func ConnectInsecure() (cert *x509.Certificate) {
+	return
+}
+
+// ConnectSecure - restart PostgreSQL connection with good certs
+func ConnectSecure(cert *x509.Certificate) {}
+
+// DatabaseNotSet - Database does not exist yet
+func DatabaseNotSet() (ok bool) {
 
 	return
 }

@@ -34,12 +34,19 @@ type serverConfiguration struct {
 	// Database as Service
 	DatabaseRPCHost     string
 	DatabaseRPCPort     uint
+	PublicKeyDB         string
+	PrivateKeyDB        string
 	DatabaseRESTAddress string
 }
 
 // LoadServerConfiguration - Loads config from the config file, handling any other cases.
-func LoadServerConfiguration() error {
-	return nil
+func LoadServerConfiguration() (conf *serverConfiguration) {
+
+	// Read file
+
+	// Parse it
+
+	return ServerConfiguration
 }
 
 // SaveServerConfiguration - Write the config file to disk.

@@ -43,15 +43,16 @@ func newContext() (ctx *ConsoleContext) {
 }
 
 // SetConsoleContext - Set the context used by commands & shell
-func SetConsoleContext(cli clientpb.ConnectionRPCClient) {
+func SetConsoleContext(cli clientpb.ConnectionRPCClient) (info *clientpb.ConnectionInfo) {
 
 	// Info Request
-	_, _ = cli.GetConnectionInfo(base, &clientpb.ConnectionInfoRequest{}, grpc.EmptyCallOption{})
+	info, _ = cli.GetConnectionInfo(base, &clientpb.ConnectionInfoRequest{}, grpc.EmptyCallOption{})
 
 	// Set fields (beware of nil fields in pb message)
 	// Context.Workspace = (*info.Workspace)
 	// *Context.Jobs = int(info.Jobs)
 	// *Context.Ghosts = int(info.Ghosts)
+	return
 }
 
 // GetVersion - Get client & server version information upon connection

@@ -61,13 +61,17 @@ message ConnectionInfoRequest {}
 // ConnectionDetails - Further information needed by the client
 message ConnectionInfo{
         client.ConsoleConfig ConsoleConfig = 1;
-
+        // DB
+        string DBHost = 10;
+        int32 DBPort = 11;
+        string PublicKeyDB = 2;
+        string PrivateKeyDB = 3;
         // Useful
-        db.Workspace Workspace = 3;
         int32 Messages = 4;
         int32 ActiveUsers = 5;
         int32 Ghosts = 6;
         int32 Jobs = 7;
+        db.Workspace Workspace = 8;
 }
 
 // Version - Version information
