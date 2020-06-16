@@ -37,14 +37,8 @@ var (
 
 // Console - Central object of the client UI
 type console struct {
-	// ClientID uuid.UUID             // Unique identifier for this console
-	// User     *dbpb.User            // User information sent back after auth
 	Shell  *readline.Instance    // Console readline input
 	Config *client.ConsoleConfig // Console configuration
-	// Module   *modulepb.Module      // Module currently on stack
-	// Ghost    *ghostpb.Ghost        // Current ghost implant
-	// Ghosts   int
-	// Jobs     int
 }
 
 // newConsole - Instantiates a console with some default behavior
@@ -52,8 +46,6 @@ func newConsole() *console {
 
 	console := &console{
 		Shell: readline.NewInstance(),
-		// Module: &modulepb.Module{}, // Avoid nil dereference
-		// Ghost:  &ghostpb.Ghost{},   // Avoid nil dereference
 	}
 
 	return console
@@ -106,20 +98,6 @@ func (c *console) Setup() {
 
 	// Commands
 	commands.Bind()
-}
-
-// GetConnectionInfo - Get all information necessary to console upon connection
-func (c *console) GetConnectionInfo(cli client.ConnectionRPCClient) {
-
-	// Version Request
-	// cli.GetVersion(ctx, in, opts)
-
-	// Set fields
-}
-
-// ShareContext - The console exposes its context to other packages
-func (c *console) ShareContext() {
-
 }
 
 // Start - Start the console

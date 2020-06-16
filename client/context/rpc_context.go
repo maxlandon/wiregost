@@ -20,18 +20,18 @@ const (
 
 // RPCContext - Holds all context metadata used in Wiregost, passed for each request made by a client console
 type RPCContext struct {
-	ClientID  *uuid.UUID      // Unique number per console instance (for running modules, etc)
-	Workspace *dbpb.Workspace // Current workspace
-	User      *dbpb.User      // User owning the process context
-	Menu      *string         // Current shell menu
-	Ghost     *ghostpb.Ghost  // Current implant
+	ClientID  uuid.UUID      // Unique number per console instance (for running modules, etc)
+	Workspace dbpb.Workspace // Current workspace
+	User      dbpb.User      // User owning the process context
+	Menu      *string        // Current shell menu
+	Ghost     ghostpb.Ghost  // Current implant
 }
 
 // NewContextRPC - Set the context used by gRPC calls
 func NewContextRPC() (ctx context.Context) {
 
 	new := RPCContext{
-		ClientID:  &Context.ClientID,
+		ClientID:  Context.ClientID,
 		Workspace: Context.Workspace,
 		User:      Context.User,
 		Menu:      Context.Menu,
@@ -41,4 +41,9 @@ func NewContextRPC() (ctx context.Context) {
 	ctx = context.WithValue(base, MetadataKey, new)
 
 	return
+}
+
+// GetMetadata - Used by the server and DB to get the context of a RPC call
+func GetMetadata(in context.Context) (ctx RPCContext) {
+	return in.Value(MetadataKey).(RPCContext)
 }

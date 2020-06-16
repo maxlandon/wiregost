@@ -9,7 +9,7 @@ import (
 )
 
 // Authenticate - Perform full authentication process with server
-func Authenticate(conn *grpc.ClientConn) (cli client.ConnectionRPCClient, user *dbpb.User, clientID uuid.UUID) {
+func Authenticate(conn *grpc.ClientConn) (cli client.ConnectionRPCClient, user dbpb.User, clientID uuid.UUID) {
 
 	// Register ConnectionRPC client to connection
 	cli = client.NewConnectionRPCClient(conn)

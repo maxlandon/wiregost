@@ -18,26 +18,26 @@ var (
 
 // ConsoleContext - Stores all variables needed for console context
 type ConsoleContext struct {
-	ClientID  uuid.UUID               // Unique user ID for module requests
-	User      *dbpb.User              // User information sent back after auth
-	Shell     *readline.Instance      // Shell object
-	Config    *clientpb.ConsoleConfig // Shell configuration
-	Menu      *string                 // Current shell menu
-	Workspace *dbpb.Workspace         // Current workspace
-	Module    *modulepb.Module        // Current module
-	Ghost     *ghostpb.Ghost          // Current implant
-	Jobs      *int                    // Number of jobs
-	Ghosts    *int                    // Number of connected implants
+	ClientID  uuid.UUID              // Unique user ID for module requests
+	User      dbpb.User              // User information sent back after auth
+	Shell     *readline.Instance     // Shell object
+	Config    clientpb.ConsoleConfig // Shell configuration
+	Menu      *string                // Current shell menu
+	Workspace dbpb.Workspace         // Current workspace
+	Module    modulepb.Module        // Current module
+	Ghost     ghostpb.Ghost          // Current implant
+	Jobs      *int                   // Number of jobs
+	Ghosts    *int                   // Number of connected implants
 }
 
 func newContext() (ctx *ConsoleContext) {
 
 	ctx = &ConsoleContext{}
-	ctx.User = &dbpb.User{}
-	ctx.Config = &clientpb.ConsoleConfig{}
-	ctx.Workspace = &dbpb.Workspace{}
-	ctx.Module = &modulepb.Module{}
-	ctx.Ghost = &ghostpb.Ghost{}
+	ctx.User = dbpb.User{}
+	ctx.Config = clientpb.ConsoleConfig{}
+	ctx.Workspace = dbpb.Workspace{}
+	ctx.Module = modulepb.Module{}
+	ctx.Ghost = ghostpb.Ghost{}
 
 	return
 }
@@ -46,12 +46,12 @@ func newContext() (ctx *ConsoleContext) {
 func SetConsoleContext(cli clientpb.ConnectionRPCClient) {
 
 	// Info Request
-	info, _ := cli.GetConnectionInfo(base, &clientpb.ConnectionInfoRequest{}, grpc.EmptyCallOption{})
+	_, _ = cli.GetConnectionInfo(base, &clientpb.ConnectionInfoRequest{}, grpc.EmptyCallOption{})
 
-	// Set fields
-	Context.Workspace = info.Workspace
-	*Context.Jobs = int(info.Jobs)
-	*Context.Ghosts = int(info.Ghosts)
+	// Set fields (beware of nil fields in pb message)
+	// Context.Workspace = (*info.Workspace)
+	// *Context.Jobs = int(info.Jobs)
+	// *Context.Ghosts = int(info.Ghosts)
 }
 
 // GetVersion - Get client & server version information upon connection
