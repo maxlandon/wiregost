@@ -20,6 +20,7 @@ package server;
 
 option go_package = "serverpb";
 
+import "client/console_config.proto";
 import "client/connection.proto";
 
 // EventType - Events can range from user connect/disconnect, job cancellation, to session registering.

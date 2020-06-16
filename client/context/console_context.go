@@ -1,4 +1,4 @@
-package commands
+package context
 
 import (
 	"github.com/google/uuid"
@@ -14,13 +14,6 @@ import (
 var (
 	// Context - The console context object
 	Context ConsoleContext
-	// ContextRPC - The context object used with gRPC
-	ContextRPC RPCContext
-)
-
-const (
-	// MetadataKey - Used to reference the Data struct contained in the context
-	MetadataKey = "wiregost"
 )
 
 // ConsoleContext - Stores all variables needed for console context
@@ -37,11 +30,7 @@ type ConsoleContext struct {
 	Ghosts    *int                    // Number of connected implants
 }
 
-// RPCContext - Holds all context metadata used in Wiregost, passed for each request made by a client console
-type RPCContext struct {
-	ClientID  *uuid.UUID      // Unique number per console instance (for running modules, etc)
-	Workspace *dbpb.Workspace // Current workspace
-	User      *serverpb.User  // User owning the process context
-	Menu      *string         // Current shell menu
-	Ghost     *ghostpb.Ghost  // Current implant
+// SetConsoleContext - Set the context used by commands
+func SetConsoleContext() {
+
 }
