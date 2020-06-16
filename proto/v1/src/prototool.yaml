@@ -281,14 +281,14 @@ generate:
       # The plugin name. This will go to protoc with --name_out, so it either needs
       # to be a built-in name (like java), or a plugin name with a binary
       # protoc-gen-name.
-    # - name: go
+    - name: go
 
       # The type, if any. Valid types are go, gogo.
       # Use go if your plugin is a standard Golang plugin
       # that uses github.com/golang/protobuf imports, use gogo
       # if it uses github.com/gogo/protobuf imports. For protoc-gen-go
       # use go, For protoc-gen-gogo, protoc-gen-gogoslick, etc, use gogo.
-      # type: go
+      type: go
 
       # Extra flags to specify.
       # The only flag you will generally set is plugins=grpc for Golang.
@@ -300,7 +300,7 @@ generate:
       # The path to output generated files to.
       # If the directory does not exist, it will be created when running generation.
       # This needs to be a relative path.
-      # output: ../gen/go
+      output: ../gen/go
 
       # Optional override for the plugin path. For example, if you set set path to
       # /usr/local/bin/gogo_plugin", prototool will add the

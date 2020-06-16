@@ -6,12 +6,12 @@ import (
 
 	"google.golang.org/grpc"
 
-	client "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
+	db "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	"github.com/maxlandon/wiregost/server/assets"
 )
 
-// RegisterRPCServices - Register all gRPC server components
-func RegisterRPCServices() (err error) {
+// StartRPCServices - Register all gRPC server components
+func StartRPCServices() (err error) {
 
 	// Setup & bind server connection
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", assets.ServerConfiguration.DatabaseRPCPort))
@@ -20,7 +20,7 @@ func RegisterRPCServices() (err error) {
 	server := grpc.NewServer()
 
 	// Users
-	client.RegisterConnectionRPCServer(server, &userServer{})
+	db.RegisterUserDBServer(server, &userServer{})
 
 	// Certificates
 

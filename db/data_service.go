@@ -19,26 +19,25 @@ package db
 import (
 	"github.com/maxlandon/wiregost/db/models"
 	"github.com/maxlandon/wiregost/db/server"
+	"github.com/maxlandon/wiregost/server/assets"
 )
 
 // Start - Starts one or more components of the Data Service
 func Start() error {
 
-	// Load config for:
-	// - PostgreSQL credentials
-	// - gRPC service options
-	// - gRPC-REST gateway options
-
 	// Connect to DB
-	db, _ := models.ConnectDatabase("", "", "")
+	conf := assets.ServerConfiguration
+
+	// db, _ := models.ConnectDatabase(conf.DBName, conf.DBUser, conf.DBPassword)
+	_, _ = models.ConnectDatabase(conf.DBName, conf.DBUser, conf.DBPassword)
 
 	// Load certificates/key pairs (stored in DB)
 
 	// Migrate Schema
-	MigrateShema(db)
+	// MigrateShema(db)
 
 	// Register & Start gRPC services (blocking)
-	server.RegisterRPCServices()
+	server.StartRPCServices()
 
 	return nil
 }

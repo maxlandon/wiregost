@@ -32,8 +32,7 @@ in a smart way.
 ### Directory Content 
 
 - `data_service.go`     - Entrypoint for the Dabase functionality. Functions in this file are called by the server.
-- `assets.go`           - Code for managing the DB directory, its configuration file, etc...
 - `schema.go`           - Automatically migrates all objects available to the PostgreSQL DB with Go types.
-- `models/`             - All query functions, with a file for each object. Clients don't use them
-- `remote/`             - The client functions, those actually called by server and consoles.
+- `client/`             - The client functions, those actually called by the Wiregost server and consoles.
+- `server/`             - The DB server side functions. These functions interact with the PostgreSQL database.
 
