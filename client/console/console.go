@@ -23,9 +23,11 @@ import (
 	"github.com/lmorg/readline"
 
 	"github.com/maxlandon/wiregost/client/assets"
+	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/completers"
 	"github.com/maxlandon/wiregost/client/connection"
-	"github.com/maxlandon/wiregost/client/console/util"
+	"github.com/maxlandon/wiregost/client/context"
+	"github.com/maxlandon/wiregost/client/util"
 	client "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
@@ -106,9 +108,14 @@ func (c *console) Setup() {
 	// Env
 	util.LoadClientEnv()
 
-	// Commands
+	// Set context for commands and shell
+	context.SetConsoleContext()
 
-	// Share context
+	// Set context for RPC calls to server/implants
+	context.SetContextRPC()
+
+	// Commands
+	commands.Bind()
 }
 
 // GetConnectionInfo - Get all information necessary to console upon connection
@@ -140,16 +147,19 @@ func (c *console) Start() {
 		c.Refresh()
 
 		// Readline
-		// line, _ := c.Readline()
+		line, _ := c.Readline()
 
 		// Split & sanitize
-		// sanitized, empty := Sanitize(line)
+		sanitized, empty := Sanitize(line)
+		if empty {
+			continue
+		}
 
 		// Process tokens
+		parsed, _ := util.ParseEnvironmentVariables(sanitized)
 
 		// Execute the command input
-
-		// Reset variables for command options (go-flags)
+		c.ExecuteCommand(parsed)
 	}
 }
 

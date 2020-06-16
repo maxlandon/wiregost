@@ -18,6 +18,9 @@ package console
 
 // ExecuteCommand - Dispatches an input line to its appropriate command.
 func (c *console) ExecuteCommand(args []string) error {
+
+	// END: Reset variables for command options (go-flags)
+
 	return nil
 }
 
