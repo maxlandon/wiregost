@@ -20,6 +20,7 @@ import (
 	"github.com/maxlandon/wiregost/db"
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/modules"
+	"github.com/maxlandon/wiregost/server/rpc"
 )
 
 func main() {
@@ -33,7 +34,7 @@ func main() {
 	// Setup logging
 
 	// Setup Database, Start & Test Connection
-	db.Start()
+	go db.Start()
 
 	// Load certificates
 
@@ -46,4 +47,5 @@ func main() {
 	// Start Persistent implants
 
 	// Start Listening for client consoles
+	rpc.StartClientListener(assets.ServerConfiguration.ServerHost, assets.ServerConfiguration.ServerPort)
 }

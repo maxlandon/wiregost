@@ -53,10 +53,10 @@ The aim of Wiregost, in a first round, is two provide 3 different OS-specific ty
 - `ghosts/linux/ghost.go`
 
 You will notice in the code that all types are called `Ghost`. That is not an issue though, because Go knowns these types are different
-because they belong to a different package. They also embed the `generic.Ghost` type, so that they automatically provide generic methods
+as they belong to different packages. They also embed the `generic.Ghost` type, so that they automatically provide generic methods
 such as filesystem manipulation.
 
-In each of these packages, we will define server-side methods for executing functions on the remote ghost implant.
+In each of these packages, we will define OS-specific server-side methods for executing functions on the remote ghost implant.
 
 
 ### Details on each implant type

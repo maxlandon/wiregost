@@ -35,7 +35,7 @@ func NewPost() (post *Post) {
 
 // GetSession - Returns the Session corresponding to the Post "Session" option.
 func (m *Post) GetSession() (err error) {
-	m.Session.ID()
+	// m.Session.ID()
 	return
 }
 

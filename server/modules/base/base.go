@@ -17,10 +17,11 @@
 package base
 
 import (
+	"github.com/sirupsen/logrus"
+
 	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 	"github.com/maxlandon/wiregost/server/log"
-	"github.com/sirupsen/logrus"
 )
 
 // Module - The base module, embedding a protobuf object
