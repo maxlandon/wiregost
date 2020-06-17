@@ -17,8 +17,6 @@
 package db
 
 import (
-	"crypto/x509"
-
 	"github.com/jinzhu/gorm"
 
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
@@ -37,7 +35,7 @@ func MigrateShema(db *gorm.DB) error {
 	db.AutoMigrate(serverpb.User{})
 
 	// User, Server & Implant Certificates
-	db.AutoMigrate(x509.Certificate{})
+	db.AutoMigrate(serverpb.CertificateKeyPair{})
 
 	// Workspaces
 

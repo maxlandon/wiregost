@@ -1,0 +1,57 @@
+// Wiregost - Golang Exploitation Framework
+// Copyright © 2020 Para
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package server;
+
+option go_package = "serverpb";
+
+// import "db/user.proto";
+
+// CertificateRPC - Calls and responses for Certificate management.
+service CertificateRPC {
+        // GetCertificate - Ask DB for certificate.
+        rpc GetCertificate(Get) returns (CertificateKeyPair);
+        // RemoveCertificate - Erase a certificate from DB.
+        rpc RemoveCertificate(Remove) returns (Removed);
+}
+
+// Get a certificate matching fields of this one
+message Get {
+        CertificateKeyPair Cert = 1;
+}
+
+// CertificateKeyPair - Used to store TLS certificates in DB and some calls
+message CertificateKeyPair {
+        uint32 ID = 1;
+        string Hostname = 2;
+        // db.User User = 2;
+        string KeyType = 3;
+        bytes Certificate = 4;
+        bytes PrivateKey = 5;
+}
+
+// Remove certificate
+message Remove {
+        CertificateKeyPair Cert = 1;
+} 
+
+// Response
+message Removed {
+        bool Removed = 1;
+        CertificateKeyPair Cert = 2;
+}

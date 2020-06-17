@@ -243,6 +243,7 @@ generate:
       ghost/core/shell.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core
     # Server
       server/client.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
+      server/certs.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
       server/event.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
       server/ghost_build.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
       server/job.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
