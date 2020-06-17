@@ -38,8 +38,7 @@ var (
 
 // Console - Central object of the client UI
 type console struct {
-	Shell  *readline.Instance    // Console readline input
-	Config *client.ConsoleConfig // Console configuration
+	Shell *readline.Instance // Console readline input
 }
 
 // newConsole - Instantiates a console with some default behavior
@@ -56,7 +55,6 @@ func newConsole() *console {
 func (c *console) Connect() (err error) {
 
 	// Load server connection configuration (check files in ~/.wiregost first, then binary)
-	// c.Config = assets.LoadConsoleConfig()
 	assets.LoadServerConfig()
 
 	// Connect to server via TLS
@@ -90,7 +88,7 @@ func (c *console) Connect() (err error) {
 func (c *console) Setup() {
 
 	// Console configuration (from server first, ~/.wiregost second)
-	c.Config = assets.LoadConsoleConfig()
+	// c.Config = assets.LoadConsoleConfig()
 
 	// Prompt
 	c.SetPrompt()

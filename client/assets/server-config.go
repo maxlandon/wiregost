@@ -135,6 +135,7 @@ func SaveConfig(config *serverConfig) (err error) {
 // HasBuiltinConfig - Check if console was compiled with default server configuration
 func HasBuiltinConfig() bool {
 	if HasBuiltinServer != "" {
+		fmt.Println("Server config: Found compile-time server values")
 		return true
 	}
 	return false
