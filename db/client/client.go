@@ -7,12 +7,15 @@ import (
 
 	"github.com/evilsocket/islazy/tui"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
+	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 	"github.com/maxlandon/wiregost/server/assets"
 )
 
 var (
 	// Users - User commands
 	Users dbpb.UserDBClient
+	// Certs - Certificate management
+	Certs serverpb.CertificateRPCClient
 )
 
 // RegisterDBClients - Binds all Database gRPC clients to another dedicated connection
