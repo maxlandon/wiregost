@@ -64,22 +64,22 @@ func (c *console) Connect() (err error) {
 	var cli client.ConnectionRPCClient
 	cli, context.Context.User, context.Context.ClientID = connection.Authenticate(conn)
 
-	// Print banner, user and client/server version information
-	c.PrintBanner(context.GetVersion(cli))
-
 	// Receive various infos sent by server when authenticated (ClientID, messages, users, version information, etc)
-	// info := context.SetConsoleContext(cli)
+	info := context.SetConsoleContext(cli)
 	context.SetConsoleContext(cli)
 
 	// Connect to database on another connection
 	dbcli.ConnectToDatabase("", 9000, "", "")
 	// dbcli.ConnectToDatabase(info.DBHost, int(info.DBPort), info.PublicKeyDB, info.PrivateKeyDB)
 
+	// Print banner, user and client/server version information
+	c.PrintBanner(context.GetVersion(cli), info)
+
 	// Register all gRPC clients with the connection
 	connection.RegisterRPCClients(conn)
 
 	// Listen for incoming server/implant events
-	c.StartEventListener(conn)
+	go c.StartEventListener(conn)
 
 	return nil
 }
@@ -139,6 +139,8 @@ func (c *console) Start() {
 // Refresh - Computes prompt and current context
 func (c *console) Refresh() {
 
+	// Recompute prompt
+	RefreshPrompt(Prompt, c.Shell)
 }
 
 // Readline - Add an empty line between input line and output

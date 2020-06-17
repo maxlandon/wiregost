@@ -16,31 +16,35 @@
 
 package console
 
+import (
+	"fmt"
+	"net"
+	"os"
+	"strconv"
+	"strings"
+
+	"github.com/evilsocket/islazy/tui"
+	"github.com/lmorg/readline"
+
+	"github.com/maxlandon/wiregost/client/assets"
+	"github.com/maxlandon/wiregost/client/context"
+)
+
 var (
 	// Prompt - The prompt object used by the console
-	Prompt prompt
+	Prompt *prompt
 )
 
 // prompt - Stores all variables necessary to the console prompt
 type prompt struct {
 	// Strings
-	Base struct { // Non custom prompt
-		Main  string
-		Ghost string
-	}
-	Custom struct { // Custom prompt
-		Main  string
-		Ghost string
-	}
-	Multiline struct { // Multiline prompts
-		Vim   string
-		Emacs string
-	}
-	// Variables
-	Workspace *string
-	Module    *string
-	Menu      *string
-	ServerIP  *string
+	BaseMain       string
+	BaseModule     string
+	BaseGhost      string
+	CustomMain     string
+	CustomGhost    string
+	MultilineEmacs string
+	MultilineVim   string
 	// Callbacks & Colors
 	Callbacks map[string]func() string
 	Effects   map[string]string
@@ -49,18 +53,236 @@ type prompt struct {
 // SetPrompt - Initializes the Prompt object
 func (c *console) SetPrompt() {
 
-	Prompt = prompt{} // Initialize
+	// Initialize
+	Prompt = &prompt{
+		BaseMain:       "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
+		BaseModule:     " {dim}=>{reset} {type}({mod})",
+		BaseGhost:      "{bddg}{fw}agent[{lb}{agent}]{reset} ",
+		CustomMain:     "",
+		CustomGhost:    "{dim}as {user}{bold}{y}@{reset}{host}/{rpwd} {dim}in {workspace}",
+		MultilineVim:   "{vim} > ",
+		MultilineEmacs: " > ",
+	}
+
 	setCallbacks(Prompt)
 
 	return
 }
 
 // setCallbacks - Initializes all callbacks for prompt
-func setCallbacks(prompt prompt) {
+func setCallbacks(prompt *prompt) {
+
+	// Colors
+	prompt.Effects = map[string]string{
+		"{bold}":  tui.BOLD,
+		"{dim}":   tui.DIM,
+		"{r}":     tui.RED,
+		"{g}":     tui.GREEN,
+		"{b}":     tui.BLUE,
+		"{y}":     tui.YELLOW,
+		"{fb}":    tui.FOREBLACK,
+		"{fw}":    tui.FOREWHITE,
+		"{bdg}":   tui.BACKDARKGRAY,
+		"{br}":    tui.BACKRED,
+		"{bg}":    tui.BACKGREEN,
+		"{by}":    tui.BACKYELLOW,
+		"{blb}":   tui.BACKLIGHTBLUE,
+		"{reset}": tui.RESET,
+
+		// Custom colors:
+		"{blink}": "\033[5m",
+		"{lb}":    "\033[38;5;117m",
+		"{db}":    "\033[38;5;24m",
+		"{bddg}":  "\033[48;5;237m",
+		"{ly}":    "\033[38;5;187m",
+	}
+
+	// Callbacks
+	prompt.Callbacks = map[string]func() string{
+		// Vim mode
+		"{vim}": func() string {
+			return ""
+		},
+
+		// Working directory
+		"{pwd}": func() string {
+			pwd, _ := os.Getwd()
+			return pwd
+		},
+		// Current Workspace
+		"{workspace}": func() string {
+			return tui.Blue(context.Context.Workspace.Name)
+		},
+		// Local IP address
+		"{localip}": func() string {
+			addrs, _ := net.InterfaceAddrs()
+			var ip string
+			for _, addr := range addrs {
+				network, ok := addr.(*net.IPNet)
+				if ok && !network.IP.IsLoopback() && network.IP.To4() != nil {
+					ip = network.IP.String()
+				}
+			}
+			return ip
+		},
+		"{serverip}": func() string {
+			return assets.ServerConfig.LHost
+		},
+		// Listeners
+		"{listeners}": func() string {
+			listeners := strconv.Itoa(context.Context.Jobs)
+			return listeners
+		},
+		// Agents
+		"{agents}": func() string {
+			agents := strconv.Itoa(context.Context.Ghosts)
+			return agents
+		},
+		// Current Module type
+		"{type}": func() string {
+			if len(context.Context.Module.Path) != 0 {
+				switch strings.Split(context.Context.Module.Path, "/")[0] {
+				case "post":
+					return "post"
+				case "exploit":
+					return "exploit"
+				case "auxiliary":
+					return "auxiliary"
+				case "payload":
+					return "payload"
+				}
+			}
+			return ""
+		},
+		// CurrentModule
+		"{mod}": func() string {
+			if len(context.Context.Module.Path) != 0 {
+				return tui.Red(tui.Bold(context.Context.Module.Path)) + tui.RESET
+			}
+			return ""
+			// return tui.Yellow(*prompt.currentModule) + tui.RESET
+		},
+		// Current agent
+		"{agent}": func() string {
+			return context.Context.Ghost.Name
+		},
+		// Agent username
+		"{user}": func() string {
+			return tui.RESET + tui.Bold(context.Context.Ghost.Username)
+		},
+		// Agent hostname
+		"{host}": func() string {
+			return tui.Bold(context.Context.Ghost.Hostname) + tui.RESET
+		},
+		// Agent cwd
+		"{rpwd}": func() string {
+			return tui.Blue(context.Context.Ghost.Pwd) + tui.RESET
+		},
+		// agent user ID
+		"{uid}": func() string {
+			return context.Context.Ghost.UID
+		},
+		// agent user group ID
+		"{gid}": func() string {
+			return context.Context.Ghost.GID
+		},
+		// agent process ID
+		"{pid}": func() string {
+			return strconv.Itoa(int(context.Context.Ghost.PID))
+		},
+		// agent C2 protocol
+		"{transport}": func() string {
+			// return context.Context.Ghost.Transports[0].LHost + ":" + strconv.Itoa(int(context.Context.Ghost.Transports[0].LPort))
+			return ""
+		},
+		// agent remote host:port address
+		"{address}": func() string {
+			// return context.Context.Ghost.Transports[0].RHost + ":" + strconv.Itoa(int(context.Context.Ghost.Transports[0].RPort))
+			return ""
+		},
+		// agent target OS
+		"{os}": func() string {
+			return context.Context.Ghost.OS
+		},
+		// agent target CPU Arch
+		"{arch}": func() string {
+			return context.Context.Ghost.Arch
+		},
+	}
 
 }
 
 // render - Computes all variables and outputs prompt
 func (p *prompt) render() (prompt string, multi string) {
-	return
+
+	ctx := context.Context
+
+	switch p.CustomMain {
+	// No custom prompt provided, use base
+	case "":
+		if len(ctx.Module.Path) != 0 {
+			// if len(commands.Context.Module.Path) != 0 {
+			prompt = p.BaseMain + p.BaseModule
+		} else {
+			prompt = p.BaseMain
+		}
+		if ctx.Menu == context.GHOST_CONTEXT {
+			// Check custom implant prompt provided
+			if p.CustomGhost == "" {
+				prompt = p.BaseGhost
+				// prompt = p.agent + p.Base.Ghost
+			} else {
+				prompt = p.CustomGhost
+				// prompt = p.agent + p.Custom.Ghost
+			}
+		}
+
+	// Custom provided, use it
+	default:
+		if len(ctx.Module.Path) != 0 {
+			// if len(commands.Context.Module.Path) != 0 {
+			prompt = p.CustomMain + ctx.Module.Path
+		} else {
+			prompt = p.CustomMain
+		}
+		if ctx.Menu == context.GHOST_CONTEXT {
+			// Check custom implant prompt provided
+			if p.CustomGhost == "" {
+				prompt = p.BaseGhost + p.CustomGhost
+				// prompt = p.agent + p.baseAgent
+			} else {
+				prompt = p.BaseGhost + p.CustomGhost
+				// prompt = p.agent + p.customAgent
+			}
+		}
+	}
+
+	// Set multiline based on input mode
+	multiline := p.MultilineEmacs
+
+	for tok, effect := range p.Effects {
+		prompt = strings.Replace(prompt, tok, effect, -1)
+		multiline = strings.Replace(multiline, tok, effect, -1)
+	}
+
+	for tok, cb := range p.Callbacks {
+		prompt = strings.Replace(prompt, tok, cb(), -1)
+		multiline = strings.Replace(multiline, tok, cb(), -1)
+	}
+
+	// make sure an user error does not screw all terminal
+	if !strings.HasPrefix(prompt, tui.RESET) {
+		prompt += tui.RESET
+	}
+
+	return prompt, multiline
+}
+
+// RefreshPrompt - Recompute prompt
+func RefreshPrompt(prompt *prompt, input *readline.Instance) {
+	p, _ := prompt.render()
+	_, m := prompt.render()
+	// fmt.Println()
+	fmt.Println(p)
+	input.SetPrompt(m)
 }
