@@ -36,7 +36,7 @@ func LoadServerConfig() error {
 	}
 
 	// Read config in file and fill values in builtin-config file
-	getDefaultServerConfig()
+	ServerConfig = getDefaultServerConfig()
 	// ReadConfigFile(GetConfigDir())
 
 	return nil
