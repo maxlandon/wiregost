@@ -56,7 +56,8 @@ func newConsole() *console {
 func (c *console) Connect() (err error) {
 
 	// Load server connection configuration (check files in ~/.wiregost first, then binary)
-	c.Config = assets.LoadConsoleConfig()
+	// c.Config = assets.LoadConsoleConfig()
+	assets.LoadServerConfig()
 
 	// Connect to server via TLS
 	conn, err := connection.ConnectTLS()

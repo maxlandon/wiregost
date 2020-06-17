@@ -15,6 +15,9 @@ var ServerLPort string
 // ServerUser - Username
 var ServerUser string
 
+// ServerCACertificate - CA Certificate
+var ServerCACertificate string
+
 // ServerCertificate - CA Certificate
 var ServerCertificate string
 
