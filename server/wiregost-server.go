@@ -20,6 +20,7 @@ import (
 	"github.com/maxlandon/wiregost/db"
 	dbcli "github.com/maxlandon/wiregost/db/client"
 	"github.com/maxlandon/wiregost/server/assets"
+	"github.com/maxlandon/wiregost/server/certs"
 	"github.com/maxlandon/wiregost/server/modules"
 	"github.com/maxlandon/wiregost/server/rpc"
 )
@@ -32,6 +33,9 @@ func main() {
 	// Check assets presence/unpacking
 	assets.SetupAssets()
 
+	// Load certificates management
+	certs.SetupCertificateAuthorities()
+
 	// Setup logging
 
 	// AutoMigrate & Setup Database, Start & Test Connection
@@ -39,8 +43,6 @@ func main() {
 
 	// Setup client connection to DB (the server is itself a client of the DB)
 	dbcli.ConnectServerToDB()
-
-	// Load certificates
 
 	// Load modules
 	modules.RegisterModules()

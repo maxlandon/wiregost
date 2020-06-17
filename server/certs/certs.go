@@ -52,6 +52,11 @@ func GetRSACertificate(caType string, commonName string) ([]byte, []byte, error)
 	return GetCertificate(caType, commonName, RSAKey)
 }
 
+// SaveCertificate - Save the certificate and the key in the file system
+func SaveCertificate(caType string, keyType string, commonName string, cert []byte, key []byte) (err error) {
+	return
+}
+
 // RemoveCertificate - Remove a certificate from the cert store
 func RemoveCertificate(caType string, keyType string, commonName string) (err error) {
 

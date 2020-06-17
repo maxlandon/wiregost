@@ -12,12 +12,12 @@ import (
 	"github.com/maxlandon/wiregost/server/assets"
 )
 
-// SetupCAs - Creates directories for certs
-func SetupCAs() {
-	// GenerateCertificateAuthority(ServerCA)
-	// GenerateCertificateAuthority(GhostCA)
-	// GenerateCertificateAuthority(UserCA)
-	// GenerateCertificateAuthority(HTTPSCA)
+// SetupCertificateAuthorities - Creates directories for certs
+func SetupCertificateAuthorities() {
+	GenerateCertificateAuthority(ServerCA)
+	GenerateCertificateAuthority(GhostCA)
+	GenerateCertificateAuthority(UserCA)
+	GenerateCertificateAuthority(HTTPSCA)
 }
 
 func getCertDir() string {

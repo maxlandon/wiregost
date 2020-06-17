@@ -43,13 +43,13 @@ func TestGhostGenerateRSACertificate(t *testing.T) {
 
 func TestOperatorGenerateCertificate(t *testing.T) {
 	GenerateCertificateAuthority(UserCA)
-	cert1, key1, err := OperatorClientGenerateCertificate("test3")
+	cert1, key1, err := UserClientGenerateCertificate("test3")
 	if err != nil {
 		t.Errorf("Failed to store ecc certificate %v", err)
 		return
 	}
 
-	cert2, key2, err := OperatorClientGetCertificate("test3")
+	cert2, key2, err := UserClientGetCertificate("test3")
 	if err != nil {
 		t.Errorf("Failed to get ecc certificate %v", err)
 		return

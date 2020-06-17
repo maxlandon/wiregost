@@ -5,8 +5,7 @@ import (
 	"path"
 
 	"golang.org/x/crypto/acme/autocert"
-
-	"github.com/maxlandon/wiregost/server/log"
+	// "github.com/maxlandon/wiregost/server/log"
 )
 
 const (
@@ -15,14 +14,14 @@ const (
 )
 
 var (
-	acmeLog = log.ServerLogger("certs", "acme")
+// acmeLog = log.ServerLogger("certs", "acme")
 )
 
 // GetACMEDir - Dir to store ACME certs
 func GetACMEDir() string {
 	acmePath := path.Join(getCertDir(), ACMEDirName)
 	if _, err := os.Stat(acmePath); os.IsNotExist(err) {
-		acmeLog.Infof("[mkdir] %s", acmePath)
+		// acmeLog.Infof("[mkdir] %s", acmePath)
 		os.MkdirAll(acmePath, os.ModePerm)
 	}
 	return acmePath
