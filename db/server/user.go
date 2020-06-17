@@ -11,7 +11,10 @@ type userServer struct {
 }
 
 func (*userServer) GetUsers(context.Context, *db.User) (*db.Users, error) {
-	return nil, nil
+	res := &db.Users{}
+	res.Users = append(res.Users, &db.User{Name: "wiregostlong", Password: []byte("wiregost")})
+	return res, nil
+	// return nil, nil
 }
 func (*userServer) AddUsers(context.Context, *db.AddUser) (*db.Added, error) {
 	return nil, nil

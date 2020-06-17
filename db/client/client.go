@@ -8,7 +8,7 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
-	"github.com/maxlandon/wiregost/server/assets"
+	// "github.com/maxlandon/wiregost/server/assets"
 )
 
 var (
@@ -43,10 +43,11 @@ func ConnectToDatabase(host string, port int, pub string, priv string) (err erro
 func ConnectServerToDB() (err error) {
 
 	// Certificates from server conf
-	conf := assets.ServerConfiguration
+	// conf := assets.ServerConfiguration
 	// cert := tls.LoadX509KeyPair(conf.PublicKeyDB, conf.PrivateKeyDB)
 
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", conf.DatabaseRPCHost, conf.DatabaseRPCPort), grpc.WithInsecure())
+	conn, err := grpc.Dial(fmt.Sprintf(":%d", 9000), grpc.WithInsecure())
+	// conn, err := grpc.Dial(fmt.Sprintf("%s:%d", conf.DatabaseRPCHost, conf.DatabaseRPCPort), grpc.WithInsecure())
 
 	// Register all DB clients
 	RegisterDBClients(conn)
