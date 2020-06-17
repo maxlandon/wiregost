@@ -78,7 +78,9 @@ message ConnectionInfo{
 message Version {
        string ServerMajor = 1;
        string ServerMinor = 2;
+       string ServerPatch = 6;
        string ServerCommitTag = 3;
        string ClientMajor = 4;
        string ClientMinor = 5;
+       string ClientPatch = 7;
 }

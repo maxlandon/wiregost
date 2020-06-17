@@ -34,7 +34,7 @@ func NewContextRPC() (ctx context.Context) {
 		ClientID:  Context.ClientID,
 		Workspace: Context.Workspace,
 		User:      Context.User,
-		Menu:      Context.Menu,
+		Menu:      &Context.Menu,
 		Ghost:     Context.Ghost,
 	}
 

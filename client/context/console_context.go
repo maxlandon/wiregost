@@ -16,18 +16,28 @@ var (
 	Context = newContext()
 )
 
+// Menu Contexts
+const (
+	// MAIN_CONTEXT - Available only in main menu
+	MAIN_CONTEXT = "main"
+	// MODULE_CONTEXT - Available only when a module is loaded
+	MODULE_CONTEXT = "module"
+	// GHOST_CONTEXT - Available only when interacting with a ghost implant
+	GHOST_CONTEXT = "ghost"
+)
+
 // ConsoleContext - Stores all variables needed for console context
 type ConsoleContext struct {
 	ClientID  uuid.UUID              // Unique user ID for module requests
 	User      dbpb.User              // User information sent back after auth
 	Shell     *readline.Instance     // Shell object
 	Config    clientpb.ConsoleConfig // Shell configuration
-	Menu      *string                // Current shell menu
+	Menu      string                 // Current shell menu
 	Workspace dbpb.Workspace         // Current workspace
 	Module    modulepb.Module        // Current module
 	Ghost     ghostpb.Ghost          // Current implant
-	Jobs      *int                   // Number of jobs
-	Ghosts    *int                   // Number of connected implants
+	Jobs      int                    // Number of jobs
+	Ghosts    int                    // Number of connected implants
 }
 
 func newContext() (ctx *ConsoleContext) {
@@ -52,6 +62,7 @@ func SetConsoleContext(cli clientpb.ConnectionRPCClient) (info *clientpb.Connect
 	// Context.Workspace = (*info.Workspace)
 	// *Context.Jobs = int(info.Jobs)
 	// *Context.Ghosts = int(info.Ghosts)
+	Context.Menu = MAIN_CONTEXT
 	return
 }
 

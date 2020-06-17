@@ -37,7 +37,8 @@ func ConnectTLS() (conn *grpc.ClientConn, err error) {
 
 	// Set gRPC options
 	creds := credentials.NewTLS(tlsConfig)
-	options := []grpc.DialOption{
+	_ = []grpc.DialOption{
+		// options := []grpc.DialOption{
 		grpc.WithTimeout(defaultTimeout),
 		grpc.WithTransportCredentials(creds),
 		grpc.WithBlock(),
@@ -46,9 +47,12 @@ func ConnectTLS() (conn *grpc.ClientConn, err error) {
 
 	// Dial server with these certificates
 	server := fmt.Sprintf("%s:%d", conf.LHost, conf.LPort)
-	conn, err = grpc.Dial(server, options...)
+	conn, err = grpc.Dial(server, grpc.WithInsecure())
+	// conn, err = grpc.Dial(server, options...)
+	if err != nil {
+		fmt.Println("Failed to connect to gRPC")
+	}
 
-	fmt.Println("test")
 	return
 }
 
