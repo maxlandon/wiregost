@@ -17,6 +17,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.8 // indirect
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/sirupsen/logrus v1.6.0
+	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
 	google.golang.org/grpc v1.29.1
 	google.golang.org/protobuf v1.21.0
 )

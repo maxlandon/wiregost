@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 
 	db "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
+	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 	"github.com/maxlandon/wiregost/server/assets"
 )
 
@@ -23,6 +24,7 @@ func StartRPCServices() (err error) {
 	db.RegisterUserDBServer(server, &userServer{})
 
 	// Certificates
+	serverpb.RegisterCertificateRPCServer(server, &certServer{})
 
 	// Serve (blocking)
 	server.Serve(lis)
