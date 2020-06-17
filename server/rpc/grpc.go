@@ -37,6 +37,6 @@ func ServeGRPC(server *grpc.Server) {
 	ln, _ := net.Listen("tcp", fmt.Sprintf("%s:%d", assets.ServerConfiguration.ServerHost, assets.ServerConfiguration.ServerPort))
 
 	// Start server
-	fmt.Println(tui.Green("Serving Wiregost gRPC server"))
+	fmt.Println(tui.Green("gRPC:") + " Wiregost server running")
 	server.Serve(ln)
 }

@@ -5,6 +5,7 @@ import (
 
 	"google.golang.org/grpc"
 
+	"github.com/evilsocket/islazy/tui"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	"github.com/maxlandon/wiregost/server/assets"
 )
@@ -46,6 +47,9 @@ func ConnectServerToDB() (err error) {
 
 	// Register all DB clients
 	RegisterDBClients(conn)
+
+	// Notify connection
+	fmt.Println(tui.Green("DB:") + " Wiregost server connected to DB")
 
 	return
 }
