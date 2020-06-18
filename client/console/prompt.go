@@ -64,6 +64,19 @@ func (c *console) SetPrompt() {
 		MultilineEmacs: " > ",
 	}
 
+	// Custom prompts
+	if c.Config.MainPrompt == "" {
+		Prompt.BaseMain = "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})"
+	} else {
+		Prompt.BaseMain = c.Config.MainPrompt
+	}
+	if c.Config.ImplantPrompt == "" {
+		Prompt.BaseGhost = "{bddg}{fw}agent[{lb}{agent}]{reset} "
+
+	} else {
+		Prompt.BaseGhost = c.Config.ImplantPrompt
+	}
+
 	setCallbacks(Prompt)
 
 	return

@@ -6,6 +6,7 @@ import (
 
 // LoadConsoleConfig - Loads the config file for the console and parse it
 func LoadConsoleConfig() (config *client.ConsoleConfig) {
+
 	return
 }
 

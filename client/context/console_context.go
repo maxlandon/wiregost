@@ -2,6 +2,7 @@ package context
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/lmorg/readline"
@@ -54,8 +55,8 @@ func newContext() (ctx *ConsoleContext) {
 	return
 }
 
-// SetConsoleContext - Set the context used by commands & shell
-func SetConsoleContext(cli clientpb.ConnectionRPCClient) (info *clientpb.ConnectionInfo) {
+// GetConnectionInfo - Set the context used by commands & shell
+func GetConnectionInfo(cli clientpb.ConnectionRPCClient) (info *clientpb.ConnectionInfo, config *clientpb.ConsoleConfig) {
 
 	// Info Request
 	info, _ = cli.GetConnectionInfo(context.Background(), &clientpb.ConnectionInfoRequest{}, grpc.EmptyCallOption{})
@@ -66,6 +67,10 @@ func SetConsoleContext(cli clientpb.ConnectionRPCClient) (info *clientpb.Connect
 	Context.Ghosts = int(info.Ghosts)
 	Context.Menu = MainMenu
 
+	// Get and use Console configuration
+	config = info.ConsoleConfig
+
+	fmt.Println(info)
 	return
 }
 

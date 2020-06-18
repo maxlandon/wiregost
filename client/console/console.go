@@ -40,14 +40,16 @@ var (
 
 // Console - Central object of the client UI
 type console struct {
-	Shell *readline.Instance // Console readline input
+	Shell  *readline.Instance // Console readline input
+	Config *client.ConsoleConfig
 }
 
 // newConsole - Instantiates a console with some default behavior
 func newConsole() *console {
 
 	console := &console{
-		Shell: readline.NewInstance(),
+		Shell:  readline.NewInstance(),
+		Config: &client.ConsoleConfig{},
 	}
 
 	return console
@@ -64,7 +66,10 @@ func (c *console) Connect() (err error) {
 	cli, context.Context.User = connection.Authenticate(conn)
 
 	// Receive various infos sent by server when authenticated (ClientID, messages, users, version information, etc)
-	info := context.SetConsoleContext(cli)
+	info, config := context.GetConnectionInfo(cli)
+
+	// Use console config received from the server
+	c.Config = config
 
 	// Connect to database on another connection
 	dbcli.ConnectToDatabase("", int(info.DBPort), info.PublicKeyDB, info.PrivateKeyDB)
@@ -83,9 +88,6 @@ func (c *console) Connect() (err error) {
 
 // Setup - Setup various elements of the console.
 func (c *console) Setup() {
-
-	// Console configuration (from server first, ~/.wiregost second)
-	// c.Config = assets.LoadConsoleConfig()
 
 	// Prompt
 	c.SetPrompt()

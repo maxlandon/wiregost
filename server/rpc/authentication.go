@@ -66,6 +66,10 @@ func (c *connectionServer) GetConnectionInfo(context.Context, *clientpb.Connecti
 		DBPort: int32(assets.ServerConfiguration.DatabaseRPCPort),
 		Jobs:   3,
 		Ghosts: 13,
+		ConsoleConfig: &clientpb.ConsoleConfig{
+			MainPrompt:    "",
+			ImplantPrompt: "",
+		},
 	}
 
 	return info, nil
