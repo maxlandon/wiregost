@@ -62,9 +62,10 @@ func SetConsoleContext(cli clientpb.ConnectionRPCClient) (info *clientpb.Connect
 
 	// Set fields (beware of nil fields in pb message)
 	// Context.Workspace = (*info.Workspace)
-	// Context.Jobs = int(info.Jobs)
-	// Context.Ghosts = int(info.Ghosts)
+	Context.Jobs = int(info.Jobs)
+	Context.Ghosts = int(info.Ghosts)
 	Context.Menu = MainMenu
+
 	return
 }
 

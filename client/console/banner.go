@@ -16,8 +16,8 @@ func (c *console) PrintBanner(ver *clientpb.Version, info *clientpb.ConnectionIn
 	userStr := fmt.Sprintf("Connected as user: %s%s%s", tui.YELLOW, context.Context.User.Name, tui.RESET)
 	// userStr := fmt.Sprintf("%-82vConnected as user: %s%s", 82, tui.YELLOW, context.Context.User.Name)
 	user := fmt.Sprintf("%-91s", userStr)
-	serverStr := fmt.Sprintf("Server address: %s%s:%d%s", tui.YELLOW, assets.ServerConfig.LHost, assets.ServerConfig.LPort, tui.RESET)
-	server := fmt.Sprintf("%-91s", serverStr)
+	serverStr := fmt.Sprintf("Server connection: %sok%s (%s%s:%d%s)", tui.GREEN, tui.RESET, tui.BLUE, assets.ServerConfig.LHost, assets.ServerConfig.LPort, tui.RESET)
+	server := fmt.Sprintf("%-100s", serverStr)
 
 	cliVerStr := fmt.Sprintf("Client version: %s%s.%s.%s%s", tui.YELLOW, ver.ClientMajor, ver.ClientMinor, ver.ClientPatch, tui.RESET)
 	cliVer := fmt.Sprintf("%-91s", cliVerStr)
@@ -26,7 +26,7 @@ func (c *console) PrintBanner(ver *clientpb.Version, info *clientpb.ConnectionIn
 	gitStr := fmt.Sprintf("Server commit tag: %s%s%s", tui.YELLOW, ver.ServerCommitTag, tui.RESET)
 	git := fmt.Sprintf("%-91s", gitStr)
 
-	dbStr := fmt.Sprintf("Connected to DB: %sok%s (%s%s:%d%s)", tui.GREEN, tui.RESET, tui.YELLOW, info.DBHost, int(info.DBPort), tui.RESET)
+	dbStr := fmt.Sprintf("Connected to DB: %sok%s (%s%s:%d%s)", tui.GREEN, tui.RESET, tui.BLUE, info.DBHost, int(info.DBPort), tui.RESET)
 	db := fmt.Sprintf("%-100s", dbStr)
 	confStr := fmt.Sprintf("Console configuration: %sok%s", tui.GREEN, tui.RESET)
 	conf := fmt.Sprintf("%-91s", confStr)
