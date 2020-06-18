@@ -1,6 +1,8 @@
 package context
 
 import (
+	"context"
+
 	"github.com/google/uuid"
 	"github.com/lmorg/readline"
 	"google.golang.org/grpc"
@@ -56,7 +58,7 @@ func newContext() (ctx *ConsoleContext) {
 func SetConsoleContext(cli clientpb.ConnectionRPCClient) (info *clientpb.ConnectionInfo) {
 
 	// Info Request
-	info, _ = cli.GetConnectionInfo(nil, &clientpb.ConnectionInfoRequest{}, grpc.EmptyCallOption{})
+	info, _ = cli.GetConnectionInfo(context.Background(), &clientpb.ConnectionInfoRequest{}, grpc.EmptyCallOption{})
 
 	// Set fields (beware of nil fields in pb message)
 	// Context.Workspace = (*info.Workspace)
@@ -68,6 +70,6 @@ func SetConsoleContext(cli clientpb.ConnectionRPCClient) (info *clientpb.Connect
 
 // GetVersion - Get client & server version information upon connection
 func GetVersion(cli clientpb.ConnectionRPCClient) (info *clientpb.Version) {
-	info, _ = cli.GetVersion(nil, &clientpb.Empty{}, grpc.EmptyCallOption{})
+	info, _ = cli.GetVersion(context.Background(), &clientpb.Empty{}, grpc.EmptyCallOption{})
 	return
 }

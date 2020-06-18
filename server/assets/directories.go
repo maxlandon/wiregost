@@ -16,8 +16,41 @@
 
 package assets
 
+import (
+	"os"
+	"os/user"
+	"path"
+)
+
+const (
+	// GoDirName - The directory to store the go compiler/toolchain files in
+	GoDirName       = "go"
+	goPathDirName   = "gopath"
+	versionFileName = "version"
+	dataDirName     = "data"
+	envVarName      = "WIREGOST_ROOT_DIR"
+	moduleDirPath   = "modules"
+	stagersDirName  = "stagers"
+)
+
 // GetRootAppDir - Returns the root directory for Wiregost data. Creates it if needed.
 func GetRootAppDir() (dir string) {
+
+	value := os.Getenv(envVarName)
+
+	if len(value) == 0 {
+		user, _ := user.Current()
+		dir = path.Join(user.HomeDir, ".wiregost")
+	} else {
+		dir = value
+	}
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, os.ModePerm)
+		if err != nil {
+			// setupLog.Fatalf("Cannot write to wiregost root directory %s", err)
+		}
+	}
 	return
 }
 
