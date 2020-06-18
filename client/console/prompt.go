@@ -226,7 +226,7 @@ func (p *prompt) render() (prompt string, multi string) {
 		} else {
 			prompt = p.BaseMain
 		}
-		if ctx.Menu == context.GHOST_CONTEXT {
+		if ctx.Menu == context.GhostMenu {
 			// Check custom implant prompt provided
 			if p.CustomGhost == "" {
 				prompt = p.BaseGhost
@@ -243,7 +243,7 @@ func (p *prompt) render() (prompt string, multi string) {
 		} else {
 			prompt = p.CustomMain
 		}
-		if ctx.Menu == context.GHOST_CONTEXT {
+		if ctx.Menu == context.GhostMenu {
 			// Check custom implant prompt provided
 			if p.CustomGhost == "" {
 				prompt = p.BaseGhost + p.CustomGhost // We keep agent[NAME] in both cases

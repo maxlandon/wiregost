@@ -25,9 +25,3 @@ func RegisterRPCClients(conn *grpc.ClientConn) (err error) {
 
 	return
 }
-
-// RegisterDBClients - Binds all Database gRPC clients to another dedicated connection
-func RegisterDBClients(conn *grpc.ClientConn) (err error) {
-
-	return
-}

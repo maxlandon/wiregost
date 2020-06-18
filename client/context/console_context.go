@@ -18,12 +18,12 @@ var (
 
 // Menu Contexts
 const (
-	// MAIN_CONTEXT - Available only in main menu
-	MAIN_CONTEXT = "main"
-	// MODULE_CONTEXT - Available only when a module is loaded
-	MODULE_CONTEXT = "module"
-	// GHOST_CONTEXT - Available only when interacting with a ghost implant
-	GHOST_CONTEXT = "ghost"
+	// MainMenu - Available only in main menu
+	MainMenu = "main"
+	// ModuleMenu - Available only when a module is loaded
+	ModuleMenu = "module"
+	// GhostMenu - Available only when interacting with a ghost implant
+	GhostMenu = "ghost"
 )
 
 // ConsoleContext - Stores all variables needed for console context
@@ -56,18 +56,18 @@ func newContext() (ctx *ConsoleContext) {
 func SetConsoleContext(cli clientpb.ConnectionRPCClient) (info *clientpb.ConnectionInfo) {
 
 	// Info Request
-	info, _ = cli.GetConnectionInfo(base, &clientpb.ConnectionInfoRequest{}, grpc.EmptyCallOption{})
+	info, _ = cli.GetConnectionInfo(nil, &clientpb.ConnectionInfoRequest{}, grpc.EmptyCallOption{})
 
 	// Set fields (beware of nil fields in pb message)
 	// Context.Workspace = (*info.Workspace)
-	// *Context.Jobs = int(info.Jobs)
-	// *Context.Ghosts = int(info.Ghosts)
-	Context.Menu = MAIN_CONTEXT
+	// Context.Jobs = int(info.Jobs)
+	// Context.Ghosts = int(info.Ghosts)
+	Context.Menu = MainMenu
 	return
 }
 
 // GetVersion - Get client & server version information upon connection
 func GetVersion(cli clientpb.ConnectionRPCClient) (info *clientpb.Version) {
-	info, _ = cli.GetVersion(base, &clientpb.Empty{}, grpc.EmptyCallOption{})
+	info, _ = cli.GetVersion(nil, &clientpb.Empty{}, grpc.EmptyCallOption{})
 	return
 }

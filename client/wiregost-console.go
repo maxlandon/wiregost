@@ -1,12 +1,16 @@
 package main
 
 import (
+	"github.com/maxlandon/wiregost/client/assets"
 	client "github.com/maxlandon/wiregost/client/console"
 )
 
 // Console executable entry
 func main() {
 
-	// Start the client console. Configuration loading, authentication, and connection info fetching is handled by this function.
+	// Load server connection configuration (check files in ~/.wiregost first, then binary)
+	assets.LoadServerConfig()
+
+	// Start the client console
 	client.Console.Start()
 }

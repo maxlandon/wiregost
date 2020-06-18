@@ -1,19 +1,11 @@
 package context
 
 import (
-	"context"
-
 	"github.com/maxlandon/wiregost/client/assets"
 	contextpb "github.com/maxlandon/wiregost/proto/v1/gen/go/context"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
 )
-
-var (
-	base = context.Background()
-)
-
-type MetadataKey struct{}
 
 // RPCContext - Holds all context metadata used in Wiregost, passed for each request made by a client console
 type RPCContext struct {

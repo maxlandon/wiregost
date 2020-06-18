@@ -21,7 +21,6 @@ import (
 
 	"github.com/lmorg/readline"
 
-	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/completers"
 	"github.com/maxlandon/wiregost/client/connection"
@@ -54,9 +53,6 @@ func newConsole() *console {
 // Connect - The console loads the server configuration, connects to it and attempts user authentication
 func (c *console) Connect() (err error) {
 
-	// Load server connection configuration (check files in ~/.wiregost first, then binary)
-	assets.LoadServerConfig()
-
 	// Connect to server via TLS
 	conn, err := connection.ConnectTLS()
 
@@ -69,8 +65,7 @@ func (c *console) Connect() (err error) {
 	context.SetConsoleContext(cli)
 
 	// Connect to database on another connection
-	dbcli.ConnectToDatabase("", 9000, "", "")
-	// dbcli.ConnectToDatabase(info.DBHost, int(info.DBPort), info.PublicKeyDB, info.PrivateKeyDB)
+	dbcli.ConnectToDatabase("", int(info.DBPort), info.PublicKeyDB, info.PrivateKeyDB)
 
 	// Print banner, user and client/server version information
 	c.PrintBanner(context.GetVersion(cli), info)

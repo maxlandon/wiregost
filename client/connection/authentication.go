@@ -20,21 +20,19 @@ func Authenticate(conn *grpc.ClientConn) (cli client.ConnectionRPCClient, user d
 
 	// Register ConnectionRPC client to connection
 	cli = client.NewConnectionRPCClient(conn)
+	md := cliCtx.SetMetadata()
 
-	// Send authentication request
+	// Send authentication request (loop 5 several attempts)
 	var counter int
-
-	// Loop for several attempts
 	for {
-		// User has 5 allowed attempts to authenticate
 		if counter < 5 {
 			// Prompt, store and send password (as a hash)
 			req := &client.AuthenticationRequest{}
-			req.Password = PromptUserPassword()
 			req.Username = assets.ServerUser
-			req.MD = cliCtx.SetMetadata()
+			req.Password = PromptUserPassword()
 
 			// Send request
+			req.MD = md
 			res, err := cli.Authenticate(context.Background(), req, grpc.EmptyCallOption{})
 
 			// If refused, try again (five tries)
@@ -71,20 +69,3 @@ func PromptUserPassword() (password string) {
 
 	return
 }
-
-var (
-	Info    = fmt.Sprintf("%s[-]%s ", tui.BLUE, tui.RESET)   // Info - All normal messages
-	Warn    = fmt.Sprintf("%s[!]%s ", tui.YELLOW, tui.RESET) // Warn - Errors in parameters, notifiable events in modules/sessions
-	Error   = fmt.Sprintf("%s[!]%s ", tui.RED, tui.RESET)    // Error - Error in commands, filters, modules and implants.
-	Success = fmt.Sprintf("%s[*]%s ", tui.GREEN, tui.RESET)  // Success - Success events
-
-	Infof   = fmt.Sprintf("%s[-] ", tui.BLUE)   // Infof - formatted
-	Warnf   = fmt.Sprintf("%s[!] ", tui.YELLOW) // Warnf - formatted
-	Errorf  = fmt.Sprintf("%s[!] ", tui.RED)    // Errorf - formatted
-	Sucessf = fmt.Sprintf("%s[*] ", tui.GREEN)  // Sucessf - formatted
-
-	RPCError     = fmt.Sprintf("%s[RPC Error]%s ", tui.RED, tui.RESET)     // RPCError - Errors from the server
-	CommandError = fmt.Sprintf("%s[Command Error]%s ", tui.RED, tui.RESET) // CommandError - Command input error
-	ParserError  = fmt.Sprintf("%s[Parser Error]%s ", tui.RED, tui.RESET)  // ParserError - Failed to parse some tokens in the input
-	DBError      = fmt.Sprintf("%s[DB Error]%s ", tui.RED, tui.RESET)      // DBError - Data Service error
-)
