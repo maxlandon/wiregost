@@ -28,18 +28,20 @@ func (c *connectionServer) Authenticate(ctx context.Context, req *clientpb.Authe
 	// Check DB for users matching
 	dbRes, _ := db.Users.GetUsers(ctx, &dbpb.User{Name: req.Username}, grpc.EmptyCallOption{})
 
-	// If no one found, failure and add to counter
+	// If no one found, remove client & increase counter (the counter will leave a trace of the token as key)
 	if dbRes == nil {
-		// Add 1 to attempt counter for this console
+
 		Clients.IncrementClientAttempts(temp.Token)
+		Clients.RemoveClient(temp.Token)
 
 		return &clientpb.Authentication{}, nil
 	}
 
 	// If password wrong, send back not ok, empty user and empty token
 	if string(dbRes.Users[0].Password) != req.Password {
-		// Add 1 to attempt counter for this console
+
 		Clients.IncrementClientAttempts(temp.Token)
+		Clients.RemoveClient(temp.Token)
 
 		return &clientpb.Authentication{}, nil
 	}
@@ -48,8 +50,10 @@ func (c *connectionServer) Authenticate(ctx context.Context, req *clientpb.Authe
 	res := &clientpb.Authentication{}
 	res.Success = true
 	res.Client = temp
-	res.Client.User = dbRes.Users[0]
 	res.Client.Token = req.MD.Token
+
+	res.Client.User = dbRes.Users[0]
+	res.Client.User.Online = true
 
 	return res, nil
 }
