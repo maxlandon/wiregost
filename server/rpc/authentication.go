@@ -8,6 +8,7 @@ import (
 	db "github.com/maxlandon/wiregost/db/client"
 	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
+	"github.com/maxlandon/wiregost/server/assets"
 )
 
 type connectionServer struct {
@@ -59,12 +60,19 @@ func (c *connectionServer) Authenticate(ctx context.Context, req *clientpb.Authe
 }
 
 func (c *connectionServer) GetConnectionInfo(context.Context, *clientpb.ConnectionInfoRequest) (*clientpb.ConnectionInfo, error) {
-	info := &clientpb.ConnectionInfo{}
+
+	info := &clientpb.ConnectionInfo{
+		DBHost: assets.ServerConfiguration.DatabaseRPCHost,
+		DBPort: int32(assets.ServerConfiguration.DatabaseRPCPort),
+		Jobs:   3,
+		Ghosts: 13,
+	}
 
 	return info, nil
 }
 
 func (c *connectionServer) GetVersion(context.Context, *clientpb.Empty) (*clientpb.Version, error) {
+
 	ver := &clientpb.Version{
 		ClientMajor:     "1",
 		ClientMinor:     "0",

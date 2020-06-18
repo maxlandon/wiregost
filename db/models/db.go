@@ -18,6 +18,7 @@ package models
 
 import (
 	"crypto/x509"
+	"fmt"
 
 	"github.com/jinzhu/gorm"
 )
@@ -29,6 +30,10 @@ var DB *gorm.DB
 
 // ConnectDatabase - Connect to PostgreSQL
 func ConnectDatabase(name, user, password string) (db *gorm.DB, err error) {
+
+	// Credentials
+	creds := fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=disable", "localhost", 5432, user, name, password)
+	DB, err = gorm.Open("postgres", creds)
 
 	// Check for DB in ~/.wiregost filesystem, init it if not present
 	if DatabaseNotSet() {

@@ -9,15 +9,14 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	db "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
-	// "github.com/maxlandon/wiregost/server/assets"
+	"github.com/maxlandon/wiregost/server/assets"
 )
 
 // StartRPCServices - Register all gRPC server components
 func StartRPCServices() (err error) {
 
 	// Setup & bind server connection
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", 9000))
-	// lis, err := net.Listen("tcp", fmt.Sprintf(":%d", assets.ServerConfiguration.DatabaseRPCPort))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", assets.ServerConfiguration.DatabaseRPCPort))
 
 	// gRPC
 	server := grpc.NewServer()

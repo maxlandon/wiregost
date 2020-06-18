@@ -51,7 +51,7 @@ func Setup() {
 func Start() error {
 
 	// Migrate Schema
-	MigrateShema(models.DB)
+	// MigrateShema(models.DB)
 
 	// Register & Start gRPC services (blocking)
 	server.StartRPCServices()
