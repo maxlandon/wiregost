@@ -62,7 +62,7 @@ func (c *console) Connect() (err error) {
 
 	// Authenticate (5 tries)
 	var cli client.ConnectionRPCClient
-	cli, context.Context.User, context.Context.ClientID = connection.Authenticate(conn)
+	cli, context.Context.User = connection.Authenticate(conn)
 
 	// Receive various infos sent by server when authenticated (ClientID, messages, users, version information, etc)
 	info := context.SetConsoleContext(cli)

@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -8,15 +9,14 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/evilsocket/islazy/tui"
-	"github.com/google/uuid"
 	"github.com/maxlandon/wiregost/client/assets"
-	"github.com/maxlandon/wiregost/client/context"
+	cliCtx "github.com/maxlandon/wiregost/client/context"
 	client "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 )
 
 // Authenticate - Perform full authentication process with server
-func Authenticate(conn *grpc.ClientConn) (cli client.ConnectionRPCClient, user dbpb.User, clientID uuid.UUID) {
+func Authenticate(conn *grpc.ClientConn) (cli client.ConnectionRPCClient, user dbpb.User) {
 
 	// Register ConnectionRPC client to connection
 	cli = client.NewConnectionRPCClient(conn)
@@ -32,8 +32,10 @@ func Authenticate(conn *grpc.ClientConn) (cli client.ConnectionRPCClient, user d
 			req := &client.AuthenticationRequest{}
 			req.Password = PromptUserPassword()
 			req.Username = assets.ServerUser
+			req.MD = cliCtx.SetMetadata()
 
-			res, err := cli.Authenticate(context.NewContextRPC(), req, grpc.EmptyCallOption{})
+			// Send request
+			res, err := cli.Authenticate(context.Background(), req, grpc.EmptyCallOption{})
 
 			// If refused, try again (five tries)
 			if res.Success == false {
@@ -47,10 +49,6 @@ func Authenticate(conn *grpc.ClientConn) (cli client.ConnectionRPCClient, user d
 				fmt.Println(tui.Red("Error during authentication request."))
 			}
 
-			// If success, store token, return
-			// fmt.Printf(Success+"Authenticated as user %s%s \n", tui.YELLOW, res.Client.User.Name)
-			user = *res.Client.User
-			clientID, _ = uuid.FromBytes([]byte(res.Client.Token))
 			return
 		}
 

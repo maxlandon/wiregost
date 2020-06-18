@@ -230,10 +230,8 @@ func (p *prompt) render() (prompt string, multi string) {
 			// Check custom implant prompt provided
 			if p.CustomGhost == "" {
 				prompt = p.BaseGhost
-				// prompt = p.agent + p.Base.Ghost
 			} else {
 				prompt = p.CustomGhost
-				// prompt = p.agent + p.Custom.Ghost
 			}
 		}
 
@@ -241,18 +239,16 @@ func (p *prompt) render() (prompt string, multi string) {
 	default:
 		if len(ctx.Module.Path) != 0 {
 			// if len(commands.Context.Module.Path) != 0 {
-			prompt = p.CustomMain + ctx.Module.Path
+			prompt = p.CustomMain + p.BaseModule
 		} else {
 			prompt = p.CustomMain
 		}
 		if ctx.Menu == context.GHOST_CONTEXT {
 			// Check custom implant prompt provided
 			if p.CustomGhost == "" {
-				prompt = p.BaseGhost + p.CustomGhost
-				// prompt = p.agent + p.baseAgent
+				prompt = p.BaseGhost + p.CustomGhost // We keep agent[NAME] in both cases
 			} else {
 				prompt = p.BaseGhost + p.CustomGhost
-				// prompt = p.agent + p.customAgent
 			}
 		}
 	}

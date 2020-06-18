@@ -23,3 +23,6 @@ var ServerCertificate string
 
 // ServerPrivateKey - Private key
 var ServerPrivateKey string
+
+// Token - A unique number for this client binary
+var Token string
