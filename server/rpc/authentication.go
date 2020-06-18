@@ -6,55 +6,62 @@ import (
 	"google.golang.org/grpc"
 
 	db "github.com/maxlandon/wiregost/db/client"
-	client "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
+	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 )
 
 type connectionServer struct {
-	*client.UnimplementedConnectionRPCServer
+	*clientpb.UnimplementedConnectionRPCServer
 }
 
-func (c *connectionServer) Authenticate(ctx context.Context, req *client.AuthenticationRequest) (*client.Authentication, error) {
+func (c *connectionServer) Authenticate(ctx context.Context, req *clientpb.AuthenticationRequest) (*clientpb.Authentication, error) {
+
+	// If already 5 attempts, do not go further
+	if ((*Clients.Unauthenticated)[req.MD.Token] != nil) && ((*Clients.ClientAttempts)[req.MD.Token] >= 5) {
+		return &clientpb.Authentication{}, nil
+	}
+
+	// Add client to clients map (it is temporary)
+	temp := &clientpb.Client{Token: req.MD.Token}
+	Clients.AddClient(*temp)
 
 	// Check DB for users matching
 	dbRes, _ := db.Users.GetUsers(ctx, &dbpb.User{Name: req.Username}, grpc.EmptyCallOption{})
+
+	// If no one found, failure and add to counter
 	if dbRes == nil {
-		return &client.Authentication{}, nil
+		// Add 1 to attempt counter for this console
+		Clients.IncrementClientAttempts(temp.Token)
+
+		return &clientpb.Authentication{}, nil
 	}
 
-	// Check password
+	// If password wrong, send back not ok, empty user and empty token
 	if string(dbRes.Users[0].Password) != req.Password {
-		return &client.Authentication{}, nil
+		// Add 1 to attempt counter for this console
+		Clients.IncrementClientAttempts(temp.Token)
+
+		return &clientpb.Authentication{}, nil
 	}
 
-	// If success, fill user info
-	res := &client.Authentication{}
+	// If success, fill user info, and send back token
+	res := &clientpb.Authentication{}
 	res.Success = true
-	res.Client = &client.Client{}
+	res.Client = temp
 	res.Client.User = dbRes.Users[0]
-
-	// Generate token
-	res.Client.Token = "test"
-
-	// Send back user information
-
-	// If error, send back not ok, empty user and empty token
-
-	// Substract try out of 5
+	res.Client.Token = req.MD.Token
 
 	return res, nil
-	// return &client.Authentication{}, nil
-	// return nil, nil
-	// return nil, status.Errorf(codes.Unimplemented, "method Authenticate not implemented")
 }
 
-func (c *connectionServer) GetConnectionInfo(context.Context, *client.ConnectionInfoRequest) (*client.ConnectionInfo, error) {
-	return &client.ConnectionInfo{}, nil
-	// return nil, status.Errorf(codes.Unimplemented, "method GetConnectionInfo not implemented")
+func (c *connectionServer) GetConnectionInfo(context.Context, *clientpb.ConnectionInfoRequest) (*clientpb.ConnectionInfo, error) {
+	info := &clientpb.ConnectionInfo{}
+
+	return info, nil
 }
 
-func (c *connectionServer) GetVersion(context.Context, *client.Empty) (*client.Version, error) {
-	ver := &client.Version{
+func (c *connectionServer) GetVersion(context.Context, *clientpb.Empty) (*clientpb.Version, error) {
+	ver := &clientpb.Version{
 		ClientMajor:     "1",
 		ClientMinor:     "0",
 		ClientPatch:     "0",
