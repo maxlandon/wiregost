@@ -3,8 +3,8 @@ package context
 import (
 	"context"
 
-	"github.com/google/uuid"
-
+	"github.com/maxlandon/wiregost/client/assets"
+	contextpb "github.com/maxlandon/wiregost/proto/v1/gen/go/context"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
 )
@@ -13,37 +13,28 @@ var (
 	base = context.Background()
 )
 
-const (
-	// MetadataKey - Used to reference the Data struct contained in the context
-	MetadataKey = "wiregost"
-)
+type MetadataKey struct{}
 
 // RPCContext - Holds all context metadata used in Wiregost, passed for each request made by a client console
 type RPCContext struct {
-	ClientID  uuid.UUID      // Unique number per console instance (for running modules, etc)
+	Token     string         // Unique number per console instance (for running modules, etc)
 	Workspace dbpb.Workspace // Current workspace
 	User      dbpb.User      // User owning the process context
-	Menu      *string        // Current shell menu
+	Menu      string         // Current shell menu
 	Ghost     ghostpb.Ghost  // Current implant
 }
 
-// NewContextRPC - Set the context used by gRPC calls
-func NewContextRPC() (ctx context.Context) {
+// SetMetadata - Set the context used by gRPC calls
+func SetMetadata() (new *contextpb.RPCContext) {
 
-	new := RPCContext{
-		ClientID:  Context.ClientID,
-		Workspace: Context.Workspace,
-		User:      Context.User,
-		Menu:      &Context.Menu,
-		Ghost:     Context.Ghost,
+	new = &contextpb.RPCContext{
+		Token:       assets.Token,
+		WorkspaceID: Context.Workspace.ID,
+		Username:    Context.User.Name,
+		Admin:       Context.User.Admin,
+		Menu:        Context.Menu,
+		GhostID:     Context.Ghost.ID,
 	}
 
-	ctx = context.WithValue(base, MetadataKey, new)
-
 	return
-}
-
-// GetMetadata - Used by the server and DB to get the context of a RPC call
-func GetMetadata(in context.Context) (ctx RPCContext) {
-	return in.Value(MetadataKey).(RPCContext)
 }

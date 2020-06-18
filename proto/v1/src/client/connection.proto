@@ -23,6 +23,7 @@ option go_package = "clientpb";
 import "db/user.proto";
 import "db/workspace.proto";
 import "client/console_config.proto";
+import "context/metadata.proto";
 
 // ConnectionRPC - All requests to connect a client and send information to it.
 service ConnectionRPC {
@@ -46,6 +47,8 @@ message Client {
 message AuthenticationRequest {
         string Username = 1;
         string Password = 2;
+
+        context.RPCContext MD = 10;
 }
 
 // Confirm/deny authentication, and send client ID & token
@@ -56,7 +59,9 @@ message Authentication {
 
 
 // ConnectionInfoRequest - Empty message to ask for further information
-message ConnectionInfoRequest {}
+message ConnectionInfoRequest {
+        context.RPCContext MD = 10;
+}
 
 // ConnectionDetails - Further information needed by the client
 message ConnectionInfo{
