@@ -17,7 +17,10 @@
 package console
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/lmorg/readline"
 
@@ -151,10 +154,23 @@ func Sanitize(line string) (sanitized []string, empty bool) {
 
 	// Catch eventual empty items
 
+	// Test
+	sanitized = strings.Split(line, " ")
+
 	return
 }
 
 // Exit - Kill the current client console
 func (c *console) Exit() {
 
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Confirm exit (Y/y): ")
+	text, _ := reader.ReadString('\n')
+	answer := strings.TrimSpace(text)
+
+	if (answer == "Y") || (answer == "y") {
+		os.Exit(0)
+	}
+
+	fmt.Println()
 }

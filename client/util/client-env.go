@@ -4,7 +4,7 @@ var ClientEnv = map[string]string{}
 
 // ParseEnvironmentVariables - Parses a line of input and replace detected environment variables with their values.
 func ParseEnvironmentVariables(args []string) (processed []string, err error) {
-	return
+	return args, nil
 }
 
 // handleCuratedVar - Replace an environment variable alone and without any undesired characters attached

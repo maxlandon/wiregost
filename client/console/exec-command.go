@@ -16,8 +16,25 @@
 
 package console
 
+import (
+	"fmt"
+
+	"github.com/evilsocket/islazy/tui"
+	"github.com/jessevdk/go-flags"
+
+	"github.com/maxlandon/wiregost/client/context"
+	"github.com/maxlandon/wiregost/client/util"
+)
+
 // ExecuteCommand - Dispatches an input line to its appropriate command.
 func (c *console) ExecuteCommand(args []string) error {
+
+	var cmd *flags.Command // Command detected and stored
+
+	// 2) If command is not found, handle special
+	if cmd == nil {
+		return c.ExecuteSpecialCommand(args)
+	}
 
 	// END: Reset variables for command options (go-flags)
 
@@ -26,5 +43,21 @@ func (c *console) ExecuteCommand(args []string) error {
 
 // ExecuteSpecialCommand - Handles all commands not registered to command parsers.
 func (c *console) ExecuteSpecialCommand(args []string) error {
+
+	switch context.Context.Menu {
+	// Check context for availability
+	case context.MainMenu, context.ModuleMenu:
+		switch args[0] {
+		case "exit":
+			c.Exit()
+			return nil
+			// Fallback: Use the system shell through the console
+		default:
+			return util.Shell(args)
+		}
+	}
+
+	fmt.Printf(CommandError+"Invalid command: %s%s \n", tui.YELLOW, args[0])
+
 	return nil
 }
