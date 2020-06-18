@@ -62,7 +62,6 @@ func (c *console) Connect() (err error) {
 
 	// Receive various infos sent by server when authenticated (ClientID, messages, users, version information, etc)
 	info := context.SetConsoleContext(cli)
-	context.SetConsoleContext(cli)
 
 	// Connect to database on another connection
 	dbcli.ConnectToDatabase("", int(info.DBPort), info.PublicKeyDB, info.PrivateKeyDB)

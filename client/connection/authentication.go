@@ -47,7 +47,7 @@ func Authenticate(conn *grpc.ClientConn) (cli client.ConnectionRPCClient, user d
 				fmt.Println(tui.Red("Error during authentication request."))
 			}
 
-			return
+			return cli, *res.Client.User
 		}
 
 		// If we go here, then user has tried five times unsuccessfully.

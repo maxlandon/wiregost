@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"crypto/tls"
 	"net"
 	"sync"
 
@@ -8,7 +9,6 @@ import (
 
 	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
-	"github.com/maxlandon/wiregost/server/assets"
 )
 
 var (
@@ -86,7 +86,8 @@ func (c *clients) GetUserClients(user *dbpb.User, username string) (clis []clien
 func StartClientListener(host string, port int) (server *grpc.Server, ln net.Listener, err error) {
 
 	// Get server config (certificates, etc)
-	config := LoadUserServerTLSConfig(assets.ServerConfiguration.ServerHost)
+	// config := LoadUserServerTLSConfig(assets.ServerConfiguration.ServerHost)
+	config := &tls.Config{}
 
 	// Logging
 

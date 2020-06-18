@@ -26,6 +26,8 @@ option go_package = "serverpb";
 service CertificateRPC {
         // GetCertificate - Ask DB for certificate.
         rpc GetCertificate(Get) returns (CertificateKeyPair);
+        // AddCertificate - Add a new CertificateKeyPair to the DB.
+        rpc AddCertificate(Add) returns (Added);
         // RemoveCertificate - Erase a certificate from DB.
         rpc RemoveCertificate(Remove) returns (Removed);
 }
@@ -38,11 +40,26 @@ message Get {
 // CertificateKeyPair - Used to store TLS certificates in DB and some calls
 message CertificateKeyPair {
         uint32 ID = 1;
+        // uint32 UserID = 6;
         string Hostname = 2;
-        // db.User User = 2;
         string KeyType = 3;
         bytes Certificate = 4;
         bytes PrivateKey = 5;
+}
+
+// Add - Add a new CertificateKeyPair to the DB.
+message Add {
+        // uint32 UserID = 6;
+        string Hostname = 2;
+        string KeyType = 3;
+        bytes Certificate = 4;
+        bytes PrivateKey = 5;
+}
+
+// Response
+message Added {
+        bool Added = 1;
+        CertificateKeyPair Cert = 2;
 }
 
 // Remove certificate

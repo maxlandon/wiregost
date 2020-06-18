@@ -39,10 +39,10 @@ func main() {
 	// Setup logging
 
 	// AutoMigrate & Setup Database, Start & Test Connection
-	go db.Start()
+	db.Setup()
 
-	// Setup client connection to DB (the server is itself a client of the DB)
-	dbcli.ConnectServerToDB()
+	// Start Database service
+	go db.Start()
 
 	// Load modules
 	modules.RegisterModules()
@@ -51,6 +51,9 @@ func main() {
 	modules.InitStacks()
 
 	// Start Persistent implants
+
+	// Setup client connection to DB (the server is itself a client of the DB)
+	dbcli.ConnectServerToDB()
 
 	// Start Listening for client consoles
 	rpc.StartClientListener(assets.ServerConfiguration.ServerHost, assets.ServerConfiguration.ServerPort)
