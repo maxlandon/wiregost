@@ -2,6 +2,7 @@ package certs
 
 import (
 	"bytes"
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -14,6 +15,11 @@ import (
 	"math/big"
 	"net"
 	"time"
+
+	"google.golang.org/grpc"
+
+	db "github.com/maxlandon/wiregost/db/client"
+	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 )
 
 const (
@@ -37,9 +43,16 @@ var (
 // GetCertificate - Get the PEM encoded certificate & key for a host
 func GetCertificate(caType string, keyType string, commonName string) (pub []byte, priv []byte, err error) {
 
-	// Ask DB to get certificate
+	cert := &serverpb.CertificateKeyPair{Hostname: commonName, KeyType: keyType}
+	in := &serverpb.Get{Cert: cert}
 
-	return
+	// Ask DB to get certificate
+	res, err := db.Certs.GetCertificate(context.Background(), in, grpc.EmptyCallOption{})
+	if err != nil {
+		return pub, priv, err
+	}
+
+	return res.Certificate, res.PrivateKey, nil
 }
 
 // GetECCCertificate - Get an ECC certificate
@@ -54,6 +67,16 @@ func GetRSACertificate(caType string, commonName string) ([]byte, []byte, error)
 
 // SaveCertificate - Save the certificate and the key in the file system
 func SaveCertificate(caType string, keyType string, commonName string, cert []byte, key []byte) (err error) {
+
+	add := &serverpb.Add{
+		KeyType:     keyType,
+		Hostname:    commonName,
+		Certificate: cert,
+		PrivateKey:  key,
+	}
+
+	_, err = db.Certs.AddCertificate(context.Background(), add, grpc.EmptyCallOption{})
+
 	return
 }
 

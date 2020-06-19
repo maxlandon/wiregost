@@ -31,7 +31,6 @@ func (c *connectionServer) Authenticate(ctx context.Context, req *clientpb.Authe
 
 	// If no one found, remove client & increase counter (the counter will leave a trace of the token as key)
 	if dbRes == nil {
-
 		Clients.IncrementClientAttempts(temp.Token)
 		Clients.RemoveClient(temp.Token)
 
@@ -40,7 +39,6 @@ func (c *connectionServer) Authenticate(ctx context.Context, req *clientpb.Authe
 
 	// If password wrong, send back not ok, empty user and empty token
 	if string(dbRes.Users[0].Password) != req.Password {
-
 		Clients.IncrementClientAttempts(temp.Token)
 		Clients.RemoveClient(temp.Token)
 
