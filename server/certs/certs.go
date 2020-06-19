@@ -43,7 +43,7 @@ var (
 // GetCertificate - Get the PEM encoded certificate & key for a host
 func GetCertificate(caType string, keyType string, commonName string) (pub []byte, priv []byte, err error) {
 
-	cert := &serverpb.CertificateKeyPair{Hostname: commonName, KeyType: keyType}
+	cert := &serverpb.CertificateKeyPair{CAType: caType, Hostname: commonName, KeyType: keyType}
 	in := &serverpb.Get{Cert: cert}
 
 	// Ask DB to get certificate
@@ -70,12 +70,16 @@ func SaveCertificate(caType string, keyType string, commonName string, cert []by
 
 	add := &serverpb.Add{
 		KeyType:     keyType,
-		Hostname:    commonName,
+		CAType:      caType,
+		Hostname:    caType + "." + commonName,
 		Certificate: cert,
 		PrivateKey:  key,
 	}
 
-	_, err = db.Certs.AddCertificate(context.Background(), add, grpc.EmptyCallOption{})
+	added, err := db.Certs.AddCertificate(context.Background(), add, grpc.EmptyCallOption{})
+	if added.Added == false {
+		return errors.New("There was an error adding the certificate")
+	}
 
 	return
 }

@@ -40,7 +40,7 @@ message Get {
 // CertificateKeyPair - Used to store TLS certificates in DB and some calls
 message CertificateKeyPair {
         uint32 ID = 1;
-        // uint32 UserID = 6;
+        string CAType = 6;
         string Hostname = 2;
         string KeyType = 3;
         bytes Certificate = 4;
@@ -49,7 +49,7 @@ message CertificateKeyPair {
 
 // Add - Add a new CertificateKeyPair to the DB.
 message Add {
-        // uint32 UserID = 6;
+        string CAType = 1;
         string Hostname = 2;
         string KeyType = 3;
         bytes Certificate = 4;

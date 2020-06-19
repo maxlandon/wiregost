@@ -17,7 +17,7 @@ type certServer struct {
 func (c *certServer) GetCertificate(ctx context.Context, in *serverpb.Get) (out *serverpb.CertificateKeyPair, err error) {
 
 	// Generally the in certificate just contains a host name
-	DB.Find(out).Where("hostname = ?", in.Cert.Hostname).Where("keytype = ?", in.Cert.KeyType)
+	DB.Find(out).Where("hostname = ?", in.Cert.Hostname).Where("catype = ?", in.Cert.CAType).Where("keytype = ?", in.Cert.KeyType)
 
 	if out == nil {
 		return nil, errors.New("No CertificateKeyPair matches for the certificate parameters given")
@@ -30,6 +30,7 @@ func (c *certServer) AddCertificate(ctx context.Context, in *serverpb.Add) (out 
 
 	// Create CertificateKeyPair object
 	cert := &serverpb.CertificateKeyPair{
+		CAType:      in.CAType,
 		Hostname:    in.Hostname,
 		KeyType:     in.KeyType,
 		Certificate: in.Certificate,
@@ -42,7 +43,7 @@ func (c *certServer) AddCertificate(ctx context.Context, in *serverpb.Add) (out 
 		return nil, errDB.GetErrors()[0]
 	}
 
-	out = &serverpb.Added{Cert: cert}
+	out = &serverpb.Added{Added: true, Cert: cert}
 	return
 }
 
