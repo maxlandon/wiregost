@@ -19,15 +19,6 @@ var (
 	Certs serverpb.CertificateRPCClient
 )
 
-// RegisterDBClients - Binds all Database gRPC clients to another dedicated connection
-func RegisterDBClients(conn *grpc.ClientConn) (err error) {
-
-	// User
-	Users = dbpb.NewUserDBClient(conn)
-
-	return
-}
-
 // ConnectToDatabase - Client method used by consoles and server to query DB remotely
 func ConnectToDatabase(host string, port int, pub string, priv string) (err error) {
 
@@ -54,6 +45,18 @@ func ConnectServerToDB() (err error) {
 
 	// Notify connection
 	fmt.Println(tui.Green("DB:") + " Wiregost server connected to DB")
+
+	return
+}
+
+// RegisterDBClients - Binds all Database gRPC clients to another dedicated connection
+func RegisterDBClients(conn *grpc.ClientConn) (err error) {
+
+	// User
+	Users = dbpb.NewUserDBClient(conn)
+
+	// Certs
+	Certs = serverpb.NewCertificateRPCClient(conn)
 
 	return
 }

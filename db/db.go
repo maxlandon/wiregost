@@ -17,7 +17,6 @@
 package db
 
 import (
-	"github.com/maxlandon/wiregost/db/models"
 	"github.com/maxlandon/wiregost/db/server"
 	"github.com/maxlandon/wiregost/server/assets"
 )
@@ -41,7 +40,7 @@ func Setup() {
 	}
 
 	// Connect to DB (no error checking, InitDatabase() already acts as a checker/automatic installer)
-	models.ConnectDatabase(conf.DBName, conf.DBUser, conf.DBPassword)
+	server.ConnectPostgreSQL(conf.DBName, conf.DBUser, conf.DBPassword)
 
 	// Load certificates/key pairs (stored in DB)
 

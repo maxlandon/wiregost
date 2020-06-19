@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package models
+package server
 
 import (
 	"crypto/x509"
@@ -28,8 +28,8 @@ import (
 // DB - The GORM DB instance
 var DB *gorm.DB
 
-// ConnectDatabase - Connect to PostgreSQL
-func ConnectDatabase(name, user, password string) (db *gorm.DB, err error) {
+// ConnectPostgreSQL - Connect to PostgreSQL
+func ConnectPostgreSQL(name, user, password string) (db *gorm.DB, err error) {
 
 	// Credentials
 	creds := fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=disable", "localhost", 5432, user, name, password)

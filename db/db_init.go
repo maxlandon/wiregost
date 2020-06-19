@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/maxlandon/wiregost/db/models"
+	"github.com/maxlandon/wiregost/db/server"
 	"github.com/maxlandon/wiregost/server/assets"
 )
 
@@ -17,7 +17,7 @@ func InitDatabase() (err error) {
 	conf := assets.ServerConfiguration
 
 	// Test connection
-	_, err = models.ConnectDatabase(conf.DBName, conf.DBUser, conf.DBPassword)
+	_, err = server.ConnectPostgreSQL(conf.DBName, conf.DBUser, conf.DBPassword)
 	if err != nil {
 		// Switch between various edge cases
 
