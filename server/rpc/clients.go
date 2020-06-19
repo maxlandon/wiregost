@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"crypto/tls"
 	"net"
 	"sync"
 
@@ -85,14 +84,10 @@ func (c *clients) GetUserClients(user *dbpb.User, username string) (clis []clien
 // StartClientListener - Listen for incoming console connections
 func StartClientListener(host string, port int) (server *grpc.Server, ln net.Listener, err error) {
 
-	// Get server config (certificates, etc)
-	// config := LoadUserServerTLSConfig(assets.ServerConfiguration.ServerHost)
-	config := &tls.Config{}
-
 	// Logging
 
 	// Setup gRPC server
-	server = SetupGRPC(config)
+	server = SetupGRPC()
 
 	// Register RPC Services
 	RegisterServices(server)

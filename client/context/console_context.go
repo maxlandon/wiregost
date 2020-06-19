@@ -2,7 +2,6 @@ package context
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/lmorg/readline"
@@ -70,7 +69,6 @@ func GetConnectionInfo(cli clientpb.ConnectionRPCClient) (info *clientpb.Connect
 	// Get and use Console configuration
 	config = info.ConsoleConfig
 
-	fmt.Println(info)
 	return
 }
 

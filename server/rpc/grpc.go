@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net"
 	"strconv"
@@ -13,7 +12,10 @@ import (
 )
 
 // SetupGRPC - Setup gRPC security, and register all RPC services
-func SetupGRPC(config *tls.Config) (server *grpc.Server) {
+func SetupGRPC() (server *grpc.Server) {
+
+	// Get server config (certificates, etc)
+	// config := LoadUserServerTLSConfig(assets.ServerConfiguration.ServerHost)
 
 	// Get & set credentials
 	// creds := credentials.NewTLS(config)
@@ -36,8 +38,8 @@ func SetupGRPC(config *tls.Config) (server *grpc.Server) {
 func ServeGRPC(server *grpc.Server) {
 
 	// Start listener
-	ln, _ := net.Listen("tcp", fmt.Sprintf("%s:%d", "localhost", 1708))
-	// ln, _ := net.Listen("tcp", fmt.Sprintf("%s:%d", assets.ServerConfiguration.ServerHost, assets.ServerConfiguration.ServerPort))
+	// ln, _ := net.Listen("tcp", fmt.Sprintf("%s:%d", "localhost", 1708))
+	ln, _ := net.Listen("tcp", fmt.Sprintf("%s:%d", assets.ServerConfiguration.ServerHost, assets.ServerConfiguration.ServerPort))
 
 	// Start server
 	fmt.Println(tui.Green("gRPC:") + " Wiregost server running on " + assets.ServerConfiguration.ServerHost + ":" + strconv.Itoa(assets.ServerConfiguration.ServerPort))
