@@ -1,19 +1,16 @@
-#
-# Makefile for Wiregost 
-#
+# -------------------------------------------------------------------------------------------------
+# 					Makefile for Wiregost 
+# -------------------------------------------------------------------------------------------------
+
 
 GO ?= go
 ENV = CGO_ENABLED=0
 TAGS = -tags netgo
-LDFLAGS = -ldflags '-s -w'
 
 # https://stackoverflow.com/questions/5618615/check-if-a-program-exists-from-a-makefile
 EXECUTABLES = protoc protoc-gen-go packr sed git zip go
 K := $(foreach exec,$(EXECUTABLES),\
         $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH")))
-
-GIT_DIRTY = $(shell git diff --quiet|| echo 'Dirty')
-GIT_VERSION = $(shell git rev-parse HEAD)
 
 SED_INPLACE := sed -i
 
@@ -22,82 +19,92 @@ ifeq ($(UNAME_S),Darwin)
 	SED_INPLACE := sed -i ''
 endif
 
+#
+# Version Information ------------------------------------------------------------------------------
+ 
+VERSION = 1.0.0
+COMPILED_AT = $(shell date +%s)
+RELEASES_URL = https://api.github.com/repos/maxlandon/wiregost/releases
+GIT_DIRTY = $(shell git diff --quiet|| echo 'Dirty')
+GIT_COMMIT = $(shell git rev-parse HEAD)
 
+# Client 
+CLIENT_PKG = github.com/maxlandon/wiregost/client/version
+CLIENT_LDFLAGS = -ldflags "-s -w \
+	-X $(CLIENT_PKG).Version=$(VERSION) \
+	-X $(CLIENT_PKG).CompiledAt=$(COMPILED_AT) \
+	-X $(CLIENT_PKG).GithubReleasesURL=$(RELEASES_URL) \
+	-X $(CLIENT_PKG).GitCommit=$(GIT_COMMIT) \
+	-X $(CLIENT_PKG).GitDirty=$(GIT_DIRTY)"
+
+# Server 
+SERVER_PKG = github.com/maxlandon/wiregost/server/version
+SERVER_LDFLAGS = -ldflags "-s -w \
+	-X $(SERVER_PKG).Version=$(VERSION) \
+	-X $(SERVER_PKG).CompiledAt=$(COMPILED_AT) \
+	-X $(SERVER_PKG).GithubReleasesURL=$(RELEASES_URL) \
+	-X $(SERVER_PKG).GitCommit=$(GIT_COMMIT) \
+	-X $(SERVER_PKG).GitDirty=$(GIT_DIRTY)"
+
+
+# TARGETS ------------------------------------------------------------------------------------------
+#
 .PHONY: macos
-macos: clean version proto 
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data-service
+macos: clean proto 
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server ./server
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
 
 .PHONY: linux
-linux: clean version proto 
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data-service
+linux: clean proto 
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server ./server
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
 
 .PHONY: windows
-windows: clean version proto 
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server.exe ./server
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console.exe ./client
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service.exe ./data-service
+windows: clean proto 
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server.exe ./server
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console.exe ./client
 
 
 #
-# Static builds were we bundle everything together ---------------------------------------------------
+# Static builds were we bundle everything together 
 #
 # MacOS 
 .PHONY: static-server-macos
-static-server-macos: clean version proto packr
+static-server-macos: clean proto packr
 	packr
 	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server ./server
 
 .PHONY: console-macos
-console-macos: clean version proto
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
-
-.PHONY: data-service-macos
-data-service-macos: clean version proto
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data-service
+console-macos: clean proto
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
 
 # Windows
 .PHONY: static-server-windows
-static-server-windows: clean version proto packr
+static-server-windows: clean proto packr
 	packr
 	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server.exe ./server
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server.exe ./server
 
 .PHONY: console-windows
-console-windows: clean version proto
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console.exe ./client
-
-.PHONY: data-service-windows
-data-service-windows: clean version proto
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service.exe ./data-service
+console-windows: clean proto
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console.exe ./client
 
 # Linux 
 .PHONY: static-server-linux
-static-server-linux: clean version proto packr
+static-server-linux: clean proto packr
 	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-server ./server
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server ./server
 
 .PHONY: console-linux
-console-linux: clean version proto 
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-console ./client
-
-.PHONY: data-service-linux
-data-service-linux: clean version proto
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(LDFLAGS) -o wiregost-data-service ./data-service
+console-linux: clean proto 
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
 
 
 # Accessory Makes ------------------------------------------------------------------------------------------
-.PHONY: version
-version:
-	printf "package version\n\nconst GitVersion = \"%s\"\n" $(GIT_VERSION) > ./client/version/version.go
-	printf "const GitDirty = \"%s\"\n" $(GIT_DIRTY) >> ./client/version/version.go
 
 .PHONY: packr
 packr:
@@ -105,19 +112,15 @@ packr:
 	packr
 	cd ..
 
-.PHONY: clean-version
-clean-version:
-	printf "package version\n\nconst GitVersion = \"\"\n" > ./client/version/version.go
-
 .PHONY: clean-all
-clean-all: clean clean-version
+clean-all: clean
 	rm -f ./assets/darwin/go.zip
 	rm -f ./assets/windows/go.zip
 	rm -f ./assets/linux/go.zip
 	rm -f ./assets/*.zip
 
 .PHONY: clean
-clean: clean-version
+clean: 
 	packr clean
 	rm -f ./protobuf/client/*.proto.go
 	rm -f ./protobuf/ghost/*.proto.go
