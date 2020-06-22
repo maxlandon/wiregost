@@ -291,7 +291,7 @@ func (p *prompt) render() (prompt string, multi string) {
 func RefreshPrompt(prompt *prompt, input *readline.Instance) {
 	p, _ := prompt.render()
 	_, m := prompt.render()
-	// fmt.Println()
+	fmt.Println()
 	fmt.Println(p)
 	input.SetPrompt(m)
 }

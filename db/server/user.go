@@ -18,8 +18,8 @@ type userServer struct {
 
 func (*userServer) GetUsers(context.Context, *db.User) (out *db.Users, err error) {
 
-	// Get users from db
-	DB.Find(&out.Users).Where("name = ?", "wiregost").Where("password = ?", "wiregost")
+	out = &db.Users{}
+	DB.Find(&out.Users)
 
 	return
 }

@@ -1,3 +1,4 @@
+// +build linux
 // Wiregost - Post-Exploitation & Implant Framework
 // Copyright © 2020 Para
 //
@@ -79,7 +80,6 @@ func (c *console) Connect() (err error) {
 
 	// Register all gRPC clients with the connection
 	connection.RegisterRPCClients(conn)
-
 	// Listen for incoming server/implant events
 	go c.StartEventListener(conn)
 
@@ -152,12 +152,24 @@ func (c *console) Readline() (line string, err error) {
 // Sanitize - Trims spaces and other unwished elements from the input line
 func Sanitize(line string) (sanitized []string, empty bool) {
 
+	// Assume the input is not empty
+	empty = false
+
 	// Trim border spaces
+	trimmed := strings.TrimSpace(line)
+	if len(line) < 1 {
+		empty = true
+		return
+	}
 
-	// Catch eventual empty items
+	unfiltered := strings.Split(trimmed, " ")
 
-	// Test
-	sanitized = strings.Split(line, " ")
+	// Catch any eventual empty items
+	for _, arg := range unfiltered {
+		if arg != "" {
+			sanitized = append(sanitized, arg)
+		}
+	}
 
 	return
 }

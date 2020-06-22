@@ -6,6 +6,8 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/context"
+	"github.com/maxlandon/wiregost/client/util"
+	"github.com/maxlandon/wiregost/client/version"
 	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 )
 
@@ -19,12 +21,12 @@ func (c *console) PrintBanner(ver *clientpb.Version, info *clientpb.ConnectionIn
 	serverStr := fmt.Sprintf("Server connection: %sok%s (%s%s:%d%s)", tui.GREEN, tui.RESET, tui.BLUE, assets.ServerConfig.LHost, assets.ServerConfig.LPort, tui.RESET)
 	server := fmt.Sprintf("%-100s", serverStr)
 
-	cliVerStr := fmt.Sprintf("Client version: %s%s.%s.%s%s", tui.YELLOW, ver.ClientMajor, ver.ClientMinor, ver.ClientPatch, tui.RESET)
-	cliVer := fmt.Sprintf("%-91s", cliVerStr)
-	serVerStr := fmt.Sprintf("Server version: %s%s.%s.%s%s", tui.YELLOW, ver.ServerMajor, ver.ServerMinor, ver.ServerPatch, tui.RESET)
-	serVer := fmt.Sprintf("%-91s", serVerStr)
-	gitStr := fmt.Sprintf("Server commit tag: %s%s%s", tui.YELLOW, ver.ServerCommitTag, tui.RESET)
-	git := fmt.Sprintf("%-91s", gitStr)
+	v := version.SemanticVersion()
+	cliVerStr := fmt.Sprintf("Client version: %s%d.%d.%d%s [%s%s%s]", tui.YELLOW, v[0], v[1], v[2], tui.RESET, util.Ctermfg210, version.GitCommit, tui.RESET)
+	cliVer := fmt.Sprintf("%-106s", cliVerStr)
+	serVerStr := fmt.Sprintf("Server version: %s%s.%s.%s%s [%s%s%s]", tui.YELLOW, ver.ServerMajor, ver.ServerMinor,
+		ver.ServerPatch, tui.RESET, util.Ctermfg210, ver.ServerCommitTag, tui.RESET)
+	serVer := fmt.Sprintf("%-106s", serVerStr)
 
 	dbStr := fmt.Sprintf("Connected to DB: %sok%s (%s%s:%d%s)", tui.GREEN, tui.RESET, tui.BLUE, info.DBHost, int(info.DBPort), tui.RESET)
 	db := fmt.Sprintf("%-100s", dbStr)
@@ -61,9 +63,9 @@ func (c *console) PrintBanner(ver *clientpb.Version, info *clientpb.ConnectionIn
                                                                                           ........................=..~..==.,=..:................
         %s......................:...+.~=.,~.....................
         %s........................=.,=,.~:.=...~................
-        %s.........................==.,=..=.....:...............
+                                                                                          .........................==.,=..=.....:...............
                                                                                           .....................~..=,.=......:...................
-`, user, server, cliVer, serVer, git)
+`, user, server, cliVer, serVer)
 
 	var bannerDatabaseConnection = fmt.Sprintf(`        %s......................,~....:...~~....................
         %s......................................................

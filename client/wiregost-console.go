@@ -13,4 +13,5 @@ func main() {
 
 	// Start the client console
 	client.Console.Start()
+
 }
