@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/grpc"
 
@@ -21,7 +22,7 @@ func CreateDefaultUser() (err error) {
 
 	// If error, we might have to check further instead of directly creating a new default user
 	if err != nil {
-
+		fmt.Println(err.Error())
 	}
 
 	// If nil, create user wiregost

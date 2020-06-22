@@ -38,10 +38,12 @@ func SetupGRPC() (server *grpc.Server) {
 func ServeGRPC(server *grpc.Server) {
 
 	// Start listener
-	// ln, _ := net.Listen("tcp", fmt.Sprintf("%s:%d", "localhost", 1708))
 	ln, _ := net.Listen("tcp", fmt.Sprintf("%s:%d", assets.ServerConfiguration.ServerHost, assets.ServerConfiguration.ServerPort))
 
 	// Start server
-	fmt.Println(tui.Green("gRPC:") + " Wiregost server running on " + assets.ServerConfiguration.ServerHost + ":" + strconv.Itoa(assets.ServerConfiguration.ServerPort))
+	fmt.Println(tui.Green("gRPC:") + " Wiregost server running on " +
+		assets.ServerConfiguration.ServerHost + ":" +
+		strconv.Itoa(assets.ServerConfiguration.ServerPort))
+
 	server.Serve(ln)
 }

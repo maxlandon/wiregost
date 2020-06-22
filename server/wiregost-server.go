@@ -17,6 +17,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/maxlandon/wiregost/db"
 	dbcli "github.com/maxlandon/wiregost/db/client"
 	"github.com/maxlandon/wiregost/server/assets"
@@ -43,6 +45,7 @@ func main() {
 
 	// Start Database service
 	go db.Start()
+	time.Sleep(time.Second * 2)
 
 	// Load modules
 	modules.RegisterModules()

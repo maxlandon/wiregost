@@ -3,7 +3,9 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 
+	"github.com/evilsocket/islazy/tui"
 	db "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 	"github.com/maxlandon/wiregost/server/certs"
@@ -14,22 +16,22 @@ type userServer struct {
 	*db.UnimplementedUserDBServer
 }
 
-func (*userServer) GetUsers(context.Context, *db.User) (*db.Users, error) {
-
-	res := &db.Users{}
-	res.Users = append(res.Users, &db.User{Name: "wiregostlong", Password: []byte("wiregost")})
+func (*userServer) GetUsers(context.Context, *db.User) (out *db.Users, err error) {
 
 	// Get users from db
-	// DB.Find(res.Users)
+	DB.Find(&out.Users).Where("name = ?", "wiregost").Where("password = ?", "wiregost")
 
-	return res, nil
+	return
 }
 
 func (*userServer) AddUsers(ctx context.Context, in *db.AddUser) (out *db.Added, err error) {
 
 	// Check if no user has the same name
 	var users []*db.User
-	DB.Find(users).Where("name = ?", in.User.Name)
+	errs := DB.Find(&users).Where("name = ?", in.User.Name).GetErrors()
+	if len(errs) != 0 {
+		fmt.Println(tui.Red("Error asking for users"))
+	}
 	if len(users) != 0 {
 		return nil, errors.New("User ")
 	}

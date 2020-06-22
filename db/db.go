@@ -30,12 +30,14 @@ func Setup() {
 	// Check required software is installed (PostgreSQL) and required access level.
 	err := CheckPostgreSQLAccess()
 	if err != nil {
-		// We will most likely exit with a precise message on the cause
-	}
-
-	// Create database and set all needed privileges
-	err = InitDatabase()
-	if err != nil {
+		switch err.Error() {
+		case ErrDatabaseDoesNotExist.Error(), ErrWiregostRoleDoesNotExist.Error():
+			// Create DB
+			err = InitDatabase()
+			if err != nil {
+				// We will most likely exit with a precise message on the cause
+			}
+		}
 		// We will most likely exit with a precise message on the cause
 	}
 
@@ -50,7 +52,7 @@ func Setup() {
 func Start() error {
 
 	// Migrate Schema
-	// MigrateShema(models.DB)
+	MigrateShema(server.DB)
 
 	// Register & Start gRPC services (blocking)
 	server.StartRPCServices()

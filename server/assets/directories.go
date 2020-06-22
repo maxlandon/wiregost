@@ -17,6 +17,7 @@
 package assets
 
 import (
+	"log"
 	"os"
 	"os/user"
 	"path"
@@ -31,6 +32,7 @@ const (
 	envVarName      = "WIREGOST_ROOT_DIR"
 	moduleDirPath   = "modules"
 	stagersDirName  = "stagers"
+	databaseDir     = "db_pg"
 )
 
 // GetRootAppDir - Returns the root directory for Wiregost data. Creates it if needed.
@@ -66,6 +68,16 @@ func GetDataDir() (dir string) {
 
 // GetDatabaseDir - Get the root directory where all DB-related files are. Creates it if needed.
 func GetDatabaseDir() (dir string) {
+
+	dir = path.Join(GetRootAppDir(), databaseDir)
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, os.ModePerm)
+		if err != nil {
+			log.Fatalf("Cannot write to Wiregost Data Service directory %s", err)
+		}
+	}
+
 	return
 }
 

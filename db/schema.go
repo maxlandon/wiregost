@@ -19,6 +19,7 @@ package db
 import (
 	"github.com/jinzhu/gorm"
 
+	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 )
 
@@ -26,13 +27,13 @@ import (
 func MigrateShema(db *gorm.DB) error {
 
 	// Log level
-	db.LogMode(true)
+	// db.LogMode(true)
 
 	// DB Options
 	db.Set("gorm:auto_preload", true) // Always load relationships for an object.
 
 	// Wiregost Users
-	db.AutoMigrate(serverpb.User{})
+	db.AutoMigrate(dbpb.User{})
 
 	// User, Server & Implant Certificates
 	db.AutoMigrate(serverpb.CertificateKeyPair{})

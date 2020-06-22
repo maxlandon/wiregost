@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 // This file defines the GORM DB instance used to query Wiregost' PostgreSQL Database
