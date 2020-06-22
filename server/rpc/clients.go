@@ -86,6 +86,9 @@ func StartClientListener(host string, port int) (server *grpc.Server, ln net.Lis
 
 	// Logging
 
+	// Checking for at least one user
+	err = CreateDefaultUser()
+
 	// Setup gRPC server
 	server = SetupGRPC()
 

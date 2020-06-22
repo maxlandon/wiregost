@@ -32,14 +32,12 @@ func CreateDefaultUser() (err error) {
 			Password: []byte("wiregost"),
 			Admin:    true,
 		}
-		created, err := db.Users.AddUsers(context.Background(), &dbpb.AddUser{User: user}, grpc.EmptyCallOption{})
+		created, err := db.Users.AddUsers(context.Background(), &dbpb.AddUser{WithConsoleFile: true, User: user}, grpc.EmptyCallOption{})
 		if err != nil || created.User == nil {
 			return err
 		}
 
 		// Log creation of a new default user (will be logged twice because DB does it also)
-
-		// Create a configuration file for wiregost and put it in ~/.wiregost-client/configs/
 
 		// Precompile a console for user wiregost
 

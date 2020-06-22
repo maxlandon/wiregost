@@ -51,10 +51,16 @@ message Users {
 // AddUser - Add a user.
 message AddUser {
         User User = 1;
+        bool WithConsoleFile = 2;
+        bool WithServerDefault = 3;
+        bool WithConsole = 4;
+        string BinaryName = 5;
+        bool Send = 6;
 }
 
 message Added {
         User User = 1;
+        bytes ConsoleBinary = 2;
 }
 
 // DeleteUser - Delete one or more users.
