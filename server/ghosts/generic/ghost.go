@@ -1,8 +1,8 @@
 package generic
 
 import (
+	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
-	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 )
 
 // Ghost - The base implementation for all implants in Wiregost.
@@ -14,7 +14,8 @@ type Ghost struct {
 }
 
 // NewGhost - Returns a ghost object, instantiated after an implant has registered.
-func NewGhost() (ghost *Ghost) {
+func NewGhost(new *ghostpb.Ghost) (ghost *Ghost) {
+	ghost = &Ghost{Proto: new}
 	return
 }
 
@@ -29,8 +30,8 @@ func (g *Ghost) OS() (os string) {
 }
 
 // Owner - Returns the Wiregost user owning the implant
-func (g *Ghost) Owner() (owner *serverpb.User) {
-	return
+func (g *Ghost) Owner() (owner *dbpb.User) {
+	return g.Proto.Owner
 }
 
 // Permissions - Returns who has the right to control this ghost
@@ -38,7 +39,7 @@ func (g *Ghost) Permissions() (perms ghostpb.Permissions) {
 	return
 }
 
-// Request - Sends a message to the ghost implant
-func (g *Ghost) Request() {
-
+// Info - Returns all informations for this ghost implant
+func (g *Ghost) Info() (info *ghostpb.Ghost) {
+	return g.Proto
 }
