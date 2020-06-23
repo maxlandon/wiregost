@@ -1,7 +1,6 @@
 package generic
 
 import (
-	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
 )
 
@@ -21,21 +20,6 @@ func NewGhost(new *ghostpb.Ghost) (ghost *Ghost) {
 
 // ID - Returns the implant ID
 func (g *Ghost) ID() (id uint32) {
-	return
-}
-
-// OS - Returns the ghost target operating system details
-func (g *Ghost) OS() (os string) {
-	return
-}
-
-// Owner - Returns the Wiregost user owning the implant
-func (g *Ghost) Owner() (owner *dbpb.User) {
-	return g.Proto.Owner
-}
-
-// Permissions - Returns who has the right to control this ghost
-func (g *Ghost) Permissions() (perms ghostpb.Permissions) {
 	return
 }
 

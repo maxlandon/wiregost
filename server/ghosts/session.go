@@ -3,7 +3,6 @@ package ghosts
 import (
 	"sync"
 
-	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
 	"github.com/maxlandon/wiregost/server/ghosts/generic"
 	"github.com/maxlandon/wiregost/server/ghosts/windows"
@@ -44,7 +43,7 @@ func NewGhost(new *ghostpb.Ghost) (g *Ghost) {
 	g.Execute = core
 
 	// Register OS-specific interfaces
-	switch g.Core.OS() {
+	switch g.Core.Info().OS {
 	case "windows":
 		g.Windows = windows.NewGhost(core)
 	case "linux":
@@ -73,11 +72,8 @@ func (g *ghosts) Add(new *Ghost) {
 // on Linux, Windows, BSD, etc, and have a different set of methods, as long as it
 // implements the base functions needed for a ghost session to run.
 type Core interface {
-	ID() (id uint32)                          // Session ID
-	Owner() (owner *dbpb.User)                // User owning the session
-	Permissions() (perms ghostpb.Permissions) // Who has the right to use implant
-	OS() (os string)                          // Session Operating system
-	Info() (info *ghostpb.Ghost)              // Information
+	ID() (id uint32)             // Session ID
+	Info() (info *ghostpb.Ghost) // Information
 
 	// Functions returning core and networking capabilities
 	// Transport()
