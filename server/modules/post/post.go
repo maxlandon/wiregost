@@ -24,7 +24,7 @@ import (
 // Post - A module dedicated to post-exploitation activities
 type Post struct {
 	*base.Module
-	Session ghosts.Session // Session is an interface accepting different implants
+	Session *ghosts.Ghost // Session is an interface accepting different implants
 }
 
 // NewPost - Instantiates a new post, and handles base module intanstantion
@@ -34,8 +34,8 @@ func NewPost() (post *Post) {
 }
 
 // GetSession - Returns the Session corresponding to the Post "Session" option.
-func (m *Post) GetSession() (err error) {
-	// m.Session.ID()
+func (m *Post) GetSession(id uint32) (err error) {
+	m.Session = ghosts.Ghosts.Get(id)
 	return
 }
 

@@ -2,6 +2,8 @@ package generic
 
 import corepb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core"
 
+type Net interface{}
+
 // IfConfig - Get target network interfaces
 func (g *Ghost) IfConfig() (net *corepb.IfConfig) {
 	return

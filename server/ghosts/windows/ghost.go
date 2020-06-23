@@ -10,6 +10,8 @@ type Ghost struct {
 	// Windows-specific objects, such as Registry, .NET, LDAP, etc...
 }
 
+type Windows interface{}
+
 // NewGhost - This function initializes all state necessary for a Windows implant to perform its functions.
 func NewGhost(new *generic.Ghost) (ghost *Ghost) {
 	ghost = &Ghost{
