@@ -103,6 +103,27 @@ static-server-linux: clean proto packr
 console-linux: clean proto 
 	GOOS=linux $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
 
+.PHONY: release
+release:
+	mkdir -p release-${VERSION}/linux
+	mkdir -p release-${VERSION}/macos
+	mkdir -p release-${VERSION}/windows
+
+	$(MAKE) console-linux
+	zip release-${VERSION}/linux/wiregost-console_linux.zip ./client/wiregost-console.go
+	$(MAKE) static-linux
+	zip release-${VERSION}/linux/wiregost-server_linux.zip ./server/wiregost-server.go
+
+	$(MAKE) macos
+	zip release-${VERSION}/macos/wiregost-console_macos.zip ./client/wiregost-console.go
+	$(MAKE) static-macos
+	zip release-${VERSION}/macos/wiregost-server_macos.zip ./server/wiregost-server.go
+
+	$(MAKE) windows
+	zip release-${VERSION}/windows/wiregost-console_windows.zip ./sliver-client.exe
+	$(MAKE) static-windows
+	zip release-${VERSION}/windows/wiregost-server_windows.zip ./server/wiregost-server.exe
+
 
 # Accessory Makes ------------------------------------------------------------------------------------------
 
