@@ -83,8 +83,4 @@ func (g *ghosts) Get(id uint32) (ghost *Ghost) {
 type Core interface {
 	ID() (id uint32)             // Session ID
 	Info() (info *ghostpb.Ghost) // Information
-
-	// Functions returning core and networking capabilities
-	// Transport()
-	// Route()
 }

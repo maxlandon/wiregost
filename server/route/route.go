@@ -1,8 +1,5 @@
 package route
 
-// stringNodes - Holds a list of nodes in string form
-type stringNodes []string
-
-// Route -
+// Route - Should be probably be deleted, because we might not need it
 type Route struct {
 }
