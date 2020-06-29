@@ -31,7 +31,7 @@ enum Protocol {
 
 // Route - A chain of nodes to use as proxies for a communication
 message Route {
-        int64 ID = 1;               // In case two end nodes serve the same subnet (ex: twice 192.168.1.1/24)
+        uint32 ID = 1;               // In case two end nodes serve the same subnet (ex: twice 192.168.1.1/24)
         repeated route.Node Nodes = 2;
 }
 
