@@ -103,6 +103,7 @@ static-server-linux: clean proto packr
 console-linux: clean proto 
 	GOOS=linux $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
 
+# All-In-One Release compilation & compression
 .PHONY: release
 release:
 	mkdir -p release-${VERSION}/linux
@@ -181,6 +182,7 @@ $(PROTOTOOL):
 	$(eval PROTOTOOL_TMP := $(shell mktemp -d))
 	cd $(PROTOTOOL_TMP); go get github.com/uber/prototool/cmd/prototool@$(PROTOTOOL_VERSION); 
 	cd $(PROTOTOOL_TMP); go get google.golang.org/protobuf/cmd/protoc-gen-go
+	# cd $(PROTOTOOL_TMP); go install github.com/grpc/grpc-go/cmd/protoc-gen-go-grpc       // Should not be needed because go.mod already has it
 	@rm -rf $(PROTOTOOL_TMP)
 	@rm -rf $(dir $(PROTOTOOL))
 	@mkdir -p $(dir $(PROTOTOOL))
