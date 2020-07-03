@@ -1,6 +1,10 @@
 package route
 
-import "time"
+import (
+	"time"
+
+	"github.com/maxlandon/wiregost/server/c2/route"
+)
 
 // NodeSelector - The node selector is used to perform filtering, strategy building and finally node selection,
 // between a list of Nodes. Various types of filters will be used on these NodeGroups, like implant ownership,
@@ -9,7 +13,7 @@ import "time"
 // Additionally: This NodeSelector performs as a pluggable strategy and filtering tool, and therefore many tools
 // and controls can be implemented in order to refine the routing process in Wiregost.
 type NodeSelector interface {
-	Select(nodes []Node, opts ...SelectOption) (Node, error)
+	Select(nodes []route.Node, opts ...SelectOption) (route.Node, error)
 }
 
 // SelectOption - Option used when making a select call
@@ -23,13 +27,13 @@ type SelectOptions struct {
 
 // Filter is used to filter a node during the selection process
 type Filter interface {
-	Filter([]Node) []Node // Filter will be particularly important.
+	Filter([]route.Node) []route.Node // Filter will be particularly important.
 	String() string
 }
 
 // Strategy is a selection strategy e.g random, round-robin.
 type Strategy interface {
-	Apply([]Node) Node
+	Apply([]route.Node) route.Node
 	String() string
 }
 
