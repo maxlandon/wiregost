@@ -1,8 +1,11 @@
 package route
 
-// Handler - A proxy server handler. Configures and runs the connection
+import "net"
+
+// Handler - A proxy server handler. Configures and runs the connection.
 type Handler interface {
 	Init(options ...HandlerOption)
+	Handle(net.Conn)
 }
 
 // HandlerOptions - All options available for a connection
