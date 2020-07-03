@@ -26,8 +26,8 @@ server/generate/a_generate-packr.go
 
 # Version (Makefile generated ) -------------------------------
 
-client/version/version.go 
-server/assets/version.go
+# client/version/version.go 
+# server/assets/version.go
 
 # Protobuf ----------------------------------------------------
 
