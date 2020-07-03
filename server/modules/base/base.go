@@ -19,15 +19,15 @@ package base
 import (
 	"github.com/sirupsen/logrus"
 
+	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
-	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 	"github.com/maxlandon/wiregost/server/log"
 )
 
 // Module - The base module, embedding a protobuf object
 type Module struct {
 	Proto  *modulepb.Module // Base module information
-	User   *serverpb.User   // The user who loaded the module
+	User   *dbpb.User       // The user who loaded the module
 	Logger *logrus.Entry    // Each module logs its ouput to the user's log file
 }
 

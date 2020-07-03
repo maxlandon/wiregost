@@ -16,10 +16,8 @@
 
 package modules
 
-import "github.com/maxlandon/wiregost/server/modules/post"
-
 // RegisterModules - Loads all modules from the 'modules/' directory
 func RegisterModules() {
-	test := post.NewPost()
-	test.GetSession()
+	// test := post.NewPost()
+	// test.GetSession()
 }

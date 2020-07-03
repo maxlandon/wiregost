@@ -2,6 +2,7 @@ package route
 
 import (
 	"net/url"
+	"time"
 
 	routepb "github.com/maxlandon/wiregost/proto/v1/gen/go/transport/route"
 )
@@ -25,6 +26,42 @@ type Node struct {
 	// Client           *Client
 	// marker           *failMarker
 	// Bypass           *Bypass
+}
+
+// MarkDead - Makes node fail status, and an optional error message
+func (n *Node) MarkDead() {
+}
+
+// ResetDead - Resets the node fail status
+func (n *Node) ResetDead() {
+}
+
+// Clone - Clones the node, will prevent data race
+func (n *Node) Clone() (clone Node) {
+	return
+}
+
+// Get returns node parameter specified by key.
+func (node *Node) Get(key string) string {
+	return node.Values.Get(key)
+}
+
+// GetBool converts node parameter value to bool.
+func (node *Node) GetBool(key string) (b bool) {
+	// b, _ := strconv.ParseBool(node.Values.Get(key))
+	return b
+}
+
+// GetInt converts node parameter value to int.
+func (node *Node) GetInt(key string) (n int) {
+	// n, _ := strconv.Atoi(node.Values.Get(key))
+	return n
+}
+
+// GetDuration converts node parameter value to time.Duration.
+func (node *Node) GetDuration(key string) (d time.Duration) {
+	// d, _ := time.ParseDuration(node.Values.Get(key))
+	return
 }
 
 // ToProtobuf - Helper function used to pack Node information and use it in DB/Comms/Requests
