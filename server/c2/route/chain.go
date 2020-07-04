@@ -44,3 +44,48 @@ func (c *Chain) ParseRoute(route routepb.Route) (err error) {
 	// c.IsRoute = true     // Should notify something like "this chain is locked or ready to be used"
 	return
 }
+
+// LastNode returns the last node of the node list.
+// If the chain is empty, an empty node will be returned.
+// If the last node is a node group, the first node in the group will be returned.
+func (c *Chain) LastNode() Node {
+	if c.IsEmpty() {
+		return Node{}
+	}
+	group := c.NodeGroups[len(c.NodeGroups)-1]
+	return group.Nodes[0]
+}
+
+// LastNodeGroup returns the last group of the group list.
+func (c *Chain) LastNodeGroup() *NodeGroup {
+	if c.IsEmpty() {
+		return nil
+	}
+	return c.NodeGroups[len(c.NodeGroups)-1]
+}
+
+// AddNode appends the node(s) to the chain.
+func (c *Chain) AddNode(nodes ...Node) {
+	if c == nil {
+		return
+	}
+	for _, node := range nodes {
+		c.NodeGroups = append(c.NodeGroups, NewNodeGroup(node))
+	}
+}
+
+// AddNodeGroup appends the group(s) to the chain.
+func (c *Chain) AddNodeGroup(groups ...*NodeGroup) {
+	if c == nil {
+		return
+	}
+	for _, group := range groups {
+		c.NodeGroups = append(c.NodeGroups, group)
+	}
+}
+
+// IsEmpty checks if the chain is empty.
+// An empty chain means that there is no proxy node or node group in the chain.
+func (c *Chain) IsEmpty() bool {
+	return c == nil || len(c.NodeGroups) == 0
+}
