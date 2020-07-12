@@ -1,4 +1,4 @@
-package ghost
+package rpc
 
 // Requests types
 const (

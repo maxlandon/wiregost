@@ -1,5 +1,5 @@
 
-## Wiregost Implants  
+## Wiregost Implant Code
 
 The `ghost` directory contains all code necessary to Wiregost implants. All compiled code in a ghost implant has a source here.
 
