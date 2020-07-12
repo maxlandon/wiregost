@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------------------------------
-# 					Makefile for Wiregost 
+# 					Wiregost Makefile 
 # -------------------------------------------------------------------------------------------------
 
 
@@ -50,17 +50,17 @@ SERVER_LDFLAGS = -ldflags "-s -w \
 # TARGETS ------------------------------------------------------------------------------------------
 #
 .PHONY: macos
-macos: clean proto 
+macos: clean proto tags
 	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server ./server
 	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
 
 .PHONY: linux
-linux: clean proto 
+linux: clean proto tags
 	GOOS=linux $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server ./server
 	GOOS=linux $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
 
 .PHONY: windows
-windows: clean proto 
+windows: clean proto tags
 	GOOS=windows $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server.exe ./server
 	GOOS=windows $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console.exe ./client
 
@@ -70,37 +70,37 @@ windows: clean proto
 #
 # MacOS 
 .PHONY: static-server-macos
-static-server-macos: clean proto packr
+static-server-macos: clean proto tags packr
 	packr
 	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
 	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server ./server
 
 .PHONY: console-macos
-console-macos: clean proto
+console-macos: clean proto tags
 	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
 
 # Windows
 .PHONY: static-server-windows
-static-server-windows: clean proto packr
+static-server-windows: clean proto tags packr
 	packr
 	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
 	GOOS=windows $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server.exe ./server
 
 .PHONY: console-windows
-console-windows: clean proto
+console-windows: clean proto tags
 	GOOS=windows $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console.exe ./client
 
 # Linux 
 .PHONY: static-server-linux
-static-server-linux: clean proto packr
+static-server-linux: clean proto tags packr
 	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
 	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
 	GOOS=linux $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server ./server
 
 .PHONY: console-linux
-console-linux: clean proto 
+console-linux: clean proto tags
 	GOOS=linux $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
 
 # All-In-One Release compilation & compression
@@ -115,12 +115,12 @@ release:
 	$(MAKE) static-linux
 	zip release-${VERSION}/linux/wiregost-server_linux.zip ./server/wiregost-server.go
 
-	$(MAKE) macos
+	$(MAKE) console-macos
 	zip release-${VERSION}/macos/wiregost-console_macos.zip ./client/wiregost-console.go
 	$(MAKE) static-macos
 	zip release-${VERSION}/macos/wiregost-server_macos.zip ./server/wiregost-server.go
 
-	$(MAKE) windows
+	$(MAKE) console-windows
 	zip release-${VERSION}/windows/wiregost-console_windows.zip ./sliver-client.exe
 	$(MAKE) static-windows
 	zip release-${VERSION}/windows/wiregost-server_windows.zip ./server/wiregost-server.exe
@@ -128,12 +128,28 @@ release:
 
 # Accessory Makes ------------------------------------------------------------------------------------------
 
+# proto is a target that uses prototool.
+# By depending on $(PROTOTOOL), prototool will be installed on the Makefile's path.
+# Since the path above has the temporary GOBIN at the front, this will use the
+# locally installed prototool.
+.PHONY: proto
+proto: $(PROTOTOOL)
+	cd proto/; prototool generate
+
+# Generate Struct tags with protoc-gen-tags-go. It is used after each 'make proto' invocation, and modifies
+# the generated pb.go files.
+.PHONY: tags 
+tags: 
+	./proto/generate-go-tags.sh
+
+# Pack all assets needed by the server (Go toolchain, modules code, etc)
 .PHONY: packr
 packr:
 	cd ./server/
 	packr
 	cd ..
 
+# Remove all unneeded/heavy files from the repository (usually assets)
 .PHONY: clean-all
 clean-all: clean
 	rm -f ./assets/darwin/go.zip
@@ -141,20 +157,9 @@ clean-all: clean
 	rm -f ./assets/linux/go.zip
 	rm -f ./assets/*.zip
 
-.PHONY: clean
-clean: 
-	packr clean
-	rm -f ./protobuf/client/*.proto.go
-	rm -f ./protobuf/ghost/*.proto.go
-	rm -f wiregost-console wiregost-server *.exe
-
-# Generate Struct tags with protoc-gen-tags-go
-.PHONY: tags 
-tags: 
-	./proto/generate-go-tags.sh
 
 
-# Prototool Compilation ------------------------------------------------------------------------------------------
+# Prototool Installation ------------------------------------------------------------------------------------
 
 SHELL := /bin/bash -o pipefail
 
@@ -188,10 +193,3 @@ $(PROTOTOOL):
 	@mkdir -p $(dir $(PROTOTOOL))
 	@touch $(PROTOTOOL)
 
-# proto is a target that uses prototool.
-# By depending on $(PROTOTOOL), prototool will be installed on the Makefile's path.
-# Since the path above has the temporary GOBIN at the front, this will use the
-# locally installed prototool.
-.PHONY: proto
-proto: $(PROTOTOOL)
-	cd proto/; prototool generate
