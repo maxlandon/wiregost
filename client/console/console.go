@@ -80,6 +80,7 @@ func (c *console) Connect() (err error) {
 
 	// Register all gRPC clients with the connection
 	connection.RegisterRPCClients(conn)
+
 	// Listen for incoming server/implant events
 	go c.StartEventListener(conn)
 

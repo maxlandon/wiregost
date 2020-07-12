@@ -1,6 +1,8 @@
 
 ## Implant Core 
 
+The `core/` directory contains two main things: 
+
 ----
 ### Implant entrypoints 
 
