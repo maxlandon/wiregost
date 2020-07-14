@@ -1,4 +1,4 @@
-package route
+package transport
 
 import "github.com/maxlandon/wiregost/server/c2/route"
 

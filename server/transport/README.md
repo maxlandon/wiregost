@@ -27,3 +27,7 @@ subpackages' READMEs, in the Wiki documentation or in the code.
 - `selector/`       - *Route*  Pluggable selection strategies, filters, permission controls, etc are in this package.
 - `connector/`      - *Network* Code for handling the application layer of a connection.
 - `transporter/`    - *Network* Code for handling the transport layer of a connection (handshake, etc...)
+- `dns/`            - Custom DNS C2 code (listeners, send/receive and boilerplate), copied from Sliver and slightly restructured.
+- `mtls/`           - Custom MTLS C2 code (Sliver)
+- `http/`           - Custom HTTP C2 code (Sliver)
+- `named_pipe/`     - Custom SMB named_pipe C2 code (Sliver)

@@ -2,7 +2,6 @@ package transporter
 
 import (
 	"crypto/tls"
-	"net"
 	"time"
 )
 
@@ -31,7 +30,3 @@ type HandshakeOptions struct {
 
 // HandshakeOption allows a common way to set HandshakeOptions.
 type HandshakeOption func(opts *HandshakeOptions)
-
-func Test() {
-	cc := net.Conn
-}
