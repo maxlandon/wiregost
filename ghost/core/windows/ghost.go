@@ -13,7 +13,7 @@ func main() {
 	assets.SetupImplantAssets()
 
 	// Init logging
-	log.SetupLog()
+	log.SetupLogging()
 
 	// Security -------------------------------------------------------------
 

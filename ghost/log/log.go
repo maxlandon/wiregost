@@ -1,6 +1,6 @@
 package log
 
-// SetupLog - Inits all logging infrastructure for implant
-func SetupLog() {
+// SetupLogging - Inits all logging infrastructure for implant
+func SetupLogging() {
 
 }

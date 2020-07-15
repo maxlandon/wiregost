@@ -2,6 +2,7 @@ package linux
 
 import (
 	"github.com/maxlandon/wiregost/ghost/assets"
+	"github.com/maxlandon/wiregost/ghost/core/generic/channels"
 	"github.com/maxlandon/wiregost/ghost/core/generic/evasion"
 	"github.com/maxlandon/wiregost/ghost/core/generic/info"
 	"github.com/maxlandon/wiregost/ghost/log"
@@ -13,7 +14,10 @@ func main() {
 	assets.SetupImplantAssets()
 
 	// Init logging
-	log.SetupLog()
+	log.SetupLogging()
+
+	// Multithreading
+	channels.SetupChannels()
 
 	// Security -------------------------------------------------------------
 
@@ -32,7 +36,7 @@ func main() {
 
 	// Set network security & credentials
 
-	// Reverse connect or bind listener
+	// Reverse connect or bind listener (goroutine, + send information)
 
 	// Register RPC services if listener
 
@@ -40,5 +44,6 @@ func main() {
 
 	// Other ----------------------------------------------------------------
 
-	// Monitor performance and resource usage, profiling
+	// Monitor performance and resource usage, profiling.
+	// Send reports to server every once in while. (blocking)
 }
