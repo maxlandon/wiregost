@@ -1,4 +1,4 @@
-package linux
+package main
 
 import (
 	"github.com/maxlandon/wiregost/ghost/assets"
@@ -6,6 +6,7 @@ import (
 	"github.com/maxlandon/wiregost/ghost/core/generic/evasion"
 	"github.com/maxlandon/wiregost/ghost/core/generic/info"
 	"github.com/maxlandon/wiregost/ghost/log"
+	"github.com/maxlandon/wiregost/ghost/profile"
 )
 
 func main() {
@@ -16,34 +17,42 @@ func main() {
 	// Init logging
 	log.SetupLogging()
 
-	// Multithreading
+	// Implant concurrency management.
 	channels.SetupChannels()
 
-	// Security -------------------------------------------------------------
+	// Security ----------------------------------------------------------------------------------
 
 	// Various Security checks (antivirus software running, etc)
 	evasion.SetupSecurity()
 
 	// Check/set limits
 
-	// Information ----------------------------------------------------------
+	// Information -------------------------------------------------------------------------------
 
 	// Ghost info, networks available, users connected, env variables
 	// Permissions, Owner, OS details, OS specific information.
 	info.LoadTargetInformation()
 
-	// Communications & Routing ---------------------------------------------
+	// Communications & Routing -----------------------------------------------------------------
 
 	// Set network security & credentials
+	// Authorisations to connect to listener, fake front pages/redirections
+	// credentials, certificates, etc...
 
 	// Reverse connect or bind listener (goroutine, + send information)
 
 	// Register RPC services if listener
 
-	// Open routes given by server
+	// Open routes given by server. Check all security details (fake pages,
+	// credentials and authorisations.)
 
-	// Other ----------------------------------------------------------------
+	// OS-Specific -----------------------------------------------------------------------------
+
+	// Windows: Load and setup all Windows-related objects/functions
+
+	// Other -----------------------------------------------------------------------------------
 
 	// Monitor performance and resource usage, profiling.
-	// Send reports to server every once in while. (blocking)
+	// (Sends reports to server every once in while.) (blocking)
+	profile.StartRuntimeControl()
 }
