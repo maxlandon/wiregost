@@ -4,30 +4,23 @@ ______
 
 ![Demo](./.github/images/welcome-ghost-1.0.0.png)
 
-
-## Overview
-
-Wiregost is currently developed in its version 1.0.0. It has gone through two major developments: a rewrite of Merlin, 
-then of Sliver, each time with the aim of enhancing the console UI part, by providing either better context, commands or 
-general interaction refreshments. Both projects (Merlin and Sliver) have laid foundations for the use of the Go language 
-for implant development. Moreover, they have done so while remaining well self-contained, thanks in part to the nature of Go.
-
-However, many strengths of the language and its ecosystem were not leveraged (network programming capacities combined 
-with Go's type system, UI libraries, ORM engines, etc), and I found these projects could benefit from a larger share of the 
-Go ecosystem, while retaining good operability and maintanability.
-
-At the same time, the increasing set of RPC frameworks available in Go (some of them being almost transport-agnostic) 
-ultimately called for an object/capacity model defined with Protobuf, so as to provide easy code generation for RPC frameworks, 
-but also to promote cross-language implant/tool development. Therefore, Protobuf is one of the pillars of Wiregost, as 
-explained in the [proto/ directory](https://github.com/maxlandon/wiregost/tree/v1.0.0/proto/).
+## Grounds 
 
 The combination of Go as a language, as a rich library ecosystem providing various networking capabilities, cross-platform functionality 
 and execution, is a solid ground for developing a powerful, robust, extensible, and maintainable post-exploitation framework.
 
+The grounds for the WireGost exploitation framework project are:
+* **Go is syntactically dead simple** and has a C-like object-model: This will lower the number of abstraction-layers-caused headaches.
+* Consequently, Go code is easily readable and maintainable. Go is strongly typed, which make Gophers winners on all fronts.
+* Go **compiles itself cross-platform**: Code compiled on a Linux machine will run _on virtually any architecture and operating system_.
+  The implications for payload efficiency are wide-ranging.
+* Go standard library includes what is probably the most advanced networking stack at the moment. Again, the implications for both framework
+  complexity and payload modularity are significant.
 
-## Architecture
 
-Wiregost's architecture rests on several pillars, aims and technologies: 
+## Pillars
+
+Wiregost's architecture rests on several aims and technologies: 
 
 - Protobuf for API definitions, PostgreSQL for storage, Go for runtime.
 - Go for simplicity, modularity, robustness and maintainability. 
@@ -36,19 +29,6 @@ Wiregost's architecture rests on several pillars, aims and technologies:
 - Database as a dual gRPC/REST service, for exposure to other tools.
 - Use of different RPC/transport stacks, per-implant.
 - Robust and powerful Console UI.
-
-
-## Codebase 
-
-* `client/`         - Console client code
-* `server/`         - C2 Server code
-* `ghost/`          - Implants code
-* `modules/`        - All modules available (implants, post, etc...)
-* `proto/`          - Protobuf messages (all objects/services used in all of Wiregost server/implants/console)
-* `db/`             - Database (as a service) code
-
-You can find a more through description of the code base in the [wiki page](https://github.com/maxlandon/wiregost/wiki/Code-Structure),
-or by browsing the repository: READMEs are available for pretty much all subpackages, explaining their role and contents.
 
 
 ## Install
@@ -63,6 +43,38 @@ Assuming two classes of persons:
 Documentation in Wiregost is available in several forms:
 - On the [Wiki](https://github.com/maxlandon/wiregost/wiki) of this repository.
 - README files, in all directories, explain the content and role of packages and source code.
+
+
+## Codebase 
+
+The following is an overview of Wiregost codebase's main directories:
+
+* `client/`         - Console client code
+* `server/`         - C2 Server code
+* `ghost/`          - Implants code
+* `modules/`        - All modules available (implants, post, etc...)
+* `proto/`          - Protobuf messages (all objects/services used in all of Wiregost server/implants/console)
+* `db/`             - Database (as a service) code
+
+You can find a more through description of the code base in the [wiki page](https://github.com/maxlandon/wiregost/wiki/Code-Structure),
+or by browsing the repository: READMEs are available for pretty much all subpackages, explaining their role and contents.
+
+
+## Project History 
+
+Wiregost is currently developed in its version 1.0.0. It has gone through two major developments: a rewrite of Merlin, 
+then of Sliver, each time with the aim of enhancing the console UI part, by providing either better context, commands or 
+general interaction refreshments. Both projects (Merlin and Sliver) have laid foundations for the use of the Go language 
+for implant development. Moreover, they have done so while remaining well self-contained, thanks in part to the nature of Go.
+
+However, many strengths of the language and its ecosystem were not leveraged (network programming capacities combined 
+with Go's type system, UI libraries, ORM engines, etc), and I found these projects could benefit from a larger share of the 
+Go ecosystem, while retaining good operability and maintanability.
+
+At the same time, the increasing set of RPC frameworks available in Go (some of them being almost transport-agnostic) 
+ultimately called for an object/capacity model defined with Protobuf, so as to provide easy code generation for RPC frameworks, 
+but also to promote cross-language implant/tool development. Therefore, Protobuf is one of the pillars of Wiregost, as 
+explained in the [proto/ directory](https://github.com/maxlandon/wiregost/tree/v1.0.0/proto/).
 
 
 ## Inspiration Sources
@@ -99,12 +111,9 @@ Thanks as warm as the sun are due to:
 * The **Merlin** project, with which I learned a lot too !
 
 
-<!-- ## Capacities  -->
+<!-- ## Capacity Set -->
 
-<!-- Most the features below are the same as [Sliver](https://github.com/BishopFox/sliver), as this project is mostly an enhancement of Sliver -->
-<!-- and an attempt at merging [Merlin](https://github.com/Ne0nd0g/merlin) post-exploitation modules (altough with enhancements as well). -->
-<!--  -->
-<!-- ### Infrastructure -->
+<!-- ### Server -->
 <!-- * [Secure C2](https://github.com/maxlandon/wiregost/wiki/Transport-Encryption) over mTLS, HTTP(S), and DNS -->
 <!-- * Metasploit-like workspaces -->
 <!-- * Mutiple consoles per user -->
