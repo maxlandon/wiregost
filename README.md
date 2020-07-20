@@ -2,7 +2,7 @@
 #                           <center>WireGost - Implant & Post-Exploitation Framework</center> 
 ______
 
-![Demo](./.github/images/console-greet.png)
+![Demo](./.github/images/welcome-ghost-1.0.0.png)
 
 
 ## Overview
