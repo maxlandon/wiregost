@@ -41,5 +41,6 @@ func (m *Post) GetSession(id uint32) (err error) {
 
 // CheckTarget - Check various elements about the target, for ensuring module can be run
 func (m *Post) CheckTarget() (err error) {
+
 	return
 }

@@ -28,16 +28,21 @@ type Ghost struct {
 	Execute    generic.Execute    // Generic execute methods
 }
 
-// NewGhost - A ghost implant has registered/connected: depending on its plaform and various other informations,
-// register the underlying ghost struct to all appropriate interfaces.
-// We return the object, because maybe in the caller function we want to register other interfaces, such as transport/RPC ones.
+// NewGhost - A ghost implant has registered/connected: depending on its plaform and various
+// other informations, register the underlying ghost struct to all appropriate interfaces.
+//
+// NOTE: This function does not take care of handling the initial registration messages that
+// contain all target/implant information. This means:
+// - Transport components are all up and running, with according security needs.
+// - All server-to-ghost RPC handlers are registered.
+// - This function registers the Ghost for usage by modules and console users.
 func NewGhost(new *ghostpb.Ghost) (g *Ghost) {
 
 	// New generic type
 	core := generic.NewGhost(new)
 
 	// For each Operating System, we carefully register all interfaces, so that we avoid
-	// potential clashes and mistakes at compile-time.
+	// potential clashes and mistakes at compile/run-time.
 	switch g.Core.Info().OS {
 	case "windows":
 		g.Core = core
