@@ -1,4 +1,4 @@
-package rpc
+package clients
 
 import (
 	"crypto/tls"

@@ -1,4 +1,4 @@
-package rpc
+package clients
 
 import (
 	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
