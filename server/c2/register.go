@@ -7,11 +7,19 @@ package c2
 // Generally, security details linked to the transport mechanism are already dealt with.
 func HandleGhostRegistration() {
 
+	// Custom C2 -----------------------------------------------------------------------------------
+
+	// MTLS/DNS read/write loops
+
+	// RPC frameworks ------------------------------------------------------------------------------
+
 	// Register RPC services/handlers if the ghost reverse-calls us (we are the server)
 
 	// If bind, then either we wait for registration message to come in, or we request it.
 
 	// This should include the logging infrastructure
+
+	// Implant Registration -------------------------------------------------------------------------
 
 	// Populate new ghostpb object with all registration info, and register user/module interfaces
 	// This means, at this point, that although all OS-specific commands are technically available,
@@ -20,11 +28,11 @@ func HandleGhostRegistration() {
 	// registrar := &ghostpb.Ghost{}
 	// registered := ghosts.NewGhost(registrar)
 
-	// Send all necessary information to Database
-
 	// Register/check ghost owner & permissions
 
 	// Register/instantiate/populate OS specific objects in the registered ghost.
 
 	// Send registration notification to user consoles
+
+	// Send all necessary information to Database
 }
