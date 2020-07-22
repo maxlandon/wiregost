@@ -38,7 +38,7 @@ type Ghost struct {
 // - This function registers the Ghost for usage by modules and console users.
 func NewGhost(new *ghostpb.Ghost) (g *Ghost) {
 
-	// New generic type
+	// New generic/base type, satisfies the Core interface
 	core := generic.NewGhost(new)
 
 	// For each Operating System, we carefully register all interfaces, so that we avoid
