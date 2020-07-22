@@ -8,8 +8,6 @@ import (
 
 	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
-	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
-	"github.com/maxlandon/wiregost/server/events"
 )
 
 var (
@@ -29,42 +27,6 @@ type consoles struct {
 	Connected       *map[string]*clientpb.Client
 	EventBrokers    *map[string]*eventBroker
 	mutex           *sync.Mutex
-}
-
-// eventBroker - A broker attached to a console, for pushing events.
-type eventBroker struct {
-}
-
-// Events - This makes the broker act as a GRPC service, which pushes events to a console
-func (b *eventBroker) Events(req *clientpb.Empty, stream serverpb.EventRPC_EventsServer) error {
-
-	// Subscribe to event broker in events package
-	incoming := events.EventBroker.Subscribe()
-	defer events.EventBroker.Unsubscribe(incoming)
-
-	// For each event coming in, check event type,
-	for event := range incoming {
-
-		// Depending on event type, we might have to push to several users/clients
-		switch event.Type {
-		case serverpb.EventType_USER:
-
-		case serverpb.EventType_MODULE:
-
-		case serverpb.EventType_SESSION:
-
-		case serverpb.EventType_LISTENER:
-
-		case serverpb.EventType_JOB:
-
-		case serverpb.EventType_STACK:
-
-		case serverpb.EventType_CANARY:
-
-		}
-	}
-
-	return nil
 }
 
 // GetClient - Find a client by UUID
