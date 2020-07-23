@@ -30,12 +30,12 @@ type Ghost struct {
 
 // NewGhost - A ghost implant has registered/connected: depending on its plaform and various
 // other informations, register the underlying ghost struct to all appropriate interfaces.
+// This function registers the Ghost for usage by modules and console users.
 //
 // NOTE: This function does not take care of handling the initial registration messages that
 // contain all target/implant information. This means:
 // - Transport components are all up and running, with according security needs.
 // - All server-to-ghost RPC handlers are registered.
-// - This function registers the Ghost for usage by modules and console users.
 func NewGhost(new *ghostpb.Ghost) (g *Ghost) {
 
 	// New generic/base type, satisfies the Core interface

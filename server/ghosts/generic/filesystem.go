@@ -2,7 +2,11 @@ package generic
 
 import corepb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core"
 
-// FileSystem - The base ghost type implements this interface
+// FileSystem - The base ghost type implements this interface providing access and control
+// to the target's filesystem.
+// All of these functions take care of packing a Protobuf request with details, and call
+// the appropriate RPC function for this Ghost implant. Then we process the response if needed
+// and return it.
 type FileSystem interface {
 	Ls(path string) (ls *corepb.Ls)
 	Cd(path string)

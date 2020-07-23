@@ -2,6 +2,7 @@ package generic
 
 import (
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
+	"github.com/maxlandon/wiregost/server/rpc"
 )
 
 // Ghost - The base implementation for all implants in Wiregost.
@@ -9,12 +10,17 @@ import (
 // This means its the bare minimum to identify and interact with an implant, and it
 // does not include any core capability.
 type Ghost struct {
-	Proto *ghostpb.Ghost
+	Proto   *ghostpb.Ghost
+	generic *rpc.GhostClient
 }
 
 // NewGhost - Returns a ghost object, instantiated after an implant has registered.
 func NewGhost(new *ghostpb.Ghost) (ghost *Ghost) {
-	ghost = &Ghost{Proto: new}
+	ghost = &Ghost{
+		Proto:   new,
+		generic: &rpc.GhostClient{},
+	}
+
 	return
 }
 
