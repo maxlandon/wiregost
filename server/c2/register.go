@@ -1,22 +1,22 @@
 package c2
 
-import (
-	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
-	"github.com/maxlandon/wiregost/server/ghosts"
-)
-
 // HandleGhostRegistration - Of all the process starting from TCP handshake to
 // complete registration and usage of the ghost implant by users, this function
 // is the first one that all implants, independently from their transports, target OS,
 // have in common.
 // Generally, security details linked to the transport mechanism are already dealt with.
-func HandleGhostRegistration() {
+// The Session paramater is a transport-layer connection, to which we register everything.
+func HandleGhostRegistration(sess *Session) {
 
 	// Custom C2 -----------------------------------------------------------------------------------
 
 	// MTLS/DNS read/write loops
 
 	// RPC frameworks ------------------------------------------------------------------------------
+
+	// Base RPC methods allow to exchange registration and information messages
+	// client := generic.NewClient(sess)
+	// client.Ls(context.Background(), corepb.LsRequest{})
 
 	// Register RPC services/handlers if the ghost reverse-calls us (we are the server)
 
@@ -30,8 +30,8 @@ func HandleGhostRegistration() {
 	// This means, at this point, that although all OS-specific commands are technically available,
 	// much of the implant state/information is not disseminated in the ghost object that will be
 	// further used by consoles/modules.
-	registrar := &ghostpb.Ghost{}
-	ghosts.NewGhost(registrar)
+	// registrar := &ghostpb.Ghost{}
+	// ghosts.NewGhost(registrar)
 
 	// Register/check ghost owner & permissions
 
