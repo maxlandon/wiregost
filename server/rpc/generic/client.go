@@ -1,21 +1,23 @@
 package generic
 
 import (
-	corepb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost/core"
-	"github.com/maxlandon/wiregost/server/context"
+	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
 )
 
 // Client - All generic RPC handlers.
 type Client struct {
 }
 
-// Ls - Send a Ls request to implant
-func (c *Client) Ls(ctx context.RPCContext, req corepb.LsRequest) (err error) {
+// C2Custom - The RPC stubs used are custom made (DNS/MTLS/HTTPS)
+func C2Custom(ghost ghostpb.Ghost) bool {
 
-	// Check permissions
+	// Here, we check the current transport type of the ghost implant
 
-	// Check if custom DNS/MTLS/HTTP
+	return false
+}
 
-	//
-	return
+// C2RPC - The RPC stubs are RPCX stubs (KCP, QUIC, HTTP, TCP)
+func C2RPC(ghost ghostpb.Ghost) bool {
+
+	return false
 }

@@ -1,6 +1,8 @@
 package rpc
 
-import "github.com/maxlandon/wiregost/server/rpc/generic"
+import (
+	"github.com/maxlandon/wiregost/server/rpc/generic"
+)
 
 // GhostClient - The RPC layer of a ghost implant connection. This layer is attached to a Ghost
 // type in the `ghosts` package. This makes an easier an more transparent way of switching the
