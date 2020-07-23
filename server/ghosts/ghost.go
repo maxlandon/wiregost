@@ -40,19 +40,19 @@ type Ghost struct {
 func NewGhost(new *ghostpb.Ghost) (g *Ghost) {
 
 	// New ghost base type
-	core := generic.NewGhost(new)
+	base := generic.NewGhost(new)
 
 	// Register core interfaces, generally working cross-platform
 	// through the generic.Ghost base type.
-	g.Core = core
-	g.FileSystem = core
-	g.Net = core
-	g.Proc = core
+	g.Core = base
+	g.FileSystem = base
+	g.Net = base
+	g.Proc = base
 
 	// OS-specific interfaces/objects
 	switch g.Core.Info().OS {
 	case "windows":
-		g.Windows = windows.NewGhost(core)
+		g.Windows = windows.NewGhost(base)
 	case "linux":
 	case "darwin":
 	}
