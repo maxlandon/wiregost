@@ -20,12 +20,18 @@ package module;
 
 option go_package = "modulepb";
 
+
+import "module/module.proto";
+import "module/stack.proto";
+
 // ModuleRPC - Module calls and responses between client and server.
 service ModuleRPC {
 
         // Module commands
+        rpc RunModule(ModuleActionRequest) returns (ModuleAction);
+        rpc SetOption(ModuleSetOptionRequest) returns (ModuleSetOption);
 
         // Stack commands
-
-        // Module events - A stream from server to client
+        rpc UseModule(StackUseRequest) returns (StackUse);
+        rpc PopModule(StackPopRequest) returns (StackPop);
 }
