@@ -33,9 +33,9 @@ type RPCContext struct {
 func NewContextRPC() (ctx context.Context) {
 
 	new := RPCContext{
-		ClientID: Context.ClientID,
-		User:     Context.User,
-		Ghost:    Context.Ghost,
+		// ClientID: Context.ClientID,
+		// User:     Context.User,
+		// Ghost:    Context.Ghost,
 	}
 
 	ctx = context.WithValue(base, MetadataKey, new)

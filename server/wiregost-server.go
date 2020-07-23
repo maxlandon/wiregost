@@ -23,8 +23,8 @@ import (
 	dbcli "github.com/maxlandon/wiregost/db/client"
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/certs"
+	"github.com/maxlandon/wiregost/server/clients"
 	"github.com/maxlandon/wiregost/server/modules"
-	"github.com/maxlandon/wiregost/server/rpc"
 )
 
 func main() {
@@ -59,5 +59,5 @@ func main() {
 	dbcli.ConnectServerToDB()
 
 	// Start Listening for client consoles
-	rpc.StartClientListener(assets.ServerConfiguration.ServerHost, assets.ServerConfiguration.ServerPort)
+	clients.StartClientListener(assets.ServerConfiguration.ServerHost, assets.ServerConfiguration.ServerPort)
 }
