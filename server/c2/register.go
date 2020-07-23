@@ -1,5 +1,10 @@
 package c2
 
+import (
+	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
+	"github.com/maxlandon/wiregost/server/ghosts"
+)
+
 // HandleGhostRegistration - Of all the process starting from TCP handshake to
 // complete registration and usage of the ghost implant by users, this function
 // is the first one that all implants, independently from their transports, target OS,
@@ -19,14 +24,14 @@ func HandleGhostRegistration() {
 
 	// This should include the logging infrastructure
 
-	// Implant Registration -------------------------------------------------------------------------
+	// Implant Registration ------------------------------------------------------------------------
 
 	// Populate new ghostpb object with all registration info, and register user/module interfaces
 	// This means, at this point, that although all OS-specific commands are technically available,
 	// much of the implant state/information is not disseminated in the ghost object that will be
 	// further used by consoles/modules.
-	// registrar := &ghostpb.Ghost{}
-	// registered := ghosts.NewGhost(registrar)
+	registrar := &ghostpb.Ghost{}
+	ghosts.NewGhost(registrar)
 
 	// Register/check ghost owner & permissions
 
