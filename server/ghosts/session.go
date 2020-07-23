@@ -24,8 +24,9 @@ type Ghost struct {
 	Core       Core               // All core information/data about this ghost implant
 	FileSystem generic.FileSystem // File system methods
 	Net        generic.Net        // Network info
-	Windows    windows.Windows    // Windows-specific: only available on Windows implants
+	Proc       generic.Proc       // Process information/manipulation
 	Execute    generic.Execute    // Generic execute methods
+	Windows    windows.Windows    // Windows-specific: only available on Windows implants
 }
 
 // NewGhost - A ghost implant has registered/connected: depending on its plaform and various
@@ -38,26 +39,22 @@ type Ghost struct {
 // - All server-to-ghost RPC handlers are registered.
 func NewGhost(new *ghostpb.Ghost) (g *Ghost) {
 
-	// New generic/base type, satisfies the Core interface
+	// New ghost base type
 	core := generic.NewGhost(new)
 
-	// For each Operating System, we carefully register all interfaces, so that we avoid
-	// potential clashes and mistakes at compile/run-time.
+	// Register core interfaces, generally working cross-platform
+	// through the generic.Ghost base type.
+	g.Core = core
+	g.FileSystem = core
+	g.Net = core
+	g.Proc = core
+
+	// OS-specific interfaces/objects
 	switch g.Core.Info().OS {
 	case "windows":
-		g.Core = core
-		g.FileSystem = core
-		g.Net = core
-		g.Execute = core
 		g.Windows = windows.NewGhost(core)
 	case "linux":
-		g.Core = core
-		g.FileSystem = core
-		g.Net = core
 	case "darwin":
-		g.Core = core
-		g.FileSystem = core
-		g.Net = core
 	}
 
 	// Add to connected ghosts
