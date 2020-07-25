@@ -30,14 +30,14 @@ A typical RPC stub would look like this:
 ```go
 func (c *Client) Ls(ctx context.Context, req corepb.LsRequest) (res corepb.Ls, err error) {
 
-        // Get fetch the metadata object in the context.
+        // Fetch the metadata object in the Context object
         // This metadata gives us information on the console's user that initiated the RPC stub, or the module's user.
         in := wctx.GetMetadata(ctx)
 
         // We check if the permissions for this implant allow it to perform the user's request
         ok, err := security.CheckPermissions(in.User, c.Ghost.ID)
         if !ok {
-                return nil, err
+                return nil, err // We return if not allowed 
         }
 
         // We use Protobuf for serialization
@@ -48,3 +48,25 @@ func (c *Client) Ls(ctx context.Context, req corepb.LsRequest) (res corepb.Ls, e
 
         return
 }
+```
+
+----
+### RPC Layer stubs: Their use case
+
+#### Modules
+
+In another package (the `ghosts/*` packages) we also declare methods for requesting implants to perform such or such task. For instance, the `LS()` function above has a sister equivalent in these packages:
+
+```go
+func (g *Ghost) Ls(path string) (ls *corepb.Ls) {
+	return
+}
+```
+
+This method will itself call the RPC's Ls() function. However, above method is *only meant to be used by module users/writers*: this means we want an easier programmatic access to implant functionality, while keeping away all details from the module writer. As well, the return values might be other than protobuf objects, for easier results reuse.
+
+
+#### Consoles 
+
+Console users have much different needs: they don't care about function calls, and the console directly handle loads of responses/objects for printing them later. 
+As well, for things like completion, we want to quickly & repeatedly call implant funcs, with performance and security needs but no programmatic concerns.
