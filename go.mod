@@ -9,6 +9,7 @@ require (
 	github.com/gobuffalo/packr v1.30.1
 	github.com/golang/protobuf v1.4.0
 	github.com/google/uuid v1.1.1
+	github.com/hashicorp/yamux v0.0.0-20200609203250-aecfd211c9ce
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jinzhu/gorm v1.9.12
 	github.com/kr/pretty v0.2.0 // indirect

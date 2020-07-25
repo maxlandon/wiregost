@@ -15,6 +15,18 @@ var (
 	}
 )
 
+/*
+ NOTE: ARCHITECTURE IS BUILT AROUND 4 CASES:
+--------------------------------------------------
+
+The client is the Wiregost server, talking to a in implant (server) on the target.
+    1) Target and client are both behind separate NATs
+    2) Target and client are both behind same NATs
+    3) Target is behind a NAT whereas the client isn't, and has a global IP address.
+    4) Client is behind a NAT whereas the target isn't, and has a global IP address.
+
+*/
+
 type sessions struct {
 	Connected *map[string]*Session // All implant transports currently connected
 	mutex     *sync.RWMutex
