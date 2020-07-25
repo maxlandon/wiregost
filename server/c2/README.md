@@ -17,13 +17,13 @@ stealth and core post-exploitation functionality. Therefore, many things have to
   or be handled in the same physical connection opened when it registered.
 - Therefore, and until a better, wider system is devised, all protocols used for pure implant requests/responses must
   be multiplexable, at the request of either end.
+- Finally, this multiplexing system allows for a clear/idiomatic separation of ghost implant sessions, even if they communicate over the same wire.
 
 The Go language and libraries allow us to multiplex connections for various transport/application protocols, such as
-TCP (and therefore, SOCKs), KDP (UDP), SCTP, HTTP, Named Pipes...
+TCP (and therefore, SOCKs), KCP (relying on UDP), SCTP, HTTP, Named Pipes...
 
-This is mainly thanks to libraries like [yamux](https://github.com/hashicorp/yamux) or [smux](https://github.com/xtaci/smux), which accept and/or output abstract objects (interfaces) like `net.Listener` and `net.Conn`, for the latter it is just a logical connection along others, in *the same physical connection*.
+This is mainly thanks to libraries like [yamux](https://github.com/hashicorp/yamux) or [smux](https://github.com/xtaci/smux), which accept and/or output abstract objects (interfaces) like `net.Listener` and `net.Conn`. For instance, the `net.Conn` object produced by these libraries is just a logical connection along others, in *the same physical connection*.
 
-Finally, this multiplexing system allows for a clear and logical separation of ghost implant sessions, even if they communicate over the same wire.
 
 ---
 ### Links between Implant Connections and the Routing System 
@@ -35,12 +35,13 @@ Therefore, these `net.Conn` should be easily usable from outside the `c2` direct
 ---
 ### Directory Contents 
 
+#### Subpackages
 - `dns/`        - DNS communications (does not support multiplexing, therefore no routes)
 - `mtls/`       - TCP + TLS communications (supports multiplexing)
 - `https/`      - HTTP(S) communications (supports multiplexing)
 - `sctp/`       - Stream Control Transport Protocol (supports multiplexing)
 
-
+#### Files 
 - `session.go`  - Any ghost connection, no matter the protocol, is represented and managed as a `Session` object.
 
 
