@@ -19,6 +19,7 @@ package post
 import (
 	"github.com/maxlandon/wiregost/server/ghosts"
 	"github.com/maxlandon/wiregost/server/modules/base"
+	"github.com/maxlandon/wiregost/server/security"
 )
 
 // Post - A module dedicated to post-exploitation activities
@@ -27,7 +28,7 @@ type Post struct {
 	Session *ghosts.Ghost // Session is an interface accepting different implants
 }
 
-// NewPost - Instantiates a new post, and handles base module intanstantion
+// NewPost - Instantiates a new post, and handles base module instantiation
 func NewPost() (post *Post) {
 	post = &Post{&base.Module{}, nil}
 	return
@@ -35,7 +36,18 @@ func NewPost() (post *Post) {
 
 // GetSession - Returns the Session corresponding to the Post "Session" option.
 func (m *Post) GetSession(id uint32) (err error) {
-	m.Session = ghosts.Ghosts.Get(id)
+
+	requested := ghosts.Ghosts.Get(id)
+	ghost := requested.Core.Info()
+
+	// We check permissions here and now, as we cannot pass
+	// the module's context to each implant method call in module
+	_, err = security.CheckCorePermissions(ghost, m.User)
+	if err != nil {
+		return
+	}
+	m.Session = requested
+
 	return
 }
 
