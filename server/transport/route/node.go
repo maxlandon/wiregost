@@ -69,6 +69,27 @@ func (n *Node) ToProtobuf() (proto routepb.Node) {
 	return
 }
 
+// HasMultiplexC2 - Each node is a ghost implant that can relay traffic. Check if the physical
+// connection already set for C2 communications can be multiplexed. This is not the case, for instance,
+// if the implants is talking over DNS.
+func (n *Node) HasMultiplexC2() bool {
+	return false
+}
+
+// PortListenerAllowed - According to the permissions set by its owner, the implant can also
+// open ports (TCP or UDP) for a listener dedicated to traffic routing. NOT OPSEC !!!!!!
+func (n *Node) PortListenerAllowed() bool {
+	return false
+}
+
+// PortDialerAllowed - According to the permissions set by its owner, the implant can also
+// open ports (TCP or UDP) for dialing other hosts on a (generally local network). It set
+// to true, this means we can route traffic inside one of the implant's subnets. If set to false,
+// that means routing is only allowed if it goes through another pivot's muxed connection.
+func (n *Node) PortDialerAllowed() bool {
+	return false
+}
+
 // ParseNode - Parses a Protobuf node object and returns a node usable by the routing system.
 func ParseNode(proto routepb.Node) (node Node, err error) {
 	return

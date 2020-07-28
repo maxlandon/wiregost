@@ -12,11 +12,13 @@ import (
 //   that cannot be used at the same time in a given chain.
 // - Use various selectors among these nodes. See Strategies & Filters
 type NodeGroup struct {
-	ID              uint32
-	Nodes           []Node
-	SelectorOptions []SelectOption
-	Selector        NodeSelector
-	mux             sync.RWMutex
+	ID          uint32
+	Name        string
+	Description string
+	Nodes       []Node
+	// SelectorOptions []selector.SelectOption
+	// Selector        selector.NodeSelector
+	mux sync.RWMutex
 }
 
 // NewNodeGroup - Creates a node group
@@ -34,11 +36,11 @@ func (g *NodeGroup) SetNodes(new ...Node) (old []Node) {
 }
 
 // SetSelector sets node selector with options for the group.
-func (group *NodeGroup) SetSelector(selector NodeSelector, opts ...SelectOption) {
-}
+// func (group *NodeGroup) SetSelector(selector NodeSelector, opts ...SelectOption) {
+// }
 
 // Next selects a node from group.
-func (group *NodeGroup) Next() (node Node, err error) {
+func (g *NodeGroup) Next() (node Node, err error) {
 	return
 }
 

@@ -61,6 +61,7 @@ func (c *Chain) SelectRoute() (route *Chain, err error) {
 		// Check bypass address for each node in group
 
 		// Check multiplex mode and cutoff the chain if yes
+		// OR if not multiplex, check that the implant node allows opening ports on the target.
 
 		// Add the node to route and add to Node list
 	}

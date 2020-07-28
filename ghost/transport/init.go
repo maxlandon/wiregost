@@ -1,4 +1,4 @@
-package c2
+package transport
 
 // InitGhostComms - This function starts all the required components of the implant C2.
 // It does not takes care of routing components.

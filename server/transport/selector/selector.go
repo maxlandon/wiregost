@@ -16,3 +16,7 @@ type Strategy interface {
 	Apply([]route.Node) route.Node
 	String() string
 }
+
+// type NodeSelector interface {
+//         Select(nodes []Node, opts ...SelectOption) (route.Node, error)
+// }

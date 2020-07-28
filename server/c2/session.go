@@ -1,7 +1,6 @@
 package c2
 
 import (
-	"net"
 	"sync"
 	"time"
 
@@ -32,8 +31,6 @@ type sessions struct {
 // used for non-pivoted implants, because any routed traffic will need this physical conn to multiplex.
 type Session struct {
 	ID        *uuid.UUID             // Identity of the related Ghost object
-	Conn      net.Conn               // A PHYSICAL connection to a ghost, which might be TCP,KCP,HTTP, etc...
-	Mux       *yamux.Session         // Allows implant to instantiate many streams over the same Conn
 	C2        *yamux.Stream          // A logical connection, reserved to the ghost's requests/responses
 	Send      chan []byte            // Outgoing messages
 	Resp      map[uint64]chan []byte // Incoming messages, checked for replay attacks
