@@ -26,6 +26,8 @@ const (
 	ModuleMenu = "module"
 	// GhostMenu - Available only when interacting with a ghost implant
 	GhostMenu = "ghost"
+	// CompilerMenu - Available only when setting up or compiling a ghost implant
+	CompilerMenu = "compiler"
 )
 
 // ConsoleContext - Stores all variables needed for console context

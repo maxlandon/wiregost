@@ -22,17 +22,42 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	"github.com/jessevdk/go-flags"
 
+	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/context"
 	"github.com/maxlandon/wiregost/client/util"
 )
 
 // ExecuteCommand - Dispatches an input line to its appropriate command.
-func (c *console) ExecuteCommand(args []string) error {
+func (c *console) ExecuteCommand(args []string) (err error) {
 
-	var cmd *flags.Command // Command detected and stored
+	ctx := context.Context // The Console Context
 
-	// 2) If command is not found, handle special
-	if cmd == nil {
+	// We redirect the input to the appropriate parser, depending on the console menu.
+	// The error returned might be several things, so we handle some cases later,
+	// like special commands
+	switch ctx.Menu {
+
+	case context.MainMenu:
+		_, err = commands.Main.ParseArgs(args)
+
+	case context.ModuleMenu:
+		_, err = commands.Module.ParseArgs(args)
+
+	case context.CompilerMenu:
+		_, err = commands.Compiler.ParseArgs(args)
+
+	case context.GhostMenu:
+		_, err = commands.Ghost.ParseArgs(args)
+	}
+
+	// If there is an error, cast it to a parser error
+	var parserErr *flags.Error
+	if err != nil {
+		parserErr = err.(*flags.Error) // We convert to a flag error
+	}
+
+	// If command is not found, handle special
+	if parserErr.Type == flags.ErrUnknownCommand {
 		return c.ExecuteSpecialCommand(args)
 	}
 

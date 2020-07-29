@@ -88,7 +88,7 @@ func (c *console) Connect() (err error) {
 }
 
 // Setup - Setup various elements of the console.
-func (c *console) Setup() {
+func (c *console) Setup() (err error) {
 
 	// Prompt
 	c.SetPrompt()
@@ -99,10 +99,14 @@ func (c *console) Setup() {
 	c.Shell.SyntaxHighlighter = completers.SyntaxHighlighter
 
 	// Env
-	util.LoadClientEnv()
+	err = util.LoadClientEnv()
+
+	// Context
 
 	// Commands
-	commands.Bind()
+	err = commands.InitParsers()
+
+	return
 }
 
 // Start - Start the console
