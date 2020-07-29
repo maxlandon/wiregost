@@ -1,5 +1,7 @@
 package security
 
+import "os"
+
 // Exit - The exit function to call when exiting the implant process. It takes care of all
 // cleanup and security checks necessary for an as-secure-as-possible exit.
 // As well, the behavior of this function can vary depending on ghost implant state, or on
@@ -9,4 +11,10 @@ package security
 // check permissions and other details.
 func Exit() {
 
+	secLog.Infof("Starting secure exit")
+
+	// Cutoff all Transports
+
+	// Exit process
+	os.Exit(0)
 }

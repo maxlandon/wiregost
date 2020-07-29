@@ -1,6 +1,11 @@
 package log
 
-import "github.com/sirupsen/logrus"
+import (
+	"github.com/sirupsen/logrus"
+)
+
+// PendingLogs - All log events not yet sent back to server
+var PendingLogs = []*logrus.Entry{}
 
 // HandleRemoteLog - When remote logging is activated, this function handles how to store the logs,
 // send them, find the good strategies and timing of reports.

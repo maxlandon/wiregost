@@ -1,14 +1,10 @@
 package log
 
-import "github.com/sirupsen/logrus"
+import (
+	"io/ioutil"
 
-// Compile-time variables
-var (
-	// DebugLocal - Local, command-line debugging
-	DebugLocal string
-
-	// DebugRemote - All logs are sent back to the server. Many timings/strategies possible
-	DebugRemote string
+	"github.com/maxlandon/wiregost/ghost/assets"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -33,12 +29,16 @@ func ghostLogger() (logger *logrus.Logger) {
 	logger = logrus.New()
 	logger.Formatter = &logrus.TextFormatter{}
 
-	// Add local and remote hooks
-	logger.AddHook(NewTxtHook("ghost", logger))
-
+	// Desactivate local print
 	// Change output sources, make them nil by default:
 	// We must be sure that no log is output to a source
 	// we do not control, or that we did not explictly allowed.
+	if assets.DebugLocal != "true" {
+		logger.Out = ioutil.Discard
+	}
+
+	// Add local and remote hooks
+	logger.AddHook(NewRemoteLogger("ghost", logger))
 
 	return
 }
