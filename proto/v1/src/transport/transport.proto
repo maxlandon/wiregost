@@ -33,20 +33,23 @@ enum Protocol {             // Identify Protocol
         PIPE = 5;
 }
 
+// Type - // Do we start a listener on the implant, or do we reach back another address ?
+enum Type {                 
+        REVERSE = 0;
+        BIND = 1;
+}
+
 // Transport - A transport is just a structure used by implants to receive/send/use transport configurations.
 message Transport {
-        int32 ID = 1;
+        int64 ID = 1;
         string LHost = 3;
         int32 LPort = 4;
         string RHost = 5;
         int32 RPort = 6;
         Protocol Protocol = 7;
+        Type Type = 8;
         bool Default = 10;
-
-        enum Type {                 // Do we start a listener on the implant, or do we reach back another address ?
-                REVERSE = 0;
-                BIND = 1;
-        }
+        
 }
 
 
