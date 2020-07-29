@@ -3,8 +3,8 @@ package log
 import "github.com/sirupsen/logrus"
 
 var (
-	// ServLogger - Server logger
-	ServLogger = serverLogger()
+	// ServLog - Server logger
+	ServLog = serverLogger()
 
 	// servTxtLogger - Used internally to change txt logging settings on the fly, such as file location
 	servTxtLogger = serverTxtLogger()
@@ -17,7 +17,7 @@ func ServerLogger(logType string, pkg string, stream string) *logrus.Entry {
 	SetLogFiles(logType)
 
 	// Return the logger once everything settings are correct
-	return ServLogger.WithFields(logrus.Fields{
+	return ServLog.WithFields(logrus.Fields{
 		"pkg":    pkg,
 		"stream": stream,
 	})
@@ -40,6 +40,10 @@ func SetLogFiles(logType string) {
 
 // serverLogger - All settings for the server JSON logger
 func serverLogger() (logger *logrus.Logger) {
+
+	// Format settings (dates, formats, etc)
+	logger = logrus.New()
+	logger.Formatter = &logrus.TextFormatter{}
 	return
 }
 

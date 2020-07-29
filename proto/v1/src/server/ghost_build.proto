@@ -22,6 +22,16 @@ option go_package = "serverpb";
 
 import "transport/transport.proto";
 
+// Compiler - Manages all compilation (console & implants) in Wiregost.
+service Compiler {
+        // GetGhostProfiles - Returns all saved ghost implants build profiles.
+        rpc GetGhostProfiles(GhostProfilesRequest) returns (GhostProfiles);
+        // CompileGhost - Request to compile a ghost implant.
+        rpc CompileGhost(BuildGhostRequest) returns (BuildGhost);
+        // CompileConsole - Request to compile a user console.
+        rpc CompileConsole(BuildConsoleRequest) returns (BuildConsole);
+}
+
 // GhostConfig - Stores all configuration elements needed to compile an implant.
 message GhostBuild {
 
@@ -34,13 +44,14 @@ message GhostBuild {
         string Filename = 10;       // Where to output binary
         uint32 WorkspaceID = 13;
 
+        bool Obfuscated = 15;
         enum Format {
                 EXECUTABLE = 0;
                 SHARED_LIB = 1;
                 SHELLCODE = 2;
         }
 
-        repeated transport.Transport Transports = 14;   // Find a way to get the active one
+        repeated transport.Transport Transports = 14;
 
         enum Permissions {
                 OWNER = 0;
@@ -50,9 +61,29 @@ message GhostBuild {
 }
 
 
-// GhostBuildsRequest - Get Configs of previously built ghosts
-message GhostBuildsRequest {}
+// GhostProfilesRequest - Get Configs of previously built ghosts
+message GhostProfilesRequest {}
 
-// GhostBuilds - Configs of previously built ghosts
-message GhostBuilds {}
+// GhostProfiles - Configs of previously built ghosts
+message GhostProfiles {
+        GhostBuild Profiles = 1;
+}
 
+// BuildGhostRequest - Get Configs of previously built ghosts
+message BuildGhostRequest {
+        GhostBuild Profile = 1;
+}
+
+// BuildGhost - Configs of previously built ghosts
+message BuildGhost {}
+
+// ConsoleBuild - A console compilation profile.
+message ConsoleBuild {
+        bool Obfuscated = 1;
+        bool SendBack = 2;      // Do we send the executable back to the console compiling it ?
+}
+// BuildConsoleRequest - Get Configs of previously built ghosts
+message BuildConsoleRequest {}
+
+// BuildConsole - Configs of previously built ghosts
+message BuildConsole {}
