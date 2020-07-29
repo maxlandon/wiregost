@@ -9,6 +9,8 @@ import (
 // details and values to be compiled, and then builds the implant.
 func GhostImplant(prof serverpb.GhostBuild) (err error) {
 
+	compilerLog.Infof("Starting compilation for an implant")
+
 	// Base compilation strings
 
 	// Compiler & Server version details
