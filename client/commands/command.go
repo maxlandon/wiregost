@@ -1,6 +1,8 @@
 package commands
 
-import "github.com/jessevdk/go-flags"
+import (
+	"github.com/jessevdk/go-flags"
+)
 
 // PARSERS -----------------------------------------------------------------------------
 
@@ -21,39 +23,19 @@ var Compiler = flags.NewNamedParser("compiler", flags.None)
 
 // -------------------------------------------------------------------------------------
 
-// This function is used to set all options for above Main, Module and Ghost parsers
+// InitParsers - This function is used to set all options for above Main, Module and Ghost parsers
 func InitParsers() (err error) {
 
-	// For each parser:
-
-	// 1) Set long/short descriptions (what is this menu), Usage (all commands and/or categories).
-
-	// 2) Set unknown option handler
-
-	// Add groups
+	// Main parser setup and registration
+	err = BindMain()
+	if err != nil {
+		return err
+	}
+	// Compiler parser setup and registration
+	err = BindCompiler()
+	if err != nil {
+		return err
+	}
 
 	return
 }
-
-// Command - A command (that may have subcommands) or a subcommand dedicated to a single field/area/function/task.
-// type Command struct {
-//         Name string       // Command name to input
-//         Help string       // Help/Usage/Doc
-//         Sub  []string     // Subcommand strings (can be found later)
-//         Opts []*Option    // Command options
-//         Args []*Argument  // Command arguments
-//         Run  func() error // This function runs the command
-// }
-
-// Option - A dash ( --option / -o ) option for a command
-// type Option struct {
-//         Short       string
-//         Long        string
-//         Type        string
-//         Description string
-//         Required    bool
-//         Length      int
-// }
-
-// Argument - A command/subcommand argument, AS OPPOSED TO A COMMAND DASH (--) OPTION.
-// type Argument struct{}

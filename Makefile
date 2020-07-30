@@ -149,6 +149,10 @@ packr:
 	packr
 	cd ..
 
+.PHONY: clean
+clean:
+	# packr clean
+
 # Remove all unneeded/heavy files from the repository (usually assets)
 .PHONY: clean-all
 clean-all: clean

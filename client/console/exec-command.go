@@ -35,30 +35,26 @@ func (c *console) ExecuteCommand(args []string) (err error) {
 	// We redirect the input to the appropriate parser, depending on the console menu.
 	// The error returned might be several things, so we handle some cases later,
 	// like special commands
+	var parserErr error
 	switch ctx.Menu {
 
 	case context.MainMenu:
-		_, err = commands.Main.ParseArgs(args)
+		_, parserErr = commands.Main.ParseArgs(args)
 
 	case context.ModuleMenu:
-		_, err = commands.Module.ParseArgs(args)
+		_, parserErr = commands.Module.ParseArgs(args)
 
 	case context.CompilerMenu:
-		_, err = commands.Compiler.ParseArgs(args)
+		_, parserErr = commands.Compiler.ParseArgs(args)
 
 	case context.GhostMenu:
-		_, err = commands.Ghost.ParseArgs(args)
+		_, parserErr = commands.Ghost.ParseArgs(args)
+	default:
 	}
 
-	// If there is an error, cast it to a parser error
-	var parserErr *flags.Error
-	if err != nil {
-		parserErr = err.(*flags.Error) // We convert to a flag error
-	}
-
-	// If command is not found, handle special
-	if parserErr.Type == flags.ErrUnknownCommand {
-		return c.ExecuteSpecialCommand(args)
+	// All errors that might go out of parsers are handled here
+	if parserErr != nil {
+		err = c.HandleParserErrors(parserErr, args)
 	}
 
 	// END: Reset variables for command options (go-flags)
@@ -69,20 +65,40 @@ func (c *console) ExecuteCommand(args []string) (err error) {
 // ExecuteSpecialCommand - Handles all commands not registered to command parsers.
 func (c *console) ExecuteSpecialCommand(args []string) error {
 
-	switch context.Context.Menu {
 	// Check context for availability
+	switch context.Context.Menu {
 	case context.MainMenu, context.ModuleMenu:
 		switch args[0] {
 		case "exit":
 			c.Exit()
 			return nil
-			// Fallback: Use the system shell through the console
 		default:
+			// Fallback: Use the system shell through the console
 			return util.Shell(args)
 		}
 	}
 
+	// We should not get here, so we print an error-like message
 	fmt.Printf(CommandError+"Invalid command: %s%s \n", tui.YELLOW, args[0])
 
 	return nil
+}
+
+// HandleParserErrors - The parsers may return various types of Errors, handle them in this function.
+func (c *console) HandleParserErrors(in error, args []string) (err error) {
+
+	// If there is an error, cast it to a parser error, else return
+	var parserErr *flags.Error
+	if in == nil {
+		return
+	}
+	parserErr = in.(*flags.Error) // We convert to a flag error
+
+	// Handle errors on a case-by-case basis -------------------
+
+	// If command is not found, handle special
+	if parserErr.Type == flags.ErrUnknownCommand {
+		return c.ExecuteSpecialCommand(args)
+	}
+	return
 }
