@@ -23,7 +23,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/lmorg/readline"
+	"github.com/maxlandon/readline"
 
 	"github.com/maxlandon/wiregost/client/commands"
 	"github.com/maxlandon/wiregost/client/completers"
@@ -91,6 +91,8 @@ func (c *console) Connect() (err error) {
 func (c *console) Setup() (err error) {
 
 	// Prompt
+	c.Shell.Multiline = true   // spaceship-like (two-line) prompt
+	c.Shell.ShowVimMode = true // with Vim status
 	c.SetPrompt()
 
 	// Completion, Hints & Syntax

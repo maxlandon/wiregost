@@ -20,11 +20,11 @@ import (
 	"strings"
 
 	"github.com/jessevdk/go-flags"
-	"github.com/lmorg/readline"
+	"github.com/maxlandon/readline"
 )
 
 // TabCompleter - Entrypoint to all tab completions in the Wiregost console.
-func TabCompleter(line []rune, pos int) (lastWord string, suggestions []string, descriptions map[string]string, tabType readline.TabDisplayType) {
+func TabCompleter(line []rune, pos int) (lastWord string, completions []*readline.CompletionGroup) {
 
 	// Format and sanitize input
 	args, last, lastWord := FormatInput(line)
@@ -42,7 +42,7 @@ func TabCompleter(line []rune, pos int) (lastWord string, suggestions []string, 
 
 	}
 
-	// Base command is identified
+	// Base command has been identified
 	if commandFound(command) {
 
 		// If user asks for completions with "-" / "--", show command options
@@ -71,57 +71,62 @@ func TabCompleter(line []rune, pos int) (lastWord string, suggestions []string, 
 		}
 	}
 
+	// -------------------- IMPORTANT ------------------------
+	// WE NEED TO PASS A DEEP COPY OF THE OBJECTS: OTHERWISE THE COMPLETION SEARCH FUNCTION WILL MESS UP WITH THEM.
+
 	return
 }
 
 // [ Main Completion Functions ] -----------------------------------------------------------------------------------------------------------------
 
 // CompleteMenuCommands - Selects all commands available in a given context and returns them as suggestions
-func CompleteMenuCommands(last []rune, pos int) (lastWord string, suggestions []string, descriptions map[string]string, tabType readline.TabDisplayType) {
+// Many categories, all from command parsers.
+func CompleteMenuCommands(last []rune, pos int) (lastWord string, completions []*readline.CompletionGroup) {
 
-	return string(last), suggestions, descriptions, readline.TabDisplayGrid
+	return
 }
 
 // CompleteCommandArguments - Completes all values for arguments to a command. Arguments here are different from command options (--option).
-func CompleteCommandArguments(cmd *flags.Command, arg string, line []rune, pos int) (lastWord string, suggestions []string, descriptions map[string]string, tabType readline.TabDisplayType) {
+// Many categories, from multiple sources in multiple contexts
+func CompleteCommandArguments(cmd *flags.Command, arg string, line []rune, pos int) (lastWord string, completions []*readline.CompletionGroup) {
 
 	_, _, lastWord = FormatInput(line)
 
-	return lastWord, suggestions, descriptions, readline.TabDisplayGrid
+	return
 }
 
 // CompleteSubCommands - Takes subcommands and gives them as suggestions
-func CompleteSubCommands(args []string, last []rune, command *flags.Command) (string, []string, map[string]string, readline.TabDisplayType) {
-	var suggestions []string
-	listSuggestions := map[string]string{}
+// One category, from one source (a parent command)
+func CompleteSubCommands(args []string, last []rune, command *flags.Command) (lastWord string, completions []*readline.CompletionGroup) {
 
 	for _, sub := range command.Commands() {
 		if strings.HasPrefix(sub.Name, string(last)) {
-			suggestions = append(suggestions, sub.Name[(len(last)):]+" ")
+			// suggestions = append(suggestions, sub.Name[(len(last)):]+" ")
 		}
 	}
 
-	return string(last), suggestions, listSuggestions, readline.TabDisplayGrid
+	return
 }
 
 // HandleSubCommand - Handles completion for subcommand options and arguments, + any option value related completion
-func HandleSubCommand(line []rune, pos int, command *flags.Command) (lastWord string, suggestions []string, descriptions map[string]string, tabType readline.TabDisplayType) {
+// Many categories, from many sources: this function calls the same functions as the ones previously called for completing its parent command.
+func HandleSubCommand(line []rune, pos int, command *flags.Command) (lastWord string, completions []*readline.CompletionGroup) {
 
 	_, _, lastWord = FormatInput(line)
 
-	return lastWord, suggestions, descriptions, tabType
+	return
 }
 
 // CompleteCommandOptions - Yields completion for options of a command, with various decorators
-func CompleteCommandOptions(args []string, last []rune, cmd *flags.Command) (lastWord string, suggestions []string, descriptions map[string]string, tabType readline.TabDisplayType) {
+// Many categories, from one source (a command)
+func CompleteCommandOptions(args []string, last []rune, cmd *flags.Command) (lastWord string, completions []*readline.CompletionGroup) {
 
-	return string(last), suggestions, descriptions, readline.TabDisplayList
+	return
 }
 
 // RecursiveGroupCompletion - Handles recursive completion for nested option groups
-func RecursiveGroupCompletion(args []string, last []rune, group *flags.Group) (string, []string, map[string]string, readline.TabDisplayType) {
-	var suggestions []string
-	listSuggestions := map[string]string{}
+// Many categories, one source (a command's root option group). Called by the function just above.
+func RecursiveGroupCompletion(args []string, last []rune, group *flags.Group) (lastWord string, completions []*readline.CompletionGroup) {
 
-	return string(last), suggestions, listSuggestions, readline.TabDisplayList
+	return
 }

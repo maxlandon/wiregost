@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/evilsocket/islazy/tui"
-	"github.com/lmorg/readline"
+	"github.com/maxlandon/readline"
 
 	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/context"
