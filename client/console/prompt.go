@@ -40,6 +40,7 @@ type prompt struct {
 	// Strings
 	BaseMain       string
 	BaseModule     string
+	BaseCompiler   string
 	BaseGhost      string
 	CustomMain     string
 	CustomGhost    string
@@ -57,6 +58,7 @@ func (c *console) SetPrompt() {
 	Prompt = &prompt{
 		BaseMain:       "{bddg}{fw}@{lb}{serverip} {reset} {dim}in {workspace} {reset}({g}{listeners}{fw},{r}{agents}{fw})",
 		BaseModule:     " {dim}=>{reset} {type}({mod})",
+		BaseCompiler:   " {dim}=>{reset} {y}Compiler{reset}()",
 		BaseGhost:      "{bddg}{fw}agent[{lb}{agent}]{reset} ",
 		CustomMain:     "",
 		CustomGhost:    "{dim}as {user}{bold}{y}@{reset}{host}/{rpwd} {dim}in {workspace}",
@@ -247,6 +249,9 @@ func (p *prompt) render() (prompt string, multi string) {
 				prompt = p.CustomGhost
 			}
 		}
+		if ctx.Menu == context.CompilerMenu {
+			prompt = p.BaseMain + p.BaseCompiler
+		}
 
 	// Custom provided, use it
 	default:
@@ -263,6 +268,9 @@ func (p *prompt) render() (prompt string, multi string) {
 			} else {
 				prompt = p.BaseGhost + p.CustomGhost
 			}
+		}
+		if ctx.Menu == context.CompilerMenu {
+			prompt = p.BaseMain + p.BaseCompiler
 		}
 	}
 

@@ -2,7 +2,6 @@ package commands
 
 import (
 	"github.com/maxlandon/wiregost/client/commands/compiler"
-	"github.com/maxlandon/wiregost/client/commands/main/core"
 	"github.com/maxlandon/wiregost/client/constants"
 	help "github.com/maxlandon/wiregost/client/help/main/core"
 )
@@ -14,7 +13,7 @@ func BindMain() (err error) {
 	// Main unknown handler
 
 	// Register all Commands
-	_, err = Main.AddCommand(constants.Compiler, help.CompilerShort, help.CompilerLong, &core.Compiler{})
+	_, err = Main.AddCommand(constants.Compiler, help.CompilerShort, help.CompilerLong, &compiler.Enter{})
 
 	return
 }

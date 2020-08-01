@@ -23,6 +23,8 @@ import (
 	"unicode"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/maxlandon/wiregost/client/commands"
+	"github.com/maxlandon/wiregost/client/context"
 )
 
 // These functions are just shorthands for checking various conditions on the input line. They make the main function more readable, which might be
@@ -39,19 +41,28 @@ func noCommandOrEmpty(args []string, last []rune, command *flags.Command) bool {
 
 // [ Commands ]
 // detectedCommand - Returns the base command from parser if detected, depending on context
-func detectedCommand(args []string, context string) (command *flags.Command) {
+func detectedCommand(args []string, menu string) (command *flags.Command) {
 
-	// switch context {
-	// case commands.MAIN_CONTEXT, commands.MODULE_CONTEXT:
-	//         cmds := commands.CommandsByContext() // Need for context here
-	//         for _, cmd := range cmds {
-	//                 if cmd.Name == args[0] {
-	//                         command = cmd
-	//                 }
-	//         }
-	// case commands.GHOST_CONTEXT:
-	//         command = commands.GhostParser.Find(args[0])
-	// }
+	switch menu {
+	case context.MainMenu:
+		for _, cmd := range commands.Main.Commands() {
+			if command.Name == args[0] {
+				command = cmd
+			}
+		}
+	case context.ModuleMenu:
+	case context.CompilerMenu:
+	case context.GhostMenu:
+		// case commands.MAIN_CONTEXT, commands.MODULE_CONTEXT:
+		//         cmds := commands.CommandsByContext() // Need for context here
+		//         for _, cmd := range cmds {
+		//                 if cmd.Name == args[0] {
+		//                         command = cmd
+		//                 }
+		//         }
+		// case commands.GHOST_CONTEXT:
+		//         command = commands.GhostParser.Find(args[0])
+	}
 
 	return
 }

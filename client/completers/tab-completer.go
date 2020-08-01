@@ -34,7 +34,7 @@ func TabCompleter(line []rune, pos int) (lastWord string, suggestions []string, 
 
 	// Propose commands
 	if noCommandOrEmpty(args, last, command) {
-
+		return CompleteMenuCommands(last, pos)
 	}
 
 	// Check environment variables
