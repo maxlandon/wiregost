@@ -16,7 +16,6 @@ import (
 func StartRPCServices() (err error) {
 
 	// Setup & bind server connection
-	fmt.Println(assets.ServerConfiguration.DatabaseRPCHost)
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", assets.ServerConfiguration.DatabaseRPCPort))
 
 	// gRPC
