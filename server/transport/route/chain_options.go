@@ -3,7 +3,7 @@ package route
 import (
 	"time"
 
-	"github.com/maxlandon/wiregost/server/c2/resolver"
+	"github.com/maxlandon/wiregost/server/transport/resolver"
 )
 
 // ChainOptions holds options for Chain.

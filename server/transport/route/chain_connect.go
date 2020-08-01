@@ -3,7 +3,7 @@ package route
 import (
 	"net"
 
-	"github.com/maxlandon/wiregost/server/c2/resolver"
+	"github.com/maxlandon/wiregost/server/transport/resolver"
 )
 
 // This file is the second part of chain.go in the same package.

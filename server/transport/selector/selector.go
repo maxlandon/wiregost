@@ -1,6 +1,6 @@
 package selector
 
-import "github.com/maxlandon/wiregost/server/c2/route"
+import "github.com/maxlandon/wiregost/server/transport/route"
 
 // SelectOption - Option used when making a select call
 type SelectOption func(*SelectOptions)

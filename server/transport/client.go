@@ -3,8 +3,8 @@ package transport
 import (
 	"net"
 
-	"github.com/maxlandon/wiregost/server/c2/connector"
-	"github.com/maxlandon/wiregost/server/c2/transporter"
+	"github.com/maxlandon/wiregost/server/transport/connector"
+	"github.com/maxlandon/wiregost/server/transport/transporter"
 )
 
 var (

@@ -3,7 +3,7 @@ package selector
 import (
 	"time"
 
-	"github.com/maxlandon/wiregost/server/c2/route"
+	"github.com/maxlandon/wiregost/server/transport/route"
 )
 
 // Filter is used to filter a node during the selection process

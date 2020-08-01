@@ -1,8 +1,8 @@
 package transport
 
 import (
-	"github.com/maxlandon/wiregost/server/c2/route"
-	"github.com/maxlandon/wiregost/server/c2/selector"
+	"github.com/maxlandon/wiregost/server/transport/route"
+	"github.com/maxlandon/wiregost/server/transport/selector"
 )
 
 // NodeSelector - The node selector is used to perform filtering, strategy building and finally node selection,

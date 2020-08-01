@@ -1,6 +1,6 @@
 package transport
 
-import "github.com/maxlandon/wiregost/server/c2/route"
+import "github.com/maxlandon/wiregost/server/transport/route"
 
 // Router - Serves, initiates and handle connections all along a provided chain.
 // It is somehow the center of the routing mechanism in Wiregost, because it holds state of
