@@ -17,6 +17,8 @@
 package base
 
 import (
+	"fmt"
+
 	"github.com/sirupsen/logrus"
 
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
@@ -29,11 +31,16 @@ type Module struct {
 	Proto  *modulepb.Module // Base module information
 	User   *dbpb.User       // The user who loaded the module
 	Logger *logrus.Entry    // Each module logs its ouput to the user's log file
+	// WE SHOULD USE THIS LOGGER INTERFACE AS A WAY TO PUSH EVENT MESSAGES
+	Opts *map[string]*Option
 }
 
 // Option - Returns one of the module's options, by name
-func (m *Module) Option(name string) *modulepb.Option {
-	return m.Proto.Options[name]
+func (m *Module) Option(name string) (opt *Option, err error) {
+	if opt, found := (*m.Opts)[name]; found {
+		return opt, nil
+	}
+	return nil, fmt.Errorf("invalid option: %s", name)
 }
 
 // ParseMetadata - Looks for the module metadata in its respective source directory.
@@ -51,6 +58,8 @@ func (m *Module) CheckRequiredOptions() (ok bool, err error) {
 	return
 }
 
+// NOTE: WE SHOULD USE THIS LOGGER INTERFACE AS A WAY TO PUSH EVENT MESSAGES
+//       THIS METHOD SHOULD BE MOFIFIED SO AS TO USE THE MODULE LOGGER TRANSPARENTLY
 // Event - Pushes an event message (ex: for status) back to the console running the module.
 // It also logs the event to the module user's log file.
 func (m *Module) Event(event string, pending bool) {
@@ -61,7 +70,19 @@ func (m *Module) Asset(path string) (filePath string, err error) {
 	return
 }
 
-// ToProtobuf - When clients request a copy of the module, send it.
-func (m *Module) ToProtobuf() (modpb *modulepb.Module) {
-	return m.Proto
+// ModuleToProtobuf - A user requested the module information and options.
+func (m *Module) ModuleToProtobuf() (modpb *modulepb.Module) {
+	modpb = m.Proto
+	for _, opt := range *m.Opts {
+		modpb.Options[opt.proto.Name] = &opt.proto
+	}
+	return
+}
+
+// OptionsToProtobuf - A user requested the module options.
+func (m *Module) OptionsToProtobuf() (options []modulepb.Option) {
+	for _, opt := range *m.Opts {
+		options = append(options, opt.proto)
+	}
+	return
 }

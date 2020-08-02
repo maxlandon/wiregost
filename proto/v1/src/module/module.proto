@@ -57,10 +57,11 @@ message Module {
 // Option - An option used by the module
 message Option {
         string Name = 1;            // Option name
-        string Value = 2;           // Option value, is always a string and converted later if needed
-        bool Required = 3;          // Is this option required ? If yes it should already have a value
-        string Flag = 4;            // Sometimes the option value is used as a flag in a command line, so it might have a different form.
-        string Description = 5;     // A description for this option.
+        string Category = 2;        // Options can be classified according to user preferences
+        string Value = 3;           // Option value, is always a string and converted later if needed
+        bool Required = 5;          // Is this option required ? If yes it should already have a value
+        string Flag = 6;            // Sometimes the option value is used as a flag in a command line, so it might have a different form.
+        string Description = 7;     // A description for this option.
 }
 
 
