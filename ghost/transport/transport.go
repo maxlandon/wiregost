@@ -28,8 +28,8 @@ var (
 type Transport struct {
 	Info  tpb.Transport // Information
 	Ready bool          // This is a check, in case the connection is just out of a switch and not yet working.
-	Conn  net.Conn      // Physical connection
-	C2    *yamux.Stream // Logical connection used for C2 requests/responses (muxed)
+	Conn  net.Conn      // Physical connection, which might/will be muxed
+	C2    *yamux.Stream // Logical connection used for C2 requests/responses (muxed), on top of the Conn.
 }
 
 // Start - Starts either a listener or calls back to server

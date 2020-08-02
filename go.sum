@@ -99,8 +99,6 @@ github.com/mattn/go-runewidth v0.0.8 h1:3tS41NlGYSmhhe/8fhGRzc+z3AYCw1Fe1WAyLuuj
 github.com/mattn/go-runewidth v0.0.8/go.mod h1:H031xJmbD/WCDINGzjvQ9THkh0rPKHF+m2gUSrubnMI=
 github.com/mattn/go-sqlite3 v2.0.1+incompatible h1:xQ15muvnzGBHpIpdrNi1DA5x0+TcBZzsIDwmw9uTHzw=
 github.com/mattn/go-sqlite3 v2.0.1+incompatible/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
-github.com/maxlandon/readline v0.0.0-20200801150346-328ea11eafde h1:UKycO53Tg4S+MfLpVa6NCmQYeEfIZkFaYXnBhlvdpfw=
-github.com/maxlandon/readline v0.0.0-20200801150346-328ea11eafde/go.mod h1:Fd3zHLkCoj29Gv00EyoKO3oiX0Yqj8FlTUpLZw/93eg=
 github.com/maxlandon/readline v0.0.0-20200801174503-25c2caa41425 h1:FIzcuoByCQpCW9pdfG1hlXOqUxUBYYbxvXJe0VdxNlU=
 github.com/maxlandon/readline v0.0.0-20200801174503-25c2caa41425/go.mod h1:Fd3zHLkCoj29Gv00EyoKO3oiX0Yqj8FlTUpLZw/93eg=
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
