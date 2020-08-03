@@ -21,18 +21,17 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
+	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 	"github.com/maxlandon/wiregost/server/log"
 )
 
 // Module - The base module, embedding a protobuf object
 type Module struct {
-	Proto  *modulepb.Module // Base module information
-	User   *dbpb.User       // The user who loaded the module
-	Logger *logrus.Entry    // Each module logs its ouput to the user's log file
-	// WE SHOULD USE THIS LOGGER INTERFACE AS A WAY TO PUSH EVENT MESSAGES
-	Opts *map[string]*Option
+	Info   *modulepb.Module    // Base module information
+	Opts   *map[string]*Option // Module options
+	Client *clientpb.Client    // The console client (and its user) using the module
+	Log    *logrus.Entry       // Each module can log its output to the console and to log files.
 }
 
 // Option - Returns one of the module's options, by name
@@ -40,6 +39,7 @@ func (m *Module) Option(name string) (opt *Option, err error) {
 	if opt, found := (*m.Opts)[name]; found {
 		return opt, nil
 	}
+
 	return nil, fmt.Errorf("invalid option: %s", name)
 }
 
@@ -49,8 +49,8 @@ func (m *Module) ParseMetadata() error {
 }
 
 // SetLogger - Initializes logging for the module
-func (m *Module) SetLogger() {
-	m.Logger = log.UserLogger(m.User.Name, m.User.ID, m.Proto.Path, "module")
+func (m *Module) SetLogger(client *clientpb.Client) {
+	m.Log = log.ModuleLogger(m.Info.Path, m.Client)
 }
 
 // CheckRequiredOptions - Checks that all required options have a value
@@ -58,10 +58,10 @@ func (m *Module) CheckRequiredOptions() (ok bool, err error) {
 	return
 }
 
-// NOTE: WE SHOULD USE THIS LOGGER INTERFACE AS A WAY TO PUSH EVENT MESSAGES
-//       THIS METHOD SHOULD BE MOFIFIED SO AS TO USE THE MODULE LOGGER TRANSPARENTLY
 // Event - Pushes an event message (ex: for status) back to the console running the module.
 // It also logs the event to the module user's log file.
+// NOTE: WE SHOULD USE THIS LOGGER INTERFACE AS A WAY TO PUSH EVENT MESSAGES
+//       THIS METHOD SHOULD BE MOFIFIED SO AS TO USE THE MODULE LOGGER TRANSPARENTLY
 func (m *Module) Event(event string, pending bool) {
 }
 
@@ -72,7 +72,7 @@ func (m *Module) Asset(path string) (filePath string, err error) {
 
 // ModuleToProtobuf - A user requested the module information and options.
 func (m *Module) ModuleToProtobuf() (modpb *modulepb.Module) {
-	modpb = m.Proto
+	modpb = m.Info
 	for _, opt := range *m.Opts {
 		modpb.Options[opt.proto.Name] = &opt.proto
 	}
