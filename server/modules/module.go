@@ -26,7 +26,7 @@ import (
 // Module - All modules in Wiregost must implement this interface.
 type Module interface {
 	SetLogger(client *clientpb.Client)            // Initializes console/file logging for the module
-	ToProtobuf() *modulepb.Module                 // When consoles request a copy of the module
+	ToProtobuf() (modpb *modulepb.Module)         // When consoles request a copy of the module
 	Run(action string) (result string, err error) // Run one of the module's functions
 	Option(name string) (opt *modulepb.Option)    // Get an option of this module
 	CheckRequiredOptions() (ok bool, err error)   // Check all required options have a value

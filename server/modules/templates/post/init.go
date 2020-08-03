@@ -7,10 +7,11 @@ import (
 // Init - Setup the module, and return it to the server for loading. This func is called at startup.
 func Init() (m *Module, err error) {
 
-	// Base setup
+	// Base setup - (Do not touch) ------------------------------------------------------------
 	m = &Module{post.NewPost()} // Instantiate module with all parent types and functionalities
 	err = m.RegisterOptions()   // Register all options added by module author below
 	i := m.Info                 // Shorthand for less verbosity when filling information below
+	// ----------------------------------------------------------------------------------------
 
 	// Module Information
 	i.Name = "MyModuleName"

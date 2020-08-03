@@ -47,6 +47,7 @@ func (m *Post) GetSession(id uint32) (err error) {
 
 	// We check permissions here and now, as we cannot pass
 	// the module's context to each implant method call in module
+	// Any calls to implant RPC stubs will trigger permission checks anyway.
 	_, err = security.CheckCorePermissions(ghost, m.Client.User)
 	if err != nil {
 		return

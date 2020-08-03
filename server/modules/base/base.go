@@ -70,8 +70,8 @@ func (m *Module) Asset(path string) (filePath string, err error) {
 	return
 }
 
-// ModuleToProtobuf - A user requested the module information and options.
-func (m *Module) ModuleToProtobuf() (modpb *modulepb.Module) {
+// ToProtobuf - A user requested the module information and options.
+func (m *Module) ToProtobuf() (modpb *modulepb.Module) {
 	modpb = m.Info
 	for _, opt := range *m.Opts {
 		modpb.Options[opt.proto.Name] = &opt.proto
