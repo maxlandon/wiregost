@@ -16,7 +16,6 @@ func HandleGhostRegistration(sess *Session) {
 
 	// Base RPC methods allow to exchange registration and information messages
 	// client := generic.NewClient(sess)
-	// client.Ls(context.Background(), corepb.LsRequest{})
 
 	// Register RPC services/handlers if the ghost reverse-calls us (we are the server)
 
@@ -40,4 +39,9 @@ func HandleGhostRegistration(sess *Session) {
 	// Send registration notification to user consoles
 
 	// Send all necessary information to Database
+
+	// Network ------------------------------------------------------------------------------------
+
+	// Register implant address to the routing table, for automatic finding of it when we start
+	// various handlers, and other needs.
 }
