@@ -46,7 +46,9 @@ message Module {
         string Lang = 11;               // Implementation language of the module
         bool Priviledged = 12;          // Does the module requires administrator privileges to be run ?
 
-        map<string, Option> Options = 13;   // All options for this module
+        map <string, string> Commands = 14;     // The module can run different actions, with different commands
+                                                // (ex: run to_listener, run exploit) mapped to their description
+        map<string, Option> Options = 13;       // All options for this module
 
         // repeated Option Options = 14;    // Alternative: use list, and make a method like m.SetOption("name", "value")
         //                                                                                   m.GetOption("name")

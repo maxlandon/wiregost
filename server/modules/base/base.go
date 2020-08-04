@@ -21,18 +21,17 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
+	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 	"github.com/maxlandon/wiregost/server/log"
 )
 
 // Module - The base module, embedding a protobuf object
 type Module struct {
-	Proto  *modulepb.Module // Base module information
-	User   *dbpb.User       // The user who loaded the module
-	Logger *logrus.Entry    // Each module logs its ouput to the user's log file
-	// WE SHOULD USE THIS LOGGER INTERFACE AS A WAY TO PUSH EVENT MESSAGES
-	Opts *map[string]*Option
+	Info   *modulepb.Module    // Base module information
+	Opts   *map[string]*Option // Module options
+	Client *clientpb.Client    // The console client (and its user) using the module
+	Log    *logrus.Entry       // Each module can log its output to the console and to log files.
 }
 
 // Option - Returns one of the module's options, by name
@@ -40,6 +39,7 @@ func (m *Module) Option(name string) (opt *Option, err error) {
 	if opt, found := (*m.Opts)[name]; found {
 		return opt, nil
 	}
+
 	return nil, fmt.Errorf("invalid option: %s", name)
 }
 
@@ -49,19 +49,51 @@ func (m *Module) ParseMetadata() error {
 }
 
 // SetLogger - Initializes logging for the module
-func (m *Module) SetLogger() {
-	m.Logger = log.UserLogger(m.User.Name, m.User.ID, m.Proto.Path, "module")
+func (m *Module) SetLogger(client *clientpb.Client) {
+	m.Log = log.ModuleLogger(m.Info.Path, m.Client)
 }
 
-// CheckRequiredOptions - Checks that all required options have a value
-func (m *Module) CheckRequiredOptions() (ok bool, err error) {
+// PreRunChecks - All checks for session, commands, options, etc. are done in this function.
+// IT IS MANDATORY TO CALL THIS FUNCTION at the beginning of the any module.
+func (m *Module) PreRunChecks(cmd string) (err error) {
+
+	err = m.CheckCommand(cmd)
+	if err != nil {
+		return err
+	}
+	err = m.CheckRequiredOptions()
+	if err != nil {
+		return err
+	}
+
 	return
 }
 
-// NOTE: WE SHOULD USE THIS LOGGER INTERFACE AS A WAY TO PUSH EVENT MESSAGES
-//       THIS METHOD SHOULD BE MOFIFIED SO AS TO USE THE MODULE LOGGER TRANSPARENTLY
+// CheckRequiredOptions - Checks that all required options have a value
+func (m *Module) CheckRequiredOptions() (err error) {
+	return
+}
+
+// CheckCommand - Verifies the command run by the user (like 'run exploit' or 'run check') is valid
+func (m *Module) CheckCommand(command string) (err error) {
+	// If we don't have commands it means there is no need for them, so no error
+	if len(m.Info.Commands) == 0 || m.Info.Commands == nil {
+		return nil
+	}
+
+	// Else check for it
+	for com, desc := range m.Info.Commands {
+		if com == command {
+			return nil
+		}
+	}
+	return fmt.Errorf("invalid command: %s", command)
+}
+
 // Event - Pushes an event message (ex: for status) back to the console running the module.
 // It also logs the event to the module user's log file.
+// NOTE: WE SHOULD USE THIS LOGGER INTERFACE AS A WAY TO PUSH EVENT MESSAGES
+//       THIS METHOD SHOULD BE MOFIFIED SO AS TO USE THE MODULE LOGGER TRANSPARENTLY
 func (m *Module) Event(event string, pending bool) {
 }
 
@@ -70,9 +102,9 @@ func (m *Module) Asset(path string) (filePath string, err error) {
 	return
 }
 
-// ModuleToProtobuf - A user requested the module information and options.
-func (m *Module) ModuleToProtobuf() (modpb *modulepb.Module) {
-	modpb = m.Proto
+// ToProtobuf - A user requested the module information and options.
+func (m *Module) ToProtobuf() (modpb *modulepb.Module) {
+	modpb = m.Info
 	for _, opt := range *m.Opts {
 		modpb.Options[opt.proto.Name] = &opt.proto
 	}
@@ -80,9 +112,9 @@ func (m *Module) ModuleToProtobuf() (modpb *modulepb.Module) {
 }
 
 // OptionsToProtobuf - A user requested the module options.
-func (m *Module) OptionsToProtobuf() (options []modulepb.Option) {
+func (m *Module) OptionsToProtobuf() (options map[string]modulepb.Option) {
 	for _, opt := range *m.Opts {
-		options = append(options, opt.proto)
+		options[opt.proto.Name] = opt.proto
 	}
 	return
 }

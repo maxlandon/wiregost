@@ -17,6 +17,7 @@
 package post
 
 import (
+	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 	"github.com/maxlandon/wiregost/server/ghosts"
 	"github.com/maxlandon/wiregost/server/modules/base"
 	"github.com/maxlandon/wiregost/server/security"
@@ -31,6 +32,10 @@ type Post struct {
 // NewPost - Instantiates a new post, and handles base module instantiation
 func NewPost() (post *Post) {
 	post = &Post{&base.Module{}, nil}
+
+	// Default Information filling
+	post.Info.Type = modulepb.Type_POST
+
 	return
 }
 
@@ -42,7 +47,8 @@ func (m *Post) GetSession(id uint32) (err error) {
 
 	// We check permissions here and now, as we cannot pass
 	// the module's context to each implant method call in module
-	_, err = security.CheckCorePermissions(ghost, m.User)
+	// Any calls to implant RPC stubs will trigger permission checks anyway.
+	_, err = security.CheckCorePermissions(ghost, m.Client.User)
 	if err != nil {
 		return
 	}

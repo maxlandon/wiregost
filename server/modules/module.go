@@ -19,19 +19,18 @@ package modules
 import (
 	"sync"
 
+	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 )
 
 // Module - All modules in Wiregost must implement this interface.
 type Module interface {
-	ParseMetadata() error                         // Parse module metadata
-	SetLogger()                                   // Initializes logging for the module
-	ToProtobuf() *modulepb.Module                 // When consoles request a copy of the module
-	Run(action string) (result string, err error) // Run one of the module's functions
-	Option(name string) (opt *modulepb.Option)    // Get an option of this module
-	CheckRequiredOptions() (ok bool, err error)   // Check all required options have a value
-	Event(event string, pending bool)             // Send an event/message back to the console running the module
-	Asset(string) (filePath string, err error)    // Find the path of an asset in the module directory.
+	SetLogger(client *clientpb.Client)                        // Initializes console/file logging for the module
+	ToProtobuf() (modpb *modulepb.Module)                     // When consoles request a copy of the module
+	Option(name string) (opt *modulepb.Option)                // Get an option of this module
+	PreRunChecks(cmd string) (err error)                      // Run all safety checks for a module
+	Run(cmd string, args []string) (result string, err error) // Run one of the module's functions
+	Asset(string) (filePath string, err error)                // Find the path of an asset in the module directory.
 }
 
 // Modules - Map of all modules available in Wiregost (map["path/to/module"] = Module)

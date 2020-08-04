@@ -130,6 +130,7 @@ func SaveServerConfiguration(config *serverConfiguration) error {
 	return nil
 }
 
+// helpConfig - A documentation string appended to each server configuration file.
 var helpConfig = `
 
 # [ HELP ] ------------------------------------------------------//

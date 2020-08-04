@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"time"
 
 	"google.golang.org/grpc"
 
@@ -33,6 +34,9 @@ func ConnectToDatabase(host string, port int, pub string, priv string) (err erro
 
 // ConnectServerToDB - Client method used by server to query DB remotely
 func ConnectServerToDB() (err error) {
+
+	// We wait for some time that the DB gRPC starts listening
+	time.Sleep(time.Second * 3)
 
 	// Certificates from server conf
 	conf := assets.ServerConfiguration
