@@ -20,6 +20,7 @@ import "github.com/gobuffalo/packr"
 
 // SetupAssets - General function for managing all assets necessary to Wiregost
 func SetupAssets() error {
+
 	return nil
 }
 
@@ -40,6 +41,11 @@ func SetupGoToolchain() error {
 
 // SetupCodenames - Generates codenames for ghost implants
 func SetupCodenames() error {
+	return nil
+}
+
+// SetupSystemdUnit - Produces a fully ready systemd unit file for running the server on this host.
+func SetupSystemdUnit() error {
 	return nil
 }
 

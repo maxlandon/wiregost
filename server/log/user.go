@@ -9,6 +9,7 @@ var (
 
 // UserLogger - Logger for a user's action. This is the function actually called by other packages
 func UserLogger(userName string, userID uint32, pkg string, stream string) (entry *logrus.Entry) {
+
 	// Set apropriate output files, depending on user name/ID/both
 	SetUserLogFiles(userName, userID)
 
