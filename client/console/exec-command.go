@@ -57,6 +57,9 @@ func (c *console) ExecuteCommand(args []string) (err error) {
 		err = c.HandleParserErrors(parserErr, args)
 	}
 
+	// Send command line to the server for logging to history files. Send menu context,
+	// current ghost implant used and current channel, etc...
+
 	// END: Reset variables for command options (go-flags)
 
 	return nil

@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	// EventBroker - Distributes event messages
-	EventBroker = newBroker()
+	// Broker - Distributes event messages
+	Broker = newBroker()
 )
 
 // broker - An object handling all events happening in Wiregost,
@@ -23,7 +23,7 @@ type broker struct {
 // These packages fill an Event object, with details, intended user and/or console.
 // Then, this function determines which to client/user the event should be pushed.
 func Push(event serverpb.Event) {
-	EventBroker.publish <- event
+	Broker.publish <- event
 }
 
 func newBroker() *broker {
@@ -34,7 +34,7 @@ func newBroker() *broker {
 		unsubscribe: make(chan chan serverpb.Event, eventBufSize),
 		send:        make(chan serverpb.Event, eventBufSize),
 	}
-	go b.Start()
+	// go b.Start() // We have moved this to wiregost-server.go, for structure/apparence purposes.
 	return b
 }
 

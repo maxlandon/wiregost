@@ -14,8 +14,8 @@ type eventBroker struct {
 func (b *eventBroker) Events(req *clientpb.Empty, stream serverpb.EventRPC_EventsServer) error {
 
 	// Subscribe to event broker in events package
-	incoming := events.EventBroker.Subscribe()
-	defer events.EventBroker.Unsubscribe(incoming)
+	incoming := events.Broker.Subscribe()
+	defer events.Broker.Unsubscribe(incoming)
 
 	// For each event coming in, check event type,
 	for event := range incoming {

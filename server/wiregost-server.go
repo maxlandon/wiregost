@@ -22,6 +22,7 @@ import (
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/certs"
 	"github.com/maxlandon/wiregost/server/clients"
+	"github.com/maxlandon/wiregost/server/events"
 )
 
 func main() {
@@ -80,24 +81,20 @@ func main() {
 	// registrations, module events, etc... We setup and register all event subscribers here, available for all packages.
 	// The event manager should offer a gRPC server to consoles (for pushing them events) and module manager (for pushing
 	// and receiving events). All events happening in Wiregost always go through this package for processing and dispatch.
-	// events.SetupDispatcher().
+	go events.Broker.Start()
 
 	// MODULE SYSTEM
 	// The module system is composed of a module manager standalone program, which holds all available modules in Wiregost.
 	// It is somehow a "live stack", that communicates over gRPC with the server and the database, either for requiring
 	// implant actions, for pushing content to user consoles, etc.
-	// It is handled and control by this server, which can stop, restart and recompile a module manager. It starts and
+	// It is handled and controlled by this server, which can stop, restart and recompile a module manager. It starts and
 	// communicates with one module manager for each connected user, so that each of them can use, write and modify modules
-	// without bothering the other
+	// without bothering the others.
 	// modules.StartManagers()
 
-	// Load modules
-	// modules.RegisterModules()
-
-	// Init users module stacks
-	// modules.InitStacks()
-
-	// Start Persistent implants
+	// PERSISTENCE
+	// We might have some persistence needs, such as automatic listeners with
+	// various preset rules (routes to open, pivots to reach, etc...)
 
 	// Start Listening for client consoles
 	clients.StartClientListener(assets.ServerConfiguration.ServerHost, assets.ServerConfiguration.ServerPort)
