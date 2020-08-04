@@ -10,7 +10,7 @@ import (
 
 var (
 	// ModLogger - Logs all events pertaining to a module (commands to implant, modules run, etc)
-	ModLogger = moduleLogger()
+	ModLogger = &logrus.Logger{}
 )
 
 // ModuleLogger - Logger for a module's action. This is the function actually called by other packages
@@ -30,7 +30,7 @@ func moduleLogger() (logger *logrus.Logger) {
 	logger.Formatter = &logrus.TextFormatter{}
 	logger.Out = ioutil.Discard
 
-	logger.AddHook(NewModEvent())
+	// logger.AddHook(NewModEvent())
 	return
 }
 

@@ -26,6 +26,10 @@ func Init() (m *Module, err error) {
 	i.Targets = []string{"windows", "linux", "darwin"}
 
 	// Others
+	i.Commands = map[string]string{ // Commands: you can add commands and their description, specified by user like 'run check'
+		"check":   "Check for the intended vulnerability, or for presence of other relevant elements",
+		"exploit": "Run this post-exploitation exploit",
+	}
 
 	return
 }

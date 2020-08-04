@@ -53,9 +53,41 @@ func (m *Module) SetLogger(client *clientpb.Client) {
 	m.Log = log.ModuleLogger(m.Info.Path, m.Client)
 }
 
-// CheckRequiredOptions - Checks that all required options have a value
-func (m *Module) CheckRequiredOptions() (ok bool, err error) {
+// PreRunChecks - All checks for session, commands, options, etc. are done in this function.
+// IT IS MANDATORY TO CALL THIS FUNCTION at the beginning of the any module.
+func (m *Module) PreRunChecks(cmd string) (err error) {
+
+	err = m.CheckCommand(cmd)
+	if err != nil {
+		return err
+	}
+	err = m.CheckRequiredOptions()
+	if err != nil {
+		return err
+	}
+
 	return
+}
+
+// CheckRequiredOptions - Checks that all required options have a value
+func (m *Module) CheckRequiredOptions() (err error) {
+	return
+}
+
+// CheckCommand - Verifies the command run by the user (like 'run exploit' or 'run check') is valid
+func (m *Module) CheckCommand(command string) (err error) {
+	// If we don't have commands it means there is no need for them, so no error
+	if len(m.Info.Commands) == 0 || m.Info.Commands == nil {
+		return nil
+	}
+
+	// Else check for it
+	for com, desc := range m.Info.Commands {
+		if com == command {
+			return nil
+		}
+	}
+	return fmt.Errorf("invalid command: %s", command)
 }
 
 // Event - Pushes an event message (ex: for status) back to the console running the module.
@@ -80,9 +112,9 @@ func (m *Module) ToProtobuf() (modpb *modulepb.Module) {
 }
 
 // OptionsToProtobuf - A user requested the module options.
-func (m *Module) OptionsToProtobuf() (options []modulepb.Option) {
+func (m *Module) OptionsToProtobuf() (options map[string]modulepb.Option) {
 	for _, opt := range *m.Opts {
-		options = append(options, opt.proto)
+		options[opt.proto.Name] = opt.proto
 	}
 	return
 }
