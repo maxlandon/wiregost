@@ -89,16 +89,10 @@ func main() {
 	// It is handled and control by this server, which can stop, restart and recompile a module manager. It starts and
 	// communicates with one module manager for each connected user, so that each of them can use, write and modify modules
 	// without bothering the other
-	// modules.StartManagers()
-
-	// Load modules
-	// modules.RegisterModules()
-
-	// Init users module stacks
-	// modules.InitStacks()
+	// module.StartManagers()
 
 	// Start Persistent implants
 
 	// Start Listening for client consoles
-	clients.StartClientListener(assets.ServerConfiguration.ServerHost, assets.ServerConfiguration.ServerPort)
+	clients.Serve()
 }

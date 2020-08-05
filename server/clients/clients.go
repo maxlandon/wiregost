@@ -87,8 +87,8 @@ func (c *consoles) GetUserClients(user *dbpb.User, username string) (clis []clie
 	return
 }
 
-// StartClientListener - Listen for incoming console connections
-func StartClientListener(host string, port int) (server *grpc.Server, ln net.Listener, err error) {
+// Serve - Listen for incoming console connections
+func Serve() (server *grpc.Server, ln net.Listener, err error) {
 
 	// Logging
 

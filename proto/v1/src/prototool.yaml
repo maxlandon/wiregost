@@ -227,6 +227,8 @@ generate:
       context/metadata.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/context
     # Module
       module/module.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/module
+      module/option.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/module
+      module/manager.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/module
       module/module_rpc.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/module
       module/stack.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/module
     # Scanner
