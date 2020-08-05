@@ -21,25 +21,62 @@ package module;
 option go_package = "modulepb";
 
 import "module/module.proto";
-// Stacks do not need DB storage = no tags
+import "module/option.proto";
 
-// StackUseRequest - Load a module onto the stack
-message StackUseRequest {
+// Module - A little RPC service providing methods for module objects, with which
+// they can track and synchronise state between their stack version and the server's.
+// All other elements that the modules will need, per type, will be registered by them.
+service Stack {
+
+        rpc UseModule(UseRequest) returns (Use);
+        rpc RunModule(RunRequest) returns (Run);
+        rpc GetInfo(InfoRequest) returns (Info);
+        rpc GetOptions(OptionsRequest) returns (Options);
+        rpc SetOption(SetOptionRequest) returns (Option);
+}
+
+// UseRequest - Load a module onto the stack
+message UseRequest {
         string Path = 1;
 }
 
-message StackUse {
+message Use {
         Module Loaded = 1;
         string Err = 2;
 }
 
-// StackPopRequest - Pop one or more modules from the user stack
-message StackPopRequest {
+// PopRequest - Pop one or more modules from the user stack
+message PopRequest {
         repeated string Path = 3;
         bool All = 4;                   // Pop all modules from stack
 }
 
-message StackPop {
+message Pop {
         Module Next = 1;                // Sends next module on stack: empty if none left
         string Err = 2;
+}
+
+// PushRequest - Push one or more modules onto the user stack
+message PushRequest {
+        repeated string Path = 3;
+}
+
+message Push {
+        string Err = 1;
+}
+
+// ClearRequest - Clears all modules from the user's stack
+message ClearRequest {
+}
+
+message Clear {
+        string Err = 1;
+}
+
+// ReloadRequest - Recompile and reload the module stack.
+message ReloadRequest {
+}
+
+message Reload {
+        string Err = 1;
 }

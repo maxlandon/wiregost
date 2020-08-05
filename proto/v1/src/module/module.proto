@@ -20,79 +20,77 @@ package module;
 
 option go_package = "modulepb";       // Include the package ghost/core at compile time.
 
+import "module/option.proto";
+
 // Modules do not need DB storage = no tags
 
 // Module Types
 enum Type {
         PAYLOAD = 0;
-        AUXILIARY = 1;
-        EXPLOIT = 2;
-        POST = 3;
-        HANDLER = 4;
+        EXPLOIT = 1;
+        POST = 2;
 }
 
-// Module - A module object, with properties and options
-message Module {
+// Info - This structure is shared by all modules, independently of their type.
+message Info {
+        // Base information
         string Name = 1;                // Module Name
         Type Type = 2;                  // Type of module
         string Path = 3;                // Path to module in modules directory
         string Description = 4;         // A description for this module
         string Notes = 5;               // Additional notes
-        repeated string References = 6; // Any reference useful to the user
-        repeated string Authors = 7;    // Module authors
-        repeated string Credits = 8;    // Other credits
-        repeated string Targets = 9;    // A list of operating systems on which the module can be run
-        string Arch = 10;               // Supported architecture
-        string Lang = 11;               // Implementation language of the module
-        bool Priviledged = 12;          // Does the module requires administrator privileges to be run ?
-
-        map <string, string> Commands = 14;     // The module can run different actions, with different commands
-                                                // (ex: run to_listener, run exploit) mapped to their description
-        map<string, Option> Options = 13;       // All options for this module
-
-        // repeated Option Options = 14;    // Alternative: use list, and make a method like m.SetOption("name", "value")
-        //                                                                                   m.GetOption("name")
-        // This will preserve order for options, which might be useful
+        message Reference {             // A CVE,EDB, CWE, etc. reference identifier.
+                repeated string ID = 1;
+        }
+        repeated Reference References = 6;  // Any reference useful to the user
+        repeated string Authors = 7;        // Module authors
+        repeated string Credits = 8;        // Other credits
+        repeated string Targets = 9;        // A list of operating systems on which the module can be run
+        string Arch = 10;                   // Supported architecture
+        string Language = 11;               // Implementation language of the module
+        bool Priviledged = 12;              // Does the module requires administrator privileges to be run ?
 }
 
-
-// Option - An option used by the module
-message Option {
-        string Name = 1;            // Option name
-        string Category = 2;        // Options can be classified according to user preferences
-        string Value = 3;           // Option value, is always a string and converted later if needed
-        bool Required = 5;          // Is this option required ? If yes it should already have a value
-        string Flag = 6;            // Sometimes the option value is used as a flag in a command line, so it might have a different form.
-        string Description = 7;     // A description for this option.
+// Module - A module object, with properties and options
+message Module {
+        Info Info = 1;                          // Module metadata information
+        map <string, Command> Commands = 14;    // The module can run different actions, with different commands
+        map<string, Option> Options = 13;       // All options for this module. Send a list with them, for retrieving order.
 }
 
+// Command - A module may expose various subcommands, for triggering different functions.
+message Command {
+        string Name = 1;            // Command name
+        string Description = 2;     // Description
+        bool HasPayload = 3;        // Some commands trigger exploits, themselves requiring to action payloads. 
+}
 
-// ModuleActionRequest - Run the one of the functions of the module
-message ModuleActionRequest {
+// RunRequest - Run the one of the functions of the module
+message RunRequest {
         uint64 RequestID = 1;       // Uniquely identify the request, so that any further module output is redirected to the good console
         uint32 WorkspaceID = 2;
         string Path = 3;            // Module Path
-        string Action = 4;          // Do we use Enum here or just dynamic string ? dynamic allows for any new command
+        Command Command = 4;        // The precise action to trigger
         string Options = 5;         // Any option or argument need, such as profile name
 }
 
-message ModuleAction {
+message Run {
         bool Success = 1;
         string Result = 2;
         string Err = 3;
         Module Updated = 5;         // used when parsing profiles
 }
 
-
-// ModuleSetOptionRequest - Set an option for the module
-message ModuleSetOptionRequest {
-        uint32 WorkspaceID = 1;
-        string Path = 2; 
-        string Name = 3;
-        string Value = 4;
+// InfoRequest - Request the module's metadata information only
+message InfoRequest {
+        string Path = 3;            // Module Path
 }
 
-message ModuleSetOption {
-        bool Success = 1;
+// EditRequest - Edit one of the module files 
+message EditRequest {
+        string Path = 2; 
+}
+
+message Edit {
         string Err = 2;
 }
