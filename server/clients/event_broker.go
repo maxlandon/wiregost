@@ -20,6 +20,9 @@ func (b *eventBroker) Events(req *clientpb.Empty, stream serverpb.EventRPC_Event
 	// For each event coming in, check event type,
 	for event := range incoming {
 
+		// Check for a Client/ClientID in the event: if one, check it:
+		// We skip the event if the ClientID doesn't match ours.
+
 		// Depending on event type, we might have to push to several users/clients
 		switch event.Type {
 		case serverpb.EventType_USER:

@@ -22,15 +22,16 @@ import (
 	"github.com/maxlandon/wiregost/server/assets"
 	"github.com/maxlandon/wiregost/server/certs"
 	"github.com/maxlandon/wiregost/server/clients"
+	"github.com/maxlandon/wiregost/server/events"
 )
 
-func main() {
+// The Server executable is the main piece of the Wiregost system. It is also the one that should NEVER have to be restarted.
+// This is a challenge to the extent that this executable has to start and coordinate many pieces of information, across
+// many network and RPC layers, while sharing state with many components, without any recursive import.
+// For instance: many users are writing many modules, using many sessions. If any user has to modify any bit of code into
+// the full Wiregost system, which is fully COMPILED, we have to comply with Go's apparent mantra: micro-service architecture.
 
-	// The Server executable is the main piece of the Wiregost system. It is also the one that should NEVER have to be restarted.
-	// This is a challenge to the extent that this executable has to start and coordinate many pieces of information, across
-	// many network and RPC layers, while sharing state with many components, without any recursive import.
-	// For instance: many users are writing many modules, using many sessions. If any user has to modify any bit of code into
-	// the full Wiregost system, which is fully COMPILED, we have to comply with Go's apparent mantra: micro-service architecture.
+func main() {
 
 	// CONFIGURATION
 	// The server makes configuration available to all components of the framework.
@@ -80,19 +81,21 @@ func main() {
 	// registrations, module events, etc... We setup and register all event subscribers here, available for all packages.
 	// The event manager should offer a gRPC server to consoles (for pushing them events) and module manager (for pushing
 	// and receiving events). All events happening in Wiregost always go through this package for processing and dispatch.
-	// events.SetupDispatcher().
+	go events.Broker.Start()
 
 	// MODULE SYSTEM
 	// The module system is composed of a module manager standalone program, which holds all available modules in Wiregost.
 	// It is somehow a "live stack", that communicates over gRPC with the server and the database, either for requiring
 	// implant actions, for pushing content to user consoles, etc.
-	// It is handled and control by this server, which can stop, restart and recompile a module manager. It starts and
+	// It is handled and controlled by this server, which can stop, restart and recompile a module manager. It starts and
 	// communicates with one module manager for each connected user, so that each of them can use, write and modify modules
-	// without bothering the other
-	// module.StartManagers()
+	// without bothering the others.
+	// modules.StartManagers()
 
-	// Start Persistent implants
+	// PERSISTENCE
+	// We might have some persistence needs, such as automatic listeners with
+	// various preset rules (routes to open, pivots to reach, etc...)
 
 	// Start Listening for client consoles
-	clients.Serve()
+	clients.StartClientListener(assets.ServerConfiguration.ServerHost, assets.ServerConfiguration.ServerPort)
 }

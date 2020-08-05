@@ -34,6 +34,26 @@ func SetupGRPC() (server *grpc.Server) {
 	return
 }
 
+// Serve - Listen for incoming console connections
+func Serve() (server *grpc.Server, ln net.Listener, err error) {
+
+	// Logging
+
+	// Checking for at least one user
+	err = CreateDefaultUser()
+
+	// Setup gRPC server
+	server = SetupGRPC()
+
+	// Register RPC Services
+	RegisterServices(server)
+
+	// Listen and serve gRPC
+	ServeGRPC(server)
+
+	return
+}
+
 // ServeGRPC - Start the Wiregost client gRPC server
 func ServeGRPC(server *grpc.Server) {
 
