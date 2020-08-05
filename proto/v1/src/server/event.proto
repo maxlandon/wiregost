@@ -32,17 +32,42 @@ enum EventType {
         SESSION = 4;
         USER = 5;
         CANARY = 6;
+        ROUTE = 7;
 }
 
-// EventRPC - A stream of events from server to client.
-service EventRPC {
+// Level - Some components in Wiregost will push to the event system through logger hooks,
+// for more granular output of log information, especially for modules.
+enum Level {
+        SUCCESS = 0;
+        INFO = 1;
+        DEBUG = 2;
+        TRACE = 3;
+        WARNING = 4;
+        ERROR = 5;
+        PANIC = 6;
+}
+
+// Events - The Event system in Wiregost is built around a gRPC server, 
+// to which potential event subscribers can connect and register some events.
+// The subscriber is always the client here.
+service Events {
+        
+        // EventsSubscribe - The client subscribes to some types of events.
+        rpc EventsSubscribe(SubscribeRequest) returns (Subscribe);
+        // EventsUnsubscribe - The client unsubscribes from some types of events.
+        rpc EventsUnsubscribe(UnsubscribeRequest) returns (Unsubscribe);
+
         // Events - Receive events from the server.
-        rpc Events(client.Empty) returns (stream Event);
+        rpc Events(client.Client) returns (stream Event);
+
+        // EventPush - A client pushes a new event to the server.
+        rpc EventPush(stream Event) returns (client.Empty);
 }
 
 // Event - Any asynchronous event to be pushed to one or more consoles
 message Event {
         EventType Type = 1; 
+        Level Level = 2;
         // Job Job = 2;
         // Ghost Ghost = 3;
         client.Client Client = 4;
@@ -51,10 +76,22 @@ message Event {
         string Message = 7;
         bytes Details = 8;
         string Err = 9;
+}
 
-        bool Pending = 15;      // This could be used to determine how to handle printing/refresh on the console, like:
-        //                         [*] Module downloading file... Done          (if pending)
+// SubscribeRequest - A client subscribes to some types of events
+message SubscribeRequest {
+        
+}
 
-        //                         [*] Module downloading ...                   (if not pending)
-        //                         [*] Done
+message Subscribe {
+        
+}
+
+// UnsubscribeRequest - A client unsubscribes from some types of events
+message UnsubscribeRequest {
+        
+}
+
+message Unsubscribe {
+        
 }

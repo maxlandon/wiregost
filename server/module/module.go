@@ -11,7 +11,15 @@ import (
 // a client object that synchronises state with an equivalent Stack module, and can perform some
 // base operations on it: getting information, setting options, running checks, running it.
 // Some of this object's methods will make use of gRPC client calls, to sync with their Stack peer.
-// The type is unexported, but its methods are: The user needs to use its behavior, not its state.
+//
+// ----- Exposure of the module type  ------
+// This type is unexported, and only some of its methods are. This has several reasons:
+// - This object will be instantiated in two places: on stack and on server.
+//   Thus some functions will be useless if called in the wrong binary.
+// - Many functions are only called by drivers and module subtypes in
+//   the same package.
+// - The user needs to access some base behavior and state, so these functions
+//   are exported for module authors..
 type module struct {
 	info *modulepb.Info // Info (protobuf object)
 
