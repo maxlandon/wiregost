@@ -20,6 +20,7 @@ package module;
 
 option go_package = "modulepb";
 
+import "client/connection.proto";
 
 // Option - An option used by the module
 message Option {
@@ -47,10 +48,14 @@ message SetOptionRequest {
         string Path = 2; 
         string Name = 3;
         string Value = 4;
+
+        client.Client Client = 6;   // User authentication, needed to dispatch
 }
 
 message SetOption {
         bool Success = 1;
         string Err = 2;
+
+        client.Client Client = 6;   // User authentication, needed to dispatch
 }
 

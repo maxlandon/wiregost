@@ -21,6 +21,7 @@ package module;
 option go_package = "modulepb";       // Include the package ghost/core at compile time.
 
 import "module/option.proto";
+import "client/connection.proto";
 
 // Modules do not need DB storage = no tags
 
@@ -72,6 +73,8 @@ message RunRequest {
         string Path = 3;            // Module Path
         Command Command = 4;        // The precise action to trigger
         string Options = 5;         // Any option or argument need, such as profile name
+
+        client.Client Client = 6;   // User authentication, needed to dispatch
 }
 
 message Run {
@@ -84,11 +87,15 @@ message Run {
 // InfoRequest - Request the module's metadata information only
 message InfoRequest {
         string Path = 3;            // Module Path
+
+        client.Client Client = 6;   // User authentication, needed to dispatch
 }
 
 // EditRequest - Edit one of the module files 
 message EditRequest {
         string Path = 2; 
+
+        client.Client Client = 6;   // User authentication, needed to dispatch
 }
 
 message Edit {

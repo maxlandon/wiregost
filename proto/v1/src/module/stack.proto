@@ -22,10 +22,19 @@ option go_package = "modulepb";
 
 import "module/module.proto";
 import "module/option.proto";
+import "client/connection.proto";
 
 // Module - A little RPC service providing methods for module objects, with which
 // they can track and synchronise state between their stack version and the server's.
 // All other elements that the modules will need, per type, will be registered by them.
+//
+// Here, the client is the Wiregost's server Module Manager, and the RPC server is the stack binary
+// with all up-to-date compiled modules.
+// Most of the time, these functions are somewhow "forwarded" by the Wiregost Module Manager:
+// it will return a version of the module for console users, but it will also use it to update
+// a user's stack, as well as to populate a Module Driver (Exploit, Payload, etc.) with a new
+// instance of the module. This instance is used for various things, but it will not be the one
+// triggering the actual Run(cmd string, args []string) method of a module.
 service Stack {
 
         rpc UseModule(UseRequest) returns (Use);
@@ -38,6 +47,8 @@ service Stack {
 // UseRequest - Load a module onto the stack
 message UseRequest {
         string Path = 1;
+
+        client.Client Client = 6;   // User authentication, needed to dispatch
 }
 
 message Use {
@@ -49,6 +60,8 @@ message Use {
 message PopRequest {
         repeated string Path = 3;
         bool All = 4;                   // Pop all modules from stack
+
+        client.Client Client = 6;   // User authentication, needed to dispatch
 }
 
 message Pop {
@@ -59,6 +72,8 @@ message Pop {
 // PushRequest - Push one or more modules onto the user stack
 message PushRequest {
         repeated string Path = 3;
+
+        client.Client Client = 6;   // User authentication, needed to dispatch
 }
 
 message Push {
@@ -67,6 +82,8 @@ message Push {
 
 // ClearRequest - Clears all modules from the user's stack
 message ClearRequest {
+
+        client.Client Client = 6;   // User authentication, needed to dispatch
 }
 
 message Clear {
@@ -75,6 +92,8 @@ message Clear {
 
 // ReloadRequest - Recompile and reload the module stack.
 message ReloadRequest {
+
+        client.Client Client = 6;   // User authentication, needed to dispatch
 }
 
 message Reload {
