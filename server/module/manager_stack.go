@@ -22,7 +22,10 @@ func (m *manager) ReloadModule(context.Context, *pb.ReloadRequest) (*pb.Reload, 
 
 	// recompile
 
-	// restart
+	// RESTART
+	// If we have modules currently running on the stack binary, we can start another one
+	// and wire everything needed to this new stack. This will prevent things from screwing
+	// while allowing users to work on separate things at once.
 
 	// Connect
 
@@ -32,3 +35,7 @@ func (m *manager) ReloadModule(context.Context, *pb.ReloadRequest) (*pb.Reload, 
 
 	return nil, status.Errorf(codes.Unimplemented, "method ReloadModule not implemented")
 }
+
+// Stack compilation/start/stop methods
+
+// Stack connection/init/setup methods

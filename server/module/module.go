@@ -16,8 +16,7 @@ import (
 // This type is unexported, and only some of its methods are. This has several reasons:
 // - This object will be instantiated in two places: on stack and on server.
 //   Thus some functions will be useless if called in the wrong binary.
-// - Many functions are only called by drivers and module subtypes in
-//   the same package.
+// - Many functions are only called by drivers and module subtypes in the same package.
 // - The user needs to access some base behavior and state, so these functions
 //   are exported for module authors..
 type module struct {
@@ -137,3 +136,6 @@ func (m *module) CheckCommand(command string) (err error) {
 // Run method (called by driver) using the provided module subcommand (run 'check_vuln')o
 // This will trigger the appropriate function in the Stack module itself, while preserving
 // the ability to use drivers such as ExploitDriver for managing the full process of an exploit.
+func (m *module) run() (err error) {
+	return
+}

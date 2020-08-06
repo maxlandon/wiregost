@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	// Managers - The module manager in Wiregost.
+	// Managers - The module manager in Wiregost. There is only instance of it in Wiregost
+	// and it handles everything for all connected users and their consoles.
 	Manager = &manager{}
 )
 
@@ -38,9 +39,12 @@ type manager struct {
 	// to drivers and modules
 
 	// ModuleUI (consoles) gRPC server
-
-	// Module Stack gRPC server
+	// There is one instance serving all users and their consoles. Each request to
+	// one of the services contains a Client PB object, for dispatching to the good stack.
 	*modulepb.UnimplementedManagerServer // Embedding this makes it a gRPC server
+
+	// Module Stack gRPC Client
+	Stack modulepb.StackClient
 
 	// mutex
 	mutex *sync.Mutex
@@ -69,8 +73,11 @@ func (m *manager) Start() (err error) {
 	return
 }
 
-// Stack compilation/start/stop methods
+// Run module methods
+// We could have a general Driver, handling and synchronizing both ExploitDrivers and PayloadDrivers.
+// This would clean a bit the code of the ExploitDriver, things we could mutualize, etc.
 
-// Stack connection/init/setup methods
-
-// Module management methods (init new module, get/set module paths, etc).
+// It would be a bit the inverse equivalent of the msf/lib/base/simple/exploit.rb file, in which a base Exploit
+// module creates its own driver, and synchronises it then with the Exploit's payload:
+// The role of the Manager would be to a subdriver to both, and the Exploit would not create and handle its
+// own driver.
