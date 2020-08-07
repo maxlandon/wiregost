@@ -66,6 +66,8 @@ message Log {
         string Message = 2;
         bool Pending = 3;
         google.protobuf.Timestamp Time = 38;
+
+        string ClientID = 5;    // Client passes its ID for mapping the console to modules being used.
 }
 
 // ModuleLog - Used by the module event stream client to identify itself during the stream setup

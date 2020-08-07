@@ -10,7 +10,7 @@ import (
 )
 
 // RunModule - A user has requested to run one of the curent module's functions.
-func (m *manager) RunModule(context.Context, *pb.RunRequest) (*pb.Run, error) {
+func (m *managers) RunModule(context.Context, *pb.RunRequest) (*pb.Run, error) {
 
 	// Until now, everything that was happening with the current module was only
 	// between the console and the stack binary. At the time of this call, both should
@@ -31,24 +31,20 @@ func (m *manager) RunModule(context.Context, *pb.RunRequest) (*pb.Run, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RunModule not implemented")
 }
 
-func (m *manager) GetInfo(context.Context, *pb.InfoRequest) (*pb.Info, error) {
+func (m *managers) GetInfo(context.Context, *pb.InfoRequest) (*pb.Info, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInfo not implemented")
 }
 
-func (m *manager) GetOptions(context.Context, *pb.OptionsRequest) (*pb.Options, error) {
+func (m *managers) GetOptions(context.Context, *pb.OptionsRequest) (*pb.Options, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOptions not implemented")
 }
 
-func (m *manager) SetOption(context.Context, *pb.SetOptionRequest) (*pb.Option, error) {
+func (m *managers) SetOption(context.Context, *pb.SetOptionRequest) (*pb.Option, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetOption not implemented")
 }
 
-func (m *manager) EditModule(context.Context, *pb.EditRequest) (*pb.Edit, error) {
+func (m *managers) EditModule(context.Context, *pb.EditRequest) (*pb.Edit, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EditModule not implemented")
-}
-
-func (m *manager) UseModule(context.Context, *pb.UseRequest) (*pb.Use, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UseModule not implemented")
 }
 
 // Module management methods (init new module, get/set module paths, etc).

@@ -3,14 +3,29 @@ package module
 import (
 	"sync"
 
+	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 )
 
 var (
 	// Managers - The module manager in Wiregost. There is only instance of it in Wiregost
 	// and it handles everything for all connected users and their consoles.
-	Manager = &manager{}
+	Managers = &managers{
+		Active: &map[*dbpb.User]*manager{},
+		mutex:  &sync.Mutex{},
+	}
 )
+
+type managers struct {
+	Active *map[*dbpb.User]*manager
+
+	// ModuleUI (consoles) gRPC server
+	// There is one gRPC server instance for managers. Each request to one of
+	// the services contains a Client PB object, for dispatching to the good stack.
+	*modulepb.UnimplementedManagerServer // Embedding this makes it a gRPC server
+
+	mutex *sync.Mutex
+}
 
 // manager - A central element to Wiregost system: because modules can be recompiled and are fundamentally
 // a different binary, they need to continuously share and have access to state of various components.
@@ -32,19 +47,21 @@ type manager struct {
 	// Having a stack server-side is useful, because we can send the list back to a
 	// stack binary after it has restarted: it can then parse options/values for these
 	// modules.
+	Stack []*Driver
 
 	// Client/User using this manager
 	// We might need to track clients by some way or another, if we want to
 	// push back various things to the right console. Or we pass state down
 	// to drivers and modules
+	User *dbpb.User
 
 	// ModuleUI (consoles) gRPC server
-	// There is one instance serving all users and their consoles. Each request to
-	// one of the services contains a Client PB object, for dispatching to the good stack.
-	*modulepb.UnimplementedManagerServer // Embedding this makes it a gRPC server
+	// There is one gRPC server instance for managers. Each request to one of
+	// the services contains a Client PB object, for dispatching to the good stack.
+	// *modulepb.UnimplementedManagerServer // Embedding this makes it a gRPC server
 
 	// Module Stack gRPC Client
-	Stack modulepb.StackClient
+	Modules modulepb.StackClient
 
 	// mutex
 	mutex *sync.Mutex
@@ -54,9 +71,9 @@ func newManager() (m *manager) {
 	return
 }
 
-// StartManager - Instantiates a module manager, dedicated to a single user.
+// AssignManager - Instantiates a module manager, dedicated to a single user.
 // This function is called when a user is logged in (first console).
-func StartManager() (m *manager) {
+func AssignManager() (m *manager) {
 
 	// Check if user already has a manager running.
 
@@ -70,14 +87,14 @@ func StartManager() (m *manager) {
 // Start - A function running concurrently, in which the Manager starts
 // all its components (first and foremost, the stack binary).
 func (m *manager) Start() (err error) {
+
+	// Check stack binary is at specified path and compiled up-to-date
+
+	// Start the stack binary
+
+	// Connect to it with a ClientConn, and register the StackClient to it.
+
+	// Additional checks if needed
+
 	return
 }
-
-// Run module methods
-// We could have a general Driver, handling and synchronizing both ExploitDrivers and PayloadDrivers.
-// This would clean a bit the code of the ExploitDriver, things we could mutualize, etc.
-
-// It would be a bit the inverse equivalent of the msf/lib/base/simple/exploit.rb file, in which a base Exploit
-// module creates its own driver, and synchronises it then with the Exploit's payload:
-// The role of the Manager would be to a subdriver to both, and the Exploit would not create and handle its
-// own driver.

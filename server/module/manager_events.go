@@ -8,7 +8,7 @@ import (
 )
 
 // Events - "Point de passage obligé" for all module log messages in Wiregost.
-func (m *manager) Events(_ *pb.Empty, serv pb.Manager_EventsServer) error {
+func (m *managers) Events(_ *pb.Empty, serv pb.Manager_EventsServer) error {
 
 	// We identify the client, getting a ClientID for the console,
 
