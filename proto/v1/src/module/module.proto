@@ -20,16 +20,32 @@ package module;
 
 option go_package = "modulepb";       // Include the package ghost/core at compile time.
 
-import "module/option.proto";
 import "client/connection.proto";
+import "module/option.proto";
 
 // Modules do not need DB storage = no tags
+
+
+// ModuleRPC - A little RPC service providing methods for module objects, with which
+// they can track and synchronise state between their stack version and the server's.
+// All other elements that the modules will need, per type, will be registered by them.
+//
+// Here, the client is the Wiregost's server Module Manager, and the 
+// RPC server is the stack binary with all up-to-date compiled modules.
+service ModuleRPC {
+        rpc UseModule(UseRequest) returns (Use);
+        rpc RunModule(RunRequest) returns (Run);
+        rpc GetInfo(InfoRequest) returns (Info);
+        rpc GetOptions(OptionsRequest) returns (Options);
+        rpc SetOption(SetOptionRequest) returns (Option);
+}
 
 // Module Types
 enum Type {
         PAYLOAD = 0;
         EXPLOIT = 1;
         POST = 2;
+        TRANSPORT = 3;
 }
 
 // Info - This structure is shared by all modules, independently of their type.
@@ -64,6 +80,18 @@ message Command {
         string Name = 1;            // Command name
         string Description = 2;     // Description
         bool HasPayload = 3;        // Some commands trigger exploits, themselves requiring to action payloads. 
+}
+
+// UseRequest - Load a module onto the stack
+message UseRequest {
+        string Path = 1;
+
+        client.Client Client = 6;   // User authentication, needed to dispatch
+}
+
+message Use {
+        Module Loaded = 1;
+        string Err = 2;
 }
 
 // RunRequest - Run the one of the functions of the module
