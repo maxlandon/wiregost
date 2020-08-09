@@ -71,10 +71,6 @@ func (m *Module) SetOption(opt *modpb.Option) (err error) {
 	return
 }
 
-func (m *Module) Start() {
-
-}
-
 // Run - Execute the main function of this transport, which may depend on which
 // settings and details are provided, such as: is the transport a Dialer or a Listener ?
 // or: is the Transport set for a remote implant ? or is the Transport has to be started
