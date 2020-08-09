@@ -20,40 +20,27 @@ package module;
 
 option go_package = "modulepb";
 
+import "client/connection.proto";
 import "module/module.proto";
 import "module/option.proto";
-import "client/connection.proto";
 
-// Module - A little RPC service providing methods for module objects, with which
-// they can track and synchronise state between their stack version and the server's.
-// All other elements that the modules will need, per type, will be registered by them.
-//
-// Here, the client is the Wiregost's server Module Manager, and the RPC server is the stack binary
-// with all up-to-date compiled modules.
-// Most of the time, these functions are somewhow "forwarded" by the Wiregost Module Manager:
-// it will return a version of the module for console users, but it will also use it to update
-// a user's stack, as well as to populate a Module Driver (Exploit, Payload, etc.) with a new
-// instance of the module. This instance is used for various things, but it will not be the one
-// triggering the actual Run(cmd string, args []string) method of a module.
+// Stack - This RPC service provides client consoles with 
+// methods to query, setup and use modules in Wiregost.
 service Stack {
 
-        rpc UseModule(UseRequest) returns (Use);
+        // Module commands
         rpc RunModule(RunRequest) returns (Run);
         rpc GetInfo(InfoRequest) returns (Info);
         rpc GetOptions(OptionsRequest) returns (Options);
         rpc SetOption(SetOptionRequest) returns (Option);
-}
+        rpc EditModule(EditRequest) returns (Edit);
 
-// UseRequest - Load a module onto the stack
-message UseRequest {
-        string Path = 1;
-
-        client.Client Client = 6;   // User authentication, needed to dispatch
-}
-
-message Use {
-        Module Loaded = 1;
-        string Err = 2;
+        // Stack commands
+        rpc UseModule(UseRequest) returns (Use);
+        rpc PopModule(PopRequest) returns (Pop);
+        rpc PushModule(PushRequest) returns (Push);
+        rpc ClearStack(ClearRequest) returns (Clear);
+        rpc ReloadModule(ReloadRequest) returns (Reload);
 }
 
 // PopRequest - Pop one or more modules from the user stack
