@@ -35,8 +35,13 @@ enum Protocol {             // Identify Protocol
 
 // Type - // Do we start a listener on the implant, or do we reach back another address ?
 enum Type {                 
-        REVERSE = 0;
-        BIND = 1;
+        REVERSE = 0; // DIALER
+        BIND = 1;    // LISTENER
+}
+
+enum StagingType {
+        SINGLE = 0; // The connection does not serve any addition payload.
+        STAGER = 1; // The connection will serve some payload.
 }
 
 // Transport - A transport is just a structure used by implants to receive/send/use transport configurations.
@@ -48,8 +53,8 @@ message Transport {
         int32 RPort = 6;
         Protocol Protocol = 7;
         Type Type = 8;
+        StagingType StagingType = 9;
         bool Default = 10;
-        
 }
 
 
