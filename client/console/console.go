@@ -64,7 +64,7 @@ func (c *console) Connect() (err error) {
 
 	// Authenticate (5 tries)
 	var cli client.ConnectionRPCClient
-	cli, context.Context.User = connection.Authenticate(conn)
+	cli, context.Context.Client = connection.Authenticate(conn)
 
 	// Receive various infos sent by server when authenticated (ClientID, messages, users, version information, etc)
 	info, config := context.GetConnectionInfo(cli)
@@ -82,7 +82,7 @@ func (c *console) Connect() (err error) {
 	connection.RegisterRPCClients(conn)
 
 	// Listen for incoming server/implant events
-	go c.StartEventListener(conn)
+	go c.StartEventListener()
 
 	return nil
 }

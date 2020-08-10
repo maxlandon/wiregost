@@ -3,7 +3,6 @@ package context
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/lmorg/readline"
 	"google.golang.org/grpc"
 
@@ -32,7 +31,7 @@ const (
 
 // ConsoleContext - Stores all variables needed for console context
 type ConsoleContext struct {
-	ClientID  uuid.UUID              // Unique user ID for module requests
+	Client    *clientpb.Client
 	User      dbpb.User              // User information sent back after auth
 	Shell     *readline.Instance     // Shell object
 	Config    clientpb.ConsoleConfig // Shell configuration

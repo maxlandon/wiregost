@@ -16,6 +16,9 @@ var (
 
 	// CompilerRPC - Compiler commands
 	CompilerRPC serverpb.CompilerClient
+
+	// EventsRPC - Processes incoming events (modules, sessions, etc.)
+	EventsRPC serverpb.EventsClient
 )
 
 // RegisterRPCClients - Binds all gRPC clients to the newly established & authenticated connection.
@@ -30,5 +33,7 @@ func RegisterRPCClients(conn *grpc.ClientConn) (err error) {
 	// Compiler
 	CompilerRPC = serverpb.NewCompilerClient(conn)
 
+	// Events
+	EventsRPC = serverpb.NewEventsClient(conn)
 	return
 }

@@ -11,15 +11,14 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/client/assets"
 	cliCtx "github.com/maxlandon/wiregost/client/context"
-	client "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
-	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
+	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 )
 
 // Authenticate - Perform full authentication process with server
-func Authenticate(conn *grpc.ClientConn) (cli client.ConnectionRPCClient, user dbpb.User) {
+func Authenticate(conn *grpc.ClientConn) (cli clientpb.ConnectionRPCClient, client *clientpb.Client) {
 
 	// Register ConnectionRPC client to connection
-	cli = client.NewConnectionRPCClient(conn)
+	cli = clientpb.NewConnectionRPCClient(conn)
 	md := cliCtx.SetMetadata()
 
 	// Send authentication request (loop 5 several attempts)
@@ -27,7 +26,7 @@ func Authenticate(conn *grpc.ClientConn) (cli client.ConnectionRPCClient, user d
 	for {
 		if counter < 5 {
 			// Prompt, store and send password (as a hash)
-			req := &client.AuthenticationRequest{}
+			req := &clientpb.AuthenticationRequest{}
 			req.Username = assets.ServerUser
 			req.Password = PromptUserPassword()
 
@@ -47,7 +46,7 @@ func Authenticate(conn *grpc.ClientConn) (cli client.ConnectionRPCClient, user d
 				fmt.Println(tui.Red("Error during authentication request."))
 			}
 
-			return cli, *res.Client.User
+			return cli, res.Client
 		}
 
 		// If we go here, then user has tried five times unsuccessfully.
