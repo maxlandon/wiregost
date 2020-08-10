@@ -17,6 +17,8 @@ type broker struct {
 	unsubscribe chan chan serverpb.Event
 	publish     chan serverpb.Event
 	send        chan serverpb.Event
+
+	Server *Server // The gRPC server for all components
 }
 
 // Push - This function is used by outside packages, in order to push events to consoles.
@@ -33,6 +35,7 @@ func newBroker() *broker {
 		subscribe:   make(chan chan serverpb.Event, eventBufSize),
 		unsubscribe: make(chan chan serverpb.Event, eventBufSize),
 		send:        make(chan serverpb.Event, eventBufSize),
+		Server:      &Server{},
 	}
 	go b.Start()
 	return b

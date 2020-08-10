@@ -38,13 +38,12 @@ enum EventType {
 // Level - Some components in Wiregost will push to the event system through logger hooks,
 // for more granular output of log information, especially for modules.
 enum Level {
-        SUCCESS = 0;
-        INFO = 1;
-        DEBUG = 2;
-        TRACE = 3;
-        WARNING = 4;
-        ERROR = 5;
-        PANIC = 6;
+        TRACE = 0;
+        DEBUG = 1;
+        INFO = 2;
+        WARNING = 3;
+        ERROR = 4;
+        SUCCESS = 5;
 }
 
 // Events - The Event system in Wiregost is built around a gRPC server, 
@@ -61,7 +60,7 @@ service Events {
         rpc Events(client.Client) returns (stream Event);
 
         // EventPush - A client pushes a new event to the server.
-        rpc EventPush(stream Event) returns (client.Empty);
+        rpc EventPush(Event) returns (client.Empty);
 }
 
 // Event - Any asynchronous event to be pushed to one or more consoles
@@ -72,9 +71,8 @@ message Event {
         // Ghost Ghost = 3;
         client.Client Client = 4;
 
-        uint64 RequestID = 6; 
         string Message = 7;
-        bytes Details = 8;
+        string Module = 8;
         string Err = 9;
 }
 

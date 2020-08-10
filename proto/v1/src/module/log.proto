@@ -1,0 +1,54 @@
+// Wiregost - Golang Exploitation Framework
+// Copyright © 2020 Para
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package module;
+
+option go_package = "modulepb";
+
+import "google/protobuf/timestamp.proto";
+
+// Level - Some components in Wiregost will push to the event system through logger hooks,
+// for more granular output of log information, especially for modules.
+enum Level {
+        TRACE = 0;
+        DEBUG = 1;
+        INFO = 2;
+        WARNING = 3;
+        ERROR = 4;
+        SUCCESS = 5;
+}
+
+// Log - A log message sent by a module back to a console.
+// The Manager will, in-between, log it to files if needed.
+// The ideal would be to pass a logrus.Entry like object.
+message Log {
+        Level Level = 1;
+        string Message = 2;
+        bool Pending = 3;
+        google.protobuf.Timestamp Time = 38;
+
+        string ClientID = 5;    // Client passes its ID for mapping the console to modules being used.
+}
+
+// ModuleLog - Used by the module event stream client to identify itself during the stream setup
+message ModuleLog {
+        string ClientID = 1;    // Client passes its ID for mapping the console to modules being used.
+        Level Level = 2;        // What level of logging is desired
+}
+
+
