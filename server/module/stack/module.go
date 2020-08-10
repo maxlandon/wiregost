@@ -70,3 +70,9 @@ func (m *stacks) EditModule(context.Context, *pb.EditRequest) (*pb.Edit, error) 
 }
 
 // Module management methods (init new module, get/set module paths, etc).
+
+// GetModule - This function finds a module by path (doing all the processing and checking
+// if needed), instantiates it and returns it to the stack.
+func GetModule(path string) (m Module, err error) {
+	return
+}

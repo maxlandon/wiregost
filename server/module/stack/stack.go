@@ -3,6 +3,7 @@ package stack
 import (
 	"sync"
 
+	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 )
@@ -27,6 +28,19 @@ type stacks struct {
 	// Should pass on a logger from when the user connected.
 
 	mutex *sync.Mutex
+}
+
+// Add - Adds a module stack for the user that just registered.
+func (s *stacks) Add(client *clientpb.Client) (stack *stack, err error) {
+	s.mutex.Lock()
+	stack = newStack(client)
+	(*s.Active)[client.User] = stack
+	s.mutex.Unlock()
+	return
+}
+
+func GetUserStack(client *clientpb.Client) (s *stack) {
+	return (*Stacks.Active)[client.User]
 }
 
 // stack - A central element to Wiregost system: because modules can be recompiled and are fundamentally
@@ -67,19 +81,27 @@ type stack struct {
 	mutex *sync.Mutex
 }
 
-func newStack() (m *stack) {
-	return
+func newStack(client *clientpb.Client) (m *stack) {
+	return &stack{
+		Current: nil,         // No module is currently loaded
+		Stack:   []Module{},  // The list of modules on stack is empty
+		User:    client.User, // The stack is being assigned to a User
+		Modules: nil,         // There is no stack binary started yet.
+	}
 }
 
 // AssignStack - Instantiates a module Stacks, dedicated to a single user.
 // This function is called when a user is logged in (first console).
-func AssignStack() (m *stack) {
+func AssignStack(client *clientpb.Client) (m *stack) {
 
 	// Check if user already has a Stacks running.
-
-	// If yes, return the pointer to this instance.
+	if stack, found := (*Stacks.Active)[client.User]; found {
+		// If yes, return the pointer to this instance.
+		return stack
+	}
 
 	// If not, return a newly instantiated one and start it
+	m, _ = Stacks.Add(client)
 
 	return
 }

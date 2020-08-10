@@ -2,6 +2,7 @@ package stack
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -9,34 +10,90 @@ import (
 	pb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 )
 
-func (m *stacks) UseModule(context.Context, *pb.UseRequest) (*pb.Use, error) {
+func (m *stacks) UseModule(in context.Context, req *pb.UseRequest) (res *pb.Use, err error) {
 
-	// The manager checks his user stack: if not here continue, otherwise just return
-	// this module's information
+	stack := GetUserStack(req.Client) // User stack
 
-	// If current is empty { find module and put it as current }
+	// Find and instantiate the module. This will instantiate it.
+	module, err := GetModule(req.Path)
 
-	// If current not empty {}
-	//      - Add module, catch ok, and error
-	//      if err {
-	//              return errors.New("Must be that module is incompatible with current")
-	//      }
-	//      if ok {
-	//             // The problem is not an incompatibilty about platform/payload
-	//             // Just that we are not allowed to load this module as a submodule,
-	//             // so we use it as Current.
-	//      }
+	// If err or module empty, send back an error
+	if err != nil {
+		return &pb.Use{Err: err.Error()}, nil
+	} else if module == nil {
+		err = fmt.Errorf("no module at path %s", req.Path)
+		return &pb.Use{Err: err.Error()}, nil
+	}
 
-	return nil, status.Errorf(codes.Unimplemented, "method UseModule not implemented")
+	// If current is empty, we simply add this module and return
+	if stack.Current == nil {
+		stack.Current = module
+		res = &pb.Use{
+			Loaded: module.ToProtobuf(),
+		}
+	}
+
+	// The current module is not empty, we let the current module handle
+	// this request. It will determine if it accepts it or not.
+	accepted, err := stack.Current.AddModule(module)
+
+	// If there is an error, the module might have accepted it
+	// but didn't for a reason (generally, submodule compatibility).
+	// We return the error immediately, so the user can see for himself.
+	if err != nil {
+		return &pb.Use{Err: err.Error()}, nil
+	}
+
+	// Here, module does not support this module as a "submodule".
+	// Therefore we must devise what to do with it. See later.
+	if accepted == false {
+	}
+
+	// END: We come here, so that means we added a module somewhere.
+	// We must check if this module has a peer with a Run() function
+	// on the user's stack binary. If yes, we do the necessary.
+
+	// Change this
+	return nil, nil
 }
 
-func (m *stacks) PopModule(context.Context, *pb.PopRequest) (*pb.Pop, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PopModule not implemented")
+// PushModule - The last module pushed on the stack popped back as the current module.
+func (m *stacks) PopModule(in context.Context, req *pb.PopRequest) (res *pb.Pop, err error) {
+
+	stack := GetUserStack(req.Client) // User stack
+
+	// Empty stack
+	if len(stack.Stack) == 0 {
+		err = fmt.Errorf("the module stack is empty")
+		return &pb.Pop{Err: err.Error()}, nil
+	}
+
+	stack.Current = stack.Stack[len(stack.Stack)-1] // Set the module as current.
+	stack.Stack = stack.Stack[:len(stack.Stack)-1]  // Pop its reference on the stack.
+
+	res = &pb.Pop{
+		Next: stack.Current.ToProtobuf(),
+	}
+
+	return
 }
-func (m *stacks) PushModule(context.Context, *pb.PushRequest) (*pb.Push, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PushModule not implemented")
+
+// PushModule - The module currently loaded by the user is pushed to the user's Stack.
+func (m *stacks) PushModule(in context.Context, req *pb.PushRequest) (res *pb.Push, err error) {
+
+	stack := GetUserStack(req.Client) // User stack
+
+	// We just put it at end (top) of the stack
+	stack.Stack = append(stack.Stack, stack.Current)
+
+	return &pb.Push{}, nil
 }
-func (m *stacks) ClearStack(context.Context, *pb.ClearRequest) (*pb.Clear, error) {
+func (m *stacks) ClearStack(in context.Context, req *pb.ClearRequest) (res *pb.Clear, err error) {
+
+	stack := GetUserStack(req.Client) // User stack
+
+	stack.Stack = []Module{} // Hope we took care of background jobs first.
+
 	return nil, status.Errorf(codes.Unimplemented, "method ClearStack not implemented")
 }
 func (m *stacks) ReloadModule(in context.Context, req *pb.ReloadRequest) (*pb.Reload, error) {

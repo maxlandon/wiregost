@@ -2,6 +2,7 @@ package clients
 
 import (
 	"context"
+	"strconv"
 
 	"google.golang.org/grpc"
 
@@ -9,6 +10,7 @@ import (
 	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	"github.com/maxlandon/wiregost/server/assets"
+	"github.com/maxlandon/wiregost/server/version"
 )
 
 type connectionServer struct {
@@ -54,6 +56,9 @@ func (c *connectionServer) Authenticate(ctx context.Context, req *clientpb.Authe
 	res.Client.User = dbRes.Users[0]
 	res.Client.User.Online = true
 
+	// We confirm the client, which will register it to a module stack as well
+	Consoles.ConfirmClient(*res.Client)
+
 	return res, nil
 }
 
@@ -79,11 +84,10 @@ func (c *connectionServer) GetVersion(context.Context, *clientpb.Empty) (*client
 		ClientMajor:     "1",
 		ClientMinor:     "0",
 		ClientPatch:     "0",
-		ServerMajor:     "1",
-		ServerMinor:     "0",
-		ServerPatch:     "0",
-		ServerCommitTag: "fhlh83hkllfd8kjld7321hf908Ofwhw",
+		ServerMajor:     strconv.Itoa(version.SemanticVersion()[0]),
+		ServerMinor:     strconv.Itoa(version.SemanticVersion()[1]),
+		ServerPatch:     strconv.Itoa(version.SemanticVersion()[2]),
+		ServerCommitTag: version.GitCommit,
 	}
 	return ver, nil
-	// return nil, status.Errorf(codes.Unimplemented, "method GetVersion not implemented")
 }

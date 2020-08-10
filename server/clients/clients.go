@@ -5,6 +5,7 @@ import (
 
 	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
+	"github.com/maxlandon/wiregost/server/module/stack"
 )
 
 var (
@@ -38,10 +39,12 @@ func (c *clients) AddClient(cli clientpb.Client) {
 
 func (c *clients) ConfirmClient(cli clientpb.Client) {
 	c.mutex.Lock()
-	// Add client object
 	(*c.Connected)[cli.Token] = &cli
 	delete((*c.Unauthenticated), cli.Token)
-	// Bind event broker
+
+	// We register the client to a module stack
+	stack.AssignStack(&cli)
+
 	c.mutex.Unlock()
 }
 
