@@ -3,9 +3,12 @@ package module
 import (
 	"fmt"
 
-	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
-	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 	"github.com/sirupsen/logrus"
+
+	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
+	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
+	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
+	"github.com/maxlandon/wiregost/server/log"
 )
 
 // Module - The base object inherited by all Module types in Wiregost. Any component in Wiregost that
@@ -29,7 +32,7 @@ type Module struct {
 
 	// Owner - The user of this module instance. This is important as it will enable
 	// us to further check permissions at various stages of a module execution.
-	Owner *dbpb.User
+	Client *clientpb.Client
 
 	// We need methods for interacting either with :
 	// the stack module equivalent when this module is in the server
@@ -42,12 +45,15 @@ type Module struct {
 // This function is called twice: on server and on stack binary. The server should call it
 // for the according entry in the result of ToProtobuf(), called by the stack binary.
 func New(meta *modulepb.Info) (m *Module) {
-	return &Module{Info: meta}
-}
 
-// information - Registers the module's metadata information
-func (m *Module) information(meta *modulepb.Info) (err error) {
-	m.Info = meta
+	m = &Module{
+		Info:     meta,                           // Base information
+		Commands: map[string]*modulepb.Command{}, // Empty commands
+		Opts:     map[string]Option{},            // Module options, with utility methods on them
+		// Client:   client,                         // The client/user having loaded the module.
+		// We don't put this here, it bothers us for all module subtypes instantiations.
+	}
+
 	return
 }
 
@@ -87,16 +93,12 @@ func (m *Module) ToProtobuf() (mod *modulepb.Module) {
 
 // SetupLog - An exported function that will be called by the Stack module object. This logger will have
 // hooks linked to a gRPC service, for sending back status to user consoles and logging files.
-func (m *Module) SetupLog() (logger *logrus.Entry) {
+// The function is exported: it is only called by module Stacks (server-side and stack-side), for
+// setting up the module's respective logging infrastructures.
+func (m *Module) SetupLog(remote bool, cli *clientpb.Client, rpc serverpb.EventsClient) (logger *logrus.Entry) {
 
-	// When this function is called, we should have determined if the module has a remote side:
-	// If yes, we add a special hook for logging over gRPC, or we make a completely different
-	// logrus.Logger in a specialized function setupLogRemote() (logger *logrus.Logger)
-	// to which we then add fields.
-
-	// Add fields for userID or ClientID
-
-	// Add WithFields("module") if needed
+	m.Client = cli // Can do that here: this func is called quick after New()
+	m.Log = log.ModuleLogger(remote, cli, rpc)
 
 	return
 }

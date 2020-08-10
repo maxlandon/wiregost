@@ -37,8 +37,8 @@ func NewStager(meta *modpb.Info) (m *Stager) {
 	// of the "live" job is to initiate a connection over the network and interact with it.
 	m.Info.Type = modpb.Type_TRANSPORT
 
-	// Add specific fields to the Stager logger.
-	m.Log = m.SetupLog().WithField("stager", "stager")
+	// Add specific fields to the Stager logger. Overwrites "module":"module" key/val pair.
+	m.Log = m.Log.WithField("module", "stager")
 
 	return
 }

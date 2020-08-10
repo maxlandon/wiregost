@@ -7,6 +7,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	pb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
+	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
+	"github.com/sirupsen/logrus"
 )
 
 // Module - The module interface is used by a stack to interact with a module type embedding
@@ -22,6 +24,8 @@ type Module interface {
 	// AddModule - Some modules may be able to combine with other module types.
 	// This method leaves them with how to handle their babies.
 	AddModule(m Module) (ok bool, err error)
+	// SetupLog - Called by module Stacks (server-side and stack-side), for
+	SetupLog(remote bool, rpc serverpb.EventsClient) (logger *logrus.Entry)
 }
 
 // RunModule - A user has requested to run one of the curent module's functions.

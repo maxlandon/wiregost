@@ -4,6 +4,7 @@ import (
 	modpb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 	"github.com/maxlandon/wiregost/server/module"
 	"github.com/maxlandon/wiregost/server/module/stack"
+	"github.com/maxlandon/wiregost/server/transport"
 )
 
 // Module - A payload module in Wiregost is in charge of Payload setup,
@@ -19,7 +20,7 @@ type Module struct {
 
 	// Transport - The current Transport module loaded by a user for this payload. A user
 	// may only load one of these at a time, but it may act on it in different ways.
-	Transport *module.Transport
+	transport *transport.Module
 	//Transports - One of the ways to use a Transport module with a Payload module is to
 	// add various of its elements to the Payload configuration, before it is compiled.
 	Transports []string
@@ -36,8 +37,8 @@ func New(meta *modpb.Info) (m *Module) {
 
 	m.Info.Type = modpb.Type_PAYLOAD
 
-	// Add specific fields to the Stager logger.
-	m.Log = m.SetupLog().WithField("payload", "payload")
+	// Add specific fields to the Payload logger. Overwrites "module":"module" key/val pair.
+	m.Log = m.Log.WithField("module", "payload")
 
 	return
 }

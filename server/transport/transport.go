@@ -49,8 +49,8 @@ func New(meta *modpb.Info) (m *Module) {
 
 	m.Info.Type = modpb.Type_TRANSPORT // Set module type
 
-	// Add specific fields to the Transport logger.
-	m.Log = m.SetupLog().WithField("transport", "transport")
+	// Add specific fields to the Transport logger. Overwrites "module":"module" key/val pair.
+	m.Log = m.Log.WithField("transport", "transport")
 
 	return
 }
