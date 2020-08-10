@@ -97,5 +97,5 @@ func main() {
 	// various preset rules (routes to open, pivots to reach, etc...)
 
 	// Start Listening for client consoles
-	clients.StartClientListener(assets.ServerConfiguration.ServerHost, assets.ServerConfiguration.ServerPort)
+	clients.Serve()
 }

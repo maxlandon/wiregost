@@ -49,7 +49,7 @@ func newContext() (ctx *ConsoleContext) {
 	ctx.User = dbpb.User{}
 	ctx.Config = clientpb.ConsoleConfig{}
 	ctx.Workspace = dbpb.Workspace{}
-	ctx.Module = modulepb.Module{}
+	ctx.Module = modulepb.Module{Info: &modulepb.Info{}}
 	ctx.Ghost = ghostpb.Ghost{}
 
 	return

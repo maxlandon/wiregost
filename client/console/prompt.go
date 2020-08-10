@@ -155,8 +155,8 @@ func setCallbacks(prompt *prompt) {
 		},
 		// Current Module type
 		"{type}": func() string {
-			if len(context.Context.Module.Path) != 0 {
-				switch strings.Split(context.Context.Module.Path, "/")[0] {
+			if len(context.Context.Module.Info.Path) != 0 {
+				switch strings.Split(context.Context.Module.Info.Path, "/")[0] {
 				case "post":
 					return "post"
 				case "exploit":
@@ -171,8 +171,8 @@ func setCallbacks(prompt *prompt) {
 		},
 		// CurrentModule
 		"{mod}": func() string {
-			if len(context.Context.Module.Path) != 0 {
-				return tui.Red(tui.Bold(context.Context.Module.Path)) + tui.RESET
+			if len(context.Context.Module.Info.Path) != 0 {
+				return tui.Red(tui.Bold(context.Context.Module.Info.Path)) + tui.RESET
 			}
 			return ""
 			// return tui.Yellow(*prompt.currentModule) + tui.RESET
@@ -235,8 +235,8 @@ func (p *prompt) render() (prompt string, multi string) {
 	switch p.CustomMain {
 	// No custom prompt provided, use base
 	case "":
-		if len(ctx.Module.Path) != 0 {
-			// if len(commands.Context.Module.Path) != 0 {
+		if len(ctx.Module.Info.Path) != 0 {
+			// if len(commands.Context.Module.Info.Path) != 0 {
 			prompt = p.BaseMain + p.BaseModule
 		} else {
 			prompt = p.BaseMain
@@ -255,8 +255,8 @@ func (p *prompt) render() (prompt string, multi string) {
 
 	// Custom provided, use it
 	default:
-		if len(ctx.Module.Path) != 0 {
-			// if len(commands.Context.Module.Path) != 0 {
+		if len(ctx.Module.Info.Path) != 0 {
+			// if len(commands.Context.Module.Info.Path) != 0 {
 			prompt = p.CustomMain + p.BaseModule
 		} else {
 			prompt = p.CustomMain

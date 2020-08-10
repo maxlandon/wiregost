@@ -12,7 +12,6 @@ var (
 	Consoles = &clients{
 		Unauthenticated: &map[string]*clientpb.Client{},
 		Connected:       &map[string]*clientpb.Client{},
-		EventBrokers:    &map[string]*eventBroker{},
 		ClientAttempts:  &map[string]int{},
 		mutex:           &sync.Mutex{},
 	}
@@ -22,7 +21,6 @@ type clients struct {
 	Unauthenticated *map[string]*clientpb.Client
 	ClientAttempts  *map[string]int
 	Connected       *map[string]*clientpb.Client
-	EventBrokers    *map[string]*eventBroker
 	mutex           *sync.Mutex
 }
 
@@ -44,7 +42,6 @@ func (c *clients) ConfirmClient(cli clientpb.Client) {
 	(*c.Connected)[cli.Token] = &cli
 	delete((*c.Unauthenticated), cli.Token)
 	// Bind event broker
-	(*c.EventBrokers)[cli.Token] = &eventBroker{}
 	c.mutex.Unlock()
 }
 
@@ -52,7 +49,6 @@ func (c *clients) ConfirmClient(cli clientpb.Client) {
 func (c *clients) RemoveClient(id string) {
 	c.mutex.Lock()
 	delete((*c.Connected), id)
-	delete((*c.EventBrokers), id)
 	c.mutex.Unlock()
 }
 

@@ -33,8 +33,8 @@ func (s *Server) Events(in *clientpb.Client, stream pb.Events_EventsServer) (err
 	// Check user auth first with gRPC TLS creds (see Sliver)
 
 	// Register local event channel
-	events := EventBroker.Subscribe()
-	defer EventBroker.Unsubscribe(events)
+	events := Broker.Subscribe()
+	defer Broker.Unsubscribe(events)
 
 	// Process incoming events
 	for event := range events {
