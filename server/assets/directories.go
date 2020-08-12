@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"strconv"
 )
 
 const (
@@ -31,6 +32,7 @@ const (
 	dataDirName     = "data"
 	envVarName      = "WIREGOST_ROOT_DIR"
 	moduleDirPath   = "modules"
+	userDirPath     = "users"
 	stagersDirName  = "stagers"
 	databaseDir     = "db_pg"
 )
@@ -88,5 +90,49 @@ func GetModulesDir() (dir string) {
 
 // GetGhostDir - Each ghost has its own directory for binaries, log and other data. Find it.
 func GetGhostDir(workspaceID uint32, ghostName string) (dir string) {
+	return
+}
+
+// GetUserDirectory - Each user has its own directory.
+func GetUserDirectory(id uint32, name string) (dir string) {
+
+	dir = path.Join(GetRootAppDir(), userDirPath, name+"_"+strconv.Itoa(int(id)))
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, os.ModePerm)
+		if err != nil {
+			log.Fatalf("Cannot write to Wiregost Data Service directory %s", err)
+		}
+	}
+	return
+}
+
+// GetUserHistoryDir - Directory where all history files for a user are stored.
+func GetUserHistoryDir(id uint32, name string) (dir string) {
+
+	dir = path.Join(GetUserDirectory(id, name), ".history")
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, os.ModePerm)
+		if err != nil {
+			log.Fatalf("Cannot write to Wiregost Data Service directory %s", err)
+		}
+	}
+	return
+}
+
+// GetUserHistoryFile - Get the aggregate of all consoles history for a user
+func GetUserHistoryFile(clientID string) (dir string) {
+
+	dir = path.Join(GetRootAppDir(), databaseDir)
+
+	return
+}
+
+// GetUserClientHistoryFile - Each user console has a unique command history file.
+func GetUserClientHistoryFile(clientID string) (dir string) {
+
+	dir = path.Join(GetRootAppDir(), databaseDir)
+
 	return
 }

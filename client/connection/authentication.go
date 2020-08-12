@@ -19,6 +19,7 @@ func Authenticate(conn *grpc.ClientConn) (cli clientpb.ConnectionRPCClient, clie
 
 	// Register ConnectionRPC client to connection
 	ConnectionRPC = clientpb.NewConnectionRPCClient(conn)
+	cli = ConnectionRPC
 	md := cliCtx.SetMetadata()
 
 	// Send authentication request (loop 5 several attempts)

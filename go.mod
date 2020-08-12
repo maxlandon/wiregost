@@ -18,7 +18,7 @@ require (
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/lmorg/readline v0.0.0-20190310235027-80486cdafb40
 	github.com/mattn/go-runewidth v0.0.8 // indirect
-	github.com/maxlandon/readline v0.0.0-20200812045829-70433cd84ede
+	github.com/maxlandon/readline v0.0.0-20200812113110-cb23ccc15cb7
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/rogpeppe/go-internal v1.5.2 // indirect
 	github.com/sirupsen/logrus v1.6.0

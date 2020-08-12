@@ -100,7 +100,9 @@ message AddCmdHistoryRequest {
         Client Client = 10;
 }
 
-message AddCmdHistory {}
+message AddCmdHistory {
+        bool Doublon = 1; // Do not increment index, item is doublon
+}
 
 // HistoryRequest - A console wants a command history.
 message HistoryRequest {

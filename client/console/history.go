@@ -9,9 +9,9 @@ import (
 
 var (
 	// ClientHist - Client console history
-	ClientHist = &ClientHistory{}
+	ClientHist = &ClientHistory{LinesSinceStart: 1}
 	// UserHist - User history
-	UserHist = &UserHistory{}
+	UserHist = &UserHistory{LinesSinceStart: 1}
 )
 
 // This file manages all command history flux for this console. The user can request
@@ -26,13 +26,15 @@ type ClientHistory struct {
 // Write - Sends the last command to the server for saving
 func (h *ClientHistory) Write(s string) (int, error) {
 
-	_, err := connection.ConnectionRPC.AddToHistory(context.Background(),
+	res, err := connection.ConnectionRPC.AddToHistory(context.Background(),
 		&clientpb.AddCmdHistoryRequest{Line: s, Client: cctx.Client})
 	if err != nil {
 		return 0, err
 	}
 
-	h.LinesSinceStart++
+	if !res.Doublon {
+		h.LinesSinceStart++
+	}
 	return h.LinesSinceStart, nil
 }
 
@@ -55,12 +57,12 @@ func (h *ClientHistory) GetLine(i int) (string, error) {
 
 // Len returns the number of lines in history
 func (h *ClientHistory) Len() int {
-	return 0
+	return h.LinesSinceStart
 }
 
 // Dump returns the entire history
 func (h *ClientHistory) Dump() interface{} {
-	return h.LinesSinceStart
+	return nil
 }
 
 // UserHistory - Only in charge of queries for the User's history
@@ -69,7 +71,8 @@ type UserHistory struct {
 }
 
 func (h *UserHistory) Write(s string) (int, error) {
-	return 0, nil
+	h.LinesSinceStart++
+	return h.LinesSinceStart, nil
 }
 
 // GetLine returns a line from history

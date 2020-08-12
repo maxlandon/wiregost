@@ -308,7 +308,7 @@ func (p *promptbis) RefreshOnCommand() {
 	line := p.Render()
 	// We add one because it any input enter is one line empty first.
 	// This assumes that the command which triggered this DID NOT OUTPUT ANYTHING
-	Console.Shell.RefreshMultiline(line, 4)
+	Console.Shell.RefreshMultiline(line, 4, true)
 	Console.Shell.HideNextPrompt = true
 	context.Context.NeedsCommandRefresh = false
 }
