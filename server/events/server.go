@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -38,6 +39,7 @@ func (s *Server) Events(in *clientpb.Client, stream pb.Events_EventsServer) (err
 
 	// Process incoming events
 	for event := range events {
+		fmt.Println(event)
 
 		// Initialize a nil Event. If at the goto Send, this var is not nil anymore,
 		// it means we have to push the Event through the stream. Along this function,

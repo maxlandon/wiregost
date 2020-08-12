@@ -12,7 +12,7 @@ import (
 // which he can invoke along a payload staging process, over the network.
 type Stager struct {
 	// Base module. Makes this Stager a valid module in Wiregost, with full access to UI.
-	*module.Module
+	*module.Base
 
 	// The Transport module is used to convey necessary information to either the server
 	// or implants that may need to start listeners, or setup for this. It also fournishes

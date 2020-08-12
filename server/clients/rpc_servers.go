@@ -6,6 +6,7 @@ import (
 	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
+	"github.com/maxlandon/wiregost/server/events"
 	"github.com/maxlandon/wiregost/server/generate"
 	"github.com/maxlandon/wiregost/server/module/stack"
 )
@@ -21,4 +22,7 @@ func RegisterServices(server *grpc.Server) {
 
 	// Stack & Modules
 	modulepb.RegisterStackServer(server, stack.Stacks)
+
+	// Events Server
+	serverpb.RegisterEventsServer(server, events.Broker.Server)
 }

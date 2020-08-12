@@ -33,19 +33,18 @@ func (c *clients) GetClient(id string) (cli *clientpb.Client) {
 // AddClient - Add a client (newly connected console) to the list
 func (c *clients) AddClient(cli clientpb.Client) {
 	c.mutex.Lock()
-	(*c.Unauthenticated)[cli.Token] = &cli
+	(*c.Unauthenticated)[cli.ID] = &cli
 	c.mutex.Unlock()
 }
 
 func (c *clients) ConfirmClient(cli clientpb.Client) {
 	c.mutex.Lock()
-	(*c.Connected)[cli.Token] = &cli
-	delete((*c.Unauthenticated), cli.Token)
+	(*c.Connected)[cli.ID] = &cli
+	delete((*c.Unauthenticated), cli.ID)
+	c.mutex.Unlock()
 
 	// We register the client to a module stack
 	stack.AssignStack(&cli)
-
-	c.mutex.Unlock()
 }
 
 // RemoveClient - Remove a client from the list

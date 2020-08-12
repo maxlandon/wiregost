@@ -79,7 +79,7 @@ func (o *option) Set(value string) (err error) {
 //
 // This function is called twice: on server and on stack binary. The server should call it
 // for every entry in the result of ToProtobuf(), called by the stack binary.
-func (m *Module) AddOption(name, category, value, description string, required bool) (err error) {
+func (m *Base) AddOption(name, category, value, description string, required bool) (err error) {
 
 	// Invalid cases: Name is nil, and option is required but has not been provided a default value
 	if name == "" || (value == "" && required) {
@@ -105,7 +105,7 @@ func (m *Module) AddOption(name, category, value, description string, required b
 
 // Option - Returns one of the module's options, by name, with an error. This function is a safer but less handy
 // alternative to the Options["Name"] way of querying options, because you can check immediately for key presence
-func (m *Module) Option(name string) (opt Option, err error) {
+func (m *Base) Option(name string) (opt Option, err error) {
 	if opt, found := m.Opts[name]; found {
 		return opt, nil
 	}

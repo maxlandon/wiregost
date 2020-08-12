@@ -6,9 +6,13 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/sirupsen/logrus"
+
+	"github.com/maxlandon/wiregost/modules/templates/exploit"
+	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	pb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
-	"github.com/sirupsen/logrus"
+	"github.com/maxlandon/wiregost/server/module"
 )
 
 // Module - The module interface is used by a stack to interact with a module type embedding
@@ -23,9 +27,9 @@ type Module interface {
 	SetOption(opt *pb.Option) (err error)
 	// AddModule - Some modules may be able to combine with other module types.
 	// This method leaves them with how to handle their babies.
-	AddModule(m Module) (ok bool, err error)
+	AddModule(m module.Module) (ok bool, err error)
 	// SetupLog - Called by module Stacks (server-side and stack-side), for
-	SetupLog(remote bool, rpc serverpb.EventsClient) (logger *logrus.Entry)
+	SetupLog(remote bool, cli *clientpb.Client, rpc serverpb.EventsClient) (logger *logrus.Entry)
 }
 
 // RunModule - A user has requested to run one of the curent module's functions.
@@ -74,5 +78,7 @@ func (m *stacks) EditModule(context.Context, *pb.EditRequest) (*pb.Edit, error) 
 // GetModule - This function finds a module by path (doing all the processing and checking
 // if needed), instantiates it and returns it to the stack.
 func GetModule(path string) (m Module, err error) {
-	return
+
+	return exploit.Init()
+	// return
 }

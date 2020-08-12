@@ -2,6 +2,7 @@ package stack
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"google.golang.org/grpc/codes"
@@ -10,12 +11,18 @@ import (
 	pb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 )
 
+// UseModule - The client requests to use a module. Depending on the current context, handle it.
 func (m *stacks) UseModule(in context.Context, req *pb.UseRequest) (res *pb.Use, err error) {
 
-	stack := GetUserStack(req.Client) // User stack
+	stack := m.GetUserStack(*req.Client) // User stack
+	if stack == nil {
+		err = errors.New("an error happened with your stack. It is nil.")
+		return &pb.Use{Err: err.Error()}, err
+	}
 
 	// Find and instantiate the module. This will instantiate it.
 	module, err := GetModule(req.Path)
+	go module.SetupLog(false, req.Client, nil)
 
 	// If err or module empty, send back an error
 	if err != nil {
@@ -31,6 +38,7 @@ func (m *stacks) UseModule(in context.Context, req *pb.UseRequest) (res *pb.Use,
 		res = &pb.Use{
 			Loaded: module.ToProtobuf(),
 		}
+		return
 	}
 
 	// The current module is not empty, we let the current module handle
@@ -47,6 +55,9 @@ func (m *stacks) UseModule(in context.Context, req *pb.UseRequest) (res *pb.Use,
 	// Here, module does not support this module as a "submodule".
 	// Therefore we must devise what to do with it. See later.
 	if accepted == false {
+		stack.Current = module
+		return &pb.Use{Loaded: module.ToProtobuf()}, nil
+
 	}
 
 	// END: We come here, so that means we added a module somewhere.
@@ -54,13 +65,13 @@ func (m *stacks) UseModule(in context.Context, req *pb.UseRequest) (res *pb.Use,
 	// on the user's stack binary. If yes, we do the necessary.
 
 	// Change this
-	return nil, nil
+	return &pb.Use{Err: "Should not have got here"}, nil
 }
 
 // PushModule - The last module pushed on the stack popped back as the current module.
 func (m *stacks) PopModule(in context.Context, req *pb.PopRequest) (res *pb.Pop, err error) {
 
-	stack := GetUserStack(req.Client) // User stack
+	stack := m.GetUserStack(*req.Client) // User stack
 
 	// Empty stack
 	if len(stack.Stack) == 0 {
@@ -81,7 +92,7 @@ func (m *stacks) PopModule(in context.Context, req *pb.PopRequest) (res *pb.Pop,
 // PushModule - The module currently loaded by the user is pushed to the user's Stack.
 func (m *stacks) PushModule(in context.Context, req *pb.PushRequest) (res *pb.Push, err error) {
 
-	stack := GetUserStack(req.Client) // User stack
+	stack := m.GetUserStack(*req.Client) // User stack
 
 	// We just put it at end (top) of the stack
 	stack.Stack = append(stack.Stack, stack.Current)
@@ -90,7 +101,7 @@ func (m *stacks) PushModule(in context.Context, req *pb.PushRequest) (res *pb.Pu
 }
 func (m *stacks) ClearStack(in context.Context, req *pb.ClearRequest) (res *pb.Clear, err error) {
 
-	stack := GetUserStack(req.Client) // User stack
+	stack := m.GetUserStack(*req.Client) // User stack
 
 	stack.Stack = []Module{} // Hope we took care of background jobs first.
 

@@ -16,11 +16,12 @@ import (
 // setting up a Ghost implant.
 type Module struct {
 	// Base module. Makes this Stager a valid module in Wiregost, with full access to UI.
-	*module.Module
+	*module.Base
 
 	// Transport - The current Transport module loaded by a user for this payload. A user
 	// may only load one of these at a time, but it may act on it in different ways.
 	transport *transport.Module
+
 	//Transports - One of the ways to use a Transport module with a Payload module is to
 	// add various of its elements to the Payload configuration, before it is compiled.
 	Transports []string

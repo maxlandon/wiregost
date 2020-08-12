@@ -6,22 +6,39 @@ import (
 	"github.com/sirupsen/logrus"
 
 	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
-	modulepb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
+	pb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 	"github.com/maxlandon/wiregost/server/log"
 )
 
-// Module - The base object inherited by all Module types in Wiregost. Any component in Wiregost that
+// Module - The module interface is used by a stack to interact with a module type embedding
+// a module.Module type that implements this interface. Some of the interface functions
+// are reimplemented by these module subtypes, for adapting workflow to their task.
+type Module interface {
+	// Run - All modules have, at least from their module.Module base type, a Run() method.
+	Run(cmd string, args []string) (result string, err error)
+	// ToProtobuf - The module.Module can push info, opts & commands with it.
+	ToProtobuf() (mod *pb.Module)
+	// SetOption - The module has the ability to set its options.
+	SetOption(opt *pb.Option) (err error)
+	// AddModule - Some modules may be able to combine with other module types.
+	// This method leaves them with how to handle their babies.
+	AddModule(m Module) (ok bool, err error)
+	// SetupLog - Called by module Stacks (server-side and stack-side), for
+	SetupLog(remote bool, cli *clientpb.Client, rpc serverpb.EventsClient) (logger *logrus.Entry)
+}
+
+// Base - The base object inherited by all Base types in Wiregost. Any component in Wiregost that
 // needs to be exposed to a User Interface (Console or RPC) can expose itself by embedding this type.
 //
-// As well, because the Module must provide scoped behavior when being run in a stack binary (which
+// As well, because the Base must provide scoped behavior when being run in a stack binary (which
 // runs the author's module Run() func). This object therefore has methods that can be used by the
 // binary stack for handling it correctly.
 // Some of this object' methods will make use of gRPC client calls, to sync with their Stack peer.
-type Module struct {
-	Info     *modulepb.Info               // Base Information
-	Commands map[string]*modulepb.Command // Module subcommands, can be added by embedders
-	Opts     map[string]Option            // Module options, with utility methods on them
+type Base struct {
+	Info     *pb.Info               // Base Information
+	Commands map[string]*pb.Command // Module subcommands, can be added by embedders
+	Opts     map[string]Option      // Module options, with utility methods on them
 
 	// Logging: the module pushes messages to consoles through its logger
 	// This should prove useful to identify precisely the source of events/
@@ -44,12 +61,12 @@ type Module struct {
 //
 // This function is called twice: on server and on stack binary. The server should call it
 // for the according entry in the result of ToProtobuf(), called by the stack binary.
-func New(meta *modulepb.Info) (m *Module) {
+func New(meta *pb.Info) (m *Base) {
 
-	m = &Module{
-		Info:     meta,                           // Base information
-		Commands: map[string]*modulepb.Command{}, // Empty commands
-		Opts:     map[string]Option{},            // Module options, with utility methods on them
+	m = &Base{
+		Info:     meta,                     // Base information
+		Commands: map[string]*pb.Command{}, // Empty commands
+		Opts:     map[string]Option{},      // Module options, with utility methods on them
 		// Client:   client,                         // The client/user having loaded the module.
 		// We don't put this here, it bothers us for all module subtypes instantiations.
 	}
@@ -64,7 +81,7 @@ func New(meta *modulepb.Info) (m *Module) {
 //
 // This function is called twice: on server and on stack binary. The server should call it
 // for every entry in the result of ToProtobuf(), called by the stack binary.
-func (m *Module) AddCommand(name, description string, hasPayload bool) {
+func (m *Base) AddCommand(name, description string, hasPayload bool) {
 	// Skip command if name is empty. Do not raise errors
 
 	// Trim spaces, don't want bad surprises because of typos.
@@ -73,10 +90,14 @@ func (m *Module) AddCommand(name, description string, hasPayload bool) {
 // ToProtobuf - Returns the module with its information, options and commands. Used to share
 // state back and forth between consoles, the server and stacks. All categories are separately
 // parsed, because this amazing module structure dictates (at least) that.
-func (m *Module) ToProtobuf() (mod *modulepb.Module) {
+func (m *Base) ToProtobuf() (mod *pb.Module) {
 
 	// Base information
-	mod = &modulepb.Module{Info: m.Info}
+	mod = &pb.Module{
+		Info:     m.Info,
+		Commands: map[string]*pb.Command{},
+		Options:  map[string]*pb.Option{},
+	}
 
 	// Commands
 	for name, cmd := range m.Commands {
@@ -95,7 +116,7 @@ func (m *Module) ToProtobuf() (mod *modulepb.Module) {
 // hooks linked to a gRPC service, for sending back status to user consoles and logging files.
 // The function is exported: it is only called by module Stacks (server-side and stack-side), for
 // setting up the module's respective logging infrastructures.
-func (m *Module) SetupLog(remote bool, cli *clientpb.Client, rpc serverpb.EventsClient) (logger *logrus.Entry) {
+func (m *Base) SetupLog(remote bool, cli *clientpb.Client, rpc serverpb.EventsClient) (logger *logrus.Entry) {
 
 	m.Client = cli // Can do that here: this func is called quick after New()
 	m.Log = log.ModuleLogger(remote, cli, rpc)
@@ -105,20 +126,20 @@ func (m *Module) SetupLog(remote bool, cli *clientpb.Client, rpc serverpb.Events
 
 // Asset - Find the path of an asset in the module source directory.
 // It is exported, because authors will need to access/use non-Go files.
-func (m *Module) Asset(path string) (filePath string, err error) {
+func (m *Base) Asset(path string) (filePath string, err error) {
 	return
 }
 
 // AskUserConfirm - Some actions performed by the module might require user permission,
 // because it has some context awareness needs that a computer is obviously unable to have.
-func (m *Module) AskUserConfirm() (ok bool) {
+func (m *Base) AskUserConfirm() (ok bool) {
 	return
 }
 
 // PreRunChecks - All checks for commands, options, etc. are done in this function.
 // Does not concern various compatibility and perms checks done by drivers, it is
 // merely utility checking code to avoid useless troubles.
-func (m *Module) PreRunChecks(cmd string) (err error) {
+func (m *Base) PreRunChecks(cmd string) (err error) {
 
 	err = m.CheckCommand(cmd)
 	if err != nil {
@@ -136,12 +157,12 @@ func (m *Module) PreRunChecks(cmd string) (err error) {
 // CheckRequiredOptions - Checks that all required options have a value. The advantage of this
 // function is that it can check for options that have been registered by module subtypes as
 // well, as they all lie in the same Opts object.
-func (m *Module) CheckRequiredOptions() (err error) {
+func (m *Base) CheckRequiredOptions() (err error) {
 	return
 }
 
 // CheckCommand - Verifies the command run by the user (like 'run exploit' or 'run check') is valid.
-func (m *Module) CheckCommand(command string) (err error) {
+func (m *Base) CheckCommand(command string) (err error) {
 	// If we don't have commands it means there is no need for them, so no error
 	if len(m.Commands) == 0 || m.Commands == nil {
 		return nil
@@ -159,13 +180,13 @@ func (m *Module) CheckCommand(command string) (err error) {
 // Run method (called by driver) using the provided module subcommand (run 'check_vuln')o
 // This will trigger the appropriate function in the Stack module itself, while preserving
 // the ability to use drivers such as ExploitDriver for managing the full process of an exploit.
-func (m *Module) run() (err error) {
+func (m *Base) run() (err error) {
 	return
 }
 
 // Cleanup - Clean any state needed for this module. This function is here more to remind
 // all types embedding this module that they may override it, as a good practice of cleaning.
-func (m *Module) Cleanup() (err error) {
+func (m *Base) Cleanup() (err error) {
 
 	return
 }

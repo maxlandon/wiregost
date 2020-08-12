@@ -12,35 +12,33 @@ var (
 	// Stacks - The module Stacks in Wiregost. There is one Stack instance per user
 	// and it handles everything for all connected users and their consoles.
 	Stacks = &stacks{
-		Active: &map[*dbpb.User]*stack{},
+		Active: &map[uint32]*stack{},
 		mutex:  &sync.Mutex{},
 	}
 )
 
 type stacks struct {
-	Active *map[*dbpb.User]*stack
+	Active *map[uint32]*stack
 
 	// ModuleUI (consoles) gRPC server
 	// There is one gRPC server instance for Stackss. Each request to one of
 	// the services contains a Client PB object, for dispatching to the good stack.
 	*modulepb.UnimplementedStackServer // Embedding this makes it a gRPC server
 
-	// Should pass on a logger from when the user connected.
-
 	mutex *sync.Mutex
 }
 
 // Add - Adds a module stack for the user that just registered.
-func (s *stacks) Add(client *clientpb.Client) (stack *stack, err error) {
+func (s *stacks) Add(client clientpb.Client) (stack *stack, err error) {
 	s.mutex.Lock()
-	stack = newStack(client)
-	(*s.Active)[client.User] = stack
+	stack = newStack(&client)
+	(*s.Active)[client.User.ID] = stack
 	s.mutex.Unlock()
 	return
 }
 
-func GetUserStack(client *clientpb.Client) (s *stack) {
-	return (*Stacks.Active)[client.User]
+func (s *stacks) GetUserStack(client clientpb.Client) (st *stack) {
+	return (*s.Active)[client.User.ID]
 }
 
 // stack - A central element to Wiregost system: because modules can be recompiled and are fundamentally
@@ -87,21 +85,22 @@ func newStack(client *clientpb.Client) (m *stack) {
 		Stack:   []Module{},  // The list of modules on stack is empty
 		User:    client.User, // The stack is being assigned to a User
 		Modules: nil,         // There is no stack binary started yet.
+		mutex:   &sync.Mutex{},
 	}
 }
 
 // AssignStack - Instantiates a module Stacks, dedicated to a single user.
 // This function is called when a user is logged in (first console).
-func AssignStack(client *clientpb.Client) (m *stack) {
+func AssignStack(client *clientpb.Client) {
 
 	// Check if user already has a Stacks running.
-	if stack, found := (*Stacks.Active)[client.User]; found {
+	if _, found := (*Stacks.Active)[client.User.ID]; found {
 		// If yes, return the pointer to this instance.
-		return stack
+		return
 	}
 
 	// If not, return a newly instantiated one and start it
-	m, _ = Stacks.Add(client)
+	Stacks.Add(*client)
 
 	return
 }

@@ -32,7 +32,7 @@ import (
 // for interacting with the other end of the transport.
 type Module struct {
 	// Base module. Makes this Exploit a valid module in Wiregost, with full access to UI.
-	*module.Module
+	*module.Base
 
 	// Base information for this transport: check if needed here.
 	*pb.Transport
