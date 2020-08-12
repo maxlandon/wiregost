@@ -10,6 +10,8 @@ import (
 )
 
 var (
+	// ConnectionRPC - All authentication and console utils
+	ConnectionRPC clientpb.ConnectionRPCClient
 	// UserRPC - User commands
 	UserRPC dbpb.UserDBClient
 	// ConfigRPC - Config commands

@@ -103,6 +103,10 @@ github.com/mattn/go-sqlite3 v2.0.1+incompatible h1:xQ15muvnzGBHpIpdrNi1DA5x0+TcB
 github.com/mattn/go-sqlite3 v2.0.1+incompatible/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
 github.com/maxlandon/readline v0.0.0-20200812022530-8b768e3c35d4 h1:7QbfQfQPXiOLeaciVwa1fKUc7iDPcnCj6e21AYVr558=
 github.com/maxlandon/readline v0.0.0-20200812022530-8b768e3c35d4/go.mod h1:Fd3zHLkCoj29Gv00EyoKO3oiX0Yqj8FlTUpLZw/93eg=
+github.com/maxlandon/readline v0.0.0-20200812044819-38be63996450 h1:4hoNVsc2piJiI6Szo8L9KNAt3V0VBQ9HEfJIsROiBBY=
+github.com/maxlandon/readline v0.0.0-20200812044819-38be63996450/go.mod h1:Fd3zHLkCoj29Gv00EyoKO3oiX0Yqj8FlTUpLZw/93eg=
+github.com/maxlandon/readline v0.0.0-20200812045829-70433cd84ede h1:lDHoVck9p7Ye2UuVSNogAAtoLwAEY0tysfCqqWyS7mU=
+github.com/maxlandon/readline v0.0.0-20200812045829-70433cd84ede/go.mod h1:Fd3zHLkCoj29Gv00EyoKO3oiX0Yqj8FlTUpLZw/93eg=
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/olekukonko/tablewriter v0.0.4 h1:vHD/YYe1Wolo78koG299f7V/VAS08c6IpCLn+Ejf/w8=

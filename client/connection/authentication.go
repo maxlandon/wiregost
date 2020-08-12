@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/evilsocket/islazy/tui"
 	"golang.org/x/crypto/ssh/terminal"
 	"google.golang.org/grpc"
 
-	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/client/assets"
 	cliCtx "github.com/maxlandon/wiregost/client/context"
 	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
@@ -18,7 +18,7 @@ import (
 func Authenticate(conn *grpc.ClientConn) (cli clientpb.ConnectionRPCClient, client *clientpb.Client) {
 
 	// Register ConnectionRPC client to connection
-	cli = clientpb.NewConnectionRPCClient(conn)
+	ConnectionRPC = clientpb.NewConnectionRPCClient(conn)
 	md := cliCtx.SetMetadata()
 
 	// Send authentication request (loop 5 several attempts)

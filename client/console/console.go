@@ -98,6 +98,10 @@ func (c *console) Setup() (err error) {
 	c.Shell.HintText = completers.HintCompleter
 	c.Shell.SyntaxHighlighter = completers.SyntaxHighlighter
 
+	// History (client and server)
+	c.Shell.History = ClientHist
+	c.Shell.AltHistory = UserHist
+
 	// Env
 	err = util.LoadClientEnv()
 
