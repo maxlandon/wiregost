@@ -24,6 +24,7 @@ import (
 	"github.com/evilsocket/islazy/tui"
 	"github.com/maxlandon/wiregost/client/connection"
 	cliCtx "github.com/maxlandon/wiregost/client/context"
+	"github.com/maxlandon/wiregost/client/util"
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 )
 
@@ -38,7 +39,8 @@ func (c *console) StartEventListener() {
 
 	for {
 		event, err := events.Recv()
-		if err == io.EOF || event == nil { // Safety checks
+		// Safety checks
+		if err == io.EOF || event == nil {
 			return
 		}
 		// Switch event type
@@ -59,10 +61,11 @@ func ModuleEvent(event *serverpb.Event) {
 	// Format the entry module type. We assume a max length of 10
 	// We also print this module name in red if its an error message
 	if event.Level != serverpb.Level_ERROR {
-		line += fmt.Sprintf("%-10v", event.Module)
+		line += fmt.Sprintf("%s%-10v %s-%s ",
+			util.Ctermfg236, event.Module, tui.DIM, tui.RESET)
 	} else {
 		line += fmt.Sprintf("%s%-10v%s %s-%s ",
-			tui.RED, event.Module, tui.RESET, tui.Dim, tui.RESET)
+			tui.RED, event.Module, tui.RESET, tui.DIM, tui.RESET)
 	}
 
 	// This case should not happen normally, but handle it...
@@ -102,7 +105,7 @@ func UserEvent() {}
 var Levels = map[serverpb.Level]string{
 	serverpb.Level_TRACE:   "",
 	serverpb.Level_DEBUG:   "",
-	serverpb.Level_INFO:    "",
-	serverpb.Level_WARNING: "",
-	serverpb.Level_ERROR:   "",
+	serverpb.Level_INFO:    util.Info,
+	serverpb.Level_WARNING: util.Warn,
+	serverpb.Level_ERROR:   util.Error,
 }

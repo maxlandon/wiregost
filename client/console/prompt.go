@@ -24,7 +24,6 @@ import (
 	"strings"
 
 	"github.com/evilsocket/islazy/tui"
-	"github.com/maxlandon/readline"
 
 	"github.com/maxlandon/wiregost/client/assets"
 	"github.com/maxlandon/wiregost/client/context"
@@ -32,7 +31,8 @@ import (
 
 var (
 	// Prompt - The prompt object used by the console
-	Prompt *prompt
+	Prompt    *prompt
+	PromptBis *promptbis
 )
 
 // prompt - Stores all variables necessary to the console prompt
@@ -105,11 +105,6 @@ func setCallbacks(prompt *prompt) {
 		"{reset}": tui.RESET,
 
 		// Custom colors:
-		"{blink}": "\033[5m",
-		"{lb}":    "\033[38;5;117m",
-		"{db}":    "\033[38;5;24m",
-		"{bddg}":  "\033[48;5;237m",
-		"{ly}":    "\033[38;5;187m",
 	}
 
 	// Callbacks
@@ -295,11 +290,25 @@ func (p *prompt) render() (prompt string, multi string) {
 	return prompt, multiline
 }
 
-// RefreshPrompt - Recompute prompt
-func RefreshPrompt(prompt *prompt, input *readline.Instance) {
-	p, _ := prompt.render()
-	_, m := prompt.render()
+// ComputePrompt - Recompute prompt
+func (p *promptbis) ComputePrompt() {
+	line := p.Render()
+	Console.Shell.SetPrompt(line)
+
+	// Live a line between output and next prompt
 	fmt.Println()
-	fmt.Println(p)
-	input.SetPrompt(m)
+
+	// Check for refresh
+	if context.Context.NeedsCommandRefresh {
+		p.RefreshOnCommand()
+	}
+}
+
+func (p *promptbis) RefreshOnCommand() {
+	line := p.Render()
+	// We add one because it any input enter is one line empty first.
+	// This assumes that the command which triggered this DID NOT OUTPUT ANYTHING
+	Console.Shell.RefreshMultiline(line, 4)
+	Console.Shell.HideNextPrompt = true
+	context.Context.NeedsCommandRefresh = false
 }

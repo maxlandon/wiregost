@@ -91,9 +91,7 @@ func (c *console) Connect() (err error) {
 func (c *console) Setup() (err error) {
 
 	// Prompt
-	c.Shell.Multiline = true   // spaceship-like (two-line) prompt
-	c.Shell.ShowVimMode = true // with Vim status
-	c.SetPrompt()
+	c.InitPrompt()
 
 	// Completion, Hints & Syntax
 	c.Shell.TabCompleter = completers.TabCompleter
@@ -146,7 +144,7 @@ func (c *console) Start() {
 func (c *console) Refresh() {
 
 	// Recompute prompt
-	RefreshPrompt(Prompt, c.Shell)
+	PromptBis.ComputePrompt()
 }
 
 // Readline - Add an empty line between input line and output

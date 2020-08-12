@@ -31,6 +31,11 @@ func InitParsers() (err error) {
 	if err != nil {
 		return err
 	}
+	// Module parser
+	err = BindModule()
+	if err != nil {
+		return err
+	}
 	// Compiler parser setup and registration
 	err = BindCompiler()
 	if err != nil {
