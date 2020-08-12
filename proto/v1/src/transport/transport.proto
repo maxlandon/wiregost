@@ -47,11 +47,12 @@ enum StagingType {
 // Transport - A transport is just a structure used by implants to receive/send/use transport configurations.
 message Transport {
         int64 ID = 1;
-        string LHost = 3;
-        int32 LPort = 4;
-        string RHost = 5;
-        int32 RPort = 6;
-        Protocol Protocol = 7;
+        string LHost = 2;
+        int32 LPort = 3;
+        string RHost = 4;
+        int32 RPort = 5;
+        Protocol Protocol = 6;
+        int32 WFSDelay = 7;      // Wait for session delay
         Type Type = 8;
         StagingType StagingType = 9;
         bool Default = 10;

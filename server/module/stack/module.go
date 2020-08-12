@@ -3,10 +3,9 @@ package stack
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/sirupsen/logrus"
 
 	"github.com/maxlandon/wiregost/modules/templates/exploit"
 	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"

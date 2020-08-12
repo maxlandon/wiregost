@@ -2,7 +2,7 @@ package payload
 
 import (
 	modpb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
-	"github.com/maxlandon/wiregost/server/module"
+	transportpb "github.com/maxlandon/wiregost/proto/v1/gen/go/transport"
 	"github.com/maxlandon/wiregost/server/module/stack"
 	"github.com/maxlandon/wiregost/server/transport"
 )
@@ -11,13 +11,10 @@ import (
 // Therefore, the Stager module has access to all the methods of both modules,
 // which he can invoke along a payload staging process, over the network.
 type Stager struct {
-	// Base module. Makes this Stager a valid module in Wiregost, with full access to UI.
-	*module.Base
-
 	// The Transport module is used to convey necessary information to either the server
 	// or implants that may need to start listeners, or setup for this. It also fournishes
 	// a set of supplementatry fields for working with the network.
-	Transport *transport.Module
+	*transport.Module
 
 	// The payload module is here to provide all methods necessary to generate, setup and
 	// use a stager, no matter its architecture, OS, etc.
@@ -28,14 +25,15 @@ type Stager struct {
 func NewStager(meta *modpb.Info) (m *Stager) {
 
 	m = &Stager{
-		module.New(meta), // Populate base module
-		nil,              // Don't know which one we're using yet
-		nil,              // Don't know which one we're using yet.
+		transport.New(meta), // Populate base module
+		nil,                 // Don't know which one we're using yet
+		// nil,              // Don't know which one we're using yet.
 	}
 
 	// A stager, although being in the Payload package, is at first a Transport type, because most
 	// of the "live" job is to initiate a connection over the network and interact with it.
 	m.Info.Type = modpb.Type_TRANSPORT
+	m.StagingType = transportpb.StagingType_STAGER
 
 	// Add specific fields to the Stager logger. Overwrites "module":"module" key/val pair.
 	m.Log = m.Log.WithField("module", "stager")

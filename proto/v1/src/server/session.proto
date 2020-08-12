@@ -1,0 +1,71 @@
+// Wiregost - Golang Exploitation Framework
+// Copyright © 2020 Para
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package server;
+
+option go_package = "serverpb";
+
+import "db/user.proto";
+import "ghost/ghost.proto";
+import "transport/route/route.proto";
+
+// Session - Similarly to Metasploit, a Session object is a general means of
+// interacting with various post-exploitation payloads through a common interface
+// that is not necessarily tied to a network connection.
+//
+// For instance, if an exploit spawns a command shell over the network, the read/write
+// operations end up reading and writing to that shell. These raw functions will be
+// progressively reimplemented by embedders when they need more elaborated logic.
+message Session {
+        string UUID = 1;                     // Each session has a Universally Unique UID
+        string Name = 2;                     // Return Name or UUID
+        string HostID = 4;                   // The associated host for this session
+        string TunnelLocal = 5;              // The local side of the tunnel
+        string TunnelPeer = 6;               // The peer (remote) side of the tunnel
+        int32 RHost = 7;                     // The IP address of this session
+        int32 RPort = 8;                     // Port number 
+        db.User Owner = 16;                  // User who owns this session (derived from exploit/transport) 
+        ghost.Permissions Permissions = 15;  // Ownership permissions on the session 
+        string LogFile = 17;                 // A primary log file used for basic session types.
+        SessionType Type = 18;
+        Status Status = 19;
+
+        // Other fields that may be used by embedders
+        string ExploitUUID = 10;
+        string PayloadUUID = 11;
+        uint32 WorkspaceID = 12;
+
+        bool Interactive = 20;
+        bool SkipRegistration = 21;
+
+        // Routes are included in a base Session, even if list is empty.
+        repeated transport.route.Route Routes = 22;
+        // Route permissions
+}
+
+// SessionType - The type of session (default: "unknown")
+enum SessionType {          
+        UNKNOWN = 0;        // default value
+}                     
+
+// Status - The current status of the session (very important later)
+enum Status {               
+        ALIVE = 0;      // Full interaction 
+        DOWN = 1;           // Non-networked interaction
+        LOST = 2;           // Unrecoverable
+}

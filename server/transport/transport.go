@@ -47,11 +47,16 @@ func New(meta *modpb.Info) (m *Module) {
 		nil,              // Don't know if we're using this yet.
 	}
 
-	m.Info.Type = modpb.Type_TRANSPORT // Set module type
+	// Defaul module settings
+	m.Info.Type = modpb.Type_TRANSPORT    // Set module type
+	m.StagingType = pb.StagingType_SINGLE // The transport is single by default
+	m.WFSDelay = int32(5)                 // 5 seconds is the default for session wait time upon a connection.
 
 	// Add specific fields to the Transport logger. Overwrites "module":"module" key/val pair.
-	m.Log = m.Log.WithField("transport", "transport")
+	m.Log = m.Log.WithField("module", "transport")
 
+	// Default options and commands
+	m.AddOption("HandlerName", "", "", "A human name for this handler", false)
 	return
 }
 
@@ -80,10 +85,38 @@ func (m *Module) Run(cmd string, args []string) (result string, err error) {
 	return
 }
 
+// Start - Start monitoring a logical/physical connection.
+func (m *Module) StartHandler() (err error) {
+	return
+}
+
+// AddHandler - Adds another connection monitor.
+func (m *Module) AddHandler() (err error) {
+	return
+}
+
+// Stop - stop monitoring a logical/physical connection.
+func (m *Module) StopHandler() (err error) {
+	return
+}
+
+// HandleConnection - Handles an established (logical/physical connection). The default
+// path is to attempt to create a Session, but it will be overriden by some subtypes.
+func (m *Module) HandleConnection() (err error) {
+	// Create Session
+	return
+}
+
+// Waits for a session to be created as the result of a handler connection coming in.
+// The return value is either a Session object, or nil if the timeout expires
+func (m *Module) WaitForSession() (err error) {
+	return
+}
+
 // OnSession - Equivalent to Metasploit's on_session function. Here is its description:
 //
 // "Once an exploit completes and a session has been created on behalf of the
-// payload, the framework will call the payload's on_session notification
+// {transport}, the framework will call the {transport}'s on_session notification
 // routine to allow it to manipulate the session prior to handing off
 // control to the user."
 //
@@ -93,6 +126,12 @@ func (t *Module) OnSession() (err error) {
 
 	// If there is an associated exploit, notify him so that he can do
 	// his things if he needs to.
+	return
+}
+
+// CreateSession - Creates a session, if necessary, for the connection handled.
+func (t *Module) CreateSession() (err error) {
+
 	return
 }
 

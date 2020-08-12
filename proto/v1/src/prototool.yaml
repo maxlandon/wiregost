@@ -254,6 +254,7 @@ generate:
       server/stager.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
       server/user.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
       server/website.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
+      server/session.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/server
     # Transport
       transport/dns.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport
       transport/envelope.proto: github.com/maxlandon/wiregost/proto/v1/gen/go/transport
