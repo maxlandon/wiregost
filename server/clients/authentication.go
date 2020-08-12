@@ -20,12 +20,12 @@ type connectionServer struct {
 func (c *connectionServer) Authenticate(ctx context.Context, req *clientpb.AuthenticationRequest) (*clientpb.Authentication, error) {
 
 	// If already 5 attempts, do not go further
-	if ((*Consoles.Unauthenticated)[req.MD.Token] != nil) && ((*Consoles.ClientAttempts)[req.MD.Token] >= 5) {
+	if ((*Consoles.Unauthenticated)[req.MD.ID] != nil) && ((*Consoles.ClientAttempts)[req.MD.ID] >= 5) {
 		return &clientpb.Authentication{}, nil
 	}
 
 	// Add client to clients map (it is temporary)
-	temp := &clientpb.Client{Token: req.MD.Token}
+	temp := &clientpb.Client{ID: req.MD.ID}
 	Consoles.AddClient(*temp)
 
 	// Check DB for users matching
@@ -33,16 +33,16 @@ func (c *connectionServer) Authenticate(ctx context.Context, req *clientpb.Authe
 
 	// If no one found, remove client & increase counter (the counter will leave a trace of the token as key)
 	if dbRes == nil {
-		Consoles.IncrementClientAttempts(temp.Token)
-		Consoles.RemoveClient(temp.Token)
+		Consoles.IncrementClientAttempts(temp.ID)
+		Consoles.RemoveClient(temp.ID)
 
 		return &clientpb.Authentication{}, nil
 	}
 
 	// If password wrong, send back not ok, empty user and empty token
 	if string(dbRes.Users[0].Password) != req.Password {
-		Consoles.IncrementClientAttempts(temp.Token)
-		Consoles.RemoveClient(temp.Token)
+		Consoles.IncrementClientAttempts(temp.ID)
+		Consoles.RemoveClient(temp.ID)
 
 		return &clientpb.Authentication{}, nil
 	}
@@ -51,7 +51,7 @@ func (c *connectionServer) Authenticate(ctx context.Context, req *clientpb.Authe
 	res := &clientpb.Authentication{}
 	res.Success = true
 	res.Client = temp
-	res.Client.Token = req.MD.Token
+	res.Client.ID = req.MD.ID
 
 	res.Client.User = dbRes.Users[0]
 	res.Client.User.Online = true

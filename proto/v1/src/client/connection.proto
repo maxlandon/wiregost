@@ -38,8 +38,7 @@ service ConnectionRPC {
 
 // Client - A client console connected to the Wiregost server
 message Client {
-        int64 ID = 1;
-        string Token = 2;
+        string ID = 1;
         db.User User = 3;
 }
 

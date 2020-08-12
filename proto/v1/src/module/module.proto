@@ -42,10 +42,11 @@ service ModuleRPC {
 
 // Module Types
 enum Type {
-        PAYLOAD = 0;
-        EXPLOIT = 1;
-        POST = 2;
-        TRANSPORT = 3;
+        UNDEFINED = 0; // Just in case
+        PAYLOAD = 1;
+        EXPLOIT = 2;
+        POST = 3;
+        TRANSPORT = 4;
 }
 
 // Info - This structure is shared by all modules, independently of their type.

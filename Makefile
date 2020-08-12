@@ -35,7 +35,8 @@ CLIENT_LDFLAGS = -ldflags "-s -w \
 	-X $(CLIENT_PKG).CompiledAt=$(COMPILED_AT) \
 	-X $(CLIENT_PKG).GithubReleasesURL=$(RELEASES_URL) \
 	-X $(CLIENT_PKG).GitCommit=$(GIT_COMMIT) \
-	-X $(CLIENT_PKG).GitDirty=$(GIT_DIRTY)"
+	-X $(CLIENT_PKG).GitDirty=$(GIT_DIRTY) \
+	-X github.com/maxlandon/wiregost/client/assets.Token=SECONDTOKENTEST"
 
 # Server 
 SERVER_PKG = github.com/maxlandon/wiregost/server/version

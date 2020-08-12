@@ -3,6 +3,7 @@ module github.com/maxlandon/wiregost
 go 1.13
 
 require (
+	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/evilsocket/islazy v1.10.6
 	github.com/go-cmd/cmd v1.2.1
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
@@ -17,13 +18,14 @@ require (
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/lmorg/readline v0.0.0-20190310235027-80486cdafb40
 	github.com/mattn/go-runewidth v0.0.8 // indirect
-	github.com/maxlandon/readline v0.0.0-20200801174503-25c2caa41425
+	github.com/maxlandon/readline v0.0.0-20200812022530-8b768e3c35d4
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/rogpeppe/go-internal v1.5.2 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.5.1 // indirect
 	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0 // indirect
+	golang.org/x/sys v0.0.0-20200810151505-1b9f1253b3ed // indirect
 	golang.org/x/text v0.3.2 // indirect
 	google.golang.org/grpc v1.29.1
 	google.golang.org/protobuf v1.23.0

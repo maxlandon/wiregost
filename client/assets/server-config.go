@@ -55,7 +55,7 @@ func GetConfigs() (configs map[string]*serverConfig) {
 	configs = map[string]*serverConfig{}
 	for _, confFile := range configFiles {
 		confFilePath := path.Join(configDir, confFile.Name())
-		log.Printf("Parsing config %s", confFilePath)
+		// log.Printf("Parsing config %s", confFilePath)
 
 		conf, err := ReadConfigFile(confFilePath)
 		if err != nil {

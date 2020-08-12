@@ -2,10 +2,12 @@ package context
 
 import (
 	"context"
+	"sync"
 
 	"github.com/lmorg/readline"
 	"google.golang.org/grpc"
 
+	"github.com/maxlandon/wiregost/client/assets"
 	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	dbpb "github.com/maxlandon/wiregost/proto/v1/gen/go/db"
 	ghostpb "github.com/maxlandon/wiregost/proto/v1/gen/go/ghost"
@@ -31,22 +33,26 @@ const (
 
 // ConsoleContext - Stores all variables needed for console context
 type ConsoleContext struct {
-	Client    *clientpb.Client
-	User      dbpb.User              // User information sent back after auth
-	Shell     *readline.Instance     // Shell object
-	Config    clientpb.ConsoleConfig // Shell configuration
-	Menu      string                 // Current shell menu
-	Workspace dbpb.Workspace         // Current workspace
-	Module    modulepb.Module        // Current module
-	Ghost     ghostpb.Ghost          // Current implant
-	Jobs      int                    // Number of jobs
-	Ghosts    int                    // Number of connected implants
+	Client              *clientpb.Client
+	User                dbpb.User              // User information sent back after auth
+	Shell               *readline.Instance     // Shell object
+	Config              clientpb.ConsoleConfig // Shell configuration
+	Menu                string                 // Current shell menu
+	Workspace           dbpb.Workspace         // Current workspace
+	Module              modulepb.Module        // Current module
+	Ghost               ghostpb.Ghost          // Current implant
+	Jobs                int                    // Number of jobs
+	Ghosts              int                    // Number of connected implants
+	NeedsCommandRefresh bool                   // A command has set this to true.
+	mutex               *sync.Mutex
 }
 
 func newContext() (ctx *ConsoleContext) {
 
-	ctx = &ConsoleContext{}
+	ctx = &ConsoleContext{mutex: &sync.Mutex{}}
+	ctx.Client = &clientpb.Client{ID: assets.Token}
 	ctx.User = dbpb.User{}
+	ctx.Client.User = &ctx.User
 	ctx.Config = clientpb.ConsoleConfig{}
 	ctx.Workspace = dbpb.Workspace{}
 	ctx.Module = modulepb.Module{Info: &modulepb.Info{}}
@@ -57,6 +63,8 @@ func newContext() (ctx *ConsoleContext) {
 
 // GetConnectionInfo - Set the context used by commands & shell
 func GetConnectionInfo(cli clientpb.ConnectionRPCClient) (info *clientpb.ConnectionInfo, config *clientpb.ConsoleConfig) {
+
+	Context.mutex.Lock()
 
 	// Info Request
 	info, _ = cli.GetConnectionInfo(context.Background(), &clientpb.ConnectionInfoRequest{}, grpc.EmptyCallOption{})
@@ -70,6 +78,7 @@ func GetConnectionInfo(cli clientpb.ConnectionRPCClient) (info *clientpb.Connect
 	// Get and use Console configuration
 	config = info.ConsoleConfig
 
+	Context.mutex.Unlock()
 	return
 }
 

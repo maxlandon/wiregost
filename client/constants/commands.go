@@ -2,6 +2,10 @@ package constants
 
 const (
 	// MAIN CONTEXT ------------------------------------------------------
+	Exit = "exit"
+
+	// MODULE CONTEXT ----------------------------------------------------
+	UseModule = "use"
 
 	// COMPILER CONTEXT --------------------------------------------------
 	Compiler       = "compiler"

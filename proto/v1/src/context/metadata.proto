@@ -22,10 +22,10 @@ option go_package = "contextpb";
 
 // RPCContext - Set of information used for gRPC context calls
 message RPCContext {
-       string Token = 1;
-       uint32 WorkspaceID = 2;
-       string Username = 3;
-       bool Admin = 4;
-       string Menu = 5;
-       uint32 GhostID = 6;
+        string ID = 1;
+        uint32 WorkspaceID = 2;
+        string Username = 3;
+        bool Admin = 4;
+        string Menu = 5;
+        uint32 GhostID = 6;
 }

@@ -29,9 +29,9 @@ func Authenticate(conn *grpc.ClientConn) (cli clientpb.ConnectionRPCClient, clie
 			req := &clientpb.AuthenticationRequest{}
 			req.Username = assets.ServerUser
 			req.Password = PromptUserPassword()
+			req.MD = &md
 
 			// Send request
-			req.MD = md
 			res, err := cli.Authenticate(context.Background(), req, grpc.EmptyCallOption{})
 
 			// If refused, try again (five tries)
