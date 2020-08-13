@@ -1,4 +1,4 @@
-package session
+package core
 
 import (
 	"github.com/google/uuid"
@@ -36,7 +36,7 @@ type Session struct {
 func New() (s *Session) {
 	s = &Session{
 		&serverpb.Session{
-			UUID: uuid.New().String(),
+			ID:   uuid.New().String(),
 			Type: serverpb.SessionType_UNKNOWN,
 			// Owner
 			// Permissions

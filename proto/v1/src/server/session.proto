@@ -32,7 +32,7 @@ import "transport/route/route.proto";
 // operations end up reading and writing to that shell. These raw functions will be
 // progressively reimplemented by embedders when they need more elaborated logic.
 message Session {
-        string UUID = 1;                     // Each session has a Universally Unique UID
+        string ID = 1;                       // Each session has a Universally Unique UID
         string Name = 2;                     // Return Name or UUID
         string HostID = 4;                   // The associated host for this session
         string TunnelLocal = 5;              // The local side of the tunnel
@@ -43,11 +43,12 @@ message Session {
         ghost.Permissions Permissions = 15;  // Ownership permissions on the session 
         string LogFile = 17;                 // A primary log file used for basic session types.
         SessionType Type = 18;
+        string Description = 3;             // Further description of the session type
         Status Status = 19;
 
         // Other fields that may be used by embedders
-        string ExploitUUID = 10;
-        string PayloadUUID = 11;
+        string ExploitID = 10;
+        string PayloadID = 11;
         uint32 WorkspaceID = 12;
 
         bool Interactive = 20;
