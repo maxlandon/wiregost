@@ -100,6 +100,12 @@ var uselessCmds = []string{
 	"cat",
 	"pwd",
 	"use",
+	"clear",
+	"back",
+	"pop",
+	"push",
+	"stack",
+	"config",
 }
 
 func stringInSlice(a string, list []string) bool {

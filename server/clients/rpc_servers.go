@@ -25,4 +25,5 @@ func RegisterServices(server *grpc.Server) {
 
 	// Events Server
 	serverpb.RegisterEventsServer(server, events.Broker.Server)
+
 }

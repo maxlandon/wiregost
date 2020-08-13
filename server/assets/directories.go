@@ -120,19 +120,3 @@ func GetUserHistoryDir(id uint32, name string) (dir string) {
 	}
 	return
 }
-
-// GetUserHistoryFile - Get the aggregate of all consoles history for a user
-func GetUserHistoryFile(clientID string) (dir string) {
-
-	dir = path.Join(GetRootAppDir(), databaseDir)
-
-	return
-}
-
-// GetUserClientHistoryFile - Each user console has a unique command history file.
-func GetUserClientHistoryFile(clientID string) (dir string) {
-
-	dir = path.Join(GetRootAppDir(), databaseDir)
-
-	return
-}
