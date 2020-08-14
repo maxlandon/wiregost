@@ -62,6 +62,7 @@ message Session {
 // SessionType - The type of session (default: "unknown")
 enum SessionType {          
         UNKNOWN = 0;        // default value
+        SHELL = 1;          // The session is able to run basic commands on a remote shell.
 }                     
 
 // Status - The current status of the session (very important later)

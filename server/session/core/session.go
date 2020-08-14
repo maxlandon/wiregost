@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 
+	"github.com/maxlandon/wiregost/ghost/transport"
 	"github.com/maxlandon/wiregost/modules/templates/exploit"
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 	"github.com/maxlandon/wiregost/server/transport/route"
@@ -52,12 +53,21 @@ func New() (s *Session) {
 
 // SetupLog - The session instantiates and setup its log, which all embedders can use.
 func (s *Session) SetupLog() (err error) {
+	// Many fields to pass in: session uuid, log files to set/get for later,
 	return
 }
 
 // FromExploit - When this session has been spawned from an Exploit module,
 // we derive its information, just in case.
 func (s *Session) FromExploit(m *exploit.Module) {
+
+}
+
+// FromTransport - Associates a transport to this session. This is useful
+// when the session is a simple command shell listening on a port: we might
+// have cut the connection but not the shell, etc. Anyway, we keep a reference
+// to this transport, which will be reused if needed.
+func (s *Session) FromTransport(t *transport.Transport) {
 
 }
 
@@ -68,8 +78,9 @@ func (s *Session) Cleanup() (err error) {
 }
 
 // Kill - At this point, this function just asks deletion of the Session from a list.
-func (s *Session) Kill() {
+func (s *Session) Kill() (err error) {
 	// Metasploit does "deregestering" here.
+	return
 }
 
 // ToProtobuf - The Session can push all of its base information .
