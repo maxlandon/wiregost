@@ -5,7 +5,6 @@ wiregost-console
 wiregost-server
 wiregost-data-service
 server/wiregost-server
-data_service/data_service
 client/wiregost-console
 
 
@@ -46,3 +45,6 @@ proto/v1/gen
 wiregost-linux.zip
 wiregost-windows.zip
 wiregost-macos.zip
+
+# Draft Table & Brouillon -------------------------------------
+server/draft

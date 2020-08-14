@@ -23,6 +23,7 @@ option go_package = "serverpb";
 import "db/user.proto";
 import "ghost/ghost.proto";
 import "transport/route/route.proto";
+import "ghost/core/base.proto";
 
 // Session - Similarly to Metasploit, a Session object is a general means of
 // interacting with various post-exploitation payloads through a common interface
@@ -34,29 +35,30 @@ import "transport/route/route.proto";
 message Session {
         string ID = 1;                       // Each session has a Universally Unique UID
         string Name = 2;                     // Return Name or UUID
-        string HostID = 4;                   // The associated host for this session
+        SessionType Type = 3;
+        bool Interactive = 4;
         string TunnelLocal = 5;              // The local side of the tunnel
         string TunnelPeer = 6;               // The peer (remote) side of the tunnel
         int32 RHost = 7;                     // The IP address of this session
         int32 RPort = 8;                     // Port number 
-        db.User Owner = 16;                  // User who owns this session (derived from exploit/transport) 
-        ghost.Permissions Permissions = 15;  // Ownership permissions on the session 
-        string LogFile = 17;                 // A primary log file used for basic session types.
-        SessionType Type = 18;
-        string Description = 3;             // Further description of the session type
-        Status Status = 19;
+        string Description = 9;              // Further description of the session type
+        string LogFile = 10;                 // A primary log file used for basic session types.
+        Status Status = 11;
+        db.User Owner = 12;                  // User who owns this session (derived from exploit/transport) 
+        ghost.Permissions Permissions = 13;  // Ownership permissions on the session 
 
         // Other fields that may be used by embedders
-        string ExploitID = 10;
-        string PayloadID = 11;
-        uint32 WorkspaceID = 12;
-
-        bool Interactive = 20;
-        bool SkipRegistration = 21;
+        string HostID = 14;                   // The associated host for this session
+        uint32 WorkspaceID = 15;
+        string ExploitID = 16;
+        string PayloadID = 17;
+        bool SkipRegistration = 18;
 
         // Routes are included in a base Session, even if list is empty.
         repeated transport.route.Route Routes = 22;
         // Route permissions
+
+        ghost.core.Environment Environment = 23; // Environment variables for this session.
 }
 
 // SessionType - The type of session (default: "unknown")

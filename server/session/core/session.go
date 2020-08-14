@@ -29,6 +29,10 @@ type Session struct {
 	// several active routes leading to a same pivot session.
 	Routes []route.Chain
 
+	// Environment - The Environment object stores environment variables
+	// on the session host. The latter might be queried through simple
+	// command one-liners and parsed, all that automatically at startup.
+
 	// Logger
 	Log *logrus.Entry
 }
@@ -54,6 +58,7 @@ func New() (s *Session) {
 // SetupLog - The session instantiates and setup its log, which all embedders can use.
 func (s *Session) SetupLog() (err error) {
 	// Many fields to pass in: session uuid, log files to set/get for later,
+	// Command history file
 	return
 }
 

@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -12,43 +13,40 @@ import (
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
 )
 
-// Shell - The Shell object implements a Command Shell around a stream.
-// This object should also enable users to open and interact with multiple
-// command shell instances for the same Session. (Channels)
+// Shell - The Shell object implements an interactive Command Shell around a stream.
+// This object is meant to provide basic functionality for manipulating a remote
+// shell session such as a reverse /bin/sh one-liner: this remote stream will only
+// provide primitive I/O and command execution interface. This object wraps it around
+// a few methods and attempts to transform it into a more usable command-line interface.
 type Shell struct {
 	// Interactive - Provides core methods to manipulate a stream
 	*Interactive
 
-	// When we execute a command through this shell, we will probably not
-	// be able to run REAL AND SEPARATE remote shells over the same connection:
-	// they will all share the same stdout, and tricks to separate them is to
-	// create files in directories that act as I/O buffers for each individual
-	// command: not stealthy.
-	// Therefore if we want to provide several shells (with their individual history
-	// and i/o buffers), we need to know when we can send a command immediately.
-	Busy bool
-
-	// tokenIndex - Used in metasploit to control if the token used to delimit
-	// command outputs has to be run each time. Token set is a checker to avoid
-	// useless rerun
+	// tokenIndex - Used in metasploit to control if the token used to delimit command
+	// outputs has to be run each time. Token set is a checker to avoid useless rerun
 	tokenIndex int
 	tokenSet   bool
+
+	// connBuffer - We need, for each command sent, to delimit its according output
+	// without either blocking or without loosing bytes when reading the stream.
+	// Accordingly, we use a Reader that can buffer data coming from conn, and we
+	// can work on it peacefully.
+	connBuffer *bufio.Reader
 }
 
 // NewShell - Instantiates a new Session that implements a command shell around a logical stream.
 func NewShell(stream io.ReadWriteCloser) (sh *Shell) {
 
 	sh = &Shell{
-		NewInteractive(stream), // The session is interactive.
-		true,                   // The shell is busy by default: we need to setup things before.
-		0,                      // The token is by default 0. Will check in future if needs change.
-		false,                  // Not set yet, will be once only.
+		NewInteractive(stream),  // The session is interactive.
+		0,                       // The token is by default 0. Will check in future if needs change.
+		false,                   // Not set yet, will be once only.
+		bufio.NewReader(stream), // We are ready to buffer and manipulate the stream.
 	}
 
 	sh.Type = serverpb.SessionType_SHELL
 
-	// Log settings
-	sh.Log = sh.Log.WithField("type", "shell")
+	sh.Log = sh.Log.WithField("type", "shell") // Log settings
 
 	return
 }
@@ -64,6 +62,10 @@ func (sh *Shell) SetupLog() (err error) {
 // shell stream, and wait for response. This should be synchronous given that we cannot run
 // concurrent operations on a remote shell while separating their respective stdin/stdout.
 func (sh *Shell) RunCommand(line string, timeout time.Duration) (result string, err error) {
+
+	// 1st and foremost, check for user input, if there are some escape codes we
+	// need to handle.
+
 	// Here, ultimately we should have already saved a host to DB for this session
 	// even if there is close to zero information about it other than suppositions
 	// from parent exploits/transports/payloads...
@@ -74,11 +76,36 @@ func (sh *Shell) RunCommand(line string, timeout time.Duration) (result string, 
 	return sh.runCommandUnix(line, timeout)
 }
 
+// LoadRemoteEnvironment - Primary method for retrieving the target environment variables, and assigning
+// them to this session, therefore available to both console completions and further session code.
+func (sh *Shell) LoadRemoteEnvironment(full bool) (err error) {
+
+	// user
+
+	// Environment variables
+
+	// network interfaces
+
+	// processes
+
+	// Executables
+
+	// FULL ------------------
+
+	// users
+
+	// groups
+
+	// directory tree
+
+	return
+}
+
 // write - Write to the connection with a timeout and stream error control.
 func (sh *Shell) write(line string, timeout time.Duration) (err error) {
 
 	// Channel controls
-	done := make(chan bool, 1)
+	doneWrite := make(chan struct{}, 1)
 	errWrite := make(chan error, 1)
 
 	// Asynchronous, timed writing
@@ -89,8 +116,9 @@ func (sh *Shell) write(line string, timeout time.Duration) (err error) {
 				" output length don't match: sendt:%d != returned:%d", len(line), ilength)
 		} else if err != nil {
 			errWrite <- err
+		} else {
+			doneWrite <- struct{}{}
 		}
-		done <- true
 	}()
 
 	// Handle errors and timeouts
@@ -99,9 +127,9 @@ func (sh *Shell) write(line string, timeout time.Duration) (err error) {
 		return err
 	case <-time.After(timeout):
 		return errors.New("write operation timed out.")
+	case <-doneWrite:
+		return nil
 	}
-
-	return
 }
 
 // runCommandUnix - Adapt the token for Unix remote endpoints
@@ -128,7 +156,7 @@ func (sh *Shell) runCommandUnix(line string, timeout time.Duration) (out string,
 		sh.Log.Errorf(err.Error())
 	}
 
-	return sh.readUntilToken(token, timeout)
+	return sh.readUntilToken(token, sh.tokenIndex, timeout)
 }
 
 // runCommandWindows - Run a command on a Windows endpoint and adapt the token.
@@ -140,11 +168,40 @@ func (sh *Shell) runCommandWindows(line string, timeout time.Duration) (out stri
 // sequencing printing on user consoles. Metasploit makes uses of tokens: they append
 // to each string sent ';echo {token}' , for having retroactive output delimitation.
 // We might also use an identified prompt string (for instance the first one received).
-func (sh *Shell) readUntilToken(token string, timeout time.Duration) (out string, err error) {
+func (sh *Shell) readUntilToken(token string, wantedIndex int, timeout time.Duration) (out string, err error) {
+
+	if timeout == 0 {
+		sh.Log.Warnf("readUntilToken() was called with empty timeout: returning")
+		return // Exit immediately, should have been set
+	}
+
+	// Set parts
+	// var partsNeeded int
+	// if wantedIndex == 0 {
+	//         partsNeeded = 2
+	// } else {
+	//         partsNeeded = 1 + (wantedIndex * 2)
+	// }
+
+	// Read loop
+	for {
+		select {
+		case <-time.After(timeout):
+			err = errors.New("read operation timed out.")
+			break // Give a shot to return the (incomplete) part and log it.
+		default:
+			// We read the incoming data: if we receive some and the token is not
+			// found, we increment/reset the timeout: maybe the connection is slow.
+
+			// line, err := .ReadString('\n')
+			// if err != nil {
+			//         return line, err
+			// }
+		}
+	}
 
 	// End: log output
 
-	return
 }
 
 // NOTE: There is often a lag between a command output and the echo of the cmd we sent.
@@ -169,7 +226,7 @@ func (sh *Shell) setTokenIndex(timeout time.Duration) (set bool, err error) {
 	}
 
 	// Read response
-	out, err := sh.readUntilToken(token, timeout)
+	out, err := sh.readUntilToken(token, 0, timeout)
 	if err != nil {
 		return
 	}
