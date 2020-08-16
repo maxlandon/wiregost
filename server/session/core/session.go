@@ -52,6 +52,8 @@ func New() (s *Session) {
 		nil, // Logger is set up later
 	}
 
+	s.SetupLog()
+
 	return
 }
 
@@ -59,6 +61,7 @@ func New() (s *Session) {
 func (s *Session) SetupLog() (err error) {
 	// Many fields to pass in: session uuid, log files to set/get for later,
 	// Command history file
+	s.Log = logrus.StandardLogger().WithField("session", "test")
 	return
 }
 

@@ -1,12 +1,13 @@
 package core
 
 import (
-	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"math/rand"
-	"strconv"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/evilsocket/islazy/tui"
@@ -22,39 +23,31 @@ type Shell struct {
 	// Interactive - Provides core methods to manipulate a stream
 	*Interactive
 
-	// tokenIndex - Used in metasploit to control if the token used to delimit command
-	// outputs has to be run each time. Token set is a checker to avoid useless rerun
-	tokenIndex int
-	tokenSet   bool
+	tokenIndex   int  // influences read loop on the stream and delimitations
+	tokenSet     bool // indicates we have set the index by echoing a test token.
+	pendingToken bool // used by the shell/builder for output concatenation.
 
-	// connBuffer - We need, for each command sent, to delimit its according output
-	// without either blocking or without loosing bytes when reading the stream.
-	// Accordingly, we use a Reader that can buffer data coming from conn, and we
-	// can work on it peacefully.
-	connBuffer *bufio.Reader
+	// builder - Used to construct the output of the Shell stream.
+	// We clear delimiting tokens, command echoes, prompts, etc.
+	builder *strings.Builder
 }
 
 // NewShell - Instantiates a new Session that implements a command shell around a logical stream.
 func NewShell(stream io.ReadWriteCloser) (sh *Shell) {
 
 	sh = &Shell{
-		NewInteractive(stream),  // The session is interactive.
-		0,                       // The token is by default 0. Will check in future if needs change.
-		false,                   // Not set yet, will be once only.
-		bufio.NewReader(stream), // We are ready to buffer and manipulate the stream.
+		NewInteractive(stream), // The session is interactive.
+		0,                      // The token is by default 0. Will check in future if needs change.
+		false,                  // Not set yet, will be once only.
+		false,                  // No tokens read yet
+		&strings.Builder{},     // Used to build the output from conn
 	}
 
 	sh.Type = serverpb.SessionType_SHELL
 
+	sh.Log.Logger.Out = os.Stdout
 	sh.Log = sh.Log.WithField("type", "shell") // Log settings
 
-	return
-}
-
-// SetupLog - A Shell session sets up a few things in the log: it logs all commands
-// sent to the remote endpoint, as well as their output. This can be used as a buffer,
-// in case user wants to go back in history.
-func (sh *Shell) SetupLog() (err error) {
 	return
 }
 
@@ -63,8 +56,14 @@ func (sh *Shell) SetupLog() (err error) {
 // concurrent operations on a remote shell while separating their respective stdin/stdout.
 func (sh *Shell) RunCommand(line string, timeout time.Duration) (result string, err error) {
 
-	// 1st and foremost, check for user input, if there are some escape codes we
-	// need to handle.
+	// Set token if needed. Persist for the entire session.
+	if !sh.tokenSet {
+		err = sh.setTokenIndex(timeout)
+		if err != nil {
+			sh.Log.Error(err)
+			return
+		}
+	}
 
 	// Here, ultimately we should have already saved a host to DB for this session
 	// even if there is close to zero information about it other than suppositions
@@ -101,23 +100,225 @@ func (sh *Shell) LoadRemoteEnvironment(full bool) (err error) {
 	return
 }
 
+// runCommandUnix - Adapt the token for Unix remote endpoints
+func (sh *Shell) runCommandUnix(line string, timeout time.Duration) (out string, err error) {
+
+	// Log command line
+	sh.Log.Infof("%scommand%s: %s%s", tui.GREEN, tui.RESET, tui.BOLD, line)
+
+	// Token identifying this command
+	token := randStringBytesRmndr()
+
+	// Channel used by the command builder to notify timeout control
+	done := make(chan struct{})
+
+	// 1. Send command liner
+	if line == "" || line == " " || line == "\n" {
+		// First we check for empty commands, for checking the shell still responds
+		// When the user has entered an empty input line, we use this as an automatic
+		// and handy refreshment: we briefly display a spinner and then reprint prompt.
+		sh.stream.Write([]byte(fmt.Sprintf("echo %s\n", token)))
+	} else {
+		// If not, we send the command with its token.
+		sh.stream.Write([]byte(line + fmt.Sprintf(";echo %s\n", token)))
+		sh.Log.Debugf("Done writing line: " + line + fmt.Sprintf(";echo %s\n", token))
+	}
+
+	// 2. Read connection.
+	go func() {
+		defer close(done)
+		for {
+			connBuf := make([]byte, 4096) // Big buffer, just in case.
+			_, err = sh.stream.Read(connBuf)
+			if err != nil {
+				sh.Log.Error(err)
+				return
+			}
+			// Process the output
+			result, complete := sh.readUntilToken(string(connBuf), line, token, sh.tokenIndex)
+			if complete {
+				out = result
+				break
+			}
+		}
+
+	}()
+
+	select {
+	case <-done:
+		return out, nil
+	case <-time.After(timeout):
+		close(done)
+		// We still give out, in case it has something in it still.
+		return out, fmt.Errorf("reading command result from conn stream timed out.")
+	}
+}
+
+// runCommandWindows - Run a command on a Windows endpoint and adapt the token.
+func (sh *Shell) runCommandWindows(line string, timeout time.Duration) (out string, err error) {
+	return
+}
+
+// readUntilToken - The Shell's string builder is being passed temporary connection buffers
+// and it processes them: finds command tokens to delimit output, trims command echos, prompts, etc.
+func (sh *Shell) readUntilToken(connBuf, line, token string, tokenIndex int) (result string, complete bool) {
+
+	// This variable is a buffer used by the builder.
+	// For each token processed the builder replaces this.
+	var cleared string
+
+	// Process incomming connBuff bytes, which often contain trailing null ones.
+	connBuf = string(bytes.Trim([]byte(connBuf), "\x00")) // Trim null bytes
+
+	// 1) Check for token
+	if findToken([]byte(connBuf), token) {
+		// 2) Get rid of it in output
+		tokenClear := strings.Split(connBuf, token)
+		cleared = strings.Join(tokenClear, " ")
+		sh.Log.Infof("Found token: %s%s%s ", tui.YELLOW, token, tui.RESET)
+
+		// 3) Get rid of command echoes, prompts, etc. We take them out.
+		if strings.Contains(cleared, line) {
+			clear := strings.SplitN(cleared, line+";echo", 2)
+			cleared = strings.Join(clear, " ")
+		}
+
+		// First add what we just processed
+		sh.builder.Write([]byte(cleared))
+
+		// 3) Depending on the token index, decide for another ride or not.
+		if tokenIndex == 1 && sh.pendingToken {
+			result = sh.builder.String() //
+			sh.builder.Reset()           // Reset builder
+			sh.pendingToken = false      // Reset token counter
+			return result, true          // The output can be returned to the user console.
+		}
+
+		// Used only by setTokenIndex()
+		if sh.tokenSet == false {
+			sh.pendingToken = true
+			result = sh.builder.String() // Return the result, just in case.
+			sh.builder.Reset()           // Reset builder
+			return result, true
+		}
+
+		sh.pendingToken = true       // Notify for next round
+		result = sh.builder.String() // Return the result, just in case.
+		return
+	}
+
+	// 2) Get rid of command echoes, prompts, etc. We take them out.
+	if strings.Contains(connBuf, line) {
+		clear := strings.SplitN(connBuf, line+";echo", 2) // Same command check
+		cleared = strings.Join(clear, " ")
+	}
+
+	// If nothing has been cleared, we directly add the conn buffer.
+	if len(cleared) == 0 {
+		sh.builder.Write([]byte(connBuf))
+	}
+
+	// 2) If we reached this point, this buffer is not the end of the command output.
+	//    We add it the command builder string, and we notify caller for another loop.
+	sh.builder.Write([]byte(cleared))
+	return "", false
+}
+
+// findToken - Check bytes in a buffer for a token
+func findToken(data []byte, token string) bool {
+	firstMatch := bytes.Index(data, []byte(token))
+	if firstMatch == -1 {
+		return false
+	}
+	if firstMatch > 0 {
+		return true
+	}
+	return false
+}
+
+// NOTE: There is often a lag between a command output and the echo of the cmd we sent.
+// Therefore, according to Metasploit: "If the session echoes input we don't need to echo
+// the token twice. This setting will persist for the duration of the session."
+// We might recalculate from time to time if needed.
+func (sh *Shell) setTokenIndex(timeout time.Duration) (err error) {
+
+	sh.Log.Infof("Setting token index for shell session output buffer control")
+
+	// Need to tokens to test
+	token := randStringBytesRmndr()
+	numeric_token := rand.Int63()
+
+	// Need two commands, accordingly
+	testCmd := fmt.Sprintf("echo %d", numeric_token)
+	cmd := fmt.Sprintf(testCmd+";echo %s\n", token)
+
+	// Channel used by the command builder to notify timeout control
+	done := make(chan struct{})
+
+	// Send package
+	err = sh.write(cmd, timeout)
+	if err != nil {
+		sh.Log.Error(err)
+		return
+	}
+
+	// Read response
+	go func() {
+		defer close(done)
+		for {
+			connBuf := make([]byte, 128) // Temporary buffer
+			_, err = sh.stream.Read(connBuf)
+			if err != nil {
+				sh.Log.Error(err)
+				return
+			}
+			_, complete := sh.readUntilToken(string(connBuf), cmd, token, 0)
+			if complete {
+				break
+			}
+		}
+	}()
+
+	select {
+	case <-done:
+		// We just check if the read loop for a simple cmd has returned 1 or 2 echos of the token
+		if sh.pendingToken {
+			sh.Log.Infof("setTokenIndex() found 2 token echoes: setting tokenIndex to 1")
+			sh.pendingToken = false
+			sh.tokenIndex = 1
+			sh.tokenSet = true
+			sh.builder.Reset()
+			return
+		}
+		sh.Log.Infof("setTokenIndex() found 1 token echo: setting index to 0")
+		sh.pendingToken = false
+		sh.tokenIndex = 0
+		sh.tokenSet = true
+		sh.builder.Reset()
+		return
+
+	case <-time.After(timeout):
+		close(done)
+		return fmt.Errorf("reading command result from conn stream timed out.")
+	}
+}
+
 // write - Write to the connection with a timeout and stream error control.
 func (sh *Shell) write(line string, timeout time.Duration) (err error) {
 
 	// Channel controls
-	doneWrite := make(chan struct{}, 1)
+	done := make(chan struct{})
 	errWrite := make(chan error, 1)
 
 	// Asynchronous, timed writing
 	go func() {
+		defer close(done)
 		ilength, err := sh.stream.Write([]byte(line))
 		if ilength != len(line) {
 			sh.Log.Warnf("length of bytes written to stream and returned"+
 				" output length don't match: sendt:%d != returned:%d", len(line), ilength)
 		} else if err != nil {
 			errWrite <- err
-		} else {
-			doneWrite <- struct{}{}
 		}
 	}()
 
@@ -127,133 +328,16 @@ func (sh *Shell) write(line string, timeout time.Duration) (err error) {
 		return err
 	case <-time.After(timeout):
 		return errors.New("write operation timed out.")
-	case <-doneWrite:
+	case <-done:
+		sh.Log.Infof("Done writing line: %s", line)
 		return nil
 	}
-}
-
-// runCommandUnix - Adapt the token for Unix remote endpoints
-func (sh *Shell) runCommandUnix(line string, timeout time.Duration) (out string, err error) {
-
-	// Log command line
-	sh.Log.Infof("%scommand%s: %s%s", tui.GREEN, tui.RESET, tui.BOLD, line)
-
-	// Set token index if not set yet. Then create token
-	if sh.tokenSet == false {
-		sh.tokenSet, err = sh.setTokenIndex(timeout)
-		if err != nil && !sh.tokenSet {
-			return
-		}
-	}
-	token := randStringBytesRmndr()
-
-	// Construct the final cmd and send it.
-	// Don't return from an error immediately:
-	// We give the shell a chance to read output.
-	line += fmt.Sprintf(";echo %s\n", token)
-	err = sh.write(line, timeout)
-	if err != nil {
-		sh.Log.Errorf(err.Error())
-	}
-
-	return sh.readUntilToken(token, sh.tokenIndex, timeout)
-}
-
-// runCommandWindows - Run a command on a Windows endpoint and adapt the token.
-func (sh *Shell) runCommandWindows(line string, timeout time.Duration) (out string, err error) {
-	return
-}
-
-// readUntilToken - Accepts a token for delimiting output buffers. This is useful for
-// sequencing printing on user consoles. Metasploit makes uses of tokens: they append
-// to each string sent ';echo {token}' , for having retroactive output delimitation.
-// We might also use an identified prompt string (for instance the first one received).
-func (sh *Shell) readUntilToken(token string, wantedIndex int, timeout time.Duration) (out string, err error) {
-
-	if timeout == 0 {
-		sh.Log.Warnf("readUntilToken() was called with empty timeout: returning")
-		return // Exit immediately, should have been set
-	}
-
-	// Set parts
-	// var partsNeeded int
-	// if wantedIndex == 0 {
-	//         partsNeeded = 2
-	// } else {
-	//         partsNeeded = 1 + (wantedIndex * 2)
-	// }
-
-	// Read loop
-	for {
-		select {
-		case <-time.After(timeout):
-			err = errors.New("read operation timed out.")
-			break // Give a shot to return the (incomplete) part and log it.
-		default:
-			// We read the incoming data: if we receive some and the token is not
-			// found, we increment/reset the timeout: maybe the connection is slow.
-
-			// line, err := .ReadString('\n')
-			// if err != nil {
-			//         return line, err
-			// }
-		}
-	}
-
-	// End: log output
-
-}
-
-// NOTE: There is often a lag between a command output and the echo of the cmd we sent.
-// Therefore, according to Metasploit: "If the session echoes input we don't need to echo
-// the token twice. This setting will persist for the duration of the session."
-// We might recalculate from time to time if needed.
-func (sh *Shell) setTokenIndex(timeout time.Duration) (set bool, err error) {
-
-	sh.Log.Debug("Setting token index for shell session output buffer control")
-	// Need to tokens to test
-	token := randStringBytesRmndr()
-	numeric_token := rand.Int63()
-
-	// Need two commands, accordingly
-	testCmd := fmt.Sprintf("echo %d", numeric_token)
-	cmd := fmt.Sprintf(testCmd+";echo %d", token)
-
-	// Send package
-	err = sh.write(cmd, timeout)
-	if err != nil {
-		return
-	}
-
-	// Read response
-	out, err := sh.readUntilToken(token, 0, timeout)
-	if err != nil {
-		return
-	}
-
-	// Check if response is indeed a number
-	if nb, ok := strconv.Atoi(out); ok == nil {
-		if nb != 0 && int64(nb) == numeric_token {
-			sh.tokenIndex = 0
-			sh.tokenSet = true // We don't need to do it anymore anyway.
-			sh.Log.Infof("shell output token match with test token: %d == %d", numeric_token, nb)
-		} else {
-			sh.tokenIndex = 1
-			sh.tokenSet = true
-			sh.Log.Warnf("shell output token does not match with test token: %d == %d", numeric_token, nb)
-		}
-		return
-	}
-
-	return false, fmt.Errorf("could not convert token to int: %s", out)
 }
 
 // randStringBytesRmndr - Easily produce random tokens for output buffer control.
 func randStringBytesRmndr() string {
 
-	n := rand.NewSource(time.Now().Unix())
-
-	b := make([]byte, n.Int63())
+	b := make([]byte, 30)
 	for i := range b {
 		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
 	}
