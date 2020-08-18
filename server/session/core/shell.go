@@ -1,7 +1,6 @@
 package core
 
 import (
-	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -40,7 +39,7 @@ func NewShell(stream io.ReadWriteCloser) (sh *Shell) {
 
 	sh = &Shell{
 		NewInteractive(stream), // The session is interactive.
-		0,                      // The token is by default 0. Will check in future if needs change.
+		0,                      // The token is by default 0.
 		false,                  // Not set yet, will be once only.
 		false,                  // No tokens read yet.
 		[]string{},             // No tokens to filter yet
@@ -55,12 +54,11 @@ func NewShell(stream io.ReadWriteCloser) (sh *Shell) {
 
 // Setup - The shell sets up the token index for correct delimitation of command output,
 // finds the remote prompt and saves it, adds unwished tokens to a list for trimming, etc.
-func (sh *Shell) Setup(fullEnv bool) (err error) {
+func (sh *Shell) Setup() (err error) {
 
 	sh.Log = sh.Log.WithField("type", "shell")  // Log settings
 	sLog := sh.Log.WithField("stream", "setup") // Pass this log to setup functions
 
-	sh.reader = bufio.NewReader(sh.stream)              // Initialize conn reader
 	sh.getRemotePrompt(sLog)                            // Get prompt out of first output
 	sh.unwished = append(sh.unwished, defaultTokens...) // Add primary unwished tokens
 	err = sh.setTokenIndex(sLog, sh.timeout)            // Set token index
@@ -69,7 +67,7 @@ func (sh *Shell) Setup(fullEnv bool) (err error) {
 		return err
 	}
 
-	err = sh.LoadRemoteEnvironment(sLog, fullEnv)
+	err = sh.LoadRemoteEnvironment(sLog)
 	if err != nil {
 		sLog.Errorf("failed to load remote shell environment: %s", err.Error())
 	}
@@ -78,7 +76,7 @@ func (sh *Shell) Setup(fullEnv bool) (err error) {
 
 // LoadRemoteEnvironment - Primary method for retrieving the target environment variables, and assigning
 // them to this session, therefore available to both console completions and further session code.
-func (sh *Shell) LoadRemoteEnvironment(log *logrus.Entry, full bool) (err error) {
+func (sh *Shell) LoadRemoteEnvironment(log *logrus.Entry) (err error) {
 
 	// user
 	// Environment variables
