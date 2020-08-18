@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -24,45 +23,32 @@ import (
 // provide primitive I/O and command execution interface. This object wraps it around
 // a few methods and attempts to transform it into a more usable command-line interface.
 type Shell struct {
-	// Base session information, route and logging.
-	*Session
+	// Interactive - Provides an I/O stream for this session
+	*Interactive
 
-	// stream - I/0 stream for this session. This can be anything: net.Conn or
-	// a mux.Stream passed by a handler/route. It can be the OS Stdin/Stdout/Stderr
-	// of a host, etc. Reader, Writer and Closer may even point to different streams.
-	stream  io.ReadWriteCloser
-	reader  *bufio.Reader // Fine-grained control over how to read the stream.
-	timeout time.Duration // Default timeout when not set from user
-
-	tokenIndex   int      // influences read loop on the stream and delimitations
-	tokenSet     bool     // indicates we have set the index by echoing a test token.
-	pendingToken bool     // used by the shell/builder for output concatenation.
-	unwished     []string // tokens that we filter each time.
-	prompt       string   // We store the remote prompt.
-
-	builder *strings.Builder // builder - Temp storage for stream output
+	// Command-shell specific
+	tokenIndex   int              // influences read loop on the stream and delimitations
+	tokenSet     bool             // indicates we have set the index by echoing a test token.
+	pendingToken bool             // used by the shell/builder for output concatenation.
+	unwished     []string         // tokens that we filter each time.
+	prompt       string           // We store the remote prompt.
+	builder      *strings.Builder // builder - Temp storage for shell stream output
 }
 
 // NewShell - Instantiates a new Session that implements a command shell around a logical stream.
 func NewShell(stream io.ReadWriteCloser) (sh *Shell) {
 
 	sh = &Shell{
-		New(),              // The session is interactive.
-		stream,             // The underlying communication medium for this session.
-		nil,                // Instantiate the reader below, in Setup().
-		10 * time.Second,   // Default timeout
-		0,                  // The token is by default 0. Will check in future if needs change.
-		false,              // Not set yet, will be once only.
-		false,              // No tokens read yet.
-		[]string{},         // No tokens to filter yet
-		"",                 // No prompt on remote end
-		&strings.Builder{}, // Used to build the output from conn
+		NewInteractive(stream), // The session is interactive.
+		0,                      // The token is by default 0. Will check in future if needs change.
+		false,                  // Not set yet, will be once only.
+		false,                  // No tokens read yet.
+		[]string{},             // No tokens to filter yet
+		"",                     // No prompt on remote end
+		&strings.Builder{},     // Used to build the output from conn
 	}
 
 	sh.Type = serverpb.SessionType_SHELL
-
-	sh.Log.Logger.Out = os.Stdout
-	sh.Log = sh.Log.WithField("type", "shell") // Log settings
 
 	return
 }
@@ -71,6 +57,7 @@ func NewShell(stream io.ReadWriteCloser) (sh *Shell) {
 // finds the remote prompt and saves it, adds unwished tokens to a list for trimming, etc.
 func (sh *Shell) Setup(fullEnv bool) (err error) {
 
+	sh.Log = sh.Log.WithField("type", "shell")  // Log settings
 	sLog := sh.Log.WithField("stream", "setup") // Pass this log to setup functions
 
 	sh.reader = bufio.NewReader(sh.stream)              // Initialize conn reader

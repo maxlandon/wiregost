@@ -1,7 +1,9 @@
 package core
 
 import (
+	"bufio"
 	"io"
+	"time"
 )
 
 // Interactive - This type implements the core stubs that provide an interactive session.
@@ -20,11 +22,13 @@ type Interactive struct {
 	// Session - Base session information, route and logging.
 	*Session
 
-	// IO stream for this Session. This can be anything:
-	// A net.Conn passed by a handler
-	// A mux.Stream passed by a handler in the case of a pivot.
-	// The Reader, Writer and Closer might point to different streams themselves.
-	stream io.ReadWriteCloser
+	// stream - I/0 stream for this session. This can be anything: net.Conn or
+	// a mux.Stream passed by a handler/route. It can be the OS Stdin/Stdout/Stderr
+	// of a host, etc. Reader, Writer and Closer may even point to different streams.
+	stream  io.ReadWriteCloser
+	reader  *bufio.Reader // Fine-grained control over how to read the stream.
+	timeout time.Duration // Default timeout when not set from user
+
 }
 
 // NewInteractive - Providing an appropriate data stream (which can be a
@@ -32,9 +36,12 @@ type Interactive struct {
 func NewInteractive(stream io.ReadWriteCloser) (s *Interactive) {
 
 	s = &Interactive{
-		New(),  // New base session object
-		stream, // IO stream passed to this session
+		New(),            // New base session object
+		stream,           // IO stream passed to this session
+		nil,              // Instantiate the reader below, in Setup().
+		10 * time.Second, // Default timeout
 	}
+	s.reader = bufio.NewReader(s.stream) // Initialize conn reader
 	s.Interactive = true
 
 	return
@@ -52,26 +59,6 @@ func (i *Interactive) Kill() (err error) {
 
 	// This involves handling the way we kill the ReadWriteCloser.
 	// The issue here is that we don't know anything about
-	return
-}
-
-// Interact - This function should be called by a gRPC stream server/function
-// at the request of one of the users, who want to directly interact with this
-// Session. For instance, if the Session is command shell on a remote system,
-// this will allow the user to interact with the command prompt.
-//
-// NOTE: Because we want to allow concurrent by very simple access to this Session,
-// Maybe we have to pass channels to this function, for mapping them. As long as
-// most of the logic is handled by the Session itself it's good.
-//
-// @ parameters: could be stdin and stdout+stderr channels.
-func (i *Interactive) Interact() (err error) {
-
-	// This function would provide/return some sort of tunnel
-	// to which the gRPC stream is binded.
-
-	// Should provide a way to catch some kill/bg signals
-	// with the methods above.
 	return
 }
 
