@@ -41,6 +41,12 @@ type Client struct {
 	// they might have to make lots of adjustements/implementation in order to seamlessly
 	// interface with this client RPC.
 	Transports *map[string]*transport.Module
+	// Transport(s) should probably be an interface.
+
+	// Channels - All implants can have concurrent processes/routines/tasks executed remotely,
+	// such as pesudo-command shells, routers, etc. All of these channels have a client-side
+	// object that holds its own state, history, etc.
+	Channels map[string]*Channel
 
 	// RWMutex - This client has to manage many different processes and tasks concurrently
 	// (core functions, routing requests, transports, etc.), and needs maximum safety. We
@@ -56,9 +62,17 @@ func New(stream io.ReadWriteCloser) (c *Client) {
 		core.NewInteractive(stream),     // We can now send over the wire.
 		nil,                             // We setup the log later.
 		&map[string]*transport.Module{}, // The transport is empty for now.
+		map[string]*Channel{},           // There are no side-channels at startup.
 		&sync.RWMutex{},                 // Concurrent access
 	}
 
+	return
+}
+
+// SetupStream - At instantiation, the Client session makes use of the Interactive base stream
+// and "wraps" it around a multiplexer: this mux is ONLY used by the ghost client to open new
+// channels, used by users to have concurrent activity on the implant.
+func (s *Client) SetupStream() (err error) {
 	return
 }
 

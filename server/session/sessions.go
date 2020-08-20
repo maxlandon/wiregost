@@ -38,6 +38,9 @@ type sessions struct {
 func (s *sessions) Register(sess Session) (id string, err error) {
 
 	// Maybe we will have to deal with the routing system at some point here.
+
+	// We have to close the mux.Session opened on the physical/logical conn as well
+
 	return
 }
 

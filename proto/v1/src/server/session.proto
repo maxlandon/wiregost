@@ -69,7 +69,12 @@ enum SessionType {
 
 // Status - The current status of the session (very important later)
 enum Status {               
-        ALIVE = 0;      // Full interaction 
+        ALIVE = 0;          // Full interaction 
         DOWN = 1;           // Non-networked interaction
         LOST = 2;           // Unrecoverable
+}
+
+enum ChannelType {
+        CORE_CHAN = 0;           // This channel implements RPC stubs
+        SHELL_CHAN = 1;          // This channel only provides byte streams
 }
