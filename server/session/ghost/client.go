@@ -84,7 +84,7 @@ func (s *Client) SetupLog() (err error) {
 	// sane logger based on the Session owner, sets basic fields like UUIDs, etc.
 	// We can now either access this log as is, or modify it and reassign it to
 	// the Client's own Log field.
-	err = s.Interactive.SetupLog()
+	s.Log, err = s.Interactive.SetupLog()
 
 	return
 }

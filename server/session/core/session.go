@@ -57,12 +57,18 @@ func New() (s *Session) {
 	return
 }
 
+// Info - The Session can push all of its base information.
+func (s *Session) Info() (sess *serverpb.Session) {
+	return
+}
+
 // SetupLog - The session instantiates and setup its log, which all embedders can use.
-func (s *Session) SetupLog() (err error) {
+func (s *Session) SetupLog() (log *logrus.Entry, err error) {
 	// Many fields to pass in: session uuid, log files to set/get for later,
 	// Command history file
 	s.Log = logrus.StandardLogger().WithField("session", "test")
-	return
+
+	return s.Log, nil
 }
 
 // FromExploit - When this session has been spawned from an Exploit module,

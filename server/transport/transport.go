@@ -31,7 +31,7 @@ import (
 // Maybe this base module might include a net.Conn/net.Listener/net.Dialer, used by subtypes
 // for interacting with the other end of the transport.
 type Module struct {
-	// Base module. Makes this Exploit a valid module in Wiregost, with full access to UI.
+	// Base module. Makes this Transport a valid module in Wiregost, with full access to UI.
 	*module.Base
 
 	// Base information for this transport: check if needed here.
@@ -85,7 +85,7 @@ func (m *Module) Run(cmd string, args []string) (result string, err error) {
 	return
 }
 
-// Start - Start monitoring a logical/physical connection.
+// StartHandler - Start monitoring a logical/physical connection.
 func (m *Module) StartHandler() (err error) {
 	return
 }
@@ -95,7 +95,7 @@ func (m *Module) AddHandler() (err error) {
 	return
 }
 
-// Stop - stop monitoring a logical/physical connection.
+// StopHandler - stop monitoring a logical/physical connection.
 func (m *Module) StopHandler() (err error) {
 	return
 }
@@ -107,7 +107,7 @@ func (m *Module) HandleConnection() (err error) {
 	return
 }
 
-// Waits for a session to be created as the result of a handler connection coming in.
+// WaitForSession - Waits for a session to be created as the result of a handler connection coming in.
 // The return value is either a Session object, or nil if the timeout expires
 func (m *Module) WaitForSession() (err error) {
 	return
@@ -122,7 +122,7 @@ func (m *Module) WaitForSession() (err error) {
 //
 // Because in Wiregost, the Transport is responsible for monitoring connections and Session
 // management (registration first and foremost), this function is here.
-func (t *Module) OnSession() (err error) {
+func (m *Module) OnSession() (err error) {
 
 	// If there is an associated exploit, notify him so that he can do
 	// his things if he needs to.
@@ -130,8 +130,20 @@ func (t *Module) OnSession() (err error) {
 }
 
 // CreateSession - Creates a session, if necessary, for the connection handled.
-func (t *Module) CreateSession() (err error) {
+func (m *Module) CreateSession() (err error) {
 
+	// Here, Metasploit asks a payload module if it has a "session factory":
+	// This allows a payload module, previously used for compiling an implant
+	// to also setup the client object for this payload.
+	// The transport is thus agnostic to what type of session is created and
+	// how to populate/set it up accordingly.
+
+	// Set FromExploit if needed, or call it through the Session object which,
+	// again, might know better than us how to link exploits and sessions.
+
+	// Pass along various context like workspace
+
+	// Here, Metasploit allows to pass custom UUIDs. Check if that's useful.
 	return
 }
 

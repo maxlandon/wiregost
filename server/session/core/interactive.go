@@ -33,6 +33,7 @@ type Interactive struct {
 
 // NewInteractive - Providing an appropriate data stream (which can be a
 // net.Conn, a mux.Stream, etc.), instantiate a new interactive session.
+// The session is ready to read and write to the stream with its reader.
 func NewInteractive(stream io.ReadWriteCloser) (s *Interactive) {
 
 	s = &Interactive{
