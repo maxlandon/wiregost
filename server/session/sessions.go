@@ -32,8 +32,12 @@ type sessions struct {
 	mutex      *sync.Mutex
 }
 
-// Register - Registers the supplied Session object to the server and returns a UUID to the caller
+// Register - Registers the supplied Session object to the server and returns a UUID to the caller.
+// Usually this function might be called either by a Transport module that tries to orchestrate a
+// Session/Exploit/Payload, or the opposite.
 func (s *sessions) Register(sess Session) (id string, err error) {
+
+	// Maybe we will have to deal with the routing system at some point here.
 	return
 }
 

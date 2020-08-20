@@ -79,15 +79,15 @@ func (s *Session) FromTransport(t *transport.Transport) {
 
 }
 
-// Cleanup - Clean any state needed for this Session. This function is here more to remind
-// all types embedding this Session that they may override it, as a good practice of cleaning.
-func (s *Session) Cleanup() (err error) {
-	return
-}
-
 // Kill - At this point, this function just asks deletion of the Session from a list.
 func (s *Session) Kill() (err error) {
 	// Metasploit does "deregestering" here.
+	return
+}
+
+// Cleanup - Clean any state needed for this Session. This function is here more to remind
+// all types embedding this Session that they may override it, as a good practice of cleaning.
+func (s *Session) Cleanup() (err error) {
 	return
 }
 
