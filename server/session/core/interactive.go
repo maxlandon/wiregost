@@ -22,10 +22,10 @@ type Interactive struct {
 	// Session - Base session information, route and logging.
 	*Session
 
-	// stream - I/0 stream for this session. This can be anything: net.Conn or
+	// Stream - I/0 Stream for this session. This can be anything: net.Conn or
 	// a mux.Stream passed by a handler/route. It can be the OS Stdin/Stdout/Stderr
 	// of a host, etc. Reader, Writer and Closer may even point to different streams.
-	stream  io.ReadWriteCloser
+	Stream  io.ReadWriteCloser
 	reader  *bufio.Reader // Fine-grained control over how to read the stream.
 	timeout time.Duration // Default timeout when not set from user
 
@@ -42,7 +42,7 @@ func NewInteractive(stream io.ReadWriteCloser) (s *Interactive) {
 		nil,              // Instantiate the reader below, in Setup().
 		10 * time.Second, // Default timeout
 	}
-	s.reader = bufio.NewReader(s.stream) // Initialize conn reader
+	s.reader = bufio.NewReader(s.Stream) // Initialize conn reader
 	s.Interactive = true
 
 	return

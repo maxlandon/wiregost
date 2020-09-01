@@ -355,7 +355,7 @@ func (sh *Shell) write(line []byte, timeout time.Duration) (err error) {
 	// Asynchronous, timed writing
 	go func() {
 		defer close(done)
-		ilength, err := sh.stream.Write([]byte(line))
+		ilength, err := sh.Stream.Write([]byte(line))
 		if ilength != len(line) {
 			sh.Log.Warnf("length of bytes written to stream and returned"+
 				" output length don't match: sendt:%d != returned:%d", len(line), ilength)
@@ -380,7 +380,7 @@ func (sh *Shell) write(line []byte, timeout time.Duration) (err error) {
 func (sh *Shell) getRemotePrompt(log *logrus.Entry) (err error) {
 
 	// Send an empty command for refresh
-	if _, err = sh.stream.Write([]byte("\n")); err != nil {
+	if _, err = sh.Stream.Write([]byte("\n")); err != nil {
 		log.Warnf("failed to write to stream when requesting prompt: %s", err.Error())
 		return
 	}

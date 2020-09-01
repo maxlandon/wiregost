@@ -7,7 +7,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/maxlandon/wiregost/modules/templates/exploit"
 	clientpb "github.com/maxlandon/wiregost/proto/v1/gen/go/client"
 	pb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
@@ -78,6 +77,5 @@ func (m *stacks) EditModule(context.Context, *pb.EditRequest) (*pb.Edit, error) 
 // if needed), instantiates it and returns it to the stack.
 func GetModule(path string) (m Module, err error) {
 
-	return exploit.Init()
-	// return
+	return
 }

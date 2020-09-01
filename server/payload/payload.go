@@ -20,20 +20,20 @@ type Module struct {
 
 	// Transport - The current Transport module loaded by a user for this payload. A user
 	// may only load one of these at a time, but it may act on it in different ways.
-	transport *transport.Module
+	transport transport.Transport
 
 	//Transports - One of the ways to use a Transport module with a Payload module is to
 	// add various of its elements to the Payload configuration, before it is compiled.
-	Transports []string
+	Transports []transport.Transport
 }
 
 // New - Instantiates a new Payload module. Called by console users and Stager modules.
 func New(meta *modpb.Info) (m *Module) {
 
 	m = &Module{
-		module.New(meta), // Base module
-		nil,              // No Transport selected yet
-		[]string{},       // No compiled transports
+		module.New(meta),        // Base module
+		nil,                     // No Transport selected yet
+		[]transport.Transport{}, // No compiled transports
 	}
 
 	m.Info.Type = modpb.Type_PAYLOAD
