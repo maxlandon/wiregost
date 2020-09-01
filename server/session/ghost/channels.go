@@ -49,7 +49,7 @@ type Channel struct {
 // implant. A request has been forwarded to the remote peer, and the Session has muxed
 // the physical/logical connection. This channel's only purpose is to be operated by the user,
 // and not for being used as a routing/transport mechanism.
-func (s *Client) NewUserChannel(chanType int) (ch *Channel, err error) {
+func (c *Client) NewUserChannel(chanType serverpb.ChannelType) (ch *Channel, err error) {
 
 	// Instantiation & data (ID, name, etc)
 
@@ -57,8 +57,19 @@ func (s *Client) NewUserChannel(chanType int) (ch *Channel, err error) {
 	// This means the ghost implant has called Accept(), blocking for him.
 
 	// Stream multiplexing: we mux the main stream, add to chan object
+	if ch.stream, err = c.Multiplexer.Open(); err != nil { // BLOCKING
+		return
+	}
+
+	// Add RPC layer code if necessary
+	if chanType == serverpb.ChannelType_CORE_CHAN {
+		ch = c.GetChannelCore(ch)
+	}
 
 	// Add channel to Session, and potentially register things needed.
+	c.mutex.Lock()
+	c.Channels[ch.ID] = ch
+	c.mutex.Unlock()
 
 	return
 }
@@ -70,15 +81,16 @@ func (s *Client) NewUserChannel(chanType int) (ch *Channel, err error) {
 // Usually, this function is used when the user opens a new channel with Shell type,
 // which allows for pretty much any command (string) and returns only strings. Therefore,
 // this function only wires byte streams to others: no RPC boiler code is needed here.
-func (s *Client) GetChannelShell(chanID string) {
+func (c *Client) GetChannelShell(chanID string) {
 
 	// NOTE: If the channel is already up and its type is CORE, we "downgrade" the stream
 	// for handling only byte streams and []string (for commands sent)
 }
 
 // GetChannelCore - This function is the same as GetChannelShell(), but insted add some RPC boilerplate.
-func (s *Client) GetChannelCore(chanID string) {
+func (c *Client) GetChannelCore(ch *Channel) *Channel {
 
 	// NOTE: If the channel is already up and its type is SHELL, we "upgrade" the stream
 	// for handling RPC calls.
+	return ch
 }
