@@ -1,20 +1,36 @@
 package transport
 
 import (
+	"io"
+
 	modpb "github.com/maxlandon/wiregost/proto/v1/gen/go/module"
 	pb "github.com/maxlandon/wiregost/proto/v1/gen/go/transport"
 	"github.com/maxlandon/wiregost/server/module"
 	"github.com/maxlandon/wiregost/server/module/stack"
 )
 
+// Transport - A transport object able to establish a connection between 2 nodes.
+// This object will primarily be used by Payload modules and Session objects, and is never used
+// by console users: the Module type below is used for this instead.
+type Transport interface {
+	// Base methods
+	Type() pb.Type                                    // Is this transport a bind or reverse type ?
+	Info() *pb.Transport                              // All information pertaining to this transport
+	Multiplex() bool                                  // Is this transport able to multiplex connections ?
+	Start() (err error)                               // Either dial to or listen on an address, with current options
+	HandleConn() (conn io.ReadWriteCloser, err error) // Same as start, but return the raw conn/stream
+	Stop() error                                      // Stop the current transport.
+	WaitForSession() error                            // Waits for a session to be created as the result of a handler connection coming in.
+	CreateSession() error                             // Creates a session, if necessary, for the connection handled.
+	ToCompileConfig() (conf string, err error)        // Get a string we will inject in an implant source code
+}
+
 // Module - A transport is a module in Wiregost because a console may use them in several contexts:
 //
-// EXPLOITS --------------------
 // 1) Associated with an Exploit module: for remote exploits, we need a listener/dialer with
 //    a capability either to register a Ghost implant, or to stage it, or even simply to handle
 //    a non-Ghost session type, which still may be used by consoles (like a remote SSH session)
 //
-// GHOSTS ----------------------
 // 2) Ghost implants may have several transports to use/cycle through. Users can add some by
 //    using some transport modules. Generally, these transport modules would be single, because
 //    the "stage" is already up and running. However, transports might be configured to stage
@@ -22,14 +38,6 @@ import (
 //
 // 3) When a user wants to compile a Ghost implant, he uses the appropriate payload module to
 //    prepare the implant. He may use a transport module to add configuration before compilation.
-//
-// NOTE: Routing Abstractions
-// All types (and therefore, modules) embedding this type do so because it provides methods
-// do deal with abstractions like routing (which actual physical/logical connection to use?),
-// or like the concerned host (do we start a listener on the server or on an implant?), etc.
-//
-// Maybe this base module might include a net.Conn/net.Listener/net.Dialer, used by subtypes
-// for interacting with the other end of the transport.
 type Module struct {
 	// Base module. Makes this Transport a valid module in Wiregost, with full access to UI.
 	*module.Base
@@ -63,6 +71,7 @@ func New(meta *modpb.Info) (m *Module) {
 // AddModule - Implements the stack.Module interface. This Transport will always return
 // false, because until needed otherwise, we don't embed modules into Transports.
 func (m *Module) AddModule(mod stack.Module) (ok bool, err error) {
+	// Do nothing and change nothing.
 	return
 }
 
@@ -76,11 +85,19 @@ func (m *Module) SetOption(opt *modpb.Option) (err error) {
 	return
 }
 
-// Run - Execute the main function of this transport, which may depend on which
-// settings and details are provided, such as: is the transport a Dialer or a Listener ?
-// or: is the Transport set for a remote implant ? or is the Transport has to be started
-// now or later ?
+// Run - Execute the main function of this transport, which may depend on which settings and details are provided, such as:
+// Is the transport a Dialer or a Listener ?
+// Is the Transport set for a remote implant ?
+// Is the Transport has to be started now or later ?
+// The module takes care of requesting all details from its Transport object, checks them, and acts accordingly
 func (m *Module) Run(cmd string, args []string) (result string, err error) {
+
+	// 1) Is the transport to be started remotely ? Check routing table
+
+	// If yes {}
+	// Get the route chain, and for each ghost ID, request the appropriate client to mux its physical conn.
+	// The last node has started the appropriate bind/reverse handler, and returned the conn to the n-1 node.
+	// We get here a logical conn returned by the first node in the chain
 
 	return
 }
@@ -102,6 +119,7 @@ func (m *Module) StopHandler() (err error) {
 
 // HandleConnection - Handles an established (logical/physical connection). The default
 // path is to attempt to create a Session, but it will be overriden by some subtypes.
+// This might be used for MANY THINGS, but should generally return at least an io.ReadWriteCloser
 func (m *Module) HandleConnection() (err error) {
 	// Create Session
 	return
