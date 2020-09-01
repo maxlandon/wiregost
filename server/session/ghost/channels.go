@@ -13,16 +13,19 @@ import (
 // the implant that needs/allows concurrent running, such as routers, shells, etc.
 // Some of these channels MAY NOT be used/interacted with by users: they are simply "jobs"
 // for routing and listeners.
+// Channel persistence: An implant might be down temporarily, and therefore all "real" channels
+// on the remote side will be killed. Nonetheless, in order to preserve things like per-channel
+// history and context, we may keep them instantantied/"alive" on the client-side, and respawn
+// them at will on the remote when connected again.
 type Channel struct {
 	ID         string               // A UUID-as-string for this channel.
 	Name       string               // An optional name for this channel ("shellTest", "routingWork", etc)
 	Type       serverpb.ChannelType // This channel supports RPC or byte streams only.
 	WorkingDir string               // The channel has its own primary context
+	IsUsed     bool                 // When the channel is used by someone, no one else can access it.
 
 	// stream - A channel stream is generally a logical connection that has been
-	// "muxed" from the implant's physical connection. Triggering the opening of
-	// a new channel with its dedicated stream is always done through the Client's
-	// main Interactive stream.
+	// "muxed" from the implant's physical connection.
 	// For things like pseudo-command shells, this stream is used in an asynchronous
 	// way: it pushes output as it comes, and does not wait each time for all the
 	// output to go out first before sending it back to the server.
@@ -30,8 +33,7 @@ type Channel struct {
 	// core actions through Protobuf requests.
 	stream io.ReadWriteCloser
 
-	// Log - Each channel may optionally have a dedicated logger, for things like
-	// command history.
+	// Log - Each channel may optionally have a logger, for things like command history.
 	Log *logrus.Entry
 
 	// History - Every channel has its own command history, which might be optionally
@@ -49,9 +51,11 @@ type Channel struct {
 // implant. A request has been forwarded to the remote peer, and the Session has muxed
 // the physical/logical connection. This channel's only purpose is to be operated by the user,
 // and not for being used as a routing/transport mechanism.
-func (c *Client) NewUserChannel(chanType serverpb.ChannelType) (ch *Channel, err error) {
+func (c *Client) NewUserChannel(chanType serverpb.ChannelType, name string) (ch *Channel, err error) {
 
 	// Instantiation & data (ID, name, etc)
+
+	// Set log (common to all types)
 
 	// Send Request to implant, wait acknowledge.
 	// This means the ghost implant has called Accept(), blocking for him.
@@ -93,4 +97,10 @@ func (c *Client) GetChannelCore(ch *Channel) *Channel {
 	// NOTE: If the channel is already up and its type is SHELL, we "upgrade" the stream
 	// for handling RPC calls.
 	return ch
+}
+
+// CloseChannel - A user requested to close one of the implant's side channels: the main one can
+// NEVER be killed through this function, as it would cut all means to communicate with the implant.
+func (c *Client) CloseChannel(chanID string) (err error) {
+	return
 }

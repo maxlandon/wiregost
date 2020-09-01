@@ -121,7 +121,20 @@ func (m *Module) StopHandler() (err error) {
 // path is to attempt to create a Session, but it will be overriden by some subtypes.
 // This might be used for MANY THINGS, but should generally return at least an io.ReadWriteCloser
 func (m *Module) HandleConnection() (err error) {
-	// Create Session
+
+	// Create Session:
+	// 1) Instantiates a new session object, with a base stream passed on to it.
+
+	// 2) Check Session type:
+	// We can directly add some RPC registration boilerplate, with a timeout:
+	// if the timeout is reached without receiving a registration message, or an error
+	// we just stay with the core Interactive session.
+
+	// If the registration is received, we fill everything needed for the Ghost session:
+	// We might have to call a few functions to setup RPC for main channel, etc.
+
+	// 3) Finally add the Session to Sessions (Sessions.Register(session))
+
 	return
 }
 
