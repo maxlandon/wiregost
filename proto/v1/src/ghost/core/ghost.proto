@@ -21,3 +21,8 @@ package ghost.core;
 option go_package = "corepb";
 
 
+// ChannelType - The channel might support different sets of functionality and RPC stuff
+enum ChannelType {
+        CORE_CHAN = 0;           // This channel implements RPC stubs
+        SHELL_CHAN = 1;          // This channel only provides byte streams
+}
