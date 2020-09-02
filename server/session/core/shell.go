@@ -56,6 +56,7 @@ func NewShell(stream io.ReadWriteCloser) (sh *Shell) {
 // finds the remote prompt and saves it, adds unwished tokens to a list for trimming, etc.
 func (sh *Shell) Setup() (err error) {
 
+	sh.SetupLog()
 	sh.Log = sh.Log.WithField("type", "shell")  // Log settings
 	sLog := sh.Log.WithField("stream", "setup") // Pass this log to setup functions
 
