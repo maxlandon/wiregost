@@ -56,6 +56,7 @@ message Transport {
         Type Type = 8;
         StagingType StagingType = 9;
         bool Default = 10;
+        bool Multiplex = 11;
 }
 
 

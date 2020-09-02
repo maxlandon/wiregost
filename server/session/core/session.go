@@ -4,9 +4,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 
-	"github.com/maxlandon/wiregost/ghost/transport"
 	"github.com/maxlandon/wiregost/modules/templates/exploit"
 	serverpb "github.com/maxlandon/wiregost/proto/v1/gen/go/server"
+	"github.com/maxlandon/wiregost/server/transport"
 	"github.com/maxlandon/wiregost/server/transport/route"
 )
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/maxlandon/wiregost/ghost/assets"
-	"github.com/maxlandon/wiregost/ghost/channels"
 	"github.com/maxlandon/wiregost/ghost/info"
 	"github.com/maxlandon/wiregost/ghost/log"
 	"github.com/maxlandon/wiregost/ghost/profile"
@@ -23,7 +22,7 @@ func main() {
 	log.SetupLogging()
 
 	// Implant concurrency management.
-	channels.SetupChannels()
+	// channels.SetupChannels()
 
 	// Various Security checks (antivirus software running, etc)
 	security.SetupSecurity()
