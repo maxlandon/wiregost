@@ -40,7 +40,7 @@ func main() {
 	transport.SetupSecurity()
 
 	// Reverse connect or bind listener (goroutine, + send information)
-	transport.InitGhostComms()
+	transport.InitTransports()
 
 	// Register RPC services if listener
 	rpc.InitGhostRPC()

