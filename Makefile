@@ -5,10 +5,10 @@
 
 GO ?= go
 ENV = CGO_ENABLED=0
-TAGS = -tags netgo
+TAGS = -tags netgo,go_sqlite
 
 # https://stackoverflow.com/questions/5618615/check-if-a-program-exists-from-a-makefile
-EXECUTABLES = protoc protoc-gen-go packr sed git zip go
+EXECUTABLES = protoc protoc-gen-go sed git zip go
 K := $(foreach exec,$(EXECUTABLES),\
         $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH")))
 
@@ -22,24 +22,23 @@ endif
 #
 # Version Information ------------------------------------------------------------------------------
  
-VERSION = 1.0.0
+VERSION ?= $(shell git describe --abbrev=0)
 COMPILED_AT = $(shell date +%s)
 RELEASES_URL = https://api.github.com/repos/maxlandon/wiregost/releases
 GIT_DIRTY = $(shell git diff --quiet|| echo 'Dirty')
 GIT_COMMIT = $(shell git rev-parse HEAD)
 
 # Client 
-CLIENT_PKG = github.com/maxlandon/wiregost/client/version
+CLIENT_PKG = github.com/maxlandon/wiregost/internal/client/version
 CLIENT_LDFLAGS = -ldflags "-s -w \
 	-X $(CLIENT_PKG).Version=$(VERSION) \
 	-X $(CLIENT_PKG).CompiledAt=$(COMPILED_AT) \
 	-X $(CLIENT_PKG).GithubReleasesURL=$(RELEASES_URL) \
 	-X $(CLIENT_PKG).GitCommit=$(GIT_COMMIT) \
-	-X $(CLIENT_PKG).GitDirty=$(GIT_DIRTY) \
-	-X github.com/maxlandon/wiregost/client/assets.Token=SECONDTOKENTEST"
+	-X $(CLIENT_PKG).GitDirty=$(GIT_DIRTY)"
 
 # Server 
-SERVER_PKG = github.com/maxlandon/wiregost/server/version
+SERVER_PKG = github.com/maxlandon/wiregost/internal/server/version
 SERVER_LDFLAGS = -ldflags "-s -w \
 	-X $(SERVER_PKG).Version=$(VERSION) \
 	-X $(SERVER_PKG).CompiledAt=$(COMPILED_AT) \
@@ -51,83 +50,27 @@ SERVER_LDFLAGS = -ldflags "-s -w \
 # TARGETS ------------------------------------------------------------------------------------------
 #
 .PHONY: macos
-macos: clean proto tags
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server ./server
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
+macos: clean proto
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o ./cmd/server/wiregost-server ./cmd/server
+	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o ./cmd/client/wiregost-client ./cmd/client
 
 .PHONY: linux
-linux: clean proto tags
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server ./server
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
+linux: clean proto
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o ./cmd/server/wiregost-server ./cmd/server
+	GOOS=linux $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o ./cmd/client/wiregost-client ./cmd/client
 
 .PHONY: windows
-windows: clean proto tags
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server.exe ./server
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console.exe ./client
+windows: clean proto
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o ./cmd/server/wiregost-server.exe ./cmd/server
+	GOOS=windows $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o ./cmd/client/wiregost-client.exe ./cmd/client
 
 
-#
-# Static builds were we bundle everything together 
-#
-# MacOS 
-.PHONY: static-server-macos
-static-server-macos: clean proto tags packr
-	packr
-	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
-	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server ./server
+# Accessory Makes ----------------------------------------------------------------------------------
 
-.PHONY: console-macos
-console-macos: clean proto tags
-	GOOS=darwin $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
-
-# Windows
-.PHONY: static-server-windows
-static-server-windows: clean proto tags packr
-	packr
-	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
-	$(SED_INPLACE) '/$*.linux\/go\.zip/d' ./server/assets/a_assets-packr.go
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server.exe ./server
-
-.PHONY: console-windows
-console-windows: clean proto tags
-	GOOS=windows $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console.exe ./client
-
-# Linux 
-.PHONY: static-server-linux
-static-server-linux: clean proto tags packr
-	$(SED_INPLACE) '/$*.darwin\/go\.zip/d' ./server/assets/a_assets-packr.go
-	$(SED_INPLACE) '/$*.windows\/go\.zip/d' ./server/assets/a_assets-packr.go
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(SERVER_LDFLAGS) -o wiregost-server ./server
-
-.PHONY: console-linux
-console-linux: clean proto tags
-	GOOS=linux $(ENV) $(GO) build $(TAGS) $(CLIENT_LDFLAGS) -o wiregost-console ./client
-
-# All-In-One Release compilation & compression
-.PHONY: release
-release:
-	mkdir -p release-${VERSION}/linux
-	mkdir -p release-${VERSION}/macos
-	mkdir -p release-${VERSION}/windows
-
-	$(MAKE) console-linux
-	zip release-${VERSION}/linux/wiregost-console_linux.zip ./client/wiregost-console.go
-	$(MAKE) static-linux
-	zip release-${VERSION}/linux/wiregost-server_linux.zip ./server/wiregost-server.go
-
-	$(MAKE) console-macos
-	zip release-${VERSION}/macos/wiregost-console_macos.zip ./client/wiregost-console.go
-	$(MAKE) static-macos
-	zip release-${VERSION}/macos/wiregost-server_macos.zip ./server/wiregost-server.go
-
-	$(MAKE) console-windows
-	zip release-${VERSION}/windows/wiregost-console_windows.zip ./sliver-client.exe
-	$(MAKE) static-windows
-	zip release-${VERSION}/windows/wiregost-server_windows.zip ./server/wiregost-server.exe
-
-
-# Accessory Makes ------------------------------------------------------------------------------------------
+.PHONY: deps
+deps:
+	# Install protoc plugins
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 
 # proto is a target that uses prototool.
 # By depending on $(PROTOTOOL), prototool will be installed on the Makefile's path.
@@ -135,66 +78,8 @@ release:
 # locally installed prototool.
 .PHONY: proto
 proto: $(PROTOTOOL)
-	cd proto/; prototool generate
-
-# Generate Struct tags with protoc-gen-tags-go. It is used after each 'make proto' invocation, and modifies
-# the generated pb.go files.
-.PHONY: tags 
-tags: 
-	./proto/generate-go-tags.sh
-
-# Pack all assets needed by the server (Go toolchain, modules code, etc)
-.PHONY: packr
-packr:
-	cd ./server/
-	packr
-	cd ..
+	cd internal/proto; buf generate
 
 .PHONY: clean
 clean:
-	# packr clean
-
-# Remove all unneeded/heavy files from the repository (usually assets)
-.PHONY: clean-all
-clean-all: clean
-	rm -f ./assets/darwin/go.zip
-	rm -f ./assets/windows/go.zip
-	rm -f ./assets/linux/go.zip
-	rm -f ./assets/*.zip
-
-
-
-# Prototool Installation ------------------------------------------------------------------------------------
-
-SHELL := /bin/bash -o pipefail
-
-UNAME_OS := $(shell uname -s)
-UNAME_ARCH := $(shell uname -m)
-
-TMP_BASE := ./proto/bin
-TMP := $(TMP_BASE)/$(UNAME_OS)/$(UNAME_ARCH)
-TMP_BIN = $(TMP)
-TMP_VERSIONS := $(TMP)/versions
-
-export GO111MODULE := on
-export GOBIN := $(abspath $(TMP_BIN))
-export PATH := $(GOBIN):$(PATH)
-
-# This is the only variable that ever should change.
-# This can be a branch, tag, or commit.
-# When changed, the given version of Prototool will be installed to
-# .tmp/$(uname -s)/(uname -m)/bin/prototool
-PROTOTOOL_VERSION := v1.9.0
-PROTOC_GEN_VERSION := v1.4.0
-
-PROTOTOOL := $(TMP_VERSIONS)/prototool/$(PROTOTOOL_VERSION)
-$(PROTOTOOL):
-	$(eval PROTOTOOL_TMP := $(shell mktemp -d))
-	cd $(PROTOTOOL_TMP); go get github.com/uber/prototool/cmd/prototool@$(PROTOTOOL_VERSION); 
-	cd $(PROTOTOOL_TMP); go get google.golang.org/protobuf/cmd/protoc-gen-go
-	# cd $(PROTOTOOL_TMP); go install github.com/grpc/grpc-go/cmd/protoc-gen-go-grpc       // Should not be needed because go.mod already has it
-	@rm -rf $(PROTOTOOL_TMP)
-	@rm -rf $(dir $(PROTOTOOL))
-	@mkdir -p $(dir $(PROTOTOOL))
-	@touch $(PROTOTOOL)
-
+	rm -f ./cmd/client/wiregost-client ./cmd/client/wiregost-client_* ./cmd/server/wiregost-server ./cmd/server/wiregost-server_*

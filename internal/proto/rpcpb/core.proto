@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package rpcpb;
+
+import "commonpb/common.proto";
+import "clientpb/client.proto";
+
+// Core provides the core functions of the client, 
+// not related to actual exploitation database/functionality.
+service Core {
+  rpc GetVersion(commonpb.Empty) returns (clientpb.Version);
+  rpc ClientLog(stream clientpb.ClientLogData) returns (commonpb.Empty);
+  rpc GetOperators(commonpb.Empty) returns (clientpb.Operators);
+  rpc Events(commonpb.Empty) returns (stream clientpb.Event);
+}

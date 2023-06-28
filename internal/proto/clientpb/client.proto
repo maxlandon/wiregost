@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package clientpb;
+
+// [ Version ] ----------------------------------------
+
+message Version {
+  int32 Major = 1;
+  int32 Minor = 2;
+  int32 Patch = 3;
+
+  string Commit = 4;
+  bool Dirty = 5;
+  int64 CompiledAt = 6;
+
+  string OS = 7;
+  string Arch = 8;
+}
+
+// [ Client Logs ] ----------------------------------------
+message ClientLogData {
+  string Stream = 1;
+  bytes Data = 2;
+}
+
+// [ Events ] ---------------------------------------------
+message Client {
+  uint32 ID = 1;
+  string Name = 2;
+
+  Operator Operator = 3;
+}
+
+message Event {
+  string EventType = 1;
+  Job Job = 3;
+  Client Client = 4;
+  bytes Data = 5;
+
+  string Err = 6; // Can't trigger normal gRPC error
+}
+
+message Operators { repeated Operator Operators = 1; }
+
+message Operator {
+  bool Online = 1;
+  string Name = 2;
+}
+
+// [ Jobs ]  ----------------------------------------
+message Job {
+  uint32 ID = 1;
+  string Name = 2;
+  string Description = 3;
+  string Protocol = 4;
+  uint32 Port = 5;
+
+  repeated string Domains = 6;
+  string ProfileName = 7;
+}
