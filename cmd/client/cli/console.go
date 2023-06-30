@@ -20,13 +20,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
+
 	"github.com/maxlandon/wiregost/cmd/client/command"
 	"github.com/maxlandon/wiregost/internal/client/assets"
 	"github.com/maxlandon/wiregost/internal/client/console"
 	"github.com/maxlandon/wiregost/internal/client/transport"
 	"github.com/maxlandon/wiregost/internal/proto/rpcpb"
-	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
 )
 
 // ConsoleCmd returns a command that starts the console application.
