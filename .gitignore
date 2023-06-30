@@ -1,11 +1,8 @@
 
 # Binaries ----------------------------------------------------
 
-wiregost-console
-wiregost-server
-wiregost-data-service
-server/wiregost-server
-client/wiregost-console
+cmd/server/wiregost-server
+cmd/client/wiregost-client
 
 
 # Large static assets (Packer download/generate) --------------
@@ -28,23 +25,6 @@ server/generate/a_generate-packr.go
 # client/version/version.go 
 # server/assets/version.go
 
-# Protobuf ----------------------------------------------------
-
-# For some reason my Vim does not ignore when giving the directory
-# Binaries
-proto/bin/Linux/x86_64/versions/prototool/v1.9.0       
-proto/bin/Linux/x86_64/prototool       
-proto/bin/Linux/x86_64/protoc-gen-go
-
 # Ignore all per-language Protobuf generated code
 **.pb.go    
 proto/v1/gen 
-
-# Go toolchain (Zip files for releases) -----------------------
-
-wiregost-linux.zip
-wiregost-windows.zip
-wiregost-macos.zip
-
-# Draft Table & Brouillon -------------------------------------
-server/draft
