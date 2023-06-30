@@ -25,6 +25,7 @@ import (
 	"log"
 	"regexp"
 
+	"github.com/maxlandon/aims/server"
 	consts "github.com/maxlandon/wiregost/internal/client/constants"
 	"github.com/maxlandon/wiregost/internal/server/certs"
 	"github.com/maxlandon/wiregost/internal/server/configs"
@@ -100,10 +101,13 @@ func StartPersistentJobs(cfg *configs.ServerConfig) error {
 
 // StartClientListener starts serving the wiregost RPC.
 func StartClientListener(host string, port uint16) (int, error) {
-	_, ln, err := transport.StartClientListener(host, port)
+	serv, ln, err := transport.StartClientListener(host, port)
 	if err != nil {
 		return -1, err // If we fail to bind don't setup the Job
 	}
+
+	// Register AIMS database service
+	server.New(serv, server.WithDatabase(db.Client))
 
 	job := &core.Job{
 		ID:          core.NextJobID(),

@@ -24,6 +24,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	"github.com/maxlandon/aims/db"
 	"github.com/maxlandon/wiregost/internal/server/configs"
 	"github.com/maxlandon/wiregost/internal/server/db/models"
 	"github.com/maxlandon/wiregost/internal/server/log"
@@ -52,6 +53,12 @@ func newDBClient() *gorm.DB {
 		&models.Operator{},
 		&models.KeyValue{},
 	)
+	if err != nil {
+		clientLog.Error(err)
+	}
+
+	// Migrate AIMS database schema
+	err = db.Migrate(dbClient)
 	if err != nil {
 		clientLog.Error(err)
 	}

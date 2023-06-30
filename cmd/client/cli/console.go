@@ -23,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 
+	"github.com/maxlandon/aims/client"
 	"github.com/maxlandon/wiregost/cmd/client/command"
 	"github.com/maxlandon/wiregost/internal/client/assets"
 	"github.com/maxlandon/wiregost/internal/client/console"
@@ -76,6 +77,13 @@ func setupConsole(con *console.Client, runLoop bool) (pre, post func(cmd *cobra.
 		rpc, ln, err = transport.ConnectClient(config)
 		if err != nil {
 			fmt.Printf("Connection to server failed %s", err)
+			return nil
+		}
+
+		// Bind the Wiregost database.
+		con.Db, err = client.NewFrom(ln)
+		if err != nil {
+			fmt.Printf("Failed to register AIMS database client: %s", err)
 			return nil
 		}
 

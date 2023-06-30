@@ -22,6 +22,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/maxlandon/aims/client"
 	"github.com/reeflective/console"
 	"golang.org/x/exp/slog"
 
@@ -35,6 +36,7 @@ import (
 type Client struct {
 	App      *console.Console
 	Rpc      rpcpb.CoreClient
+	Db       *client.Client
 	Settings *assets.ClientSettings
 	IsServer bool
 	IsCLI    bool
